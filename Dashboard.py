@@ -5950,21 +5950,94 @@ OPTIMIZATION OPPORTUNITIES:
         """)
 
 
-# ----------------- Generic Type Tab -----------------
+# ----------------- Generic Type Tab (COMPLETE FULL VERSION) -----------------
 
-# Assuming tab_generic is defined elsewhere, e.g., tabs = st.tabs(["Generic"]), tab_generic = tabs[0]
 with tab_generic:
     st.header("🛠 Generic Type Insights")
     st.markdown("Dive deep into generic term performance and search trends. 🚀")
 
+    # Check if uploaded file exists in session state
+    if 'uploaded_file' not in st.session_state or st.session_state.uploaded_file is None:
+        st.warning("⚠️ Please upload a file first in the Data Upload section")
+        st.info("Go to the Data Upload tab to upload your Excel file with 'generic_type' sheet")
+        st.stop()
+    
     try:
-        # Check if generic type data exists and is valid
+        # Load the Excel file and check available sheets
+        uploaded_file = st.session_state.uploaded_file
+        excel_file = pd.ExcelFile(uploaded_file)
+        available_sheets = excel_file.sheet_names
+        
+        st.info(f"📋 Available sheets in your file: {', '.join(available_sheets)}")
+        
+        # Check if generic_type sheet exists
+        if 'generic_type' not in available_sheets:
+            st.error(f"❌ 'generic_type' sheet not found in uploaded file")
+            st.info(f"Available sheets: {', '.join(available_sheets)}")
+            st.info("Please ensure your Excel file contains a sheet named 'generic_type'")
+            
+            # Offer alternative: use queries_clustered if available
+            if 'queries_clustered' in available_sheets:
+                st.info("💡 Found 'queries_clustered' sheet. Would you like to analyze that instead?")
+                use_queries_clustered = st.button("📊 Analyze 'queries_clustered' sheet", key="use_queries_clustered")
+                
+                if use_queries_clustered:
+                    # Load queries_clustered sheet and map columns
+                    with st.spinner("📊 Loading queries_clustered data..."):
+                        generic_type = pd.read_excel(uploaded_file, sheet_name='queries_clustered')
+                        
+                        # Map columns to expected format
+                        column_mapping = {
+                            'search': 'search',
+                            'Counts': 'count',
+                            'clicks': 'Clicks', 
+                            'conversions': 'Conversions'
+                        }
+                        
+                        # Check if required columns exist (with different names)
+                        missing_cols = []
+                        for expected_col, actual_col in column_mapping.items():
+                            if actual_col not in generic_type.columns:
+                                missing_cols.append(f"{expected_col} (looking for '{actual_col}')")
+                        
+                        if missing_cols:
+                            st.error(f"❌ Missing required columns: {', '.join(missing_cols)}")
+                            st.info(f"Available columns: {', '.join(generic_type.columns.tolist())}")
+                            st.stop()
+                        
+                        # Rename columns to match expected format
+                        generic_type = generic_type.rename(columns={
+                            'Counts': 'count',
+                            'clicks': 'Clicks',
+                            'conversions': 'Conversions'
+                        })
+                        
+                        st.success(f"✅ Successfully loaded {len(generic_type)} records from 'queries_clustered' sheet")
+                else:
+                    st.stop()
+            else:
+                st.stop()
+        else:
+            # Load generic_type sheet directly
+            with st.spinner("📊 Loading generic_type data..."):
+                generic_type = pd.read_excel(uploaded_file, sheet_name='generic_type')
+                st.success(f"✅ Successfully loaded {len(generic_type)} records from 'generic_type' sheet")
+        
+        # Check if data is empty
         if generic_type is None or generic_type.empty:
-            st.warning("⚠️ No generic type data available.")
-            st.info("Please ensure your uploaded file contains a 'generic_type' sheet with data.")
+            st.warning("⚠️ The selected sheet appears to be empty")
+            st.info("Please check your data and try again")
             st.stop()
         
-        # Use the existing generic_type data directly
+        # Display column information for debugging
+        with st.expander("🔍 Data Structure Information", expanded=False):
+            st.write("**Available Columns:**")
+            st.write(generic_type.columns.tolist())
+            st.write("**First 5 rows:**")
+            st.dataframe(generic_type.head())
+            st.write(f"**Data Shape:** {generic_type.shape[0]} rows × {generic_type.shape[1]} columns")
+        
+        # Use the loaded generic_type data directly
         gt = generic_type.copy()
         
         # Data validation and cleaning
@@ -5973,7 +6046,10 @@ with tab_generic:
         
         if missing_columns:
             st.error(f"❌ Missing required columns: {', '.join(missing_columns)}")
-            st.info("Please ensure your generic type data contains these columns")
+            st.info("Please ensure your data contains these columns:")
+            for col in required_columns:
+                st.write(f"- **{col}**")
+            st.info(f"Your data has: {', '.join(gt.columns.tolist())}")
             st.stop()
         
         # Clean numeric data
@@ -5989,6 +6065,18 @@ with tab_generic:
             st.warning("⚠️ No valid generic type data found after cleaning.")
             st.info("Please check your data for empty search terms or invalid values.")
             st.stop()
+        
+        # Helper function for number formatting
+        def format_number(num):
+            """Format numbers with appropriate suffixes (K, M, B)"""
+            if num >= 1_000_000_000:
+                return f"{num/1_000_000_000:.1f}B"
+            elif num >= 1_000_000:
+                return f"{num/1_000_000:.1f}M"
+            elif num >= 1_000:
+                return f"{num/1_000:.1f}K"
+            else:
+                return f"{num:,.0f}"
         
         # Calculate comprehensive generic type metrics with loading indicator
         with st.spinner("🔄 Processing generic type data..."):
@@ -6092,6 +6180,20 @@ with tab_generic:
         .low-performance {
             background-color: #FED7D7;
             color: #742A2A;
+        }
+        
+        .generic-table-container {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #FF5A6E;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+            transition: transform 0.2s ease;
+        }
+        .generic-table-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         </style>
         """, unsafe_allow_html=True)
@@ -6856,7 +6958,6 @@ Generated by Generic Terms Analysis Dashboard
                 ]
             
             # Display filtered results
-
             if len(filtered_data) > 0:
                 st.markdown(f"### 📊 Filtered Results: {len(filtered_data)} generic terms")
                 
@@ -6921,46 +7022,6 @@ Generated by Generic Terms Analysis Dashboard
                 
                 # Enhanced table UI
                 st.markdown("""
-                <style>
-                .generic-table-container {
-                    background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
-                    padding: 20px;
-                    border-radius: 15px;
-                    border-left: 5px solid #FF5A6E;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                    margin: 10px 0;
-                    transition: transform 0.2s ease;
-                }
-                .generic-table-container:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-                }
-                .generic-table-container table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-family: Arial, sans-serif;
-                }
-                .generic-table-container th {
-                    background-color: #FF5A6E;
-                    color: white;
-                    font-weight: bold;
-                    padding: 12px;
-                    text-align: left;
-                    font-size: 1.1em;
-                }
-                .generic-table-container td {
-                    padding: 10px;
-                    font-size: 1em;
-                    color: #2D3748;
-                    border-bottom: 1px solid #E2E8F0;
-                }
-                .generic-table-container tr:nth-child(even) {
-                    background-color: #FFF5F5;
-                }
-                .generic-table-container tr:hover {
-                    background-color: #FED7D7;
-                }
-                </style>
                 <div class='generic-table-container'>
                 """, unsafe_allow_html=True)
                 st.dataframe(display_filtered, use_container_width=True, hide_index=True)
@@ -6978,7 +7039,10 @@ Generated by Generic Terms Analysis Dashboard
             else:
                 st.warning("⚠️ No generic terms match the selected filters. Try adjusting your criteria.")
 
-
+    except FileNotFoundError:
+        st.error("❌ File not found. Please ensure the uploaded file is accessible.")
+    except pd.errors.EmptyDataError:
+        st.error("❌ The selected sheet appears to be empty.")
     except KeyError as e:
         st.error(f"❌ Missing required column: {str(e)}")
         st.info("Please ensure your data contains: 'search', 'count', 'Clicks', 'Conversions'")
@@ -6986,8 +7050,17 @@ Generated by Generic Terms Analysis Dashboard
         st.error(f"❌ Data format error: {str(e)}")
         st.info("Please check that numeric columns contain valid numbers")
     except Exception as e:
-        st.error(f"❌ Unexpected error processing generic type data: {str(e)}")
-        st.info("Please check your data format and try again.")
+        st.error(f"❌ Unexpected error: {str(e)}")
+        
+        # Debug information
+        if st.checkbox("Show debug information"):
+            st.write("**Error details:**")
+            st.write(f"Error type: {type(e).__name__}")
+            st.write(f"Error message: {str(e)}")
+            import traceback
+            st.code(traceback.format_exc())
+
+
 
 # ----------------- Time Analysis Tab (Enhanced) -----------------
 # ----------------- Time Analysis Tab (Enhanced) -----------------
