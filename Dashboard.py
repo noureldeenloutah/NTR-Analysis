@@ -4782,10 +4782,20 @@ with tab_category:
             )
 
 
-# ----------------- Subcategory Tab -----------------
+# ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
 with tab_subcat:
-    st.header("🧴 Subcategory Insights")
-    st.markdown("Dive deep into subcategory performance and search trends. 🚀")
+    st.header("🌿 Health Subcategory Intelligence Hub")
+    st.markdown("Deep dive into wellness subcategory performance and health search trends. 💚")
+
+    # Hero Image for Subcategory Tab
+    subcat_image_options = {
+        "Health Subcategory Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Subcategory+Performance+Analysis",
+        "Wellness Subcategories": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Subcategory+Intelligence+Dashboard",
+        "Abstract Health Subcategories": "https://source.unsplash.com/1200x200/?health,wellness,subcategory",
+        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Health+Subcategory+Insights",
+    }
+    selected_subcat_image = st.sidebar.selectbox("Choose Subcategory Tab Hero", options=list(subcat_image_options.keys()), index=0, key="subcat_hero_image_selector")
+    st.image(subcat_image_options[selected_subcat_image], use_container_width=True)
 
     try:
         # Check if subcategory data exists
@@ -4810,63 +4820,67 @@ with tab_subcat:
             # Sort by counts for main analysis
             sc = sc.sort_values('Counts', ascending=False)
             
-            
             # Enhanced Key Metrics Section
-            st.subheader("📊 Subcategory Performance Overview")
+            st.subheader("🌿 Health Subcategory Performance Overview")
             
-            # Enhanced CSS for subcategory metrics - UNIFIED RED/ORANGE COLORS
+            # Enhanced CSS for health-focused subcategory metrics
             st.markdown("""
             <style>
-            .subcat-metric-card {
-                background: linear-gradient(135deg, #FF5A6E 0%, #FFB085 100%);
+            .health-subcat-metric-card {
+                background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
                 padding: 25px;
                 border-radius: 15px;
                 text-align: center;
-                color: white;
-                box-shadow: 0 8px 32px rgba(255, 90, 110, 0.3);
+                color: #1B5E20;
+                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3);
                 margin: 10px 0;
                 min-height: 160px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 transition: transform 0.2s ease;
+                border-left: 4px solid #4CAF50;
             }
             
-            .subcat-metric-card:hover {
+            .health-subcat-metric-card:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 12px 40px rgba(255, 90, 110, 0.4);
+                box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4);
             }
             
-            .subcat-metric-card .icon {
+            .health-subcat-metric-card .icon {
                 font-size: 3em;
                 margin-bottom: 10px;
                 display: block;
+                color: #2E7D32;
             }
             
-            .subcat-metric-card .value {
+            .health-subcat-metric-card .value {
                 font-size: 1.6em;
                 font-weight: bold;
                 margin-bottom: 8px;
                 word-wrap: break-word;
                 overflow-wrap: break-word;
                 line-height: 1.2;
+                color: #1B5E20;
             }
             
-            .subcat-metric-card .label {
+            .health-subcat-metric-card .label {
                 font-size: 1.1em;
                 opacity: 0.95;
                 font-weight: 600;
                 margin-bottom: 6px;
+                color: #2E7D32;
             }
             
-            .subcat-metric-card .sub-label {
+            .health-subcat-metric-card .sub-label {
                 font-size: 1em;
                 opacity: 0.9;
                 font-weight: 500;
                 line-height: 1.2;
+                color: #388E3C;
             }
             
-            .performance-badge {
+            .wellness-performance-badge {
                 padding: 4px 8px;
                 border-radius: 12px;
                 font-size: 0.8em;
@@ -4874,19 +4888,28 @@ with tab_subcat:
                 margin-left: 8px;
             }
             
-            .high-performance {
+            .high-wellness-performance {
                 background-color: #4CAF50;
                 color: white;
             }
             
-            .medium-performance {
-                background-color: #FF9800;
+            .medium-wellness-performance {
+                background-color: #81C784;
                 color: white;
             }
             
-            .low-performance {
-                background-color: #F44336;
+            .low-wellness-performance {
+                background-color: #A5D6A7;
+                color: #1B5E20;
+            }
+            
+            .wellness-insight-card {
+                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+                padding: 25px;
+                border-radius: 15px;
                 color: white;
+                margin: 15px 0;
+                box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
             }
             </style>
             """, unsafe_allow_html=True)
@@ -4903,31 +4926,31 @@ with tab_subcat:
             
             with col1:
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
-                    <span class='icon'>🏷️</span>
+                <div class='health-subcat-metric-card'>
+                    <span class='icon'>🌿</span>
                     <div class='value'>{format_number(total_subcategories)}</div>
-                    <div class='label'>Total Subcategories</div>
-                    <div class='sub-label'>Active subcategories</div>
+                    <div class='label'>Total Health Subcategories</div>
+                    <div class='sub-label'>Active wellness segments</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col2:
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>🔍</span>
                     <div class='value'>{format_number(total_searches)}</div>
-                    <div class='label'>Total Searches</div>
-                    <div class='sub-label'>Across all subcategories</div>
+                    <div class='label'>Total Health Searches</div>
+                    <div class='sub-label'>Across all wellness subcategories</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col3:
-                performance_class = "high-performance" if avg_ctr > 5 else "medium-performance" if avg_ctr > 2 else "low-performance"
+                performance_class = "high-wellness-performance" if avg_ctr > 5 else "medium-wellness-performance" if avg_ctr > 2 else "low-wellness-performance"
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>📈</span>
-                    <div class='value'>{avg_ctr:.2f}% <span class='performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
-                    <div class='label'>Average CTR</div>
+                    <div class='value'>{avg_ctr:.2f}% <span class='wellness-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
+                    <div class='label'>Average Health CTR</div>
                     <div class='sub-label'>Click-through rate</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -4936,11 +4959,11 @@ with tab_subcat:
                 top_subcat_display = top_subcategory[:12] + "..." if len(top_subcategory) > 12 else top_subcategory
                 market_share = (top_subcategory_volume / total_searches * 100)
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>👑</span>
                     <div class='value'>{top_subcat_display}</div>
-                    <div class='label'>Top Subcategory</div>
-                    <div class='sub-label'>{market_share:.1f}% market share</div>
+                    <div class='label'>Top Health Subcategory</div>
+                    <div class='sub-label'>{market_share:.1f}% wellness market share</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -4949,60 +4972,55 @@ with tab_subcat:
             
             with col5:
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
-                    <span class='icon'>💰</span>
+                <div class='health-subcat-metric-card'>
+                    <span class='icon'>💚</span>
                     <div class='value'>{avg_cr:.2f}%</div>
-                    <div class='label'>Avg Conversion Rate</div>
-                    <div class='sub-label'>Overall performance</div>
+                    <div class='label'>Avg Wellness Conversion Rate</div>
+                    <div class='sub-label'>Overall health performance</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col6:
-                total_clicks = int(sc['clicks'].sum())  # ✅ Convert to integer to remove decimals
+                total_clicks = int(sc['clicks'].sum())
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>🖱️</span>
                     <div class='value'>{format_number(total_clicks)}</div>
-                    <div class='label'>Total Clicks</div>
-                    <div class='sub-label'>Across all subcategories</div>
+                    <div class='label'>Total Health Clicks</div>
+                    <div class='sub-label'>Across all wellness subcategories</div>
                 </div>
                 """, unsafe_allow_html=True)
-
             
             with col7:
-                total_conversions = int(sc['conversions'].sum())  # ✅ Convert to integer to remove decimals
+                total_conversions = int(sc['conversions'].sum())
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>✅</span>
                     <div class='value'>{format_number(total_conversions)}</div>
-                    <div class='label'>Total Conversions</div>
-                    <div class='sub-label'>Successful outcomes</div>
+                    <div class='label'>Total Wellness Conversions</div>
+                    <div class='sub-label'>Successful health outcomes</div>
                 </div>
                 """, unsafe_allow_html=True)
-
             
             with col8:
                 top_conversion_subcat = sc.nlargest(1, 'conversions')['sub_category'].iloc[0] if len(sc) > 0 else 'N/A'
                 top_conversion_display = top_conversion_subcat[:12] + "..." if len(top_conversion_subcat) > 12 else top_conversion_subcat
                 st.markdown(f"""
-                <div class='subcat-metric-card'>
+                <div class='health-subcat-metric-card'>
                     <span class='icon'>🏆</span>
                     <div class='value'>{top_conversion_display}</div>
-                    <div class='label'>Conversion Leader</div>
-                    <div class='sub-label'>Most conversions</div>
+                    <div class='label'>Wellness Conversion Leader</div>
+                    <div class='sub-label'>Most health conversions</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             st.markdown("---")
             
-            # ✅ TOP 10 KEYWORDS BY SUBCATEGORY TABLE - EXACTLY LIKE CATEGORY TAB
-            # Check if we have keyword data for subcategory analysis
+            # TOP 10 HEALTH KEYWORDS BY SUBCATEGORY TABLE
             if 'keyword' in queries.columns and 'sub_category' in queries.columns:
-                # Create keyword analysis similar to category tab
                 df_sckw = queries[queries['keyword'].notna() & queries['sub_category'].notna()].copy()
                 
                 if len(df_sckw) > 0:
-                    # Group keywords by subcategory
                     df_sckw_grouped = df_sckw.groupby(['sub_category', 'keyword']).agg({
                         'Counts': 'sum',
                         'clicks': 'sum',
@@ -5010,37 +5028,29 @@ with tab_subcat:
                     }).reset_index()
                     df_sckw_grouped.rename(columns={'Counts': 'count'}, inplace=True)
                     
-                    # Calculate keyword performance metrics
                     df_sckw_grouped['keyword_ctr'] = df_sckw_grouped.apply(lambda r: (r['clicks']/r['count']*100) if r['count']>0 else 0, axis=1)
                     df_sckw_grouped['keyword_cr'] = df_sckw_grouped.apply(lambda r: (r['conversions']/r['count']*100) if r['count']>0 else 0, axis=1)
                     
-                    # Show top keywords summary by subcategory with enhanced accuracy
-                    st.subheader("🔥 Top 10 Keywords by Subcategory")
+                    st.subheader("🔥 Top 10 Health Keywords by Wellness Subcategory")
                     
                     top_keywords_summary = []
                     subcategory_stats = {}
                     
-                    # Calculate total volume across all subcategories for share percentage
                     total_volume_all_subcategories = sc['Counts'].sum()
                     
                     for subcat in df_sckw_grouped['sub_category'].unique():
                         subcat_data = df_sckw_grouped[df_sckw_grouped['sub_category'] == subcat].sort_values('count', ascending=False)
                         
-                        # Get top 10 keywords for this subcategory
                         top_10_keywords = subcat_data.head(10)
                         
-                        # Create formatted keyword string with counts
                         keywords_list = []
                         for _, row in top_10_keywords.iterrows():
-                            performance_indicator = "🔥" if row['keyword_ctr'] > 5 else "⚡" if row['keyword_ctr'] > 2 else "📊"
+                            performance_indicator = "🌟" if row['keyword_ctr'] > 5 else "⚡" if row['keyword_ctr'] > 2 else "📊"
                             keywords_list.append(f"{performance_indicator} {row['keyword']} ({row['count']:,})")
                         
                         keywords_str = ' | '.join(keywords_list)
                         
-                        # Calculate subcategory statistics - CORRECTED CALCULATION
                         actual_subcategory_total = sc[sc['sub_category'] == subcat]['Counts'].iloc[0] if len(sc[sc['sub_category'] == subcat]) > 0 else subcat_data['count'].sum()
-                        
-                        # Calculate correct share percentage based on total volume
                         share_percentage = (actual_subcategory_total / total_volume_all_subcategories * 100)
                         
                         total_keyword_count = subcat_data['count'].sum()
@@ -5048,7 +5058,6 @@ with tab_subcat:
                         avg_keyword_count = subcat_data['count'].mean()
                         top_keyword_dominance = (top_10_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_10_keywords) > 0 else 0
                         
-                        # Store subcategory stats for additional insights
                         subcategory_stats[subcat] = {
                             'total_keywords': unique_keywords,
                             'total_count': actual_subcategory_total,
@@ -5061,229 +5070,103 @@ with tab_subcat:
                         }
                         
                         top_keywords_summary.append({
-                            'Subcategory': subcat,
-                            'Top 10 Keywords (with counts)': keywords_str,
-                            'Total Keywords': unique_keywords,
+                            'Health Subcategory': subcat,
+                            'Top 10 Health Keywords (with counts)': keywords_str,
+                            'Total Health Keywords': unique_keywords,
                             'Subcategory Total Volume': f"{actual_subcategory_total:,}",
-                            'Share %': f"{share_percentage:.2f}%",
+                            'Wellness Share %': f"{share_percentage:.2f}%",
                             'Keyword Analysis Volume': f"{total_keyword_count:,}",
-                            'Avg Keyword Count': f"{avg_keyword_count:.1f}",
-                            'Top Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
+                            'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
+                            'Top Health Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
                             'Top Keyword Volume': top_10_keywords.iloc[0]['count'] if len(top_10_keywords) > 0 else 0,
-                            'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
+                            'Health Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                         })
                     
-                    # Sort by actual subcategory total volume (descending)
                     top_keywords_summary = sorted(top_keywords_summary, key=lambda x: int(x['Subcategory Total Volume'].replace(',', '')), reverse=True)
                     summary_df = pd.DataFrame(top_keywords_summary)
                     
-                    # Display the enhanced summary table with pagination
                     st.dataframe(summary_df, use_container_width=True, height=400, hide_index=True)
                     
-                    # Download button for keyword summary
                     csv_keywords_summary = summary_df.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Subcategory Keywords Summary CSV",
+                        label="📥 Download Health Subcategory Keywords Summary CSV",
                         data=csv_keywords_summary,
-                        file_name="subcategory_keywords_summary.csv",
+                        file_name="health_subcategory_keywords_summary.csv",
                         mime="text/csv",
-                        key="subcategory_keywords_summary_download"
+                        key="health_subcategory_keywords_summary_download"
                     )
                     
-                    # ✅ SUBCATEGORY KEYWORD INTELLIGENCE SECTION
+                    # HEALTH SUBCATEGORY KEYWORD INTELLIGENCE SECTION
                     st.markdown("---")
-                    st.subheader("📊 Subcategory Keyword Intelligence")
+                    st.subheader("🌿 Health Subcategory Keyword Intelligence")
                     
                     col_insight1, col_insight2, col_insight3 = st.columns(3)
                     
                     with col_insight1:
-                        # Most diverse subcategory (most unique keywords)
                         most_diverse_subcat = max(subcategory_stats.items(), key=lambda x: x[1]['total_keywords'])
                         subcategory_name = most_diverse_subcat[0][:15] + "..." if len(most_diverse_subcat[0]) > 15 else most_diverse_subcat[0]
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>🌟</span>
                             <div class='value'>{subcategory_name}</div>
-                            <div class='label'>Most Diverse Subcategory</div>
-                            <div class='sub-label'>{most_diverse_subcat[1]['total_keywords']} unique keywords</div>
+                            <div class='label'>Most Diverse Health Subcategory</div>
+                            <div class='sub-label'>{most_diverse_subcat[1]['total_keywords']} unique health keywords</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_insight2:
-                        # Highest volume subcategory
                         highest_volume_subcat = max(subcategory_stats.items(), key=lambda x: x[1]['total_count'])
                         subcategory_name = highest_volume_subcat[0][:15] + "..." if len(highest_volume_subcat[0]) > 15 else highest_volume_subcat[0]
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>🚀</span>
                             <div class='value'>{subcategory_name}</div>
-                            <div class='label'>Highest Volume Subcategory</div>
-                            <div class='sub-label'>{highest_volume_subcat[1]['total_count']:,} total searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% share</div>
+                            <div class='label'>Highest Volume Health Subcategory</div>
+                            <div class='sub-label'>{highest_volume_subcat[1]['total_count']:,} total health searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% wellness share</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_insight3:
-                        # Most concentrated subcategory
                         most_concentrated_subcat = max(subcategory_stats.items(), key=lambda x: x[1]['share_percentage'])
                         subcategory_name = most_concentrated_subcat[0][:15] + "..." if len(most_concentrated_subcat[0]) > 15 else most_concentrated_subcat[0]
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>🎯</span>
                             <div class='value'>{subcategory_name}</div>
-                            <div class='label'>Most Concentrated Subcategory</div>
-                            <div class='sub-label'>{most_concentrated_subcat[1]['share_percentage']:.2f}% market share</div>
+                            <div class='label'>Most Concentrated Health Subcategory</div>
+                            <div class='sub-label'>{most_concentrated_subcat[1]['share_percentage']:.2f}% wellness market share</div>
                         </div>
                         """, unsafe_allow_html=True)
-                    
-                    # Additional insights row
-                    col_insight4, col_insight5, col_insight6 = st.columns(3)
-                    
-                    with col_insight4:
-                        # Most dominant keyword subcategory
-                        most_dominant_subcat = max(subcategory_stats.items(), key=lambda x: x[1]['dominance'])
-                        subcategory_name = most_dominant_subcat[0][:15] + "..." if len(most_dominant_subcat[0]) > 15 else most_dominant_subcat[0]
-                        st.markdown(f"""
-                        <div class='subcat-metric-card'>
-                            <span class='icon'>👑</span>
-                            <div class='value'>{subcategory_name}</div>
-                            <div class='label'>Most Dominant Keyword</div>
-                            <div class='sub-label'>{most_dominant_subcat[1]['dominance']:.1f}% dominance by top keyword</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with col_insight5:
-                        # Highest average keyword volume
-                        highest_avg_subcat = max(subcategory_stats.items(), key=lambda x: x[1]['avg_count'])
-                        subcategory_name = highest_avg_subcat[0][:15] + "..." if len(highest_avg_subcat[0]) > 15 else highest_avg_subcat[0]
-                        st.markdown(f"""
-                        <div class='subcat-metric-card'>
-                            <span class='icon'>📊</span>
-                            <div class='value'>{subcategory_name}</div>
-                            <div class='label'>Highest Avg Keyword Vol</div>
-                            <div class='sub-label'>{highest_avg_subcat[1]['avg_count']:.1f} avg searches per keyword</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with col_insight6:
-                        # Most efficient subcategory (highest CTR among top keywords)
-                        efficient_subcats = {}
-                        for subcat, stats in subcategory_stats.items():
-                            subcat_keywords = df_sckw_grouped[df_sckw_grouped['sub_category'] == subcat]
-                            if len(subcat_keywords) > 0:
-                                efficient_subcats[subcat] = subcat_keywords['keyword_ctr'].mean()
-                        
-                        if efficient_subcats:
-                            most_efficient_subcat = max(efficient_subcats.items(), key=lambda x: x[1])
-                            subcategory_name = most_efficient_subcat[0][:15] + "..." if len(most_efficient_subcat[0]) > 15 else most_efficient_subcat[0]
-                            st.markdown(f"""
-                            <div class='subcat-metric-card'>
-                                <span class='icon'>⚡</span>
-                                <div class='value'>{subcategory_name}</div>
-                                <div class='label'>Most Efficient Keywords</div>
-                                <div class='sub-label'>{most_efficient_subcat[1]:.1f}% avg CTR</div>
-                            </div>
-                            """, unsafe_allow_html=True)
                     
                     st.markdown("---")
             else:
-                # If no keyword data available, show message
-                st.subheader("🔥 Top 10 Keywords by Subcategory")
-                
+                st.subheader("🔥 Top 10 Health Keywords by Wellness Subcategory")
+                st.info("Health keyword data not available for subcategory analysis.")
                 st.markdown("---")
             
-            # Interactive subcategory selection
-            st.subheader("🎯 Interactive Subcategory Analysis")
+            # Interactive health subcategory selection
+            st.subheader("🎯 Interactive Health Subcategory Analysis")
 
-            # Subcategory selector
             analysis_type = st.radio(
-                "Choose Analysis Type:",
-                ["📊 Top Performers Overview", "🔍 Detailed Subcategory Deep Dive", "📈 Performance Comparison", "📊 Market Share Analysis"],
+                "Choose Wellness Analysis Type:",
+                ["📊 Top Health Performers Overview", "🔍 Detailed Health Subcategory Deep Dive", "📈 Health Performance Comparison", "📊 Wellness Market Share Analysis"],
                 horizontal=True
             )
 
-            # 🔧 FIX 1: Define missing variables
-            total_subcategories = len(sc)
-            total_searches = sc['Counts'].sum()
-
-            # 🔧 FIX 2: Add required CSS styles
-            st.markdown("""
-            <style>
-            .subcat-metric-card {
-                background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
-                padding: 20px;
-                border-radius: 15px;
-                border-left: 5px solid #FF5A6E;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                text-align: center;
-                margin: 10px 0;
-            }
-
-            .subcat-metric-card .icon {
-                font-size: 2em;
-                margin-bottom: 10px;
-                display: block;
-            }
-
-            .subcat-metric-card .value {
-                font-size: 1.8em;
-                font-weight: bold;
-                color: #0B486B;
-                margin-bottom: 5px;
-            }
-
-            .subcat-metric-card .label {
-                font-size: 1.1em;
-                color: #2D3748;
-                font-weight: 600;
-                margin-bottom: 3px;
-            }
-
-            .subcat-metric-card .sub-label {
-                font-size: 0.9em;
-                color: #718096;
-                font-style: italic;
-            }
-
-            .performance-badge {
-                font-size: 0.7em;
-                padding: 2px 6px;
-                border-radius: 10px;
-                font-weight: bold;
-                margin-left: 5px;
-            }
-
-            .high-performance {
-                background-color: #C6F6D5;
-                color: #22543D;
-            }
-
-            .medium-performance {
-                background-color: #FEFCBF;
-                color: #744210;
-            }
-
-            .low-performance {
-                background-color: #FED7D7;
-                color: #742A2A;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-
-            if analysis_type == "📊 Top Performers Overview":
-                # Top subcategories analysis
-                st.subheader("🏆 Top 20 Subcategories Performance")
+            if analysis_type == "📊 Top Health Performers Overview":
+                st.subheader("🏆 Top 20 Health Subcategories Performance")
                 
                 top_20_sc = sc.head(20).copy()
                 
-                # Enhanced bar chart with UNIFIED RED/ORANGE COLORS
+                # Enhanced bar chart with health-focused green colors
                 fig_top_subcats = px.bar(
                     top_20_sc,
                     x='sub_category',
                     y='Counts',
-                    title='<b style="color:#FF5A6E;">Top 20 Subcategories by Search Volume</b>',
-                    labels={'Counts': 'Search Volume', 'sub_category': 'Subcategories'},
+                    title='<b style="color:#2E7D32;">🌿 Top 20 Health Subcategories by Search Volume</b>',
+                    labels={'Counts': 'Health Search Volume', 'sub_category': 'Health Subcategories'},
                     color='Counts',
-                    color_continuous_scale='Reds',
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                     text='Counts'
                 )
                 
@@ -5293,43 +5176,42 @@ with tab_subcat:
                 )
                 
                 fig_top_subcats.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
-                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
-                    yaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
                     showlegend=False
                 )
                 
                 st.plotly_chart(fig_top_subcats, use_container_width=True)
                 
-                # Performance metrics comparison chart
-                st.subheader("📊 Performance Metrics Comparison")
+                # Health performance metrics comparison chart
+                st.subheader("📊 Health Performance Metrics Comparison")
                 
                 fig_metrics_comparison = go.Figure()
                 
-                # Add bars for each metric
                 fig_metrics_comparison.add_trace(go.Bar(
-                    name='CTR %',
+                    name='Health CTR %',
                     x=top_20_sc['sub_category'],
                     y=top_20_sc['ctr'],
-                    marker_color='#FF5A6E'
+                    marker_color='#4CAF50'
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
-                    name='Conversion Rate %',
+                    name='Wellness Conversion Rate %',
                     x=top_20_sc['sub_category'],
                     y=top_20_sc['conversion_rate'],
-                    marker_color='#FFB085'
+                    marker_color='#81C784'
                 ))
                 
                 fig_metrics_comparison.update_layout(
-                    title='<b>CTR vs Conversion Rate Comparison</b>',
+                    title='<b style="color:#2E7D32;">🌿 Health CTR vs Wellness Conversion Rate Comparison</b>',
                     barmode='group',
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     height=500,
                     xaxis=dict(tickangle=45),
                     yaxis=dict(title='Percentage (%)')
@@ -5337,48 +5219,37 @@ with tab_subcat:
                 
                 st.plotly_chart(fig_metrics_comparison, use_container_width=True)
                 
-                # ✅ TOP 10 KEYWORDS BY SUBCATEGORY SUMMARY
-                st.subheader("🔥 Top 10 Keywords by Subcategory")
+                # TOP 10 HEALTH KEYWORDS BY SUBCATEGORY SUMMARY
+                st.subheader("🔥 Top 10 Health Keywords by Wellness Subcategory")
 
                 try:
                     top_keywords_summary = []
                     subcategory_stats = {}
 
-                    # Calculate total volume across all subcategories for share percentage
                     total_volume_all_subcategories = sc['Counts'].sum()
 
-                    # Get unique subcategories from your processed dataframe
-                    for subcat in queries['sub_category'].unique():  # ✅ CHANGED FROM df TO queries
-                        if pd.isna(subcat):  # Skip NaN subcategories
+                    for subcat in queries['sub_category'].unique():
+                        if pd.isna(subcat):
                             continue
                             
-                        # Filter data for this specific subcategory
-                        subcat_data = queries[queries['sub_category'] == subcat]  # ✅ CHANGED FROM df TO queries
+                        subcat_data = queries[queries['sub_category'] == subcat]
                         
-                        # Aggregate by keyword (normalized_query) - sum the counts for each keyword
                         keyword_aggregated = subcat_data.groupby('normalized_query').agg({
                             'Counts': 'sum',
                             'clicks': 'sum', 
                             'conversions': 'sum'
                         }).reset_index()
                         
-                        # Sort by Counts (volume) descending
                         keyword_aggregated = keyword_aggregated.sort_values('Counts', ascending=False)
-                        
-                        # Get top 10 keywords for this subcategory
                         top_10_keywords = keyword_aggregated.head(10)
                         
-                        # Create formatted keyword string with counts
                         keywords_list = []
                         for _, row in top_10_keywords.iterrows():
                             keywords_list.append(f"{row['normalized_query']} ({row['Counts']:,})")
                         
                         keywords_str = ' | '.join(keywords_list)
                         
-                        # Calculate subcategory statistics
                         actual_subcategory_total = sc[sc['sub_category'] == subcat]['Counts'].iloc[0] if len(sc[sc['sub_category'] == subcat]) > 0 else keyword_aggregated['Counts'].sum()
-                        
-                        # Calculate correct share percentage based on total volume
                         share_percentage = (actual_subcategory_total / total_volume_all_subcategories * 100)
                         
                         total_keyword_count = keyword_aggregated['Counts'].sum()
@@ -5386,7 +5257,6 @@ with tab_subcat:
                         avg_keyword_count = keyword_aggregated['Counts'].mean()
                         top_keyword_dominance = (top_10_keywords.iloc[0]['Counts'] / total_keyword_count * 100) if len(top_10_keywords) > 0 else 0
                         
-                        # Store subcategory stats for additional insights
                         subcategory_stats[subcat] = {
                             'total_keywords': unique_keywords,
                             'total_count': actual_subcategory_total,
@@ -5398,126 +5268,115 @@ with tab_subcat:
                         }
                         
                         top_keywords_summary.append({
-                            'Subcategory': subcat,
-                            'Top 10 Keywords (with counts)': keywords_str,
-                            'Total Keywords': unique_keywords,
+                            'Health Subcategory': subcat,
+                            'Top 10 Health Keywords (with counts)': keywords_str,
+                            'Total Health Keywords': unique_keywords,
                             'Subcategory Total Volume': f"{actual_subcategory_total:,}",
-                            'Share %': f"{share_percentage:.2f}%",
+                            'Wellness Share %': f"{share_percentage:.2f}%",
                             'Keyword Analysis Volume': f"{total_keyword_count:,}",
-                            'Avg Keyword Count': f"{avg_keyword_count:.1f}",
-                            'Top Keyword': top_10_keywords.iloc[0]['normalized_query'] if len(top_10_keywords) > 0 else 'N/A',
+                            'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
+                            'Top Health Keyword': top_10_keywords.iloc[0]['normalized_query'] if len(top_10_keywords) > 0 else 'N/A',
                             'Top Keyword Volume': f"{top_10_keywords.iloc[0]['Counts']:,}" if len(top_10_keywords) > 0 else "0",
-                            'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
+                            'Health Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                         })
 
-                    # Sort by actual subcategory total volume (descending)
                     top_keywords_summary = sorted(top_keywords_summary, key=lambda x: int(x['Subcategory Total Volume'].replace(',', '')), reverse=True)
                     summary_df = pd.DataFrame(top_keywords_summary)
 
-                    # Display the enhanced summary table
                     st.dataframe(summary_df, use_container_width=True, height=400, hide_index=True)
 
-                    # Download button
                     csv_summary = summary_df.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Subcategory Keywords Summary CSV",
+                        label="📥 Download Health Subcategory Keywords Summary CSV",
                         data=csv_summary,
-                        file_name="subcategory_keywords_summary.csv",
+                        file_name="health_subcategory_keywords_summary.csv",
                         mime="text/csv"
                     )
 
                 except Exception as e:
-                    st.error(f"An error occurred in the Subcategory analysis: {str(e)}")
-                    st.write("Please check your data format and try again.")
+                    st.error(f"An error occurred in the Health Subcategory analysis: {str(e)}")
+                    st.write("Please check your wellness data format and try again.")
 
-
-
-
-
-            elif analysis_type == "🔍 Detailed Subcategory Deep Dive":
-                # Detailed analysis section
-                st.subheader("🔬 Subcategory Deep Dive Analysis")
+            elif analysis_type == "🔍 Detailed Health Subcategory Deep Dive":
+                st.subheader("🔬 Health Subcategory Deep Dive Analysis")
                 
-                # Subcategory selector with search functionality
                 selected_subcategory = st.selectbox(
-                    "Select a subcategory for detailed analysis:",
+                    "Select a health subcategory for detailed wellness analysis:",
                     options=sc['sub_category'].tolist(),
                     index=0
                 )
                 
                 if selected_subcategory:
-                    # Get detailed data for selected subcategory
                     subcat_data = sc[sc['sub_category'] == selected_subcategory].iloc[0]
                     subcat_rank = sc.reset_index().index[sc['sub_category'] == selected_subcategory].tolist()[0] + 1
                     
-                    # Detailed metrics for selected subcategory
                     col_detail1, col_detail2, col_detail3, col_detail4 = st.columns(4)
                     
                     with col_detail1:
-                        rank_performance = "high-performance" if subcat_rank <= 3 else "medium-performance" if subcat_rank <= 10 else "low-performance"
+                        rank_performance = "high-wellness-performance" if subcat_rank <= 3 else "medium-wellness-performance" if subcat_rank <= 10 else "low-wellness-performance"
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>🏆</span>
-                            <div class='value'>#{subcat_rank} <span class='performance-badge {rank_performance}'>{"Top 3" if subcat_rank <= 3 else "Top 10" if subcat_rank <= 10 else "Lower"}</span></div>
-                            <div class='label'>Market Rank</div>
-                            <div class='sub-label'>Out of {total_subcategories} subcategories</div>
+                            <div class='value'>#{subcat_rank} <span class='wellness-performance-badge {rank_performance}'>{"Top 3" if subcat_rank <= 3 else "Top 10" if subcat_rank <= 10 else "Lower"}</span></div>
+                            <div class='label'>Health Market Rank</div>
+                            <div class='sub-label'>Out of {total_subcategories} wellness subcategories</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_detail2:
                         market_share = (subcat_data['Counts'] / total_searches * 100)
-                        share_performance = "high-performance" if market_share > 5 else "medium-performance" if market_share > 2 else "low-performance"
+                        share_performance = "high-wellness-performance" if market_share > 5 else "medium-wellness-performance" if market_share > 2 else "low-wellness-performance"
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>📊</span>
-                            <div class='value'>{market_share:.2f}% <span class='performance-badge {share_performance}'>{"High" if market_share > 5 else "Medium" if market_share > 2 else "Low"}</span></div>
-                            <div class='label'>Market Share</div>
-                            <div class='sub-label'>Of total search volume</div>
+                            <div class='value'>{market_share:.2f}% <span class='wellness-performance-badge {share_performance}'>{"High" if market_share > 5 else "Medium" if market_share > 2 else "Low"}</span></div>
+                            <div class='label'>Wellness Market Share</div>
+                            <div class='sub-label'>Of total health search volume</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_detail3:
                         performance_score = (subcat_data['ctr'] + subcat_data['conversion_rate']) / 2
-                        score_performance = "high-performance" if performance_score > 3 else "medium-performance" if performance_score > 1 else "low-performance"
+                        score_performance = "high-wellness-performance" if performance_score > 3 else "medium-wellness-performance" if performance_score > 1 else "low-wellness-performance"
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>⭐</span>
-                            <div class='value'>{performance_score:.1f} <span class='performance-badge {score_performance}'>{"High" if performance_score > 3 else "Medium" if performance_score > 1 else "Low"}</span></div>
-                            <div class='label'>Performance Score</div>
+                            <div class='value'>{performance_score:.1f} <span class='wellness-performance-badge {score_performance}'>{"High" if performance_score > 3 else "Medium" if performance_score > 1 else "Low"}</span></div>
+                            <div class='label'>Health Performance Score</div>
                             <div class='sub-label'>Combined CTR & CR</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_detail4:
                         conversion_efficiency = subcat_data['conversion_rate'] / subcat_data['ctr'] * 100 if subcat_data['ctr'] > 0 else 0
-                        efficiency_performance = "high-performance" if conversion_efficiency > 50 else "medium-performance" if conversion_efficiency > 25 else "low-performance"
+                        efficiency_performance = "high-wellness-performance" if conversion_efficiency > 50 else "medium-wellness-performance" if conversion_efficiency > 25 else "low-wellness-performance"
                         st.markdown(f"""
-                        <div class='subcat-metric-card'>
+                        <div class='health-subcat-metric-card'>
                             <span class='icon'>⚡</span>
-                            <div class='value'>{conversion_efficiency:.1f}% <span class='performance-badge {efficiency_performance}'>{"High" if conversion_efficiency > 50 else "Medium" if conversion_efficiency > 25 else "Low"}</span></div>
-                            <div class='label'>Conversion Efficiency</div>
+                            <div class='value'>{conversion_efficiency:.1f}% <span class='wellness-performance-badge {efficiency_performance}'>{"High" if conversion_efficiency > 50 else "Medium" if conversion_efficiency > 25 else "Low"}</span></div>
+                            <div class='label'>Wellness Conversion Efficiency</div>
                             <div class='sub-label'>CR as % of CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    # Detailed performance breakdown with CORRECTED CR CALCULATIONS
-                    st.markdown("### 📈 Performance Breakdown")
+                    # Detailed health performance breakdown
+                    st.markdown("### 📈 Health Performance Breakdown")
 
                     metrics_data = {
-                        'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
+                        'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
                                 'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
-                                'Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
+                                'Wellness Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
                         'Value': [
-                            f"{int(subcat_data['Counts']):,}",  # ✅ Remove decimals
-                            f"{int(subcat_data['clicks']):,}",  # ✅ Remove decimals
-                            f"{int(subcat_data['conversions']):,}",  # ✅ Remove decimals
+                            f"{int(subcat_data['Counts']):,}",
+                            f"{int(subcat_data['clicks']):,}",
+                            f"{int(subcat_data['conversions']):,}",
                             f"{subcat_data['ctr']:.2f}%",
                             f"{subcat_data['classic_cvr']:.2f}%",
                             f"{subcat_data['conversion_rate']:.2f}%",
                             f"{subcat_data['click_share']:.2f}%",
                             f"{subcat_data['conversion_share']:.2f}%"
                         ],
-                        'Performance': [
+                        'Health Performance': [
                             'High' if subcat_data['Counts'] > sc['Counts'].median() else 'Low',
                             'High' if subcat_data['clicks'] > sc['clicks'].median() else 'Low',
                             'High' if subcat_data['conversions'] > sc['conversions'].median() else 'Low',
@@ -5528,21 +5387,20 @@ with tab_subcat:
                             'High' if subcat_data['conversion_share'] > sc['conversion_share'].median() else 'Low'
                         ]
                     }
-
                     
                     metrics_df = pd.DataFrame(metrics_data)
                     st.dataframe(metrics_df, use_container_width=True, hide_index=True)
                     
-                    # Performance comparison radar chart
-                    st.markdown("### 📊 Performance Radar Chart")
+                    # Health performance radar chart
+                    st.markdown("### 📊 Health Performance Radar Chart")
                     
                     # Normalize values for radar chart
                     normalized_data = {
-                        'Search Volume': subcat_data['Counts'] / sc['Counts'].max() * 100,
-                        'CTR': subcat_data['ctr'] / sc['ctr'].max() * 100 if sc['ctr'].max() > 0 else 0,
-                        'Conversion Rate': subcat_data['conversion_rate'] / sc['conversion_rate'].max() * 100 if sc['conversion_rate'].max() > 0 else 0,
-                        'Click Share': subcat_data['click_share'],
-                        'Conversion Share': subcat_data['conversion_share']
+                        'Health Search Volume': subcat_data['Counts'] / sc['Counts'].max() * 100,
+                        'Health CTR': subcat_data['ctr'] / sc['ctr'].max() * 100 if sc['ctr'].max() > 0 else 0,
+                        'Wellness Conversion Rate': subcat_data['conversion_rate'] / sc['conversion_rate'].max() * 100 if sc['conversion_rate'].max() > 0 else 0,
+                        'Health Click Share': subcat_data['click_share'],
+                        'Wellness Conversion Share': subcat_data['conversion_share']
                     }
                     
                     fig_radar = go.Figure()
@@ -5552,69 +5410,74 @@ with tab_subcat:
                         theta=list(normalized_data.keys()),
                         fill='toself',
                         name=selected_subcategory,
-                        line_color='#FF5A6E'
+                        line_color='#4CAF50',
+                        fillcolor='rgba(76, 175, 80, 0.3)'
                     ))
                     
                     fig_radar.update_layout(
                         polar=dict(
                             radialaxis=dict(
                                 visible=True,
-                                range=[0, 100]
+                                range=[0, 100],
+                                gridcolor='#C8E6C8'
+                            ),
+                            angularaxis=dict(
+                                gridcolor='#C8E6C8'
                             )),
                         showlegend=True,
-                        title=f'Performance Radar - {selected_subcategory}',
-                        height=400
+                        title=f'<b style="color:#2E7D32;">🌿 Health Performance Radar - {selected_subcategory}</b>',
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI')
                     )
                     
                     st.plotly_chart(fig_radar, use_container_width=True)
                     
-                    # ✅ ENHANCED DOWNLOAD BUTTON FOR DETAILED ANALYSIS
+                    # Enhanced download button for detailed health analysis
                     detailed_analysis_data = {
-                        'Subcategory': [selected_subcategory],
-                        'Search Volume': [subcat_data['Counts']],
-                        'Total Clicks': [subcat_data['clicks']],
-                        'Total Conversions': [subcat_data['conversions']],
-                        'CTR %': [subcat_data['ctr']],
+                        'Health Subcategory': [selected_subcategory],
+                        'Health Search Volume': [subcat_data['Counts']],
+                        'Total Health Clicks': [subcat_data['clicks']],
+                        'Total Wellness Conversions': [subcat_data['conversions']],
+                        'Health CTR %': [subcat_data['ctr']],
                         'Classic CVR %': [subcat_data['classic_cvr']],
-                        'Conversion Rate %': [subcat_data['conversion_rate']],
-                        'Market Rank': [subcat_rank],
-                        'Market Share %': [market_share],
-                        'Performance Score': [performance_score],
-                        'Conversion Efficiency %': [conversion_efficiency]
+                        'Wellness Conversion Rate %': [subcat_data['conversion_rate']],
+                        'Health Market Rank': [subcat_rank],
+                        'Wellness Market Share %': [market_share],
+                        'Health Performance Score': [performance_score],
+                        'Wellness Conversion Efficiency %': [conversion_efficiency]
                     }
                     
                     detailed_df = pd.DataFrame(detailed_analysis_data)
                     csv_detailed = detailed_df.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Detailed Analysis CSV",
+                        label="📥 Download Detailed Health Analysis CSV",
                         data=csv_detailed,
-                        file_name=f"detailed_analysis_{selected_subcategory.replace(' ', '_')}.csv",
+                        file_name=f"detailed_health_analysis_{selected_subcategory.replace(' ', '_')}.csv",
                         mime="text/csv",
-                        key="detailed_analysis_download"
+                        key="detailed_health_analysis_download"
                     )
 
-            elif analysis_type == "📈 Performance Comparison":
-                st.subheader("⚖️ Subcategory Performance Comparison")
+            elif analysis_type == "📈 Health Performance Comparison":
+                st.subheader("⚖️ Health Subcategory Performance Comparison")
                 
-                # Multi-select for comparison
                 selected_subcategories = st.multiselect(
-                    "Select subcategories to compare (max 10):",
+                    "Select health subcategories to compare (max 10):",
                     options=sc['sub_category'].tolist(),
                     default=sc['sub_category'].head(5).tolist(),
                     max_selections=10
                 )
                 
                 if selected_subcategories:
-                    # Filter data for selected subcategories
                     comparison_data = sc[sc['sub_category'].isin(selected_subcategories)].copy()
                     
-                    # Comparison metrics visualization
+                    # Health comparison metrics visualization
                     fig_comparison = go.Figure()
                     
-                    # Add traces for different metrics
                     metrics = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
-                    metric_names = ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
-                    colors = ['#FF5A6E', '#FFB085', '#FF7F94', '#FFA5A5']
+                    metric_names = ['Health CTR %', 'Wellness Conversion Rate %', 'Health Click Share %', 'Wellness Conversion Share %']
+                    colors = ['#4CAF50', '#81C784', '#66BB6A', '#A5D6A7']
                     
                     for i, (metric, name) in enumerate(zip(metrics, metric_names)):
                         fig_comparison.add_trace(go.Bar(
@@ -5625,11 +5488,11 @@ with tab_subcat:
                         ))
                     
                     fig_comparison.update_layout(
-                        title='<b>Performance Metrics Comparison</b>',
+                        title='<b style="color:#2E7D32;">🌿 Health Performance Metrics Comparison</b>',
                         barmode='group',
-                        plot_bgcolor='rgba(255,255,255,0.95)',
-                        paper_bgcolor='rgba(255,247,232,0.8)',
-                        font=dict(color='#0B486B', family='Segoe UI'),
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
                         height=500,
                         xaxis=dict(tickangle=45),
                         yaxis=dict(title='Percentage (%)')
@@ -5637,52 +5500,50 @@ with tab_subcat:
                     
                     st.plotly_chart(fig_comparison, use_container_width=True)
                     
-                    # Detailed comparison table
-                    st.markdown("### 📊 Detailed Comparison Table")
+                    # Detailed health comparison table
+                    st.markdown("### 📊 Detailed Health Comparison Table")
                     
                     comparison_table = comparison_data[['sub_category', 'Counts', 'clicks', 'conversions', 
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
-                    comparison_table.columns = ['Subcategory', 'Search Volume', 'Clicks', 'Conversions', 
-                                            'CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
+                    comparison_table.columns = ['Health Subcategory', 'Health Search Volume', 'Health Clicks', 'Wellness Conversions', 
+                                            'Health CTR %', 'Wellness Conversion Rate %', 'Health Click Share %', 'Wellness Conversion Share %']
                     
                     # Format numeric columns
-                    comparison_table['Search Volume'] = comparison_table['Search Volume'].apply(lambda x: f"{int(x):,}")  # ✅ Remove decimals
-                    comparison_table['Clicks'] = comparison_table['Clicks'].apply(lambda x: f"{int(x):,}")  # ✅ Remove decimals
-                    comparison_table['Conversions'] = comparison_table['Conversions'].apply(lambda x: f"{int(x):,}")  # ✅ Remove decimals
-                    comparison_table['CTR %'] = comparison_table['CTR %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Conversion Rate %'] = comparison_table['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Click Share %'] = comparison_table['Click Share %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Conversion Share %'] = comparison_table['Conversion Share %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Health Search Volume'] = comparison_table['Health Search Volume'].apply(lambda x: f"{int(x):,}")
+                    comparison_table['Health Clicks'] = comparison_table['Health Clicks'].apply(lambda x: f"{int(x):,}")
+                    comparison_table['Wellness Conversions'] = comparison_table['Wellness Conversions'].apply(lambda x: f"{int(x):,}")
+                    comparison_table['Health CTR %'] = comparison_table['Health CTR %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Wellness Conversion Rate %'] = comparison_table['Wellness Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Health Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Wellness Conversion Share %'] = comparison_table['Wellness Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
                     st.dataframe(comparison_table, use_container_width=True, hide_index=True)
-
                     
-                    # Download comparison data
                     csv_comparison = comparison_data.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Comparison Data CSV",
+                        label="📥 Download Health Comparison Data CSV",
                         data=csv_comparison,
-                        file_name="subcategory_comparison.csv",
+                        file_name="health_subcategory_comparison.csv",
                         mime="text/csv",
-                        key="comparison_download"
+                        key="health_comparison_download"
                     )
                 else:
-                    st.info("Please select subcategories to compare.")
+                    st.info("Please select health subcategories to compare.")
 
-            elif analysis_type == "📊 Market Share Analysis":
-                st.subheader("📊 Market Share & Distribution Analysis")
+            elif analysis_type == "📊 Wellness Market Share Analysis":
+                st.subheader("📊 Wellness Market Share & Distribution Analysis")
                 
-                # Market share visualization
+                # Health market share visualization
                 col_pie, col_treemap = st.columns(2)
                 
                 with col_pie:
-                    # Pie chart for top 10 subcategories
+                    # Pie chart for top 10 health subcategories
                     top_10_market = sc.head(10).copy()
                     others_value = sc.iloc[10:]['Counts'].sum() if len(sc) > 10 else 0
                     
                     if others_value > 0:
                         others_row = pd.DataFrame({
-                            'sub_category': ['Others'],
+                            'sub_category': ['Other Health Subcategories'],
                             'Counts': [others_value]
                         })
                         pie_data = pd.concat([top_10_market[['sub_category', 'Counts']], others_row])
@@ -5693,32 +5554,42 @@ with tab_subcat:
                         pie_data,
                         values='Counts',
                         names='sub_category',
-                        title='<b>Top 10 Subcategories Market Share</b>',
-                        color_discrete_sequence=px.colors.sequential.Reds
+                        title='<b style="color:#2E7D32;">🌿 Top 10 Health Subcategories Market Share</b>',
+                        color_discrete_sequence=['#2E7D32', '#388E3C', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C8', '#E8F5E8', '#F1F8E9', '#F9FBE7', '#DCEDC8']
                     )
                     
                     fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-                    fig_pie.update_layout(height=400)
+                    fig_pie.update_layout(
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI')
+                    )
                     
                     st.plotly_chart(fig_pie, use_container_width=True)
                 
                 with col_treemap:
-                    # Treemap visualization
+                    # Treemap visualization for health subcategories
                     fig_treemap = px.treemap(
                         sc.head(20),
                         path=['sub_category'],
                         values='Counts',
-                        title='<b>Subcategory Volume Distribution</b>',
+                        title='<b style="color:#2E7D32;">🌿 Health Subcategory Volume Distribution</b>',
                         color='ctr',
-                        color_continuous_scale='Reds',
+                        color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                         hover_data={'Counts': ':,', 'ctr': ':.2f'}
                     )
                     
-                    fig_treemap.update_layout(height=400)
+                    fig_treemap.update_layout(
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI')
+                    )
                     st.plotly_chart(fig_treemap, use_container_width=True)
                 
-                # Distribution analysis
-                st.markdown("### 📈 Distribution Analysis")
+                # Health distribution analysis
+                st.markdown("### 📈 Health Market Distribution Analysis")
                 
                 # Calculate distribution metrics
                 gini_coefficient = 1 - 2 * np.sum(np.cumsum(sc['Counts'].sort_values()) / sc['Counts'].sum()) / len(sc)
@@ -5730,46 +5601,46 @@ with tab_subcat:
                 
                 with col_dist1:
                     st.markdown(f"""
-                    <div class='subcat-metric-card'>
+                    <div class='health-subcat-metric-card'>
                         <span class='icon'>📊</span>
                         <div class='value'>{gini_coefficient:.3f}</div>
-                        <div class='label'>Gini Coefficient</div>
-                        <div class='sub-label'>Market concentration</div>
+                        <div class='label'>Health Gini Coefficient</div>
+                        <div class='sub-label'>Wellness market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with col_dist2:
                     st.markdown(f"""
-                    <div class='subcat-metric-card'>
+                    <div class='health-subcat-metric-card'>
                         <span class='icon'>📈</span>
                         <div class='value'>{herfindahl_index:.4f}</div>
-                        <div class='label'>Herfindahl Index</div>
-                        <div class='sub-label'>Market dominance</div>
+                        <div class='label'>Health Herfindahl Index</div>
+                        <div class='sub-label'>Wellness market dominance</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with col_dist3:
                     st.markdown(f"""
-                    <div class='subcat-metric-card'>
+                    <div class='health-subcat-metric-card'>
                         <span class='icon'>🔝</span>
                         <div class='value'>{top_5_concentration:.1f}%</div>
-                        <div class='label'>Top 5 Share</div>
-                        <div class='sub-label'>Market concentration</div>
+                        <div class='label'>Top 5 Health Share</div>
+                        <div class='sub-label'>Wellness market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with col_dist4:
                     st.markdown(f"""
-                    <div class='subcat-metric-card'>
+                    <div class='health-subcat-metric-card'>
                         <span class='icon'>💯</span>
                         <div class='value'>{top_10_concentration:.1f}%</div>
-                        <div class='label'>Top 10 Share</div>
-                        <div class='sub-label'>Market concentration</div>
+                        <div class='label'>Top 10 Health Share</div>
+                        <div class='sub-label'>Wellness market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # Lorenz curve
-                st.markdown("### 📉 Lorenz Curve - Market Concentration")
+                # Health Lorenz curve
+                st.markdown("### 📉 Health Market Concentration - Lorenz Curve")
                 
                 sorted_counts = sc['Counts'].sort_values()
                 cumulative_counts = np.cumsum(sorted_counts) / sorted_counts.sum()
@@ -5782,8 +5653,8 @@ with tab_subcat:
                     x=cumulative_subcategories,
                     y=cumulative_counts,
                     mode='lines',
-                    name='Actual Distribution',
-                    line=dict(color='#FF5A6E', width=3)
+                    name='Actual Health Distribution',
+                    line=dict(color='#4CAF50', width=3)
                 ))
                 
                 # Add line of equality
@@ -5791,31 +5662,161 @@ with tab_subcat:
                     x=[0, 1],
                     y=[0, 1],
                     mode='lines',
-                    name='Perfect Equality',
-                    line=dict(color='gray', width=2, dash='dash')
+                    name='Perfect Health Equality',
+                    line=dict(color='#81C784', width=2, dash='dash')
                 ))
                 
                 fig_lorenz.update_layout(
-                    title='<b>Lorenz Curve - Subcategory Search Volume Distribution</b>',
-                    xaxis_title='Cumulative % of Subcategories',
-                    yaxis_title='Cumulative % of Search Volume',
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    height=500
+                    title='<b style="color:#2E7D32;">🌿 Lorenz Curve - Health Subcategory Search Volume Distribution</b>',
+                    xaxis_title='Cumulative % of Health Subcategories',
+                    yaxis_title='Cumulative % of Health Search Volume',
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=500,
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
                 )
                 
                 st.plotly_chart(fig_lorenz, use_container_width=True)
 
+            # Health Subcategory Insights Section
+            st.markdown("---")
+            col_insight1, col_insight2 = st.columns(2)
+            
+            with col_insight1:
+                top_subcat_share = sc.iloc[0]['click_share'] if not sc.empty else 0
+                top_subcat_name = sc.iloc[0]['sub_category'] if not sc.empty else "N/A"
+                high_performers = len(sc[sc['ctr'] > 5]) if not sc.empty else 0
+                avg_conversion_rate = sc['conversion_rate'].mean() if not sc.empty else 0
+                subcats_above_avg_cr = len(sc[sc['conversion_rate'] > avg_conversion_rate]) if not sc.empty else 0
+                
+                st.markdown(f"""
+                <div class='wellness-insight-card'>
+                    <h4>🌿 Key Health Subcategory Insights</h4>
+                    <p>• <strong>{top_subcat_name}</strong> leads wellness market with {top_subcat_share:.1f}% click share<br>
+                    • {high_performers} health subcategories achieve CTR > 5% (premium performance)<br>
+                    • {subcats_above_avg_cr} subcategories exceed avg CR of {avg_conversion_rate:.2f}%<br>
+                    • Health market shows balanced subcategory distribution</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_insight2:
+                low_performers = len(sc[sc['ctr'] < 2]) if not sc.empty else 0
+                opportunity_subcats = len(sc[(sc['Counts'] > sc['Counts'].median()) & (sc['ctr'] < 3)]) if not sc.empty else 0
+                
+                st.markdown(f"""
+                <div class='wellness-insight-card'>
+                    <h4>💚 Health Subcategory Strategy Recommendations</h4>
+                    <p>• Optimize {low_performers} underperforming health subcategories (CTR < 2%)<br>
+                    • {opportunity_subcats} high-volume health subcategories need engagement boost<br>
+                    • Focus on health keywords for leading wellness subcategories<br>
+                    • Strengthen health product portfolio strategy</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Final Health Subcategory Summary Dashboard
+            st.markdown("---")
+            st.subheader("📊 Health Subcategory Performance Dashboard Summary")
+            
+            # Create final summary metrics
+            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+            
+            with summary_col1:
+                total_searches = sc['Counts'].sum() if not sc.empty else 0
+                st.metric(
+                    label="🌿 Total Health Searches",
+                    value=f"{total_searches:,.0f}",
+                    delta=f"{len(sc)} wellness subcategories analyzed"
+                )
+            
+            with summary_col2:
+                avg_market_ctr = sc['ctr'].mean() if not sc.empty else 0
+                top_ctr = sc['ctr'].max() if not sc.empty else 0
+                st.metric(
+                    label="📈 Health Market Avg CTR",
+                    value=f"{avg_market_ctr:.2f}%",
+                    delta=f"Best: {top_ctr:.2f}%"
+                )
+            
+            with summary_col3:
+                total_conversions = sc['conversions'].sum() if not sc.empty else 0
+                avg_cr = sc['conversion_rate'].mean() if not sc.empty else 0
+                st.metric(
+                    label="💚 Total Wellness Conversions",
+                    value=f"{total_conversions:,.0f}",
+                    delta=f"Avg CR: {avg_cr:.2f}%"
+                )
+            
+            with summary_col4:
+                market_concentration = f"{top_5_concentration:.1f}%" if not sc.empty else "0%"
+                concentration_status = "High" if top_5_concentration > 60 else "Medium" if top_5_concentration > 40 else "Low"
+                st.metric(
+                    label="🎯 Health Market Concentration",
+                    value=market_concentration,
+                    delta=f"{concentration_status} concentration"
+                )
+            
+            # Export all health subcategory data
+            st.markdown("---")
+            st.subheader("📥 Export Health Subcategory Intelligence")
+            
+            export_col1, export_col2 = st.columns(2)
+            
+            with export_col1:
+                if not sc.empty:
+                    export_data = sc.copy()
+                    export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
+                    
+                    csv_export = export_data.to_csv(index=False)
+                    st.download_button(
+                        label="📊 Download Complete Health Subcategory Analysis",
+                        data=csv_export,
+                        file_name=f"health_subcategory_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                        mime="text/csv",
+                        key="complete_health_subcategory_export"
+                    )
+            
+            with export_col2:
+                if not sc.empty:
+                    summary_report = f"""
+                    HEALTH SUBCATEGORY INTELLIGENCE REPORT
+                    Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
+                    
+                    WELLNESS MARKET OVERVIEW:
+                    • Total Health Subcategories Analyzed: {len(sc)}
+                    • Total Health Searches: {sc['Counts'].sum():,.0f}
+                    • Market Leader: {sc.iloc[0]['sub_category']} ({sc.iloc[0]['click_share']:.1f}% click share)
+                    • Average Health CTR: {sc['ctr'].mean():.2f}%
+                    • Average Wellness CR: {sc['conversion_rate'].mean():.2f}%
+                    
+                    HEALTH PERFORMANCE TIERS:
+                    • Premium Subcategories (CTR > 10%): {len(sc[sc['ctr'] > 10])}
+                    • Strong Subcategories (CTR 5-10%): {len(sc[(sc['ctr'] >= 5) & (sc['ctr'] <= 10)])}
+                    • Growing Subcategories (CTR 2-5%): {len(sc[(sc['ctr'] >= 2) & (sc['ctr'] < 5)])}
+                    • Emerging Subcategories (CTR < 2%): {len(sc[sc['ctr'] < 2])}
+                    
+                    STRATEGIC HEALTH INSIGHTS:
+                    • Market concentration is {concentration_status.lower()}
+                    • {len(sc[sc['ctr'] > 5])} subcategories achieve premium performance
+                    • Growth opportunities exist in wellness engagement optimization
+                    """
+                    
+                    st.download_button(
+                        label="📝 Download Health Executive Summary Report",
+                        data=summary_report,
+                        file_name=f"health_subcategory_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                        mime="text/plain",
+                        key="health_subcategory_executive_summary_export"
+                    )
                 
         else:
-            st.warning("No subcategory data available in the uploaded file.")
-            st.info("Please ensure your data contains a 'sub_category' column with valid values.")
+            st.warning("No health subcategory data available in the uploaded file.")
+            st.info("Please ensure your data contains a 'sub_category' column with valid health and wellness values.")
             
     except Exception as e:
-        st.error(f"An error occurred in the Subcategory analysis: {str(e)}")
-        st.info("Please check your data format and try again.")
-
+        st.error(f"An error occurred in the Health Subcategory analysis: {str(e)}")
+        st.info("Please check your health data format and try again.")
 
 # ----------------- Generic Type Tab -----------------
 
