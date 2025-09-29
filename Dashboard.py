@@ -8281,118 +8281,132 @@ with tab_pivot:
 
 # ----------------- Insights & Questions (Modified) -----------------
 with tab_insights:
-    st.header("💡 Insights & Actionable Questions (10)")
-    st.markdown("Curated insights focused on **search** data for data-driven decisions, with tables and charts. 🚀")
+    st.header("🌿 Health Insights & Actionable Questions (10)")
+    st.markdown("Curated health insights focused on **search** data for wellness-driven decisions, with tables and charts. 🚀")
 
-    # Apply CSS for red/orange theme consistency
+    # Hero Image for Insights Tab
+    insights_image_options = {
+        "Health Insights Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Insights+Performance+Analysis",
+        "Wellness Insights Hub": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Insights+Intelligence+Dashboard",
+        "Abstract Health Insights": "https://source.unsplash.com/1200x200/?health,wellness,insights",
+        "Health Insights Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Health+Insights",
+    }
+    selected_insights_image = st.sidebar.selectbox("Choose Insights Tab Hero", options=list(insights_image_options.keys()), index=0, key="insights_hero_image_selector")
+    st.image(insights_image_options[selected_insights_image], use_container_width=True)
+
+    # Apply CSS for green health theme consistency
     st.markdown("""
     <style>
-    .generic-metric-card {
-        background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
-        padding: 20px;
+    .health-insight-metric-card {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 25px;
         border-radius: 15px;
-        border-left: 5px solid #FF5A6E;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         text-align: center;
+        color: #1B5E20;
+        box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3);
         margin: 10px 0;
         min-height: 160px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         transition: transform 0.2s ease;
+        border-left: 4px solid #4CAF50;
     }
-    .generic-metric-card:hover {
+    .health-insight-metric-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4);
     }
-    .generic-metric-card .icon {
-        font-size: 2em;
+    .health-insight-metric-card .icon {
+        font-size: 3em;
         margin-bottom: 10px;
         display: block;
+        color: #2E7D32;
     }
-    .generic-metric-card .value {
-        font-size: 1.8em;
+    .health-insight-metric-card .value {
+        font-size: 1.6em;
         font-weight: bold;
-        color: #0B486B;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
         word-wrap: break-word;
         overflow-wrap: break-word;
         line-height: 1.2;
+        color: #1B5E20;
     }
-    .generic-metric-card .label {
+    .health-insight-metric-card .label {
         font-size: 1.1em;
-        color: #2D3748;
+        opacity: 0.95;
         font-weight: 600;
-        margin-bottom: 3px;
+        margin-bottom: 6px;
+        color: #2E7D32;
     }
-    .generic-metric-card .sub-label {
-        font-size: 0.9em;
-        color: #718096;
-        font-style: italic;
+    .health-insight-metric-card .sub-label {
+        font-size: 1em;
+        opacity: 0.9;
+        font-weight: 500;
         line-height: 1.2;
+        color: #388E3C;
     }
-    .performance-badge {
-        font-size: 0.7em;
-        padding: 2px 6px;
-        border-radius: 10px;
+    .health-insight-performance-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
         font-weight: bold;
-        margin-left: 5px;
+        margin-left: 8px;
     }
-    .high-performance {
-        background-color: #C6F6D5;
-        color: #22543D;
+    .high-health-insight-performance {
+        background-color: #4CAF50;
+        color: white;
     }
-    .medium-performance {
-        background-color: #FEFCBF;
-        color: #744210;
+    .medium-health-insight-performance {
+        background-color: #81C784;
+        color: white;
     }
-    .low-performance {
-        background-color: #FED7D7;
-        color: #742A2A;
+    .low-health-insight-performance {
+        background-color: #A5D6A7;
+        color: #1B5E20;
     }
-    .generic-table-container {
-        background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+    .health-insight-table-container {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
         padding: 20px;
         border-radius: 15px;
-        border-left: 5px solid #FF5A6E;
+        border-left: 5px solid #4CAF50;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         margin: 10px 0;
         transition: transform 0.2s ease;
     }
-    .generic-table-container:hover {
+    .health-insight-table-container:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
-    .generic-table-container table {
+    .health-insight-table-container table {
         width: 100%;
         border-collapse: collapse;
         font-family: Arial, sans-serif;
     }
-    .generic-table-container th {
-        background-color: #FF5A6E;
+    .health-insight-table-container th {
+        background-color: #4CAF50;
         color: white;
         font-weight: bold;
         padding: 12px;
         text-align: left;
         font-size: 1.1em;
     }
-    .generic-table-container td {
+    .health-insight-table-container td {
         padding: 10px;
         font-size: 1em;
         color: #2D3748;
         border-bottom: 1px solid #E2E8F0;
     }
-    .generic-table-container tr:nth-child(even) {
-        background-color: #FFF5F5;
+    .health-insight-table-container tr:nth-child(even) {
+        background-color: #E8F5E8;
     }
-    .generic-table-container tr:hover {
-        background-color: #FED7D7;
+    .health-insight-table-container tr:hover {
+        background-color: #C8E6C8;
     }
-    .insight-box {
-        background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+    .health-insight-box {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
         padding: 15px;
         border-radius: 10px;
-        border-left: 4px solid #FF5A6E;
+        border-left: 4px solid #4CAF50;
         margin-bottom: 15px;
     }
     </style>
@@ -8420,9 +8434,9 @@ with tab_insights:
 
     def q_expand(title, explanation, render_fn, icon="💡"):
         with st.expander(f"{icon} {title}", expanded=False):
-            st.markdown(f"<div class='insight-box'><h4>Why & How to Use</h4><p>{explanation}</p></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='health-insight-box'><h4>Why & How to Use</h4><p>{explanation}</p></div>", unsafe_allow_html=True)
             try:
-                st.markdown("<div class='generic-table-container'>", unsafe_allow_html=True)
+                st.markdown("<div class='health-insight-table-container'>", unsafe_allow_html=True)
                 render_fn()
                 st.markdown("</div>", unsafe_allow_html=True)
             except Exception as e:
@@ -8453,18 +8467,18 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q1 Table",
+            label="📥 Download Q1 Health Table",
             data=csv,
-            file_name=f"q1_top_queries_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q1_top_health_queries_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q1_download"
+            key="q1_health_download"
         )
         fig = px.bar(out, x='normalized_query', y=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                     title='Top 10 Queries by Counts', color_discrete_sequence=['#FF5A6E'], text_auto=True)
+                     title='Top 10 Health Queries by Counts', color_discrete_sequence=['#4CAF50'], text_auto=True)
         fig.update_layout(xaxis_title="Query", yaxis_title="Counts", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q1 — Top Queries by Counts (Top 10)",
-             "Which queries drive the most Counts? Prioritize for search tuning and inventory planning.",
+    q_expand("Q1 — Top Health Queries by Counts (Top 10)",
+             "Which queries drive the most Counts? Prioritize for wellness search tuning and inventory planning.",
              q1, "📈")
 
     # Q2: High Counts, Low CTR Queries (Top 10)
@@ -8488,20 +8502,20 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q2 Table",
+            label="📥 Download Q2 Health Table",
             data=csv,
-            file_name=f"q2_high_counts_low_ctr_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q2_high_counts_low_ctr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q2_download"
+            key="q2_health_download"
         )
         fig = px.scatter(out, x=out['Counts'].apply(lambda x: float(x.replace(',', ''))), y=out['ctr'].apply(lambda x: float(x.strip('%'))),
-                         text='normalized_query', title='High Counts, Low CTR Queries',
-                         color_discrete_sequence=['#FF5A6E'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
+                         text='normalized_query', title='High Counts, Low CTR Health Queries',
+                         color_discrete_sequence=['#4CAF50'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
         fig.update_traces(textposition='top center')
         fig.update_layout(xaxis_title="Counts", yaxis_title="CTR (%)")
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q2 — High Counts, Low CTR Queries (Top 10)",
-             "Queries with high Counts but low engagement. Improve relevance, snippets, or imagery.",
+    q_expand("Q2 — High Counts, Low CTR Health Queries (Top 10)",
+             "Queries with high Counts but low engagement. Improve wellness relevance, snippets, or imagery.",
              q2, "⚠️")
 
     # Q3: Top Queries by Conversion Rate (Min Counts=200, Top 10)
@@ -8528,18 +8542,18 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q3 Table",
+            label="📥 Download Q3 Health Table",
             data=csv,
-            file_name=f"q3_top_conversion_rate_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q3_top_conversion_rate_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q3_download"
+            key="q3_health_download"
         )
         fig = px.bar(out, x='normalized_query', y=out['cr'].apply(lambda x: float(x.strip('%'))),
-                     title='Top 10 Queries by Conversion Rate', color_discrete_sequence=['#FF5A6E'], text_auto='.2f')
+                     title='Top 10 Health Queries by Conversion Rate', color_discrete_sequence=['#4CAF50'], text_auto='.2f')
         fig.update_layout(xaxis_title="Query", yaxis_title="Conversion Rate (%)", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q3 — Top Queries by Conversion Rate (Min Counts=200)",
-             "High-converting queries for paid promotions or product focus.",
+    q_expand("Q3 — Top Health Queries by Conversion Rate (Min Counts=200)",
+             "High-converting queries for wellness paid promotions or product focus.",
              q3, "🎯")
 
     # Q4: Long-Tail vs Short-Tail Queries
@@ -8547,7 +8561,7 @@ with tab_insights:
         lt = queries_clean[queries_clean['query_length'] >= 20]
         lt_counts = lt['Counts'].sum()
         total_counts = queries_clean['Counts'].sum()
-        st.markdown(f"<div class='generic-metric-card'><span class='icon'>📏</span><div class='value'>{lt_counts:,.0f}</div><div class='label'>Long-Tail Counts</div><div class='sub-label'>Queries ≥20 chars, Share: {lt_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='health-insight-metric-card'><span class='icon'>📏</span><div class='value'>{lt_counts:,.0f}</div><div class='label'>Long-Tail Counts</div><div class='sub-label'>Queries ≥20 chars, Share: {lt_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
         out = pd.DataFrame({
             'Type': ['Long-Tail (≥20 chars)', 'Short-Tail (<20 chars)'],
             'Counts': [lt_counts, total_counts - lt_counts],
@@ -8562,18 +8576,18 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q4 Table",
+            label="📥 Download Q4 Health Table",
             data=csv,
-            file_name=f"q4_long_tail_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q4_long_tail_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q4_download"
+            key="q4_health_download"
         )
         fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                     title='Long-Tail vs Short-Tail Counts Share',
-                     color_discrete_sequence=['#FF5A6E', '#FED7D7'])
+                     title='Long-Tail vs Short-Tail Health Counts Share',
+                     color_discrete_sequence=['#4CAF50', '#81C784'])
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q4 — Long-Tail vs Short-Tail Queries",
-             "How much Counts come from long-tail queries? Key for content strategy.",
+    q_expand("Q4 — Long-Tail vs Short-Tail Health Queries",
+             "How much Counts come from long-tail queries? Key for wellness content strategy.",
              q4, "📏")
 
     # Q5: Branded vs Generic Counts Share
@@ -8584,7 +8598,7 @@ with tab_insights:
             generic_counts = generic['Counts'].sum()
             branded_counts = branded['Counts'].sum()
             total_counts = queries_clean['Counts'].sum()
-            st.markdown(f"<div class='generic-metric-card'><span class='icon'>🏷</span><div class='value'>{branded_counts:,.0f}</div><div class='label'>Branded Counts</div><div class='sub-label'>Share: {branded_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='health-insight-metric-card'><span class='icon'>🏷</span><div class='value'>{branded_counts:,.0f}</div><div class='label'>Branded Health Counts</div><div class='sub-label'>Share: {branded_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
             out = pd.DataFrame({
                 'Type': ['Branded', 'Generic'],
                 'Counts': [branded_counts, generic_counts],
@@ -8599,19 +8613,19 @@ with tab_insights:
                 st.dataframe(out, use_container_width=True, hide_index=True)
             csv = out.to_csv(index=False)
             st.download_button(
-                label="📥 Download Q5 Table",
+                label="📥 Download Q5 Health Table",
                 data=csv,
-                file_name=f"q5_branded_generic_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                file_name=f"q5_branded_generic_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
-                key="q5_download"
+                key="q5_health_download"
             )
             fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                         title='Branded vs Generic Counts Share',
-                         color_discrete_sequence=['#FF5A6E', '#FED7D7'])
+                         title='Branded vs Generic Health Counts Share',
+                         color_discrete_sequence=['#4CAF50', '#81C784'])
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Brand column not present.")
-    q_expand("Q5 — Branded vs Generic Counts Share",
+    q_expand("Q5 — Branded vs Generic Health Counts Share",
              "Assess brand vs generic search intent, with 'Other' as Generic.",
              q5, "🏷")
 
@@ -8640,21 +8654,21 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q6 Table",
+            label="📥 Download Q6 Health Table",
             data=csv,
-            file_name=f"q6_funnel_snapshot_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q6_health_funnel_snapshot_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q6_download"
+            key="q6_health_download"
         )
         fig = px.bar(out, x='normalized_query', y=[out['Counts'].apply(lambda x: float(x.replace(',', ''))),
                                                    out['clicks'].apply(lambda x: float(x.replace(',', ''))),
                                                    out['conversions'].apply(lambda x: float(x.replace(',', '')))],
-                     title='Top 10 Queries: Funnel Snapshot',
-                     barmode='group', color_discrete_sequence=['#FF5A6E', '#FED7D7', '#C6F6D5'])
+                     title='Top 10 Health Queries: Funnel Snapshot',
+                     barmode='group', color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
         fig.update_layout(xaxis_title="Query", yaxis_title="Value", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q6 — Query Funnel Snapshot (Top 10)",
-             "View top queries' funnel: Counts → clicks → conversions.",
+    q_expand("Q6 — Health Query Funnel Snapshot (Top 10)",
+             "View top queries' wellness funnel: Counts → clicks → conversions.",
              q6, "📊")
 
     # Q7: Top Queries by CTR (Min Counts=200, Top 10)
@@ -8679,18 +8693,18 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q7 Table",
+            label="📥 Download Q7 Health Table",
             data=csv,
-            file_name=f"q7_top_ctr_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q7_top_ctr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q7_download"
+            key="q7_health_download"
         )
         fig = px.bar(out, x='normalized_query', y=out['ctr'].apply(lambda x: float(x.strip('%'))),
-                     title='Top 10 Queries by CTR', color_discrete_sequence=['#FF5A6E'], text_auto='.2f')
+                     title='Top 10 Health Queries by CTR', color_discrete_sequence=['#4CAF50'], text_auto='.2f')
         fig.update_layout(xaxis_title="Query", yaxis_title="CTR (%)", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q7 — Top Queries by CTR (Min Counts=200)",
-             "High-engagement queries for ad campaigns or content.",
+    q_expand("Q7 — Top Health Queries by CTR (Min Counts=200)",
+             "High-engagement queries for wellness ad campaigns or content.",
              q7, "📈")
 
     # Q8: High Counts, Low CTR & Conversion Rate (Top 10)
@@ -8720,21 +8734,21 @@ with tab_insights:
             st.dataframe(out, use_container_width=True, hide_index=True)
         csv = out.to_csv(index=False)
         st.download_button(
-            label="📥 Download Q8 Table",
+            label="📥 Download Q8 Health Table",
             data=csv,
-            file_name=f"q8_low_ctr_cr_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            file_name=f"q8_low_ctr_cr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
-            key="q8_download"
+            key="q8_health_download"
         )
         fig = px.scatter(out, x=out['ctr'].apply(lambda x: float(x.strip('%'))),
                          y=out['cr'].apply(lambda x: float(x.strip('%'))),
-                         text='normalized_query', title='High Counts, Low CTR & Conversion Rate',
-                         color_discrete_sequence=['#FF5A6E'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
+                         text='normalized_query', title='High Counts, Low CTR & Conversion Rate Health',
+                         color_discrete_sequence=['#4CAF50'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
         fig.update_traces(textposition='top center')
         fig.update_layout(xaxis_title="CTR (%)", yaxis_title="Conversion Rate (%)")
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q8 — High Counts, Low CTR & Conversion Rate (Top 10)",
-             "Optimize search results for these underperforming queries.",
+    q_expand("Q8 — High Counts, Low CTR & Conversion Rate Health (Top 10)",
+             "Optimize wellness search results for these underperforming queries.",
              q8, "⚠️")
 
     # Q9: Top Brands by Counts (Top 10, Excluding "Other")
@@ -8763,20 +8777,20 @@ with tab_insights:
                 st.dataframe(out, use_container_width=True, hide_index=True)
             csv = out.to_csv(index=False)
             st.download_button(
-                label="📥 Download Q9 Table",
+                label="📥 Download Q9 Health Table",
                 data=csv,
-                file_name=f"q9_top_brands_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                file_name=f"q9_top_brands_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
-                key="q9_download"
+                key="q9_health_download"
             )
             fig = px.bar(out, x='brand', y=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                         title='Top 10 Brands by Counts', color_discrete_sequence=['#FF5A6E'], text_auto=True)
+                         title='Top 10 Brands by Health Counts', color_discrete_sequence=['#4CAF50'], text_auto=True)
             fig.update_layout(xaxis_title="Brand", yaxis_title="Counts", xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Brand column missing.")
-    q_expand("Q9 — Top Brands by Counts (Top 10)",
-             "Rank brands by Counts for partnerships or promotions, excluding 'Other'.",
+            st.info("Brand column not present.")
+    q_expand("Q9 — Top Brands by Health Counts (Top 10)",
+             "Rank brands by Counts for wellness partnerships or promotions, excluding 'Other'.",
              q9, "🏷")
 
     # Q10: Category vs Brand Performance (Pivot)
@@ -8802,24 +8816,24 @@ with tab_insights:
                 st.dataframe(pivot, use_container_width=True, hide_index=True)
             csv = pivot.to_csv(index=False)
             st.download_button(
-                label="📥 Download Q10 Table",
+                label="📥 Download Q10 Health Table",
                 data=csv,
-                file_name=f"q10_category_brand_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                file_name=f"q10_category_brand_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
-                key="q10_download"
+                key="q10_health_download"
             )
             fig = px.bar(pivot.melt(id_vars='category', value_vars=top_brands, value_name='Counts'),
-                         x='category', y='Counts', color='brand', title='Category vs Brand Counts',
-                         barmode='stack', color_discrete_sequence=px.colors.qualitative.D3)
+                         x='category', y='Counts', color='brand', title='Health Category vs Brand Counts',
+                         barmode='stack', color_discrete_sequence=px.colors.qualitative.Set2)
             fig.update_layout(xaxis_title="Category", yaxis_title="Counts", xaxis_tickangle=45)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Category or brand column missing.")
-    q_expand("Q10 — Category vs Brand Performance (Pivot)",
-             "Analyze brand performance within categories for targeted strategies.",
+    q_expand("Q10 — Health Category vs Brand Performance (Pivot)",
+             "Analyze brand performance within wellness categories for targeted strategies.",
              q10, "📦🏷")
 
-    st.info("For advanced analyses (e.g., anomaly detection, semantic clustering), contact Nour Eldeen for custom solutions.")
+    st.info("For advanced health analyses (e.g., anomaly detection, semantic clustering), contact Nour Eldeen for custom wellness solutions.")
 
 # ----------------- Export / Downloads -----------------
 # Export Tab - FIXED with correct dataframe name
