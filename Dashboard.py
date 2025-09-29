@@ -7123,18 +7123,24 @@ with tab_time:
             except:
                 monthly = monthly.sort_values('month')
             
-            # Calculate distribution metrics
-            gini_coefficient = 1 - 2 * np.sum(np.cumsum(monthly['Counts'].sort_values()) / monthly['Counts'].sum()) / len(monthly)
-            top_3_concentration = monthly.head(3)['Counts'].sum() / monthly['Counts'].sum() * 100
+            # Calculate distribution and seasonality metrics - FIXED ORDER
+            gini_coefficient = 1 - 2 * np.sum(np.cumsum(monthly['Counts'].sort_values()) / monthly['Counts'].sum()) / len(monthly) if len(monthly) > 1 else 0
+            top_3_concentration = monthly.nlargest(3, 'Counts')['Counts'].sum() / monthly['Counts'].sum() * 100 if len(monthly) > 0 else 0
+            
+            # Calculate seasonality metrics
+            peak_month = monthly.loc[monthly['Counts'].idxmax()] if len(monthly) > 0 else None
+            low_month = monthly.loc[monthly['Counts'].idxmin()] if len(monthly) > 0 else None
+            seasonal_index = ((peak_month['Counts'] - low_month['Counts']) / monthly['Counts'].mean() * 100) if peak_month is not None and low_month is not None else 0
+            coefficient_of_variation = (monthly['Counts'].std() / monthly['Counts'].mean()) * 100 if monthly['Counts'].mean() > 0 else 0
         
-        # CSS for UI consistency with Generic Type Tab
+        # CSS for UI consistency with Green Theme
         st.markdown("""
         <style>
-        .generic-metric-card {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+        .temporal-metric-card {
+            background: linear-gradient(135deg, #F0FFF4 0%, #C6F6D5 100%);
             padding: 20px;
             border-radius: 15px;
-            border-left: 5px solid #FF5A6E;
+            border-left: 5px solid #38A169;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             margin: 10px 0;
@@ -7144,92 +7150,90 @@ with tab_time:
             justify-content: center;
             transition: transform 0.2s ease;
         }
-        .generic-metric-card:hover {
+        .temporal-metric-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        .generic-metric-card .icon {
+        .temporal-metric-card .icon {
             font-size: 2em;
             margin-bottom: 10px;
             display: block;
         }
-        .generic-metric-card .value {
+        .temporal-metric-card .value {
             font-size: 1.8em;
             font-weight: bold;
-            color: #0B486B;
+            color: #22543D;
             margin-bottom: 5px;
             word-wrap: break-word;
             overflow-wrap: break-word;
             line-height: 1.2;
         }
-        .generic-metric-card .label {
+        .temporal-metric-card .label {
             font-size: 1.1em;
             color: #2D3748;
             font-weight: 600;
             margin-bottom: 3px;
         }
-        .generic-metric-card .sub-label {
+        .temporal-metric-card .sub-label {
             font-size: 0.9em;
             color: #718096;
             font-style: italic;
             line-height: 1.2;
         }
-        .performance-badge {
+        .temporal-performance-badge {
             font-size: 0.7em;
             padding: 2px 6px;
             border-radius: 10px;
             font-weight: bold;
             margin-left: 5px;
         }
-        .high-performance {
+        .temporal-high-performance {
             background-color: #C6F6D5;
             color: #22543D;
         }
-        .medium-performance {
+        .temporal-medium-performance {
             background-color: #FEFCBF;
             color: #744210;
         }
-        .low-performance {
+        .temporal-low-performance {
             background-color: #FED7D7;
             color: #742A2A;
         }
-        .generic-table-container {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+        .temporal-table-container {
+            background: linear-gradient(135deg, #F0FFF4 0%, #C6F6D5 100%);
             padding: 20px;
             border-radius: 15px;
-            border-left: 5px solid #FF5A6E;
+            border-left: 5px solid #38A169;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 10px 0;
             transition: transform 0.2s ease;
         }
-        .generic-table-container:hover {
+        .temporal-table-container:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        .generic-table-container table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Arial, sans-serif;
+        .temporal-insight-card {
+            background: linear-gradient(135deg, #F0FFF4 0%, #E6FFFA 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #38A169;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+            transition: transform 0.2s ease;
         }
-        .generic-table-container th {
-            background-color: #FF5A6E;
-            color: white;
-            font-weight: bold;
-            padding: 12px;
-            text-align: left;
-            font-size: 1.1em;
+        .temporal-insight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
-        .generic-table-container td {
-            padding: 10px;
-            font-size: 1em;
+        .temporal-insight-card h4 {
+            color: #22543D;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .temporal-insight-card p {
             color: #2D3748;
-            border-bottom: 1px solid #E2E8F0;
-        }
-        .generic-table-container tr:nth-child(even) {
-            background-color: #FFF5F5;
-        }
-        .generic-table-container tr:hover {
-            background-color: #FED7D7;
+            line-height: 1.6;
+            margin: 0;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -7245,7 +7249,7 @@ with tab_time:
         
         with col1:
             st.markdown(f"""
-            <div class='generic-metric-card'>
+            <div class='temporal-metric-card'>
                 <span class='icon'>📅</span>
                 <div class='value'>{total_months}</div>
                 <div class='label'>Total Months</div>
@@ -7255,7 +7259,7 @@ with tab_time:
         
         with col2:
             st.markdown(f"""
-            <div class='generic-metric-card'>
+            <div class='temporal-metric-card'>
                 <span class='icon'>🔍</span>
                 <div class='value'>{format_number(total_searches)}</div>
                 <div class='label'>Total Searches</div>
@@ -7264,22 +7268,22 @@ with tab_time:
             """, unsafe_allow_html=True)
         
         with col3:
-            performance_class = "high-performance" if avg_ctr > 5 else "medium-performance" if avg_ctr > 2 else "low-performance"
+            performance_class = "temporal-high-performance" if avg_ctr > 5 else "temporal-medium-performance" if avg_ctr > 2 else "temporal-low-performance"
             st.markdown(f"""
-            <div class='generic-metric-card'>
+            <div class='temporal-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{avg_ctr:.2f}% <span class='performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
+                <div class='value'>{avg_ctr:.2f}% <span class='temporal-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
                 <div class='label'>Average CTR</div>
                 <div class='sub-label'>Monthly average</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col4:
-            performance_class = "high-performance" if avg_cr > 3 else "medium-performance" if avg_cr > 1 else "low-performance"
+            performance_class = "temporal-high-performance" if avg_cr > 3 else "temporal-medium-performance" if avg_cr > 1 else "temporal-low-performance"
             st.markdown(f"""
-            <div class='generic-metric-card'>
+            <div class='temporal-metric-card'>
                 <span class='icon'>💰</span>
-                <div class='value'>{avg_cr:.2f}% <span class='performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
+                <div class='value'>{avg_cr:.2f}% <span class='temporal-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
                 <div class='label'>Avg Conversion Rate</div>
                 <div class='sub-label'>Monthly average</div>
             </div>
@@ -7296,55 +7300,117 @@ with tab_time:
         )
         
         if analysis_type == "📊 Trends Overview":
-            st.subheader("📈 Monthly Trends")
+            st.subheader("📈 Monthly Trends & Seasonality Patterns")
             
-            # Line chart for counts
+            # Enhanced line chart for counts with green theme
             fig_counts = px.line(
                 monthly,
                 x='month',
                 y='Counts',
-                title='<b style="color:#FF5A6E;">Monthly Search Volume</b>',
+                title='<b style="color:#38A169;">📈 Monthly Search Volume Trends</b>',
                 labels={'Counts': 'Search Volume', 'month': 'Month'},
-                color_discrete_sequence=['#FF5A6E']
+                color_discrete_sequence=['#38A169']
             )
-            fig_counts.update_traces(line=dict(width=3))
+            fig_counts.update_traces(
+                line=dict(width=4),
+                marker=dict(size=8, color='#38A169', line=dict(width=2, color='white'))
+            )
             fig_counts.update_layout(
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                height=400,
-                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
-                yaxis=dict(showgrid=True, gridcolor='#E6F3FA')
+                plot_bgcolor='rgba(240,255,244,0.95)',
+                paper_bgcolor='rgba(230,253,235,0.8)',
+                font=dict(color='#22543D', family='Segoe UI'),
+                height=450,
+                xaxis=dict(
+                    tickangle=45, 
+                    showgrid=True, 
+                    gridcolor='#C6F6D5',
+                    title_font=dict(size=14, color='#38A169')
+                ),
+                yaxis=dict(
+                    showgrid=True, 
+                    gridcolor='#C6F6D5',
+                    title_font=dict(size=14, color='#38A169')
+                )
             )
             st.plotly_chart(fig_counts, use_container_width=True)
             
-            # Line chart for CTR and Conversion Rate
+            # Enhanced dual-axis chart for CTR and Conversion Rate
             fig_metrics = go.Figure()
             fig_metrics.add_trace(go.Scatter(
                 x=monthly['month'],
                 y=monthly['ctr'],
                 name='CTR %',
-                line=dict(color='#FF5A6E', width=3)
+                line=dict(color='#38A169', width=4),
+                marker=dict(size=8, color='#38A169', line=dict(width=2, color='white'))
             ))
             fig_metrics.add_trace(go.Scatter(
                 x=monthly['month'],
                 y=monthly['conversion_rate'],
                 name='Conversion Rate %',
-                line=dict(color='#FFB085', width=3)
+                line=dict(color='#68D391', width=4),
+                marker=dict(size=8, color='#68D391', line=dict(width=2, color='white'))
             ))
             fig_metrics.update_layout(
-                title='<b>Monthly CTR and Conversion Rate Trends</b>',
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                height=400,
-                xaxis=dict(tickangle=45, title='Month'),
-                yaxis=dict(title='Percentage (%)')
+                title='<b style="color:#38A169;">📊 Monthly Performance Metrics Trends</b>',
+                plot_bgcolor='rgba(240,255,244,0.95)',
+                paper_bgcolor='rgba(230,253,235,0.8)',
+                font=dict(color='#22543D', family='Segoe UI'),
+                height=450,
+                xaxis=dict(
+                    tickangle=45, 
+                    title='Month',
+                    title_font=dict(size=14, color='#38A169'),
+                    showgrid=True,
+                    gridcolor='#C6F6D5'
+                ),
+                yaxis=dict(
+                    title='Percentage (%)',
+                    title_font=dict(size=14, color='#38A169'),
+                    showgrid=True,
+                    gridcolor='#C6F6D5'
+                ),
+                legend=dict(
+                    bgcolor='rgba(240,255,244,0.9)',
+                    bordercolor='#38A169',
+                    borderwidth=1
+                )
             )
             st.plotly_chart(fig_metrics, use_container_width=True)
+            
+            # Seasonal insights
+            col_seasonal1, col_seasonal2 = st.columns(2)
+            
+            with col_seasonal1:
+                seasonal_variance = ((peak_month['Counts'] - low_month['Counts']) / low_month['Counts'] * 100) if peak_month is not None and low_month is not None and low_month['Counts'] > 0 else 0
+                
+                st.markdown(f"""
+                <div class='temporal-insight-card'>
+                    <h4>🌟 Seasonal Performance Insights</h4>
+                    <p>• <strong>Peak Month:</strong> {peak_month['month'] if peak_month is not None else 'N/A'} with {int(peak_month['Counts']):,} searches<br>
+                    • <strong>Low Month:</strong> {low_month['month'] if low_month is not None else 'N/A'} with {int(low_month['Counts']):,} searches<br>
+                    • <strong>Seasonal Variance:</strong> {seasonal_variance:.1f}% difference<br>
+                    • <strong>Trend Stability:</strong> {"High volatility" if seasonal_variance > 100 else "Moderate seasonality" if seasonal_variance > 50 else "Stable performance"}<br>
+                    • <strong>Seasonality Index:</strong> {seasonal_index:.1f}% (peak-to-average ratio)</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_seasonal2:
+                best_ctr_month = monthly.loc[monthly['ctr'].idxmax()] if len(monthly) > 0 else None
+                best_cr_month = monthly.loc[monthly['conversion_rate'].idxmax()] if len(monthly) > 0 else None
+                
+                st.markdown(f"""
+                <div class='temporal-insight-card'>
+                    <h4>🎯 Performance Champions</h4>
+                    <p>• <strong>Best CTR:</strong> {best_ctr_month['month'] if best_ctr_month is not None else 'N/A'} ({best_ctr_month['ctr']:.2f}% if best_ctr_month is not None else 0}%)<br>
+                    • <strong>Best Conversion Rate:</strong> {best_cr_month['month'] if best_cr_month is not None else 'N/A'} ({best_cr_month['conversion_rate']:.2f}% if best_cr_month is not None else 0}%)<br>
+                    • <strong>Consistency Score:</strong> {100 - coefficient_of_variation:.1f}%<br>
+                    • <strong>Market Concentration:</strong> {gini_coefficient:.3f} (Gini coefficient)<br>
+                    • <strong>Optimization Opportunity:</strong> {"Focus on low-performing months" if seasonal_variance > 50 else "Maintain current strategy"}</p>
+                </div>
+                """, unsafe_allow_html=True)
         
         elif analysis_type == "🔍 Detailed Month Analysis":
-            st.subheader("🔬 Detailed Monthly Performance")
+            st.subheader("🔬 Comprehensive Monthly Deep Dive")
             
             selected_month = st.selectbox(
                 "Select a month for detailed analysis:",
@@ -7354,26 +7420,24 @@ with tab_time:
             
             if selected_month:
                 month_data = monthly[monthly['month'] == selected_month].iloc[0]
-                month_rank = monthly.reset_index().index[monthly['month'] == selected_month].tolist()[0] + 1
+                month_rank = monthly.sort_values('Counts', ascending=False).reset_index().index[monthly['month'] == selected_month].tolist()[0] + 1
                 
                 col_detail1, col_detail2, col_detail3, col_detail4 = st.columns(4)
                 
                 with col_detail1:
-                    rank_performance = "high-performance" if month_rank <= 3 else "medium-performance" if month_rank <= 6 else "low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>🏆</span>
                         <div class='value'>#{month_rank}</div>
-                        <div class='label'>Month Rank</div>
+                        <div class='label'>Volume Rank</div>
                         <div class='sub-label'>Out of {total_months} months</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with col_detail2:
                     market_share = (month_data['Counts'] / total_searches * 100)
-                    share_performance = "high-performance" if market_share > (100/total_months) else "medium-performance" if market_share > (50/total_months) else "low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>📊</span>
                         <div class='value'>{market_share:.2f}%</div>
                         <div class='label'>Market Share</div>
@@ -7382,60 +7446,86 @@ with tab_time:
                     """, unsafe_allow_html=True)
                 
                 with col_detail3:
+                    performance_class = "temporal-high-performance" if month_data['ctr'] > 5 else "temporal-medium-performance" if month_data['ctr'] > 2 else "temporal-low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>📈</span>
-                        <div class='value'>{month_data['ctr']:.2f}% <span class='performance-badge {"high-performance" if month_data['ctr'] > 5 else "medium-performance" if month_data['ctr'] > 2 else "low-performance"}'>{"High" if month_data['ctr'] > 5 else "Medium" if month_data['ctr'] > 2 else "Low"}</span></div>
-                        <div class='label'>CTR</div>
-                        <div class='sub-label'>Month performance</div>
+                        <div class='value'>{month_data['ctr']:.2f}% <span class='temporal-performance-badge {performance_class}'>{"High" if month_data['ctr'] > 5 else "Medium" if month_data['ctr'] > 2 else "Low"}</span></div>
+                        <div class='label'>CTR Performance</div>
+                        <div class='sub-label'>Month specific</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with col_detail4:
+                    performance_class = "temporal-high-performance" if month_data['conversion_rate'] > 3 else "temporal-medium-performance" if month_data['conversion_rate'] > 1 else "temporal-low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>💰</span>
-                        <div class='value'>{month_data['conversion_rate']:.2f}% <span class='performance-badge {"high-performance" if month_data['conversion_rate'] > 3 else "medium-performance" if month_data['conversion_rate'] > 1 else "low-performance"}'>{"High" if month_data['conversion_rate'] > 3 else "Medium" if month_data['conversion_rate'] > 1 else "Low"}</span></div>
+                        <div class='value'>{month_data['conversion_rate']:.2f}% <span class='temporal-performance-badge {performance_class}'>{"High" if month_data['conversion_rate'] > 3 else "Medium" if month_data['conversion_rate'] > 1 else "Low"}</span></div>
                         <div class='label'>Conversion Rate</div>
-                        <div class='sub-label'>Month performance</div>
+                        <div class='sub-label'>Month specific</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # Detailed performance table
-                st.markdown("### 📊 Performance Breakdown")
-                metrics_data = {
-                    'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 'CTR', 'Conversion Rate', 'Classic CVR', 'Click Share', 'Conversion Share'],
-                    'Value': [
-                        f"{int(month_data['Counts']):,}",
-                        f"{int(month_data['clicks']):,}",
-                        f"{int(month_data['conversions']):,}",
-                        f"{month_data['ctr']:.2f}%",
-                        f"{month_data['conversion_rate']:.2f}%",
-                        f"{month_data['classic_cvr']:.2f}%",
-                        f"{month_data['click_share']:.2f}%",
-                        f"{month_data['conversion_share']:.2f}%"
-                    ],
-                    'Performance': [
-                        'High' if month_data['Counts'] > monthly['Counts'].median() else 'Low',
-                        'High' if month_data['clicks'] > monthly['clicks'].median() else 'Low',
-                        'High' if month_data['conversions'] > monthly['conversions'].median() else 'Low',
-                        'High' if month_data['ctr'] > monthly['ctr'].median() else 'Low',
-                        'High' if month_data['conversion_rate'] > monthly['conversion_rate'].median() else 'Low',
-                        'High' if month_data['classic_cvr'] > monthly['classic_cvr'].median() else 'Low',
-                        'High' if month_data['click_share'] > monthly['click_share'].median() else 'Low',
-                        'High' if month_data['conversion_share'] > monthly['conversion_share'].median() else 'Low'
-                    ]
-                }
-                metrics_df = pd.DataFrame(metrics_data)
-                st.markdown("<div class='generic-table-container'>", unsafe_allow_html=True)
-                st.dataframe(metrics_df, use_container_width=True, hide_index=True)
-                st.markdown("</div>", unsafe_allow_html=True)
+                # Enhanced performance breakdown
+                st.markdown("### 📊 Comprehensive Performance Breakdown")
+                
+                col_breakdown1, col_breakdown2 = st.columns(2)
+                
+                with col_breakdown1:
+                    metrics_data = {
+                        'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 'CTR', 'Conversion Rate', 'Classic CVR'],
+                        'Value': [
+                            f"{int(month_data['Counts']):,}",
+                            f"{int(month_data['clicks']):,}",
+                            f"{int(month_data['conversions']):,}",
+                            f"{month_data['ctr']:.2f}%",
+                            f"{month_data['conversion_rate']:.2f}%",
+                            f"{month_data['classic_cvr']:.2f}%"
+                        ],
+                        'vs Average': [
+                            f"{((month_data['Counts'] / monthly['Counts'].mean() - 1) * 100):+.1f}%",
+                            f"{((month_data['clicks'] / monthly['clicks'].mean() - 1) * 100):+.1f}%",
+                            f"{((month_data['conversions'] / monthly['conversions'].mean() - 1) * 100):+.1f}%",
+                            f"{(month_data['ctr'] - monthly['ctr'].mean()):+.2f}pp",
+                            f"{(month_data['conversion_rate'] - monthly['conversion_rate'].mean()):+.2f}pp",
+                            f"{(month_data['classic_cvr'] - monthly['classic_cvr'].mean()):+.2f}pp"
+                        ]
+                    }
+                    metrics_df = pd.DataFrame(metrics_data)
+                    st.markdown("<div class='temporal-table-container'>", unsafe_allow_html=True)
+                    st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
+                
+                with col_breakdown2:
+                    # Month comparison insights
+                    above_avg_metrics = sum([
+                        month_data['Counts'] > monthly['Counts'].mean(),
+                        month_data['ctr'] > monthly['ctr'].mean(),
+                        month_data['conversion_rate'] > monthly['conversion_rate'].mean(),
+                        month_data['classic_cvr'] > monthly['classic_cvr'].mean()
+                    ])
+                    
+                    volume_percentile = ((monthly['Counts'] <= month_data['Counts']).sum() / len(monthly) * 100)
+                    ctr_percentile = ((monthly['ctr'] <= month_data['ctr']).sum() / len(monthly) * 100)
+                    
+                    st.markdown(f"""
+                    <div class='temporal-insight-card'>
+                        <h4>📈 Month Performance Analysis</h4>
+                        <p>• <strong>Above Average Metrics:</strong> {above_avg_metrics}/4 key metrics<br>
+                        • <strong>Performance Grade:</strong> {"A" if above_avg_metrics >= 3 else "B" if above_avg_metrics >= 2 else "C"}<br>
+                        • <strong>Volume Percentile:</strong> {volume_percentile:.0f}th percentile<br>
+                        • <strong>CTR Percentile:</strong> {ctr_percentile:.0f}th percentile<br>
+                        • <strong>Market Position:</strong> {"Top performer" if volume_percentile >= 75 else "Above average" if volume_percentile >= 50 else "Below average"}<br>
+                        • <strong>Strategic Focus:</strong> {"Scale successful strategies" if above_avg_metrics >= 3 else "Identify improvement areas" if above_avg_metrics <= 1 else "Optimize underperforming metrics"}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         elif analysis_type == "🏷 Brand Comparison":
-            st.subheader("🏷 Top Brands Performance by Month")
+            st.subheader("🏷️ Enhanced Brand Temporal Analysis")
             
             if 'brand' in queries.columns and queries['brand'].notna().any() and queries['month'].notna().any():
-                # Filter out 'Other' (case-insensitive) and select top 5 brands by Counts
+                # Enhanced brand filtering and analysis
                 brand_counts = queries[queries['brand'].str.lower() != 'other'].groupby('brand')['Counts'].sum()
                 top_brands = brand_counts.sort_values(ascending=False).head(5).index
                 brand_month = queries[queries['brand'].isin(top_brands)].groupby(['month', 'brand']).agg({
@@ -7452,27 +7542,65 @@ with tab_time:
                 except:
                     brand_month = brand_month.sort_values('month')
                 
-                # Bar chart for brand counts
+                # Enhanced brand visualization with green theme
                 fig_brands = px.bar(
                     brand_month,
                     x='month',
                     y='Counts',
                     color='brand',
-                    title='<b style="color:#FF5A6E;">Top 5 Brands by Search Volume per Month</b>',
-                    color_discrete_sequence=['#FF5A6E', '#FFB085', '#FF7F94', '#FFA5A5', '#FFCCD5']
+                    title='<b style="color:#38A169;">🏷️ Top 5 Brands: Monthly Search Volume Evolution</b>',
+                    color_discrete_sequence=['#38A169', '#48BB78', '#68D391', '#9AE6B4', '#C6F6D5']
                 )
                 fig_brands.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(240,255,244,0.95)',
+                    paper_bgcolor='rgba(230,253,235,0.8)',
+                    font=dict(color='#22543D', family='Segoe UI'),
                     height=500,
-                    xaxis=dict(tickangle=45, title='Month'),
-                    yaxis=dict(title='Search Volume')
+                    xaxis=dict(
+                        tickangle=45, 
+                        title='Month',
+                        title_font=dict(size=14, color='#38A169'),
+                        showgrid=True,
+                        gridcolor='#C6F6D5'
+                    ),
+                    yaxis=dict(
+                        title='Search Volume',
+                        title_font=dict(size=14, color='#38A169'),
+                        showgrid=True,
+                        gridcolor='#C6F6D5'
+                    ),
+                    legend=dict(
+                        bgcolor='rgba(240,255,244,0.9)',
+                        bordercolor='#38A169',
+                        borderwidth=1
+                    )
                 )
                 st.plotly_chart(fig_brands, use_container_width=True)
                 
-                # Comparison table
-                st.markdown("### 📊 Brand Performance Table")
+                # Brand performance heatmap
+                st.markdown("### 🔥 Brand Performance Heatmap")
+                
+                # Create pivot table for heatmap
+                heatmap_data = brand_month.pivot(index='brand', columns='month', values='ctr')
+                
+                fig_heatmap = px.imshow(
+                    heatmap_data,
+                    title='<b style="color:#38A169;">📊 Brand CTR Performance Heatmap</b>',
+                    color_continuous_scale=['#F0FFF4', '#38A169', '#22543D'],
+                    aspect='auto'
+                )
+                fig_heatmap.update_layout(
+                    plot_bgcolor='rgba(240,255,244,0.95)',
+                    paper_bgcolor='rgba(230,253,235,0.8)',
+                    font=dict(color='#22543D', family='Segoe UI'),
+                    height=400,
+                    xaxis=dict(title='Month', title_font=dict(size=14, color='#38A169')),
+                    yaxis=dict(title='Brand', title_font=dict(size=14, color='#38A169'))
+                )
+                st.plotly_chart(fig_heatmap, use_container_width=True)
+                
+                # Brand comparison metrics
+                st.markdown("### 📊 Brand Performance Comparison Table")
                 display_brands = brand_month[['month', 'brand', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
                 display_brands.columns = ['Month', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %']
                 display_brands['Search Volume'] = display_brands['Search Volume'].apply(lambda x: f"{int(x):,}")
@@ -7480,65 +7608,224 @@ with tab_time:
                 display_brands['Conversions'] = display_brands['Conversions'].apply(lambda x: f"{int(x):,}")
                 display_brands['CTR %'] = display_brands['CTR %'].apply(lambda x: f"{x:.2f}%")
                 display_brands['Conversion Rate %'] = display_brands['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
-                st.markdown("<div class='generic-table-container'>", unsafe_allow_html=True)
+                
+                st.markdown("<div class='temporal-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_brands, use_container_width=True, hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Brand insights
+                col_brand1, col_brand2 = st.columns(2)
+                
+                with col_brand1:
+                    # Calculate brand performance metrics
+                    brand_performance = brand_month.groupby('brand').agg({
+                        'Counts': 'sum',
+                        'clicks': 'sum',
+                        'conversions': 'sum',
+                        'ctr': 'mean',
+                        'conversion_rate': 'mean'
+                    }).reset_index()
+                    
+                    top_brand = brand_performance.loc[brand_performance['Counts'].idxmax()] if len(brand_performance) > 0 else None
+                    best_ctr_brand = brand_performance.loc[brand_performance['ctr'].idxmax()] if len(brand_performance) > 0 else None
+                    
+                    st.markdown(f"""
+                    <div class='temporal-insight-card'>
+                        <h4>🏆 Brand Performance Leaders</h4>
+                        <p>• <strong>Volume Leader:</strong> {top_brand['brand'] if top_brand is not None else 'N/A'}<br>
+                        &nbsp;&nbsp;Total Searches: {int(top_brand['Counts']):,} if top_brand is not None else 0}<br>
+                        &nbsp;&nbsp;Market Share: {(top_brand['Counts'] / brand_performance['Counts'].sum() * 100):.1f}% if top_brand is not None else 0}%<br><br>
+                        • <strong>CTR Champion:</strong> {best_ctr_brand['brand'] if best_ctr_brand is not None else 'N/A'}<br>
+                        &nbsp;&nbsp;Average CTR: {best_ctr_brand['ctr']:.2f}% if best_ctr_brand is not None else 0}%<br>
+                        &nbsp;&nbsp;Performance vs Average: {((best_ctr_brand['ctr'] / brand_performance['ctr'].mean() - 1) * 100):+.1f}% if best_ctr_brand is not None else 0}%</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_brand2:
+                    # Brand seasonality analysis
+                    brand_seasonality = brand_month.groupby('brand')['Counts'].agg(['std', 'mean']).reset_index()
+                    brand_seasonality['cv'] = (brand_seasonality['std'] / brand_seasonality['mean']) * 100
+                    most_seasonal = brand_seasonality.loc[brand_seasonality['cv'].idxmax()] if len(brand_seasonality) > 0 else None
+                    most_stable = brand_seasonality.loc[brand_seasonality['cv'].idxmin()] if len(brand_seasonality) > 0 else None
+                    
+                    st.markdown(f"""
+                    <div class='temporal-insight-card'>
+                        <h4>📈 Brand Seasonality Insights</h4>
+                        <p>• <strong>Most Seasonal:</strong> {most_seasonal['brand'] if most_seasonal is not None else 'N/A'}<br>
+                        &nbsp;&nbsp;Volatility: {most_seasonal['cv']:.1f}% if most_seasonal is not None else 0}% coefficient of variation<br>
+                        &nbsp;&nbsp;Strategy: Focus on peak months<br><br>
+                        • <strong>Most Stable:</strong> {most_stable['brand'] if most_stable is not None else 'N/A'}<br>
+                        &nbsp;&nbsp;Volatility: {most_stable['cv']:.1f}% if most_stable is not None else 0}% coefficient of variation<br>
+                        &nbsp;&nbsp;Strategy: Consistent year-round campaigns</p>
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 # Download brand data
                 csv_brands = brand_month.to_csv(index=False)
                 st.download_button(
-                    label="📥 Download Brand Data CSV",
+                    label="📥 Download Brand Temporal Data CSV",
                     data=csv_brands,
                     file_name=f"brand_monthly_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
                     key="brand_monthly_download"
                 )
             else:
-                st.info("Brand or month data not available for brand-month analysis.")
+                st.info("📊 Brand or month data not available for brand-month analysis.")
         
         elif analysis_type == "📊 Distribution Analysis":
-            st.subheader("📊 Monthly Distribution Analysis")
+            st.subheader("📊 Monthly Distribution & Market Concentration Analysis")
             
-            # Pie chart for market share
-            fig_pie = px.pie(
-                monthly,
-                values='Counts',
-                names='month',
-                title='<b style="color:#FF5A6E;">Monthly Search Volume Distribution</b>',
-                color_discrete_sequence=px.colors.sequential.Reds
-            )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            fig_pie.update_layout(
-                height=400,
-                font=dict(color='#0B486B', family='Segoe UI'),
-                paper_bgcolor='rgba(255,247,232,0.8)'
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            col_dist_viz1, col_dist_viz2 = st.columns(2)
+            
+            with col_dist_viz1:
+                # Enhanced pie chart for market share with green theme
+                fig_pie = px.pie(
+                    monthly,
+                    values='Counts',
+                    names='month',
+                    title='<b style="color:#38A169;">📊 Monthly Search Volume Distribution</b>',
+                    color_discrete_sequence=['#38A169', '#48BB78', '#68D391', '#9AE6B4', '#C6F6D5', '#B2F5EA', '#81E6D9', '#4FD1C7', '#38B2AC', '#319795', '#2C7A7B', '#285E61']
+                )
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_layout(
+                    height=400,
+                    font=dict(color='#22543D', family='Segoe UI'),
+                    paper_bgcolor='rgba(230,253,235,0.8)'
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+            
+            with col_dist_viz2:
+                # Lorenz curve for temporal concentration
+                sorted_counts = monthly['Counts'].sort_values().values
+                cumulative_counts = np.cumsum(sorted_counts)
+                cumulative_share = cumulative_counts / cumulative_counts[-1]
+                months_share = np.arange(1, len(monthly) + 1) / len(monthly)
+                
+                fig_lorenz = go.Figure()
+                fig_lorenz.add_trace(go.Scatter(
+                    x=months_share,
+                    y=cumulative_share,
+                    mode='lines+markers',
+                    name='Lorenz Curve',
+                    line=dict(color='#38A169', width=3),
+                    marker=dict(size=6, color='#38A169')
+                ))
+                fig_lorenz.add_trace(go.Scatter(
+                    x=[0, 1],
+                    y=[0, 1],
+                    mode='lines',
+                    name='Perfect Equality',
+                    line=dict(color='#9AE6B4', width=2, dash='dash')
+                ))
+                fig_lorenz.update_layout(
+                    title='<b style="color:#38A169;">📈 Temporal Concentration (Lorenz Curve)</b>',
+                    xaxis_title='Cumulative Share of Months',
+                    yaxis_title='Cumulative Share of Search Volume',
+                    plot_bgcolor='rgba(240,255,244,0.95)',
+                    paper_bgcolor='rgba(230,253,235,0.8)',
+                    font=dict(color='#22543D', family='Segoe UI'),
+                    height=400,
+                    xaxis=dict(showgrid=True, gridcolor='#C6F6D5'),
+                    yaxis=dict(showgrid=True, gridcolor='#C6F6D5'),
+                    legend=dict(
+                        bgcolor='rgba(240,255,244,0.9)',
+                        bordercolor='#38A169',
+                        borderwidth=1
+                    )
+                )
+                st.plotly_chart(fig_lorenz, use_container_width=True)
             
             # Distribution metrics
-            col_dist1, col_dist2 = st.columns(2)
+            col_dist1, col_dist2, col_dist3, col_dist4 = st.columns(4)
             
             with col_dist1:
+                concentration_level = "High" if gini_coefficient > 0.4 else "Medium" if gini_coefficient > 0.2 else "Low"
                 st.markdown(f"""
-                <div class='generic-metric-card'>
+                <div class='temporal-metric-card'>
                     <span class='icon'>📊</span>
                     <div class='value'>{gini_coefficient:.3f}</div>
                     <div class='label'>Gini Coefficient</div>
-                    <div class='sub-label'>Market concentration</div>
+                    <div class='sub-label'>{concentration_level} concentration</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col_dist2:
                 st.markdown(f"""
-                <div class='generic-metric-card'>
+                <div class='temporal-metric-card'>
                     <span class='icon'>🔝</span>
                     <div class='value'>{top_3_concentration:.1f}%</div>
                     <div class='label'>Top 3 Months Share</div>
-                    <div class='sub-label'>Search volume concentration</div>
+                    <div class='sub-label'>Market concentration</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_dist3:
+                hhi_index = sum([(count / total_searches * 100) ** 2 for count in monthly['Counts']])
+                market_structure = "Highly Concentrated" if hhi_index > 2500 else "Moderately Concentrated" if hhi_index > 1500 else "Competitive"
+                st.markdown(f"""
+                <div class='temporal-metric-card'>
+                    <span class='icon'>🏢</span>
+                    <div class='value'>{hhi_index:.0f}</div>
+                    <div class='label'>HHI Index</div>
+                    <div class='sub-label'>{market_structure}</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_dist4:
+                entropy = -sum([(count / total_searches) * np.log2(count / total_searches) for count in monthly['Counts'] if count > 0])
+                max_entropy = np.log2(len(monthly))
+                normalized_entropy = entropy / max_entropy if max_entropy > 0 else 0
+                diversity_level = "High" if normalized_entropy > 0.8 else "Medium" if normalized_entropy > 0.5 else "Low"
+                st.markdown(f"""
+                <div class='temporal-metric-card'>
+                    <span class='icon'>🌈</span>
+                    <div class='value'>{normalized_entropy:.3f}</div>
+                    <div class='label'>Diversity Index</div>
+                    <div class='sub-label'>{diversity_level} diversity</div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Advanced distribution insights
+            st.markdown("### 🔍 Advanced Distribution Insights")
+            
+            col_insights1, col_insights2 = st.columns(2)
+            
+            with col_insights1:
+                # Calculate quartile analysis
+                q1 = monthly['Counts'].quantile(0.25)
+                q2 = monthly['Counts'].quantile(0.5)
+                q3 = monthly['Counts'].quantile(0.75)
+                iqr = q3 - q1
+                
+                st.markdown(f"""
+                <div class='temporal-insight-card'>
+                    <h4>📊 Quartile Analysis</h4>
+                    <p>• <strong>Q1 (25th percentile):</strong> {int(q1):,} searches<br>
+                    • <strong>Q2 (Median):</strong> {int(q2):,} searches<br>
+                    • <strong>Q3 (75th percentile):</strong> {int(q3):,} searches<br>
+                    • <strong>Interquartile Range:</strong> {int(iqr):,} searches<br>
+                    • <strong>Outlier Threshold:</strong> {int(q3 + 1.5 * iqr):,} searches<br>
+                    • <strong>Distribution Shape:</strong> {"Right-skewed" if monthly['Counts'].mean() > q2 else "Left-skewed" if monthly['Counts'].mean() < q2 else "Symmetric"}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col_insights2:
+                # Performance distribution analysis
+                high_performers = len(monthly[monthly['ctr'] > monthly['ctr'].quantile(0.75)])
+                low_performers = len(monthly[monthly['ctr'] < monthly['ctr'].quantile(0.25)])
+                
+                st.markdown(f"""
+                <div class='temporal-insight-card'>
+                    <h4>🎯 Performance Distribution</h4>
+                    <p>• <strong>High CTR Months:</strong> {high_performers} months (top quartile)<br>
+                    • <strong>Low CTR Months:</strong> {low_performers} months (bottom quartile)<br>
+                    • <strong>Performance Spread:</strong> {(monthly['ctr'].max() - monthly['ctr'].min()):.2f}pp<br>
+                    • <strong>Coefficient of Variation:</strong> {coefficient_of_variation:.1f}%<br>
+                    • <strong>Volatility Level:</strong> {"High" if coefficient_of_variation > 60 else "Medium" if coefficient_of_variation > 30 else "Low"}<br>
+                    • <strong>Recommendation:</strong> {"Stabilize performance" if coefficient_of_variation > 60 else "Optimize low performers" if low_performers > total_months/3 else "Maintain strategy"}</p>
                 </div>
                 """, unsafe_allow_html=True)
         
-        # Advanced Filtering Section
         # Advanced Filtering Section
         st.markdown("---")
         st.subheader("🔍 Advanced Filtering & Custom Analysis")
@@ -7585,9 +7872,7 @@ with tab_time:
             with filter_col3:
                 st.markdown("**Brand Filter**")
                 if 'brand' in queries.columns and queries['brand'].notna().any():
-                    # Convert brands to string, handle NaN
                     brand_series = queries['brand'].astype(str).replace('nan', '')
-                    # Exclude 'Other' (case-insensitive) and empty strings
                     brand_options = [b for b in brand_series.unique().tolist() if b.lower() != 'other' and b]
                     selected_brands = st.multiselect(
                         "Select brands to include:",
@@ -7600,7 +7885,7 @@ with tab_time:
                     st.info("No brand data available for filtering.")
             
             # Apply filters
-            filtered_data = monthly.copy()  # Start with full monthly data
+            filtered_data = monthly.copy()
             
             # Apply volume and performance filters
             filtered_data = filtered_data[
@@ -7612,7 +7897,6 @@ with tab_time:
             
             # Apply brand filter if selected
             if selected_brands:
-                # Filter queries for selected brands, excluding 'Other' and NaN
                 brand_series = queries['brand'].astype(str).replace('nan', '')
                 brand_filtered = queries[
                     (brand_series.isin(selected_brands)) & 
@@ -7640,7 +7924,7 @@ with tab_time:
                     lambda r: (r['conversions'] / total_conversions * 100) if total_conversions > 0 else 0, axis=1
                 )
                 
-                # Merge with filtered_data to retain only months that match brand-filtered data
+                # Merge with filtered_data
                 filtered_data = filtered_data.merge(
                     brand_filtered[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr', 'click_share', 'conversion_share']],
                     on='month',
@@ -7661,7 +7945,7 @@ with tab_time:
                 
                 with filtered_col1:
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>📅</span>
                         <div class='value'>{len(filtered_data)}</div>
                         <div class='label'>Months Found</div>
@@ -7672,7 +7956,7 @@ with tab_time:
                 with filtered_col2:
                     total_searches_filtered = filtered_data['Counts'].sum()
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>🔍</span>
                         <div class='value'>{format_number(total_searches_filtered)}</div>
                         <div class='label'>Total Searches</div>
@@ -7682,11 +7966,11 @@ with tab_time:
                 
                 with filtered_col3:
                     avg_ctr_filtered = filtered_data['ctr'].mean()
-                    ctr_performance = "high-performance" if avg_ctr_filtered > 5 else "medium-performance" if avg_ctr_filtered > 2 else "low-performance"
+                    ctr_performance = "temporal-high-performance" if avg_ctr_filtered > 5 else "temporal-medium-performance" if avg_ctr_filtered > 2 else "temporal-low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>📈</span>
-                        <div class='value'>{avg_ctr_filtered:.2f}% <span class='performance-badge {ctr_performance}'>{"High" if avg_ctr_filtered > 5 else "Medium" if avg_ctr_filtered > 2 else "Low"}</span></div>
+                        <div class='value'>{avg_ctr_filtered:.2f}% <span class='temporal-performance-badge {ctr_performance}'>{"High" if avg_ctr_filtered > 5 else "Medium" if avg_ctr_filtered > 2 else "Low"}</span></div>
                         <div class='label'>Avg CTR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -7694,11 +7978,11 @@ with tab_time:
                 
                 with filtered_col4:
                     avg_cr_filtered = filtered_data['conversion_rate'].mean()
-                    cr_performance = "high-performance" if avg_cr_filtered > 3 else "medium-performance" if avg_cr_filtered > 1 else "low-performance"
+                    cr_performance = "temporal-high-performance" if avg_cr_filtered > 3 else "temporal-medium-performance" if avg_cr_filtered > 1 else "temporal-low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='temporal-metric-card'>
                         <span class='icon'>💰</span>
-                        <div class='value'>{avg_cr_filtered:.2f}% <span class='performance-badge {cr_performance}'>{"High" if avg_cr_filtered > 3 else "Medium" if avg_cr_filtered > 1 else "Low"}</span></div>
+                        <div class='value'>{avg_cr_filtered:.2f}% <span class='temporal-performance-badge {cr_performance}'>{"High" if avg_cr_filtered > 3 else "Medium" if avg_cr_filtered > 1 else "Low"}</span></div>
                         <div class='label'>Avg CR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -7713,7 +7997,7 @@ with tab_time:
                 display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
                 display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
                 
-                st.markdown("<div class='generic-table-container'>", unsafe_allow_html=True)
+                st.markdown("<div class='temporal-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_filtered, use_container_width=True, hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
                 
@@ -7729,11 +8013,181 @@ with tab_time:
             else:
                 st.warning("⚠️ No months match the selected filters. Try adjusting your criteria.")
         
+        # Enhanced Summary and Insights Section
+        st.markdown("---")
+        st.subheader("🎯 Strategic Temporal Insights & Recommendations")
+        
+        col_insight_final1, col_insight_final2 = st.columns(2)
+        
+        with col_insight_final1:
+            st.markdown(f"""
+            <div class='temporal-insight-card'>
+                <h4>🎯 Strategic Opportunities</h4>
+                <p><strong>Peak Season Optimization:</strong><br>
+                • Focus 60-70% of budget during {peak_month['month']} (peak performance)<br>
+                • Expected ROI increase: {((peak_month['ctr'] / avg_ctr - 1) * 100):+.1f}% vs average<br><br>
+                
+                <strong>Seasonal Budget Allocation:</strong><br>
+                • High Season: {len(monthly[monthly['Counts'] >= monthly['Counts'].quantile(0.75)])} months - 50% budget<br>
+                • Medium Season: {len(monthly[(monthly['Counts'] >= monthly['Counts'].quantile(0.25)) & (monthly['Counts'] < monthly['Counts'].quantile(0.75))])} months - 35% budget<br>
+                • Low Season: {len(monthly[monthly['Counts'] < monthly['Counts'].quantile(0.25)])} months - 15% budget<br><br>
+                
+                <strong>Performance Improvement Potential:</strong><br>
+                • Low-performing months could improve by {(avg_ctr - monthly[monthly['Counts'] < monthly['Counts'].median()]['ctr'].mean()):.1f}pp CTR</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col_insight_final2:
+            # Calculate trend direction
+            try:
+                monthly_sorted = monthly.sort_values('month_dt') if 'month_dt' in monthly.columns else monthly
+                recent_trend = "increasing" if monthly_sorted['Counts'].tail(3).mean() > monthly_sorted['Counts'].head(3).mean() else "decreasing"
+                trend_percentage = ((monthly_sorted['Counts'].tail(3).mean() / monthly_sorted['Counts'].head(3).mean() - 1) * 100)
+            except:
+                recent_trend = "stable"
+                trend_percentage = 0
+            
+            st.markdown(f"""
+            <div class='temporal-insight-card'>
+                <h4>📊 Market Intelligence</h4>
+                <p><strong>Temporal Trends:</strong><br>
+                • Market trend: {recent_trend.title()} ({trend_percentage:+.1f}%)<br>
+                • Seasonality strength: {"High" if seasonal_index > 100 else "Medium" if seasonal_index > 50 else "Low"} ({seasonal_index:.1f}%)<br>
+                • Market concentration: {"High" if gini_coefficient > 0.4 else "Medium" if gini_coefficient > 0.2 else "Low"} ({gini_coefficient:.3f})<br><br>
+                
+                <strong>Competitive Positioning:</strong><br>
+                • Best months for competitive advantage: {', '.join(monthly.nlargest(2, 'ctr')['month'].tolist())}<br>
+                • Months needing attention: {', '.join(monthly.nsmallest(2, 'ctr')['month'].tolist())}<br><br>
+                
+                <strong>Risk Assessment:</strong><br>
+                • Volatility level: {"High" if coefficient_of_variation > 60 else "Medium" if coefficient_of_variation > 30 else "Low"}<br>
+                • Diversification score: {(100 - top_3_concentration):.1f}% (higher is better)</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Final Action Items
+        st.markdown("### 🚀 Recommended Action Items")
+        
+        action_items = []
+        
+        # Generate dynamic recommendations based on data
+        if seasonal_index > 100:
+            action_items.append("🎯 **High Priority**: Develop seasonal marketing campaigns - high seasonality detected")
+        
+        if gini_coefficient > 0.4:
+            action_items.append("⚖️ **Medium Priority**: Diversify temporal strategy - high concentration risk")
+        
+        if coefficient_of_variation > 60:
+            action_items.append("📊 **High Priority**: Implement performance stabilization measures - high volatility")
+        
+        if avg_ctr < 3:
+            action_items.append("📈 **Medium Priority**: Focus on CTR optimization across all months")
+        
+        if avg_cr < 2:
+            action_items.append("💰 **High Priority**: Improve conversion funnel - low conversion rates")
+        
+        # Peak month recommendations
+        peak_ctr = peak_month['ctr']
+        if peak_ctr > avg_ctr * 1.5:
+            action_items.append(f"🏆 **Opportunity**: Scale successful strategies from {peak_month['month']} to other months")
+        
+        # Low month recommendations
+        low_ctr = low_month['ctr']
+        if low_ctr < avg_ctr * 0.7:
+            action_items.append(f"🔧 **Action Required**: Investigate and fix issues in {low_month['month']}")
+        
+        if not action_items:
+            action_items.append("✅ **Good Performance**: Continue current temporal strategy - metrics are balanced")
+        
+        for i, item in enumerate(action_items, 1):
+            st.markdown(f"{i}. {item}")
+        
+        # Performance Score Card
+        st.markdown("### 🏅 Temporal Performance Scorecard")
+        
+        # Calculate scores
+        seasonality_score = min(100, max(0, 100 - seasonal_index))  # Lower seasonality = higher score
+        consistency_score = min(100, max(0, 100 - coefficient_of_variation))  # Lower volatility = higher score
+        diversity_score = min(100, max(0, (1 - gini_coefficient) * 100))  # Lower concentration = higher score
+        performance_score = min(100, max(0, (avg_ctr / 10) * 100))  # CTR performance score
+        conversion_score = min(100, max(0, (avg_cr / 5) * 100))  # Conversion performance score
+        
+        overall_score = (seasonality_score + consistency_score + diversity_score + performance_score + conversion_score) / 5
+        
+        score_col1, score_col2, score_col3, score_col4, score_col5, score_col6 = st.columns(6)
+        
+        with score_col1:
+            score_color = "temporal-high-performance" if seasonality_score >= 70 else "temporal-medium-performance" if seasonality_score >= 40 else "temporal-low-performance"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>🌊</span>
+                <div class='value'>{seasonality_score:.0f}/100 <span class='temporal-performance-badge {score_color}'>{"A" if seasonality_score >= 70 else "B" if seasonality_score >= 40 else "C"}</span></div>
+                <div class='label'>Seasonality</div>
+                <div class='sub-label'>Stability score</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with score_col2:
+            score_color = "temporal-high-performance" if consistency_score >= 70 else "temporal-medium-performance" if consistency_score >= 40 else "temporal-low-performance"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>📊</span>
+                <div class='value'>{consistency_score:.0f}/100 <span class='temporal-performance-badge {score_color}'>{"A" if consistency_score >= 70 else "B" if consistency_score >= 40 else "C"}</span></div>
+                <div class='label'>Consistency</div>
+                <div class='sub-label'>Volatility score</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with score_col3:
+            score_color = "temporal-high-performance" if diversity_score >= 70 else "temporal-medium-performance" if diversity_score >= 40 else "temporal-low-performance"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>🎯</span>
+                <div class='value'>{diversity_score:.0f}/100 <span class='temporal-performance-badge {score_color}'>{"A" if diversity_score >= 70 else "B" if diversity_score >= 40 else "C"}</span></div>
+                <div class='label'>Diversity</div>
+                <div class='sub-label'>Distribution score</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with score_col4:
+            score_color = "temporal-high-performance" if performance_score >= 70 else "temporal-medium-performance" if performance_score >= 40 else "temporal-low-performance"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>📈</span>
+                <div class='value'>{performance_score:.0f}/100 <span class='temporal-performance-badge {score_color}'>{"A" if performance_score >= 70 else "B" if performance_score >= 40 else "C"}</span></div>
+                <div class='label'>CTR Performance</div>
+                <div class='sub-label'>Click-through rate</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with score_col5:
+            score_color = "temporal-high-performance" if conversion_score >= 70 else "temporal-medium-performance" if conversion_score >= 40 else "temporal-low-performance"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>💰</span>
+                <div class='value'>{conversion_score:.0f}/100 <span class='temporal-performance-badge {score_color}'>{"A" if conversion_score >= 70 else "B" if conversion_score >= 40 else "C"}</span></div>
+                <div class='label'>Conversion</div>
+                <div class='sub-label'>Conversion rate</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with score_col6:
+            overall_color = "temporal-high-performance" if overall_score >= 70 else "temporal-medium-performance" if overall_score >= 50 else "temporal-low-performance"
+            overall_grade = "A+" if overall_score >= 90 else "A" if overall_score >= 80 else "B+" if overall_score >= 70 else "B" if overall_score >= 60 else "C+" if overall_score >= 50 else "C" if overall_score >= 40 else "D"
+            st.markdown(f"""
+            <div class='temporal-metric-card'>
+                <span class='icon'>🏆</span>
+                <div class='value'>{overall_score:.0f}/100 <span class='temporal-performance-badge {overall_color}'>{overall_grade}</span></div>
+                <div class='label'>Overall Score</div>
+                <div class='sub-label'>Temporal health</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
         # Download and Export Section
         st.markdown("---")
         st.subheader("💾 Advanced Export & Download Options")
         
-        col_download1, col_download2 = st.columns(2)
+        col_download1, col_download2, col_download3 = st.columns(3)
         
         with col_download1:
             csv_complete = monthly.to_csv(index=False)
@@ -7746,36 +8200,144 @@ with tab_time:
             )
         
         with col_download2:
-            summary_report = f"""# Monthly Analysis Summary Report
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-
-## Executive Summary
-- Total Months Analyzed: {total_months}
-- Total Search Volume: {total_searches:,}
-- Average CTR: {avg_ctr:.2f}%
-- Average Conversion Rate: {avg_cr:.2f}%
-- Total Clicks: {int(total_clicks):,}
-- Total Conversions: {int(total_conversions):,}
-
-## Top Performing Months
-{chr(10).join([f"{row['month']}: {int(row['Counts']):,} searches ({row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR)" for _, row in monthly.head(3).iterrows()])}
-
-## Market Concentration
-- Gini Coefficient: {gini_coefficient:.3f}
-- Top 3 Months Share: {top_3_concentration:.1f}%
-
-## Recommendations
-- Focus on high-performing months for campaign optimization
-- Investigate low-performing months for improvement opportunities
-
-Generated by Noureldeen Mohamed
-"""
+            # Create performance summary data
+            performance_summary = {
+                'Metric': [
+                    'Total Months', 'Total Searches', 'Average CTR', 'Average Conversion Rate',
+                    'Peak Month', 'Low Month', 'Seasonality Index', 'Gini Coefficient',
+                    'Top 3 Concentration', 'Coefficient of Variation', 'Overall Score'
+                ],
+                'Value': [
+                    total_months, f"{total_searches:,}", f"{avg_ctr:.2f}%", f"{avg_cr:.2f}%",
+                    peak_month['month'] if peak_month is not None else 'N/A',
+                    low_month['month'] if low_month is not None else 'N/A',
+                    f"{seasonal_index:.1f}%", f"{gini_coefficient:.3f}",
+                    f"{top_3_concentration:.1f}%", f"{coefficient_of_variation:.1f}%", f"{overall_score:.0f}/100"
+                ]
+            }
+            performance_df = pd.DataFrame(performance_summary)
+            performance_csv = performance_df.to_csv(index=False)
+            
             st.download_button(
-                label="📋 Executive Summary",
-                data=summary_report,
-                file_name=f"monthly_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                label="📋 Performance Summary CSV",
+                data=performance_csv,
+                file_name=f"temporal_performance_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                key="performance_summary_download"
+            )
+        
+        with col_download3:
+            # Create comprehensive executive report
+            executive_report = f"""# 📊 TEMPORAL ANALYSIS EXECUTIVE REPORT
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Analyst: Noureldeen Mohamed - Search Marketing Intelligence
+
+## 🎯 EXECUTIVE SUMMARY
+Overall Temporal Performance Score: {overall_score:.0f}/100 (Grade: {overall_grade})
+
+### Key Performance Indicators
+• Total Analysis Period: {total_months} months
+• Total Search Volume: {total_searches:,} searches
+• Average Click-Through Rate: {avg_ctr:.2f}%
+• Average Conversion Rate: {avg_cr:.2f}%
+• Total Clicks Generated: {int(total_clicks):,}
+• Total Conversions: {int(total_conversions):,}
+
+## 🌟 SEASONAL PERFORMANCE ANALYSIS
+
+### Peak Performance
+• Best Month: {peak_month['month'] if peak_month is not None else 'N/A'}
+• Peak Volume: {int(peak_month['Counts']):,} searches ({(peak_month['Counts']/total_searches*100):.1f}% of total)
+• Peak CTR: {peak_month['ctr']:.2f}%
+• Peak Conversion Rate: {peak_month['conversion_rate']:.2f}%
+
+### Low Performance
+• Lowest Month: {low_month['month'] if low_month is not None else 'N/A'}
+• Low Volume: {int(low_month['Counts']):,} searches ({(low_month['Counts']/total_searches*100):.1f}% of total)
+• Low CTR: {low_month['ctr']:.2f}%
+• Low Conversion Rate: {low_month['conversion_rate']:.2f}%
+
+### Seasonality Metrics
+• Seasonality Index: {seasonal_index:.1f}% (peak-to-average ratio)
+• Seasonal Variance: {((peak_month['Counts'] - low_month['Counts']) / low_month['Counts'] * 100):.1f}% if peak_month is not None and low_month is not None and low_month['Counts'] > 0 else 0}% (peak vs low)
+• Trend Stability: {"High volatility" if seasonal_index > 100 else "Moderate seasonality" if seasonal_index > 50 else "Stable performance"}
+• Coefficient of Variation: {coefficient_of_variation:.1f}%
+
+## 📊 MARKET CONCENTRATION ANALYSIS
+
+### Distribution Metrics
+• Gini Coefficient: {gini_coefficient:.3f} ({"High" if gini_coefficient > 0.4 else "Medium" if gini_coefficient > 0.2 else "Low"} concentration)
+• Top 3 Months Share: {top_3_concentration:.1f}% of total volume
+• HHI Index: {sum([(count / total_searches * 100) ** 2 for count in monthly['Counts']]):.0f}
+• Market Structure: {"Highly Concentrated" if sum([(count / total_searches * 100) ** 2 for count in monthly['Counts']]) > 2500 else "Moderately Concentrated" if sum([(count / total_searches * 100) ** 2 for count in monthly['Counts']]) > 1500 else "Competitive"}
+
+### Performance Distribution
+• High Performers: {len(monthly[monthly['ctr'] > monthly['ctr'].quantile(0.75)])} months (top quartile CTR)
+• Low Performers: {len(monthly[monthly['ctr'] < monthly['ctr'].quantile(0.25)])} months (bottom quartile CTR)
+• Performance Spread: {(monthly['ctr'].max() - monthly['ctr'].min()):.2f} percentage points
+
+## 🎯 STRATEGIC RECOMMENDATIONS
+
+### Immediate Actions (High Priority)
+{chr(10).join([f"• {item.replace('🎯 **High Priority**: ', '').replace('💰 **High Priority**: ', '').replace('📊 **High Priority**: ', '').replace('🔧 **Action Required**: ', '')}" for item in action_items if "High Priority" in item or "Action Required" in item])}
+
+### Medium-Term Opportunities
+{chr(10).join([f"• {item.replace('⚖️ **Medium Priority**: ', '').replace('📈 **Medium Priority**: ', '')}" for item in action_items if "Medium Priority" in item])}
+
+### Long-Term Strategy
+{chr(10).join([f"• {item.replace('🏆 **Opportunity**: ', '')}" for item in action_items if "Opportunity" in item])}
+
+## 💡 BUDGET ALLOCATION RECOMMENDATIONS
+
+### Seasonal Budget Distribution
+• High Season ({len(monthly[monthly['Counts'] >= monthly['Counts'].quantile(0.75)])} months): 50% of annual budget
+  - Months: {', '.join(monthly[monthly['Counts'] >= monthly['Counts'].quantile(0.75)]['month'].tolist())}
+  - Expected Volume: {monthly[monthly['Counts'] >= monthly['Counts'].quantile(0.75)]['Counts'].sum():,} searches
+
+• Medium Season ({len(monthly[(monthly['Counts'] >= monthly['Counts'].quantile(0.25)) & (monthly['Counts'] < monthly['Counts'].quantile(0.75))])} months): 35% of annual budget
+  - Expected Volume: {monthly[(monthly['Counts'] >= monthly['Counts'].quantile(0.25)) & (monthly['Counts'] < monthly['Counts'].quantile(0.75))]['Counts'].sum():,} searches
+
+• Low Season ({len(monthly[monthly['Counts'] < monthly['Counts'].quantile(0.25)])} months): 15% of annual budget
+  - Focus on testing and optimization
+  - Expected Volume: {monthly[monthly['Counts'] < monthly['Counts'].quantile(0.25)]['Counts'].sum():,} searches
+
+## 📈 PERFORMANCE SCORECARD
+
+• Seasonality Score: {seasonality_score:.0f}/100 ({"A" if seasonality_score >= 70 else "B" if seasonality_score >= 40 else "C"})
+• Consistency Score: {consistency_score:.0f}/100 ({"A" if consistency_score >= 70 else "B" if consistency_score >= 40 else "C"})
+• Diversity Score: {diversity_score:.0f}/100 ({"A" if diversity_score >= 70 else "B" if diversity_score >= 40 else "C"})
+• CTR Performance Score: {performance_score:.0f}/100 ({"A" if performance_score >= 70 else "B" if performance_score >= 40 else "C"})
+• Conversion Score: {conversion_score:.0f}/100 ({"A" if conversion_score >= 70 else "B" if conversion_score >= 40 else "C"})
+
+**OVERALL TEMPORAL HEALTH: {overall_score:.0f}/100 (Grade: {overall_grade})**
+
+## 🔍 RISK ASSESSMENT
+
+### Risk Factors
+• Seasonality Risk: {"High" if seasonal_index > 100 else "Medium" if seasonal_index > 50 else "Low"}
+• Concentration Risk: {"High" if gini_coefficient > 0.4 else "Medium" if gini_coefficient > 0.2 else "Low"}
+• Volatility Risk: {"High" if coefficient_of_variation > 60 else "Medium" if coefficient_of_variation > 30 else "Low"}
+
+### Mitigation Strategies
+• Diversification: {"Required" if gini_coefficient > 0.4 else "Recommended" if gini_coefficient > 0.2 else "Optional"}
+• Seasonal Hedging: {"Critical" if seasonal_index > 100 else "Important" if seasonal_index > 50 else "Monitor"}
+• Performance Stabilization: {"Urgent" if coefficient_of_variation > 60 else "Planned" if coefficient_of_variation > 30 else "Maintain"}
+
+---
+Report prepared by: Noureldeen Mohamed
+Search Marketing Intelligence & Analytics
+Contact: [Your Contact Information]
+
+*This report provides strategic insights based on temporal search data analysis. 
+Recommendations should be validated through A/B testing and aligned with business objectives.*
+"""
+            
+            st.download_button(
+                label="📋 Executive Report (TXT)",
+                data=executive_report,
+                file_name=f"temporal_executive_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
                 mime="text/plain",
-                key="summary_time_download"
+                key="executive_report_download"
             )
     
     except KeyError as e:
@@ -7787,6 +8349,10 @@ Generated by Noureldeen Mohamed
     except Exception as e:
         st.error(f"❌ Unexpected error processing time data: {str(e)}")
         st.info("Please check your data format and try again.")
+        st.write("Debug info:", str(e))  # For debugging
+
+
+
 
 # ----------------- Pivot Builder Tab -----------------
 with tab_pivot:
