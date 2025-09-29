@@ -6018,86 +6018,240 @@ with tab_generic:
             top_5_concentration = gt_agg.head(5)['count'].sum() / gt_agg['count'].sum() * 100
             top_10_concentration = gt_agg.head(10)['count'].sum() / gt_agg['count'].sum() * 100
         
-        # Enhanced CSS for generic type metrics - Unified with Subcategory Tab (Red/Orange Theme)
+        # Enhanced CSS for generic type metrics - Modern Glass Morphism Design
         st.markdown("""
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         .generic-metric-card {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
-            padding: 20px;
-            border-radius: 15px;
-            border-left: 5px solid #FF5A6E;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
             text-align: center;
-            margin: 10px 0;
-            min-height: 160px;
+            margin: 12px 0;
+            min-height: 180px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .generic-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53, #FF6B6B);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { background-position: -200% 0; }
+            50% { background-position: 200% 0; }
         }
         
         .generic-metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.15) 100%);
         }
         
         .generic-metric-card .icon {
-            font-size: 2em;
-            margin-bottom: 10px;
+            font-size: 2.5em;
+            margin-bottom: 12px;
             display: block;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
         }
         
         .generic-metric-card .value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #0B486B;
-            margin-bottom: 5px;
+            font-size: 2.2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2D3748, #1A202C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            line-height: 1.2;
+            line-height: 1.1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .generic-metric-card .label {
-            font-size: 1.1em;
+            font-size: 1.2em;
             color: #2D3748;
             font-weight: 600;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
         
         .generic-metric-card .sub-label {
-            font-size: 0.9em;
+            font-size: 0.95em;
             color: #718096;
-            font-style: italic;
-            line-height: 1.2;
+            font-weight: 400;
+            line-height: 1.3;
+            opacity: 0.8;
         }
         
         .performance-badge {
-            font-size: 0.7em;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-left: 5px;
+            font-size: 0.75em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .high-performance {
-            background-color: #C6F6D5;
-            color: #22543D;
+            background: linear-gradient(135deg, #48BB78, #38A169);
+            color: white;
         }
         
         .medium-performance {
-            background-color: #FEFCBF;
-            color: #744210;
+            background: linear-gradient(135deg, #ED8936, #DD6B20);
+            color: white;
         }
         
         .low-performance {
-            background-color: #FED7D7;
-            color: #742A2A;
+            background: linear-gradient(135deg, #F56565, #E53E3E);
+            color: white;
+        }
+        
+        .metrics-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 25px;
+            margin: 20px 0;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-header h3 {
+            color: #2D3748;
+            font-weight: 600;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .analysis-tabs {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 10px;
+            margin: 20px 0;
+        }
+        
+        .stRadio > div {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .generic-table-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .generic-table-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .download-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin: 25px 0;
+            color: white;
+        }
+        
+        .download-section h3 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .stDownloadButton > button {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 12px !important;
+            color: #2D3748 !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .stDownloadButton > button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2)) !important;
+        }
+        
+        .filter-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         </style>
         """, unsafe_allow_html=True)
         
-        # Enhanced Key Metrics Section
-        st.subheader("📊 Generic Type Performance Overview")
+        # Enhanced Key Metrics Section with Glass Morphism
+        st.markdown('<div class="section-header"><h3>📊 Generic Type Performance Overview</h3></div>', unsafe_allow_html=True)
         
         # Key metrics row
         col1, col2, col3, col4 = st.columns(4)
@@ -6201,93 +6355,132 @@ with tab_generic:
         
         st.markdown("---")
         
-        # Interactive generic type analysis
-        st.subheader("🎯 Interactive Generic Type Analysis")
+        # Interactive generic type analysis with enhanced styling
+        st.markdown('<div class="section-header"><h3>🎯 Interactive Generic Type Analysis</h3></div>', unsafe_allow_html=True)
 
-        # Analysis type selector
+        # Analysis type selector with enhanced styling
+        st.markdown('<div class="analysis-tabs">', unsafe_allow_html=True)
         analysis_type = st.radio(
             "Choose Analysis Type:",
             ["📊 Top Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
             horizontal=True
         )
+        st.markdown('</div>', unsafe_allow_html=True)
 
         if analysis_type == "📊 Top Performers Overview":
             # Top generic terms analysis
-            st.subheader("🏆 Top 20 Generic Terms Performance")
+            st.markdown('<div class="section-header"><h3>🏆 Top 20 Generic Terms Performance</h3></div>', unsafe_allow_html=True)
             
             top_20_gt = gt_agg.head(20).copy()
             
-            # Enhanced bar chart with Red/Orange Colors
+            # Enhanced bar chart with modern styling
             fig_top_generics = px.bar(
                 top_20_gt,
                 x='search',
                 y='count',
-                title='<b style="color:#FF5A6E;">Top 20 Generic Terms by Search Volume</b>',
+                title='<b style="color:#2D3748; font-size:20px;">Top 20 Generic Terms by Search Volume</b>',
                 labels={'count': 'Search Volume', 'search': 'Generic Terms'},
                 color='count',
-                color_continuous_scale='Reds',
+                color_continuous_scale='Viridis',
                 text='count'
             )
             
             fig_top_generics.update_traces(
                 texttemplate='%{text:,}',
-                textposition='outside'
+                textposition='outside',
+                marker_line_width=0,
+                textfont_size=11
             )
             
             fig_top_generics.update_layout(
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                height=600,
-                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
-                yaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
-                showlegend=False
+                plot_bgcolor='rgba(255,255,255,0.1)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#2D3748', family='Inter, sans-serif', size=12),
+                height=650,
+                xaxis=dict(
+                    tickangle=45, 
+                    showgrid=True, 
+                    gridcolor='rgba(255,255,255,0.3)',
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                yaxis=dict(
+                    showgrid=True, 
+                    gridcolor='rgba(255,255,255,0.3)',
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                showlegend=False,
+                title_x=0.5,
+                margin=dict(t=80, b=100, l=60, r=60)
             )
             
             st.plotly_chart(fig_top_generics, use_container_width=True)
             
             # Performance metrics comparison chart
-            st.subheader("📊 Performance Metrics Comparison")
+            st.markdown('<div class="section-header"><h3>📊 Performance Metrics Comparison</h3></div>', unsafe_allow_html=True)
             
             fig_metrics_comparison = go.Figure()
             
-            # Add bars for each metric
+            # Add bars for each metric with enhanced styling
             fig_metrics_comparison.add_trace(go.Bar(
                 name='CTR %',
                 x=top_20_gt['search'],
                 y=top_20_gt['ctr'],
-                marker_color='#FF5A6E'
+                marker_color='#667eea',
+                marker_line_width=0,
+                hovertemplate='<b>%{x}</b><br>CTR: %{y:.2f}%<extra></extra>'
             ))
             
             fig_metrics_comparison.add_trace(go.Bar(
                 name='Conversion Rate %',
                 x=top_20_gt['search'],
                 y=top_20_gt['conversion_rate'],
-                marker_color='#FFB085'
+                marker_color='#764ba2',
+                marker_line_width=0,
+                hovertemplate='<b>%{x}</b><br>Conversion Rate: %{y:.2f}%<extra></extra>'
             ))
             
             fig_metrics_comparison.update_layout(
-                title='<b>CTR vs Conversion Rate Comparison</b>',
+                title='<b style="color:#2D3748; font-size:18px;">CTR vs Conversion Rate Comparison</b>',
                 barmode='group',
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                height=500,
-                xaxis=dict(tickangle=45),
-                yaxis=dict(title='Percentage (%)')
+                plot_bgcolor='rgba(255,255,255,0.1)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#2D3748', family='Inter, sans-serif', size=12),
+                height=550,
+                xaxis=dict(
+                    tickangle=45,
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                yaxis=dict(
+                    title='Percentage (%)',
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                title_x=0.5,
+                margin=dict(t=70, b=100, l=60, r=60),
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1
+                )
             )
             
             st.plotly_chart(fig_metrics_comparison, use_container_width=True)
 
         elif analysis_type == "🔍 Detailed Term Deep Dive":
             # Detailed analysis section
-            st.subheader("🔬 Generic Term Deep Dive Analysis")
+            st.markdown('<div class="section-header"><h3>🔬 Generic Term Deep Dive Analysis</h3></div>', unsafe_allow_html=True)
             
             # Generic term selector with search functionality
             selected_generic = st.selectbox(
                 "Select a generic term for detailed analysis:",
                 options=gt_agg['search'].tolist(),
-                index=0
+                index=0,
+                help="Choose a generic term to view detailed performance metrics"
             )
             
             if selected_generic:
@@ -6346,7 +6539,7 @@ with tab_generic:
                     """, unsafe_allow_html=True)
                 
                 # Detailed performance breakdown
-                st.markdown("### 📈 Performance Breakdown")
+                st.markdown('<div class="section-header"><h3>📈 Performance Breakdown</h3></div>', unsafe_allow_html=True)
 
                 metrics_data = {
                     'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
@@ -6375,10 +6568,23 @@ with tab_generic:
                 }
                 
                 metrics_df = pd.DataFrame(metrics_data)
-                st.dataframe(metrics_df, use_container_width=True)
+                
+                # Enhanced metrics table with glass morphism styling
+                st.markdown('<div class="generic-table-container">', unsafe_allow_html=True)
+                st.dataframe(
+                    metrics_df, 
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Metric": st.column_config.TextColumn("📊 Metric", width="medium"),
+                        "Value": st.column_config.TextColumn("📈 Value", width="medium"),
+                        "Performance": st.column_config.TextColumn("⚡ Performance", width="small")
+                    }
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Performance comparison radar chart
-                st.markdown("### 📊 Performance Radar Chart")
+                st.markdown('<div class="section-header"><h3>📊 Performance Radar Chart</h3></div>', unsafe_allow_html=True)
                 
                 # Normalize values for radar chart
                 normalized_data = {
@@ -6396,34 +6602,50 @@ with tab_generic:
                     theta=list(normalized_data.keys()),
                     fill='toself',
                     name=selected_generic,
-                    line_color='#FF5A6E'
+                    line_color='#667eea',
+                    fillcolor='rgba(102, 126, 234, 0.3)',
+                    line_width=3,
+                    hovertemplate='<b>%{theta}</b><br>Score: %{r:.1f}<extra></extra>'
                 ))
                 
                 fig_radar.update_layout(
                     polar=dict(
                         radialaxis=dict(
                             visible=True,
-                            range=[0, 100]
-                        )),
+                            range=[0, 100],
+                            gridcolor='rgba(255,255,255,0.3)',
+                            tickfont_size=11
+                        ),
+                        angularaxis=dict(
+                            gridcolor='rgba(255,255,255,0.3)',
+                            tickfont_size=12
+                        )
+                    ),
                     showlegend=True,
-                    title=f'Performance Radar - {selected_generic}',
-                    height=400,
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    paper_bgcolor='rgba(255,247,232,0.8)'
+                    title=f'<b style="color:#2D3748; font-size:18px;">Performance Radar - {selected_generic}</b>',
+                    title_x=0.5,
+                    height=450,
+                    font=dict(color='#2D3748', family='Inter, sans-serif'),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(255,255,255,0.1)',
+                    margin=dict(t=80, b=40, l=40, r=40)
                 )
                 
                 st.plotly_chart(fig_radar, use_container_width=True)
 
         elif analysis_type == "📈 Performance Comparison":
-            st.subheader("⚖️ Generic Terms Performance Comparison")
+            st.markdown('<div class="section-header"><h3>⚖️ Generic Terms Performance Comparison</h3></div>', unsafe_allow_html=True)
             
-            # Multi-select for comparison
+            # Multi-select for comparison with enhanced styling
+            st.markdown('<div class="filter-container">', unsafe_allow_html=True)
             selected_generics = st.multiselect(
                 "Select generic terms to compare (max 10):",
                 options=gt_agg['search'].tolist(),
                 default=gt_agg['search'].head(5).tolist(),
-                max_selections=10
+                max_selections=10,
+                help="Choose up to 10 generic terms for detailed comparison analysis"
             )
+            st.markdown('</div>', unsafe_allow_html=True)
             
             if selected_generics:
                 # Filter data for selected generic terms
@@ -6432,34 +6654,60 @@ with tab_generic:
                 # Comparison metrics visualization
                 fig_comparison = go.Figure()
                 
-                # Add traces for different metrics
+                # Add traces for different metrics with enhanced styling
                 metrics = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
                 metric_names = ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
-                colors = ['#FF5A6E', '#FFB085', '#FF7F94', '#FFA5A5']
+                colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c']
                 
                 for i, (metric, name) in enumerate(zip(metrics, metric_names)):
                     fig_comparison.add_trace(go.Bar(
                         name=name,
                         x=comparison_data['search'],
                         y=comparison_data[metric],
-                        marker_color=colors[i]
+                        marker_color=colors[i],
+                        marker_line_width=0,
+                        hovertemplate=f'<b>%{{x}}</b><br>{name}: %{{y:.2f}}%<extra></extra>'
                     ))
                 
                 fig_comparison.update_layout(
-                    title='<b>Performance Metrics Comparison</b>',
+                    title='<b style="color:#2D3748; font-size:20px;">Performance Metrics Comparison</b>',
                     barmode='group',
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    height=500,
-                    xaxis=dict(tickangle=45),
-                    yaxis=dict(title='Percentage (%)')
+                    plot_bgcolor='rgba(255,255,255,0.1)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color='#2D3748', family='Inter, sans-serif', size=12),
+                    height=550,
+                    xaxis=dict(
+                        tickangle=45,
+                        title_font_size=14,
+                        tickfont_size=11,
+                        showgrid=True,
+                        gridcolor='rgba(255,255,255,0.3)'
+                    ),
+                    yaxis=dict(
+                        title='Percentage (%)',
+                        title_font_size=14,
+                        tickfont_size=11,
+                        showgrid=True,
+                        gridcolor='rgba(255,255,255,0.3)'
+                    ),
+                    title_x=0.5,
+                    margin=dict(t=80, b=120, l=60, r=60),
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="center",
+                        x=0.5,
+                        bgcolor='rgba(255,255,255,0.8)',
+                        bordercolor='rgba(255,255,255,0.3)',
+                        borderwidth=1
+                    )
                 )
                 
                 st.plotly_chart(fig_comparison, use_container_width=True)
                 
                 # Detailed comparison table
-                st.markdown("### 📊 Detailed Comparison Table")
+                st.markdown('<div class="section-header"><h3>📊 Detailed Comparison Table</h3></div>', unsafe_allow_html=True)
                 
                 comparison_table = comparison_data[['search', 'count', 'Clicks', 'Conversions', 
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
@@ -6475,7 +6723,23 @@ with tab_generic:
                 comparison_table['Click Share %'] = comparison_table['Click Share %'].apply(lambda x: f"{x:.2f}%")
                 comparison_table['Conversion Share %'] = comparison_table['Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
-                st.dataframe(comparison_table, use_container_width=True)
+                st.markdown('<div class="generic-table-container">', unsafe_allow_html=True)
+                st.dataframe(
+                    comparison_table, 
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Generic Term": st.column_config.TextColumn("🛠️ Generic Term", width="large"),
+                        "Search Volume": st.column_config.TextColumn("🔍 Search Volume", width="medium"),
+                        "Clicks": st.column_config.TextColumn("🖱️ Clicks", width="medium"),
+                        "Conversions": st.column_config.TextColumn("✅ Conversions", width="medium"),
+                        "CTR %": st.column_config.TextColumn("📈 CTR %", width="small"),
+                        "Conversion Rate %": st.column_config.TextColumn("💰 CR %", width="small"),
+                        "Click Share %": st.column_config.TextColumn("📊 Click Share %", width="small"),
+                        "Conversion Share %": st.column_config.TextColumn("🎯 Conv Share %", width="small")
+                    }
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
                 
                 # Download comparison data
                 csv_comparison = comparison_data.to_csv(index=False)
@@ -6484,13 +6748,16 @@ with tab_generic:
                     data=csv_comparison,
                     file_name="generic_terms_comparison.csv",
                     mime="text/csv",
-                    key="generic_comparison_download"
+                    key="generic_comparison_download",
+                    help="Download the comparison data as a CSV file"
                 )
             else:
-                st.info("Please select generic terms to compare.")
+                st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+                st.info("🔍 Please select generic terms to compare using the multiselect box above.")
+                st.markdown('</div>', unsafe_allow_html=True)
 
         elif analysis_type == "📊 Distribution Analysis":
-            st.subheader("📊 Market Share & Distribution Analysis")
+            st.markdown('<div class="section-header"><h3>📊 Market Share & Distribution Analysis</h3></div>', unsafe_allow_html=True)
             
             # Market share visualization
             col_pie, col_treemap = st.columns(2)
@@ -6513,15 +6780,30 @@ with tab_generic:
                     pie_data,
                     values='count',
                     names='search',
-                    title='<b>Top 10 Generic Terms Market Share</b>',
-                    color_discrete_sequence=px.colors.sequential.Reds
+                    title='<b style="color:#2D3748;">Top 10 Generic Terms Market Share</b>',
+                    color_discrete_sequence=px.colors.qualitative.Set3,
+                    hover_data={'count': ':,'}
                 )
                 
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
+                fig_pie.update_traces(
+                    textposition='inside', 
+                    textinfo='percent+label',
+                    textfont_size=10,
+                    hovertemplate='<b>%{label}</b><br>Volume: %{value:,}<br>Share: %{percent}<extra></extra>'
+                )
                 fig_pie.update_layout(
-                    height=400,
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    paper_bgcolor='rgba(255,247,232,0.8)'
+                    height=450,
+                    font=dict(color='#2D3748', family='Inter, sans-serif', size=11),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    title_x=0.5,
+                    margin=dict(t=60, b=20, l=20, r=20),
+                    legend=dict(
+                        orientation="v",
+                        yanchor="middle",
+                        y=0.5,
+                        xanchor="left",
+                        x=1.05
+                    )
                 )
                 
                 st.plotly_chart(fig_pie, use_container_width=True)
@@ -6532,66 +6814,76 @@ with tab_generic:
                     gt_agg.head(20),
                     path=['search'],
                     values='count',
-                    title='<b>Generic Terms Volume Distribution</b>',
+                    title='<b style="color:#2D3748;">Generic Terms Volume Distribution</b>',
                     color='ctr',
-                    color_continuous_scale='Reds',
+                    color_continuous_scale='Viridis',
                     hover_data={'count': ':,', 'ctr': ':.2f'}
                 )
                 
+                fig_treemap.update_traces(
+                    hovertemplate='<b>%{label}</b><br>Volume: %{value:,}<br>CTR: %{color:.2f}%<extra></extra>'
+                )
+                
                 fig_treemap.update_layout(
-                    height=400,
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    paper_bgcolor='rgba(255,247,232,0.8)'
+                    height=450,
+                    font=dict(color='#2D3748', family='Inter, sans-serif', size=11),
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    title_x=0.5,
+                    margin=dict(t=60, b=20, l=20, r=20)
                 )
                 st.plotly_chart(fig_treemap, use_container_width=True)
             
             # Distribution analysis
-            st.markdown("### 📈 Distribution Analysis")
+            st.markdown('<div class="section-header"><h3>📈 Distribution Analysis</h3></div>', unsafe_allow_html=True)
             
             col_dist1, col_dist2, col_dist3, col_dist4 = st.columns(4)
             
             with col_dist1:
+                gini_status = "High Inequality" if gini_coefficient > 0.7 else "Moderate Inequality" if gini_coefficient > 0.5 else "Low Inequality"
                 st.markdown(f"""
                 <div class='generic-metric-card'>
                     <span class='icon'>📊</span>
                     <div class='value'>{gini_coefficient:.3f}</div>
                     <div class='label'>Gini Coefficient</div>
-                    <div class='sub-label'>Market concentration</div>
+                    <div class='sub-label'>{gini_status}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col_dist2:
+                hhi_status = "Highly Concentrated" if herfindahl_index > 0.25 else "Moderately Concentrated" if herfindahl_index > 0.15 else "Competitive"
                 st.markdown(f"""
                 <div class='generic-metric-card'>
                     <span class='icon'>📈</span>
                     <div class='value'>{herfindahl_index:.4f}</div>
                     <div class='label'>Herfindahl Index</div>
-                    <div class='sub-label'>Market dominance</div>
+                    <div class='sub-label'>{hhi_status}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col_dist3:
+                top5_status = "High Concentration" if top_5_concentration > 70 else "Moderate Concentration" if top_5_concentration > 50 else "Low Concentration"
                 st.markdown(f"""
                 <div class='generic-metric-card'>
                     <span class='icon'>🔝</span>
                     <div class='value'>{top_5_concentration:.1f}%</div>
                     <div class='label'>Top 5 Share</div>
-                    <div class='sub-label'>Market concentration</div>
+                    <div class='sub-label'>{top5_status}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col_dist4:
+                top10_status = "High Concentration" if top_10_concentration > 80 else "Moderate Concentration" if top_10_concentration > 60 else "Low Concentration"
                 st.markdown(f"""
                 <div class='generic-metric-card'>
                     <span class='icon'>🔟</span>
                     <div class='value'>{top_10_concentration:.1f}%</div>
                     <div class='label'>Top 10 Share</div>
-                    <div class='sub-label'>Market concentration</div>
+                    <div class='sub-label'>{top10_status}</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             # Lorenz Curve for market concentration
-            st.markdown("### 📈 Market Concentration Analysis")
+            st.markdown('<div class="section-header"><h3>📈 Market Concentration Analysis</h3></div>', unsafe_allow_html=True)
             
             # Calculate Lorenz curve data
             sorted_counts = gt_agg['count'].sort_values().values
@@ -6611,7 +6903,10 @@ with tab_generic:
                 y=lorenz_y,
                 mode='lines',
                 name='Lorenz Curve',
-                line=dict(color='#FF5A6E', width=3)
+                line=dict(color='#667eea', width=4),
+                fill='tonexty',
+                fillcolor='rgba(102, 126, 234, 0.2)',
+                hovertemplate='<b>Lorenz Curve</b><br>Terms: %{x:.1f}%<br>Volume: %{y:.1f}%<extra></extra>'
             ))
             
             # Add line of equality
@@ -6620,18 +6915,43 @@ with tab_generic:
                 y=[0, 100],
                 mode='lines',
                 name='Line of Equality',
-                line=dict(color='gray', dash='dash', width=2)
+                line=dict(color='#E53E3E', dash='dash', width=3),
+                hovertemplate='<b>Perfect Equality</b><br>%{x:.0f}% = %{y:.0f}%<extra></extra>'
             ))
             
             fig_lorenz.update_layout(
-                title='<b>Lorenz Curve - Generic Terms Market Concentration</b>',
+                title='<b style="color:#2D3748; font-size:18px;">Lorenz Curve - Generic Terms Market Concentration</b>',
                 xaxis_title='Cumulative % of Generic Terms',
                 yaxis_title='Cumulative % of Search Volume',
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                height=400,
-                showlegend=True
+                plot_bgcolor='rgba(255,255,255,0.1)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#2D3748', family='Inter, sans-serif', size=12),
+                height=450,
+                showlegend=True,
+                title_x=0.5,
+                xaxis=dict(
+                    showgrid=True,
+                    gridcolor='rgba(255,255,255,0.3)',
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                yaxis=dict(
+                    showgrid=True,
+                    gridcolor='rgba(255,255,255,0.3)',
+                    title_font_size=14,
+                    tickfont_size=11
+                ),
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="center",
+                    x=0.5,
+                    bgcolor='rgba(255,255,255,0.8)',
+                    bordercolor='rgba(255,255,255,0.3)',
+                    borderwidth=1
+                ),
+                margin=dict(t=80, b=60, l=60, r=60)
             )
             
             st.plotly_chart(fig_lorenz, use_container_width=True)
@@ -6640,6 +6960,7 @@ with tab_generic:
             col_insight1, col_insight2 = st.columns(2)
             
             with col_insight1:
+                st.markdown('<div class="insight-card">', unsafe_allow_html=True)
                 st.markdown("#### 🎯 Market Concentration Insights")
                 
                 if gini_coefficient > 0.7:
@@ -6652,8 +6973,10 @@ with tab_generic:
                 st.markdown(f"- **Gini Coefficient**: {gini_coefficient:.3f} (0 = perfect equality, 1 = maximum inequality)")
                 st.markdown(f"- **Top 5 Terms**: Control {top_5_concentration:.1f}% of total search volume")
                 st.markdown(f"- **Top 10 Terms**: Control {top_10_concentration:.1f}% of total search volume")
+                st.markdown('</div>', unsafe_allow_html=True)
             
             with col_insight2:
+                st.markdown('<div class="insight-card">', unsafe_allow_html=True)
                 st.markdown("#### 📊 Performance Distribution")
                 
                 # Performance quartiles
@@ -6678,10 +7001,12 @@ with tab_generic:
                 st.markdown(f"- High Volume: {high_avg_ctr:.2f}%")
                 st.markdown(f"- Medium Volume: {medium_avg_ctr:.2f}%")
                 st.markdown(f"- Low Volume: {low_avg_ctr:.2f}%")
+                st.markdown('</div>', unsafe_allow_html=True)
 
         # Enhanced Download and Export Section
         st.markdown("---")
-        st.subheader("💾 Advanced Export & Download Options")
+        st.markdown('<div class="download-section">', unsafe_allow_html=True)
+        st.markdown('<h3>💾 Advanced Export & Download Options</h3>', unsafe_allow_html=True)
         
         col_download1, col_download2, col_download3, col_download4 = st.columns(4)
         
@@ -6776,23 +7101,27 @@ Generated by Generic Terms Analysis Dashboard
                     help="Download high-volume but underperforming terms for optimization"
                 )
             else:
-                st.info("No high-opportunity terms identified")
+                st.info("No high-opportunity terms identified based on current criteria")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # Advanced Filtering Section
         st.markdown("---")
-        st.subheader("🔍 Advanced Filtering & Custom Analysis")
+        st.markdown('<div class="section-header"><h3>🔍 Advanced Filtering & Custom Analysis</h3></div>', unsafe_allow_html=True)
         
         with st.expander("🎛️ Custom Filter Options", expanded=False):
+            st.markdown('<div class="filter-container">', unsafe_allow_html=True)
             filter_col1, filter_col2, filter_col3 = st.columns(3)
             
             with filter_col1:
-                st.markdown("**Volume Filters**")
+                st.markdown("**📊 Volume Filters**")
                 min_searches = st.number_input(
                     "Minimum Search Volume:",
                     min_value=0,
                     max_value=int(gt_agg['count'].max()),
                     value=0,
-                    key="min_searches_filter"
+                    key="min_searches_filter",
+                    help="Filter terms with search volume above this threshold"
                 )
                 
                 max_searches = st.number_input(
@@ -6800,18 +7129,20 @@ Generated by Generic Terms Analysis Dashboard
                     min_value=int(min_searches),
                     max_value=int(gt_agg['count'].max()),
                     value=int(gt_agg['count'].max()),
-                    key="max_searches_filter"
+                    key="max_searches_filter",
+                    help="Filter terms with search volume below this threshold"
                 )
             
             with filter_col2:
-                st.markdown("**Performance Filters**")
+                st.markdown("**📈 Performance Filters**")
                 min_ctr = st.slider(
                     "Minimum CTR (%):",
                     min_value=0.0,
                     max_value=float(gt_agg['ctr'].max()),
                     value=0.0,
                     step=0.1,
-                    key="min_ctr_filter"
+                    key="min_ctr_filter",
+                    help="Filter terms with CTR above this percentage"
                 )
                 
                 min_cr = st.slider(
@@ -6820,22 +7151,27 @@ Generated by Generic Terms Analysis Dashboard
                     max_value=float(gt_agg['conversion_rate'].max()),
                     value=0.0,
                     step=0.1,
-                    key="min_cr_filter"
+                    key="min_cr_filter",
+                    help="Filter terms with conversion rate above this percentage"
                 )
             
             with filter_col3:
-                st.markdown("**Text Filters**")
+                st.markdown("**🔍 Text Filters**")
                 search_contains = st.text_input(
                     "Generic term contains:",
                     placeholder="Enter text to search...",
-                    key="search_contains_filter"
+                    key="search_contains_filter",
+                    help="Filter terms that contain this text (case-insensitive)"
                 )
                 
                 exclude_terms = st.text_input(
                     "Exclude terms containing:",
                     placeholder="Enter text to exclude...",
-                    key="exclude_terms_filter"
+                    key="exclude_terms_filter",
+                    help="Exclude terms that contain this text (case-insensitive)"
                 )
+            
+            st.markdown('</div>', unsafe_allow_html=True)
             
             # Apply filters
             filtered_data = gt_agg[
@@ -6856,16 +7192,16 @@ Generated by Generic Terms Analysis Dashboard
                 ]
             
             # Display filtered results
-
             if len(filtered_data) > 0:
-                st.markdown(f"### 📊 Filtered Results: {len(filtered_data)} generic terms")
+                st.markdown('<div class="section-header"><h3>📊 Filtered Results</h3></div>', unsafe_allow_html=True)
+                st.markdown(f"**Found {len(filtered_data)} generic terms matching your criteria**")
                 
-                # Quick stats for filtered data - USING CSS CARDS WITH RED/ORANGE THEME
+                # Quick stats for filtered data - USING ENHANCED CSS CARDS
                 filtered_col1, filtered_col2, filtered_col3, filtered_col4 = st.columns(4)
                 
                 with filtered_col1:
                     st.markdown(f"""
-                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
+                    <div class='generic-metric-card'>
                         <span class='icon'>📊</span>
                         <div class='value'>{len(filtered_data):,}</div>
                         <div class='label'>Terms Found</div>
@@ -6875,42 +7211,100 @@ Generated by Generic Terms Analysis Dashboard
                 
                 with filtered_col2:
                     total_searches_filtered = filtered_data['count'].sum()
+                    filtered_share = (total_searches_filtered / total_searches * 100) if total_searches > 0 else 0
                     st.markdown(f"""
-                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
+                    <div class='generic-metric-card'>
                         <span class='icon'>🔍</span>
                         <div class='value'>{total_searches_filtered:,}</div>
                         <div class='label'>Total Searches</div>
-                        <div class='sub-label'>Filtered volume</div>
+                        <div class='sub-label'>{filtered_share:.1f}% of total volume</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with filtered_col3:
                     avg_ctr_filtered = filtered_data['ctr'].mean()
                     ctr_performance = "high-performance" if avg_ctr_filtered > 5 else "medium-performance" if avg_ctr_filtered > 2 else "low-performance"
+                    ctr_vs_overall = ((avg_ctr_filtered - avg_ctr) / avg_ctr * 100) if avg_ctr > 0 else 0
                     st.markdown(f"""
-                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
+                    <div class='generic-metric-card'>
                         <span class='icon'>📈</span>
                         <div class='value'>{avg_ctr_filtered:.2f}% <span class='performance-badge {ctr_performance}'>{"High" if avg_ctr_filtered > 5 else "Medium" if avg_ctr_filtered > 2 else "Low"}</span></div>
                         <div class='label'>Avg CTR</div>
-                        <div class='sub-label'>Filtered average</div>
+                        <div class='sub-label'>{ctr_vs_overall:+.1f}% vs overall</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with filtered_col4:
                     avg_cr_filtered = filtered_data['conversion_rate'].mean()
                     cr_performance = "high-performance" if avg_cr_filtered > 3 else "medium-performance" if avg_cr_filtered > 1 else "low-performance"
+                    cr_vs_overall = ((avg_cr_filtered - avg_cr) / avg_cr * 100) if avg_cr > 0 else 0
                     st.markdown(f"""
-                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
+                    <div class='generic-metric-card'>
                         <span class='icon'>💰</span>
                         <div class='value'>{avg_cr_filtered:.2f}% <span class='performance-badge {cr_performance}'>{"High" if avg_cr_filtered > 3 else "Medium" if avg_cr_filtered > 1 else "Low"}</span></div>
                         <div class='label'>Avg CR</div>
-                        <div class='sub-label'>Filtered average</div>
+                        <div class='sub-label'>{cr_vs_overall:+.1f}% vs overall</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # Display filtered data
-                display_filtered = filtered_data[['search', 'count', 'Clicks', 'Conversions', 'ctr', 'conversion_rate']].copy()
-                display_filtered.columns = ['Generic Term', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %']
+                # Performance distribution chart for filtered data
+                if len(filtered_data) > 1:
+                    st.markdown('<div class="section-header"><h3>📊 Filtered Data Visualization</h3></div>', unsafe_allow_html=True)
+                    
+                    # Create scatter plot for filtered data
+                    fig_scatter = px.scatter(
+                        filtered_data.head(50),  # Limit to top 50 for readability
+                        x='ctr',
+                        y='conversion_rate',
+                        size='count',
+                        color='click_share',
+                        hover_name='search',
+                        title='<b style="color:#2D3748;">CTR vs Conversion Rate - Filtered Terms</b>',
+                        labels={
+                            'ctr': 'Click-Through Rate (%)',
+                            'conversion_rate': 'Conversion Rate (%)',
+                            'count': 'Search Volume',
+                            'click_share': 'Click Share (%)'
+                        },
+                        color_continuous_scale='Viridis'
+                    )
+                    
+                    fig_scatter.update_traces(
+                        hovertemplate='<b>%{hovertext}</b><br>' +
+                                      'CTR: %{x:.2f}%<br>' +
+                                      'Conversion Rate: %{y:.2f}%<br>' +
+                                      'Search Volume: %{marker.size:,}<br>' +
+                                      'Click Share: %{marker.color:.2f}%<extra></extra>'
+                    )
+                    
+                    fig_scatter.update_layout(
+                        plot_bgcolor='rgba(255,255,255,0.1)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#2D3748', family='Inter, sans-serif', size=12),
+                        height=500,
+                        title_x=0.5,
+                        xaxis=dict(
+                            showgrid=True,
+                            gridcolor='rgba(255,255,255,0.3)',
+                            title_font_size=14,
+                            tickfont_size=11
+                        ),
+                        yaxis=dict(
+                            showgrid=True,
+                            gridcolor='rgba(255,255,255,0.3)',
+                            title_font_size=14,
+                            tickfont_size=11
+                        ),
+                        margin=dict(t=80, b=60, l=60, r=60)
+                    )
+                    
+                    st.plotly_chart(fig_scatter, use_container_width=True)
+                
+                # Display filtered data table
+                st.markdown('<div class="section-header"><h3>📋 Filtered Data Table</h3></div>', unsafe_allow_html=True)
+                
+                display_filtered = filtered_data[['search', 'count', 'Clicks', 'Conversions', 'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
+                display_filtered.columns = ['Generic Term', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
                 
                 # Format for display
                 display_filtered['Search Volume'] = display_filtered['Search Volume'].apply(lambda x: f"{int(x):,}")
@@ -6918,66 +7312,153 @@ Generated by Generic Terms Analysis Dashboard
                 display_filtered['Conversions'] = display_filtered['Conversions'].apply(lambda x: f"{int(x):,}")
                 display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
                 display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                display_filtered['Click Share %'] = display_filtered['Click Share %'].apply(lambda x: f"{x:.2f}%")
+                display_filtered['Conversion Share %'] = display_filtered['Conversion Share %'].apply(lambda x: f"{x:.2f}%")
                 
-                # Enhanced table UI
-                st.markdown("""
-                <style>
-                .generic-table-container {
-                    background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
-                    padding: 20px;
-                    border-radius: 15px;
-                    border-left: 5px solid #FF5A6E;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                    margin: 10px 0;
-                    transition: transform 0.2s ease;
-                }
-                .generic-table-container:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-                }
-                .generic-table-container table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-family: Arial, sans-serif;
-                }
-                .generic-table-container th {
-                    background-color: #FF5A6E;
-                    color: white;
-                    font-weight: bold;
-                    padding: 12px;
-                    text-align: left;
-                    font-size: 1.1em;
-                }
-                .generic-table-container td {
-                    padding: 10px;
-                    font-size: 1em;
-                    color: #2D3748;
-                    border-bottom: 1px solid #E2E8F0;
-                }
-                .generic-table-container tr:nth-child(even) {
-                    background-color: #FFF5F5;
-                }
-                .generic-table-container tr:hover {
-                    background-color: #FED7D7;
-                }
-                </style>
-                <div class='generic-table-container'>
-                """, unsafe_allow_html=True)
-                st.dataframe(display_filtered, use_container_width=True)
-                st.markdown("</div>", unsafe_allow_html=True)
-                
-                # Download filtered data
-                filtered_csv = filtered_data.to_csv(index=False)
-                st.download_button(
-                    label="📥 Download Filtered Data",
-                    data=filtered_csv,
-                    file_name=f"filtered_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv",
-                    key="filtered_generic_download"
+                # Enhanced table with glass morphism styling
+                st.markdown('<div class="generic-table-container">', unsafe_allow_html=True)
+                st.dataframe(
+                    display_filtered, 
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Generic Term": st.column_config.TextColumn("🛠️ Generic Term", width="large"),
+                        "Search Volume": st.column_config.TextColumn("🔍 Volume", width="medium"),
+                        "Clicks": st.column_config.TextColumn("🖱️ Clicks", width="medium"),
+                        "Conversions": st.column_config.TextColumn("✅ Conversions", width="medium"),
+                        "CTR %": st.column_config.TextColumn("📈 CTR", width="small"),
+                        "Conversion Rate %": st.column_config.TextColumn("💰 CR", width="small"),
+                        "Click Share %": st.column_config.TextColumn("📊 Click Share", width="small"),
+                        "Conversion Share %": st.column_config.TextColumn("🎯 Conv Share", width="small")
+                    }
                 )
-            else:
-                st.warning("⚠️ No generic terms match the selected filters. Try adjusting your criteria.")
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Enhanced download section for filtered data
+                st.markdown('<div class="section-header"><h3>💾 Download Filtered Results</h3></div>', unsafe_allow_html=True)
+                
+                col_filter_download1, col_filter_download2, col_filter_download3 = st.columns(3)
+                
+                with col_filter_download1:
+                    # Download filtered data
+                    filtered_csv = filtered_data.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Filtered Data",
+                        data=filtered_csv,
+                        file_name=f"filtered_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        key="filtered_generic_download",
+                        help="Download the filtered dataset as CSV"
+                    )
+                
+                with col_filter_download2:
+                    # Download top performers from filtered data
+                    if len(filtered_data) > 10:
+                        top_filtered_csv = filtered_data.head(20).to_csv(index=False)
+                        st.download_button(
+                            label="🏆 Top 20 Filtered Terms",
+                            data=top_filtered_csv,
+                            file_name=f"top_20_filtered_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv",
+                            key="top_filtered_generic_download",
+                            help="Download top 20 terms from filtered results"
+                        )
+                
+                with col_filter_download3:
+                    # Generate filtered summary report
+                    filtered_summary = f"""# Filtered Generic Terms Analysis Report
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
+## Filter Criteria Applied
+- Minimum Search Volume: {min_searches:,}
+- Maximum Search Volume: {max_searches:,}
+- Minimum CTR: {min_ctr:.1f}%
+- Minimum Conversion Rate: {min_cr:.1f}%
+- Contains Text: "{search_contains}" (if specified)
+- Excludes Text: "{exclude_terms}" (if specified)
+
+## Filtered Results Summary
+- Terms Found: {len(filtered_data):,}
+- Total Search Volume: {total_searches_filtered:,} ({filtered_share:.1f}% of total)
+- Average CTR: {avg_ctr_filtered:.2f}% ({ctr_vs_overall:+.1f}% vs overall)
+- Average Conversion Rate: {avg_cr_filtered:.2f}% ({cr_vs_overall:+.1f}% vs overall)
+
+## Top 10 Filtered Terms
+{chr(10).join([f"{i+1}. {row['search']}: {int(row['count']):,} searches ({row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR)" for i, (_, row) in enumerate(filtered_data.head(10).iterrows())])}
+
+## Performance Insights
+- Best CTR: {filtered_data['ctr'].max():.2f}% ({filtered_data.loc[filtered_data['ctr'].idxmax(), 'search']})
+- Best Conversion Rate: {filtered_data['conversion_rate'].max():.2f}% ({filtered_data.loc[filtered_data['conversion_rate'].idxmax(), 'search']})
+- Highest Volume: {int(filtered_data['count'].max()):,} searches ({filtered_data.loc[filtered_data['count'].idxmax(), 'search']})
+
+Generated by Generic Terms Analysis Dashboard - Filtered View
+"""
+                    
+                    st.download_button(
+                        label="📋 Filtered Summary Report",
+                        data=filtered_summary,
+                        file_name=f"filtered_generic_terms_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain",
+                        key="filtered_summary_download",
+                        help="Download summary report for filtered results"
+                    )
+                
+                # Additional insights for filtered data
+                if len(filtered_data) > 5:
+                    st.markdown('<div class="section-header"><h3>🔍 Filtered Data Insights</h3></div>', unsafe_allow_html=True)
+                    
+                    insight_col1, insight_col2 = st.columns(2)
+                    
+                    with insight_col1:
+                        st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+                        st.markdown("#### 📊 Performance Comparison")
+                        
+                        if avg_ctr_filtered > avg_ctr:
+                            st.success(f"✅ Filtered terms have {ctr_vs_overall:.1f}% higher CTR than overall average")
+                        else:
+                            st.warning(f"⚠️ Filtered terms have {abs(ctr_vs_overall):.1f}% lower CTR than overall average")
+                        
+                        if avg_cr_filtered > avg_cr:
+                            st.success(f"✅ Filtered terms have {cr_vs_overall:.1f}% higher conversion rate than overall average")
+                        else:
+                            st.warning(f"⚠️ Filtered terms have {abs(cr_vs_overall):.1f}% lower conversion rate than overall average")
+                        
+                        st.markdown(f"**Volume Share**: {filtered_share:.1f}% of total search volume")
+                        st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    with insight_col2:
+                        st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+                        st.markdown("#### 🎯 Optimization Opportunities")
+                        
+                        # Find high-volume, low-performance terms in filtered data
+                        median_volume_filtered = filtered_data['count'].median()
+                        median_ctr_filtered = filtered_data['ctr'].median()
+                        
+                        opportunities = filtered_data[
+                            (filtered_data['count'] > median_volume_filtered) & 
+                            (filtered_data['ctr'] < median_ctr_filtered)
+                        ]
+                        
+                        if len(opportunities) > 0:
+                            st.info(f"🎯 Found {len(opportunities)} high-volume, low-CTR terms for optimization")
+                            top_opportunity = opportunities.nlargest(1, 'count')['search'].iloc[0]
+                            st.markdown(f"**Top Opportunity**: {top_opportunity}")
+                        else:
+                            st.success("✅ No obvious optimization opportunities in filtered data")
+                        
+                        # Performance distribution
+                        high_perf_filtered = len(filtered_data[filtered_data['ctr'] > filtered_data['ctr'].quantile(0.75)])
+                        st.markdown(f"**High Performers**: {high_perf_filtered} terms ({high_perf_filtered/len(filtered_data)*100:.1f}%)")
+                        st.markdown('</div>', unsafe_allow_html=True)
+            
+            else:
+                st.markdown('<div class="insight-card">', unsafe_allow_html=True)
+                st.warning("⚠️ No generic terms match the selected filters. Try adjusting your criteria:")
+                st.markdown("- **Lower the minimum thresholds** for CTR or Conversion Rate")
+                st.markdown("- **Expand the search volume range** to include more terms")
+                st.markdown("- **Check your text filters** for typos or overly restrictive criteria")
+                st.markdown("- **Remove text filters** to see if they're too restrictive")
+                st.markdown('</div>', unsafe_allow_html=True)
 
     except KeyError as e:
         st.error(f"❌ Missing required column: {str(e)}")
@@ -6987,7 +7468,14 @@ Generated by Generic Terms Analysis Dashboard
         st.info("Please check that numeric columns contain valid numbers")
     except Exception as e:
         st.error(f"❌ Unexpected error processing generic type data: {str(e)}")
-        st.info("Please check your data format and try again.")    
+        st.info("Please check your data format and try again.")
+        
+        # Debug information in expander
+        with st.expander("🔧 Debug Information", expanded=False):
+            st.write("**Available columns:**", list(generic_type.columns) if 'generic_type' in locals() else "No data loaded")
+            st.write("**Data shape:**", generic_type.shape if 'generic_type' in locals() else "No data loaded")
+            st.write("**Error details:**", str(e))
+
 
 # ----------------- Time Analysis Tab (Enhanced) -----------------
 # ----------------- Time Analysis Tab (Enhanced) -----------------
