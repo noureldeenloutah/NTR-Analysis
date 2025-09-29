@@ -1051,14 +1051,14 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
 # ----------------- Welcome Message -----------------
 st.markdown("""
 <div class="welcome-box">
-    <h2>👋 Welcome to Lady Care Search Analytics! ✨</h2>
-    <p>Explore search patterns, brand performance, and actionable insights. Use the sidebar to filter data, navigate tabs to dive deep, and download results for your reports!</p>
+    <h2>🌿 Welcome to Nutraceuticals & Nutrition Analytics! 💚</h2>
+    <p>Discover wellness trends, nutritional insights, and supplement performance data. Navigate through health categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ----------------- KPI cards -----------------
-st.markdown('<div class="main-header">🔥 Lady Care — Ultimate Search Analytics</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Uncover powerful insights from the <b>search</b> column with vibrant visuals and actionable pivots</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">🌱 Nutraceuticals & Nutrition — Advanced Analytics Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Explore wellness search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
 
 # 🚀 CACHED Calculate metrics
 @st.cache_data(ttl=300, show_spinner=False)
@@ -1086,21 +1086,21 @@ def format_number(num):
 
 # Then update the KPI cards:
 with c1:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_counts)}</div><div class='label'>✨ Total Counts</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_counts)}</div><div class='label'>🌿 Total Searches</div></div>", unsafe_allow_html=True)
 with c2:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_clicks)}</div><div class='label'>👆 Total Clicks</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_clicks)}</div><div class='label'>🍃 Total Clicks</div></div>", unsafe_allow_html=True)
 with c3:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_conversions)}</div><div class='label'>🎯 Total Conversions</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_conversions)}</div><div class='label'>💚 Total Conversions</div></div>", unsafe_allow_html=True)
 with c4:
     st.markdown(f"<div class='kpi'><div class='value'>{overall_ctr:.2f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
 with c5:
-    st.markdown(f"<div class='kpi'><div class='value'>{overall_cr:.2f}%</div><div class='label'>💡 Overall CR</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='kpi'><div class='value'>{overall_cr:.2f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
 
 
 # Show data source info in sidebar
 st.sidebar.info(f"**Data Source:** {main_key}")
 st.sidebar.write(f"**Total Rows:** {len(queries):,}")
-st.sidebar.write(f"**Total Counts:** {total_counts:,}")
+st.sidebar.write(f"**Total Searches:** {total_counts:,}")
 st.sidebar.write(f"**Calculated Clicks:** {total_clicks:,}")
 st.sidebar.write(f"**Calculated Conversions:** {total_conversions:,}")
 
@@ -1112,12 +1112,12 @@ with st.sidebar.expander("🔍 Data Debug Info"):
     
     st.write("**Column Usage:**")
     if 'count' in raw_queries.columns:
-        st.write(f"✓ Counts/Impressions: 'count' column")
+        st.write(f"✓ Searches/Impressions: 'count' column")
     else:
-        st.write("✗ Counts/Impressions: No 'count' column found")
+        st.write("✗ Searches/Impressions: No 'count' column found")
     
     st.write("**Calculation Method:**")
-    st.write("• Clicks = Counts × Click Through Rate")
+    st.write("• Clicks = Searches × Click Through Rate")
     st.write("• Conversions = Clicks × Conversion Rate")
     
     # Show sample of raw data
@@ -1126,43 +1126,43 @@ with st.sidebar.expander("🔍 Data Debug Info"):
 
 # ----------------- Tabs -----------------
 tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
-    "📈 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🛠 Generic Type",
-    "⏰ Time Analysis","📊 Pivot Builder","💡 Insights & Qs","⬇ Export"
+    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","💊 Supplement Type",
+    "⏰ Time Analysis","📊 Pivot Builder","💡 Health Insights","⬇ Export"
 ])
 
 # ----------------- Overview -----------------
 with tab_overview:
-    st.header("📈 Overview & Quick Wins")
-    st.markdown("Quick visuals to spot trends and take immediate action. 🚀 Based on **queries_clustered** data (e.g., 17M+ Counts across categories).")
+    st.header("🌿 Wellness Overview & Health Insights")
+    st.markdown("Discover nutritional trends and supplement performance patterns. 🌱 Based on **nutraceuticals data** (e.g., millions of health-conscious searches across wellness categories).")
 
     # Accuracy Fix: Ensure Date conversion (Excel serial)
     if not queries['Date'].dtype == 'datetime64[ns]':
         queries['Date'] = pd.to_datetime(queries['start_date'], unit='D', origin='1899-12-30', errors='coerce')
 
     # Refresh Button (User-Friendly)
-    if st.button("🔄 Refresh Filters & Data"):
+    if st.button("🔄 Refresh Health Data & Filters"):
         st.rerun()
 
     # Image Selection in Sidebar
-    st.sidebar.header("🎨 Customize Hero Image")
+    st.sidebar.header("🌿 Customize Wellness Theme")
     image_options = {
-        "Abstract Gradient": "https://placehold.co/1200x200/E6F3FA/FF5A6E?text=Lady+Care+Insights",
-        "Nature-Inspired": "https://picsum.photos/1200/250?random=care_nature",
-        "Elegant Pink Theme": "https://source.unsplash.com/1200x250/?pink,elegant",
-        "Custom Text on Solid Color": "https://placehold.co/1200x250/E6F3FA/FF5A6E?text=✨+Lady+Care+Glow",
-        "Feminine Floral": "https://picsum.photos/1200/250?random=floral_feminine"
+        "Natural Green Gradient": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=🌿+Nutraceuticals+%26+Nutrition+Analytics",
+        "Wellness & Supplements": "https://picsum.photos/1200/250?random=wellness_supplements",
+        "Organic Health Theme": "https://source.unsplash.com/1200x250/?health,nutrition,supplements",
+        "Custom Health Banner": "https://placehold.co/1200x250/F1F8E9/1B5E20?text=💚+Health+%26+Wellness+Insights",
+        "Natural Ingredients": "https://picsum.photos/1200/250?random=natural_health"
     }
-    selected_image = st.sidebar.selectbox("Choose Hero Image", options=list(image_options.keys()), index=0)
+    selected_image = st.sidebar.selectbox("Choose Wellness Image", options=list(image_options.keys()), index=0)
 
     # Hero Image (Creative UI) with selected option
     st.image(image_options[selected_image], use_container_width=True)
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
-    st.markdown("## 📊 Monthly Analysis Overview")
+    st.markdown("## 🌱 Monthly Wellness Analysis Overview")
     col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
-        st.markdown("### 📋 Monthly Counts Table")
+        st.markdown("### 📋 Monthly Health Searches Table")
         monthly_counts = queries.groupby(queries['Date'].dt.strftime('%B %Y'))['Counts'].sum().reset_index()
         
         if not monthly_counts.empty:
@@ -1187,7 +1187,7 @@ with tab_overview:
                     'props': [
                         ('text-align', 'center'),
                         ('font-weight', 'bold'),
-                        ('background-color', '#FF5A6E'),
+                        ('background-color', '#2E7D32'),
                         ('color', 'white'),
                         ('padding', '12px')
                     ]
@@ -1208,25 +1208,25 @@ with tab_overview:
             
             # Summary metrics below table
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #FF5A6E 0%, #FFB085 100%); 
+            <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
                         padding: 15px; border-radius: 10px; color: white; margin: 10px 0; text-align: center;">
-                <strong>📊 Total: {format_number(int(total_all_months))} searches across {len(monthly_counts)} months</strong>
+                <strong>🌱 Total: {format_number(int(total_all_months))} health searches across {len(monthly_counts)} months</strong>
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("No monthly data available")
+            st.info("No monthly wellness data available")
 
 
     with col_chart:
-        st.markdown("### 📈 Monthly Trends Visualization")
+        st.markdown("### 📈 Monthly Wellness Trends Visualization")
         
         if not monthly_counts.empty and len(monthly_counts) >= 2:
             try:
                 fig = px.bar(monthly_counts, x='Date', y='Counts',
-                            title='<b style="color:#FF5A6E; font-size:16px;">Monthly Search Trends 🌟</b>',
-                            labels={'Date': '<i>Month</i>', 'Counts': '<b>Search Counts</b>'},
+                            title='<b style="color:#2E7D32; font-size:16px;">Monthly Health Search Trends 🌿</b>',
+                            labels={'Date': '<i>Month</i>', 'Counts': '<b>Health Searches</b>'},
                             color='Counts',
-                            color_continuous_scale=['#E6F3FA', '#FFB085', '#FF5A6E'],
+                            color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                             template='plotly_white',
                             text=monthly_counts['Counts'].astype(str))
                     
@@ -1235,18 +1235,18 @@ with tab_overview:
                     texttemplate='%{text}<br>%{customdata:.1f}%',
                     customdata=monthly_counts['Percentage'],
                     textposition='outside',
-                    hovertemplate='<b>%{x}</b><br>Counts: %{y:,.0f}<br>Share: %{customdata:.1f}%<extra></extra>'
+                    hovertemplate='<b>%{x}</b><br>Searches: %{y:,.0f}<br>Share: %{customdata:.1f}%<extra></extra>'
                 )
                 
                 # Layout optimization
                 fig.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,253,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     title_x=0.5,  # Center alignment for title
                     title_font_size=16,
-                    xaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
-                    yaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
                     bargap=0.2,
                     barcornerradius=8,
                     height=400,
@@ -1258,19 +1258,19 @@ with tab_overview:
                 peak_value = monthly_counts['Counts'].max()
                 fig.add_annotation(
                     x=peak_month, y=peak_value,
-                    text=f"🏆 Peak: {peak_value:,.0f}",
+                    text=f"🏆 Peak Wellness: {peak_value:,.0f}",
                     showarrow=True,
                     arrowhead=3,
-                    arrowcolor='#FF5A6E',
+                    arrowcolor='#2E7D32',
                     ax=0, ay=-40,
-                    font=dict(size=12, color='#FF5A6E', family='Segoe UI', weight='bold')
+                    font=dict(size=12, color='#2E7D32', family='Segoe UI', weight='bold')
                 )
                 
                 st.plotly_chart(fig, use_container_width=True)
             except Exception as e:
                 st.error(f"Error generating chart: {e}")
         else:
-            st.info("📅 Add more date range for monthly trends visualization")
+            st.info("📅 Add more date range for wellness trends visualization")
 
     # Add separator between sections
     st.markdown("---")
@@ -1334,8 +1334,8 @@ with tab_overview:
 
         # 🚀 FAST: Batch column operations
         column_renames = {
-            'search': 'Query',
-            'Counts': 'Total Search Counts',
+            'search': 'Health Query',
+            'Counts': 'Total Search Volume',
             'clicks': 'Clicks',
             'conversions': 'Conversions'
         }
@@ -1354,7 +1354,7 @@ with tab_overview:
                 top50[month_display_name] = top50[month_display_name].astype('int32')
 
         # 🚀 OPTIMIZED: Column ordering
-        column_order = ['Query', 'Total Search Counts', 'Share %']
+        column_order = ['Health Query', 'Total Search Volume', 'Share %']
         column_order.extend([_month_names.get(month, month) for month in unique_months 
                         if _month_names.get(month, month) in top50.columns])
         column_order.extend(['Clicks', 'Conversions', 'Conversion Rate'])
@@ -1383,8 +1383,8 @@ with tab_overview:
                 (top10_for_analysis[month2_name] - top10_for_analysis[month1_name]) / month1_vals * 100
             ).round(1)
             
-            gainers = top10_for_analysis.nlargest(3, 'MoM Change')[['Query', 'MoM Change']]
-            losers = top10_for_analysis.nsmallest(3, 'MoM Change')[['Query', 'MoM Change']]
+            gainers = top10_for_analysis.nlargest(3, 'MoM Change')[['Health Query', 'MoM Change']]
+            losers = top10_for_analysis.nsmallest(3, 'MoM Change')[['Health Query', 'MoM Change']]
             
             return gainers, losers
         
@@ -1396,10 +1396,10 @@ with tab_overview:
         return _df.to_csv(index=False)
 
     # NOW START THE ACTUAL SECTION
-    st.markdown("## 🔍 Top 50 Queries Analysis")
+    st.markdown("## 🔍 Top 50 Health Queries Analysis")
 
     if queries.empty or 'Counts' not in queries.columns or queries['Counts'].isna().all():
-        st.warning("No valid data available for top 50 queries.")
+        st.warning("No valid data available for top 50 health queries.")
     else:
         try:
             # 🚀 LAZY CSS LOADING - Only load once per session
@@ -1407,29 +1407,29 @@ with tab_overview:
                 st.markdown("""
                 <style>
                 .top50-metric-card {
-                    background: linear-gradient(135deg, #FF5A6E 0%, #FFB085 100%);
+                    background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
                     padding: 20px; border-radius: 15px; text-align: center; color: white;
-                    box-shadow: 0 8px 32px rgba(255, 90, 110, 0.3); margin: 8px 0;
+                    box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
                     min-height: 120px; display: flex; flex-direction: column; justify-content: center;
                     transition: transform 0.2s ease; width: 100%;
                 }
-                .top50-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255, 90, 110, 0.4); }
+                .top50-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
                 .top50-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
                 .top50-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
                 .top50-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
                 .monthly-metric-card {
-                    background: linear-gradient(135deg, #4A90E2 0%, #7BB3F0 100%);
+                    background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
                     padding: 18px; border-radius: 12px; text-align: center; color: white;
-                    box-shadow: 0 6px 25px rgba(74, 144, 226, 0.3); margin: 8px 0;
+                    box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
                     min-height: 100px; display: flex; flex-direction: column; justify-content: center;
                     transition: transform 0.2s ease; width: 100%;
                 }
-                .monthly-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(74, 144, 226, 0.4); }
+                .monthly-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
                 .monthly-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
                 .monthly-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
                 .monthly-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-                .download-section { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(40, 167, 69, 0.3); }
-                .insights-section { background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 25px rgba(111, 66, 193, 0.3); }
+                .download-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
+                .insights-section { background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 25px rgba(46, 125, 50, 0.3); }
                 .mom-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
                 .gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
                 .decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
@@ -1460,7 +1460,7 @@ with tab_overview:
             top50, unique_months = compute_top50_queries_ultra(queries, month_names, filter_key)
 
             if top50.empty:
-                st.warning("No valid data after processing top 50 queries.")
+                st.warning("No valid data after processing top 50 health queries.")
             else:
                 # 🚀 ENHANCED: Smart styling cache with hash-based invalidation
                 top50_hash = hash(str(top50.shape) + str(top50.columns.tolist()) + str(top50.iloc[0].to_dict()) if len(top50) > 0 else "empty")
@@ -1473,9 +1473,9 @@ with tab_overview:
                     # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_top50 = top50.copy()
                     
-                    # Format Total Search Counts with format_number
-                    if 'Total Search Counts' in display_top50.columns:
-                        display_top50['Total Search Counts'] = display_top50['Total Search Counts'].apply(lambda x: format_number(int(x)))
+                    # Format Total Search Volume with format_number
+                    if 'Total Search Volume' in display_top50.columns:
+                        display_top50['Total Search Volume'] = display_top50['Total Search Volume'].apply(lambda x: format_number(int(x)))
                     
                     # Format monthly columns with format_number
                     for month in unique_months:
@@ -1491,9 +1491,9 @@ with tab_overview:
                         'padding': '8px',
                         'line-height': '1.2'
                     }).set_table_styles([
-                        {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#f0f2f6'), ('color', '#262730'), ('padding', '10px'), ('border', '1px solid #ddd')]},
+                        {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '10px'), ('border', '1px solid #ddd')]},
                         {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '8px'), ('border', '1px solid #ddd')]},
-                        {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#f9f9f9')]}
+                        {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
                     ])
                     
                     # Create format dictionary for remaining columns
@@ -1520,7 +1520,7 @@ with tab_overview:
                 # 🚀 FAST: Pre-calculate all metrics at once
                 metrics = {
                     'total_queries': len(top50),
-                    'total_search_volume': int(pd.to_numeric(top50['Total Search Counts'], errors='coerce').sum()),
+                    'total_search_volume': int(pd.to_numeric(top50['Total Search Volume'], errors='coerce').sum()),
                     'total_clicks': int(top50['Clicks'].sum()),
                     'total_conversions': int(top50['Conversions'].sum())
                 }
@@ -1529,10 +1529,10 @@ with tab_overview:
                 
                 # 🚀 OPTIMIZED: Batch metric rendering
                 metric_configs = [
-                    (col1, "📊", metrics['total_queries'], "Total Queries"),
+                    (col1, "🌿", metrics['total_queries'], "Total Health Queries"),
                     (col2, "🔍", format_number(metrics['total_search_volume']), "Total Search Volume"),
-                    (col3, "👆", format_number(metrics['total_clicks']), "Total Clicks"),
-                    (col4, "🎯", format_number(metrics['total_conversions']), "Total Conversions")
+                    (col3, "🍃", format_number(metrics['total_clicks']), "Total Clicks"),
+                    (col4, "💚", format_number(metrics['total_conversions']), "Total Conversions")
                 ]
                 
                 for col, icon, value, label in metric_configs:
@@ -1548,7 +1548,7 @@ with tab_overview:
                 # 🚀 MONTHLY BREAKDOWN
                 if unique_months:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("### 📅 Monthly Search Volume Breakdown")
+                    st.markdown("### 📅 Monthly Wellness Search Volume Breakdown")
                     
                     month_cols = st.columns(len(unique_months))
                     
@@ -1559,12 +1559,13 @@ with tab_overview:
                                 monthly_total = int(top50[month_display_name].sum())
                                 st.markdown(f"""
                                 <div class="monthly-metric-card">
-                                    <div class="icon">📈</div>
+                                    <div class="icon">🌱</div>
                                     <div class="value">{format_number(monthly_total)}</div>
                                     <div class="label">{month_display_name}</div>
                                 </div>
                                 """, unsafe_allow_html=True)
 
+                # 🚀 ENHANCED DOWNLOAD SECTION
                 # 🚀 ENHANCED DOWNLOAD SECTION
                 st.markdown("<br>", unsafe_allow_html=True)
                 
@@ -1574,25 +1575,25 @@ with tab_overview:
                 with col_download[1]:
                     st.markdown("""
                     <div class="download-section">
-                        <h4 style="color: white; margin-bottom: 15px;">📥 Export Data</h4>
+                        <h4 style="color: white; margin-bottom: 15px;">📥 Export Health Data</h4>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     st.download_button(
-                        label="📥 Download Table as CSV",
+                        label="📥 Download Health Queries CSV",
                         data=csv,
-                        file_name=f"top_50_queries_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        file_name=f"top_50_health_queries_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
-                        help="Download the complete table with monthly breakdown",
+                        help="Download the complete table with monthly wellness breakdown",
                         use_container_width=True
                     )
                 
                 # 🚀 OPTIMIZED MONTHLY INSIGHTS
-                with st.expander("📊 Monthly Insights", expanded=False):
+                with st.expander("📊 Monthly Wellness Insights", expanded=False):
                     if unique_months and len(unique_months) >= 2:
                         st.markdown("""
                         <div class="insights-section">
-                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">📈 Month-over-Month Analysis</h3>
+                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">📈 Month-over-Month Health Analysis</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -1605,7 +1606,7 @@ with tab_overview:
                             with col1:
                                 st.markdown("""
                                 <div class="mom-analysis">
-                                    <h4 style="color: #4CAF50; text-align: center; margin-bottom: 15px;">🚀 Top Gainers (MoM %)</h4>
+                                    <h4 style="color: #4CAF50; text-align: center; margin-bottom: 15px;">🚀 Top Health Gainers (MoM %)</h4>
                                 </div>
                                 """, unsafe_allow_html=True)
                                 
@@ -1614,14 +1615,14 @@ with tab_overview:
                                     sign = "+" if change_val > 0 else ""
                                     st.markdown(f"""
                                     <div class="gainer-item">
-                                        <strong>{row['Query']}</strong>: <span style="color: #4CAF50; font-weight: bold;">{sign}{change_val:.1f}%</span>
+                                        <strong>{row['Health Query']}</strong>: <span style="color: #4CAF50; font-weight: bold;">{sign}{change_val:.1f}%</span>
                                     </div>
                                     """, unsafe_allow_html=True)
                             
                             with col2:
                                 st.markdown("""
                                 <div class="mom-analysis">
-                                    <h4 style="color: #F44336; text-align: center; margin-bottom: 15px;">📉 Top Decliners (MoM %)</h4>
+                                    <h4 style="color: #F44336; text-align: center; margin-bottom: 15px;">📉 Top Health Decliners (MoM %)</h4>
                                 </div>
                                 """, unsafe_allow_html=True)
                                 
@@ -1629,28 +1630,28 @@ with tab_overview:
                                     change_val = row['MoM Change']
                                     st.markdown(f"""
                                     <div class="decliner-item">
-                                        <strong>{row['Query']}</strong>: <span style="color: #F44336; font-weight: bold;">{change_val:.1f}%</span>
+                                        <strong>{row['Health Query']}</strong>: <span style="color: #F44336; font-weight: bold;">{change_val:.1f}%</span>
                                     </div>
                                     """, unsafe_allow_html=True)
 
         except KeyError as e:
             st.error(f"Column error: {e}. Check column names in your data.")
         except Exception as e:
-            st.error(f"Error processing top 50 queries: {e}")
+            st.error(f"Error processing top 50 health queries: {e}")
             st.write("**Debug info:**")
             st.write(f"Queries shape: {queries.shape}")
             st.write(f"Available columns: {list(queries.columns)}")
             if 'top50' in locals() and not top50.empty:
                 st.write(f"Top50 shape: {top50.shape}")
-                if 'Total Search Counts' in top50.columns:
-                    st.write(f"Total Search Counts dtype: {top50['Total Search Counts'].dtype}")
-                    st.write(f"Sample values: {top50['Total Search Counts'].head()}")
+                if 'Total Search Volume' in top50.columns:
+                    st.write(f"Total Search Volume dtype: {top50['Total Search Volume'].dtype}")
+                    st.write(f"Sample values: {top50['Total Search Volume'].head()}")
 
     st.markdown("---")
 
 
 # ----------------- Performance Snapshot -----------------
-    st.subheader("📊 Performance Snapshot")
+    st.subheader("🌱 Wellness Performance Snapshot")
 
     # Mini-Metrics Row (Data-Driven: From Analysis with Share)
     colM1, colM2, colM3, colM4 = st.columns(4)
@@ -1658,18 +1659,18 @@ with tab_overview:
         avg_ctr = queries['Click Through Rate'].mean() * 100 if not queries.empty else 0
         st.markdown(f"""
         <div class='mini-metric'>
-            <span class='icon'>📊</span>
+            <span class='icon'>🌿</span>
             <div class='value'>{avg_ctr:.2f}%</div>
-            <div class='label'>Avg CTR (All Cats)</div>
+            <div class='label'>Avg CTR (All Health)</div>
         </div>
         """, unsafe_allow_html=True)
     with colM2:
         avg_cr = queries['Converion Rate'].mean() * 100 if not queries.empty else 0
         st.markdown(f"""
         <div class='mini-metric'>
-            <span class='icon'>🎯</span>
+            <span class='icon'>💚</span>
             <div class='value'>{avg_cr:.2f}%</div>
-            <div class='label'>Avg CR (Derived)</div>
+            <div class='label'>Avg CR (Wellness)</div>
         </div>
         """, unsafe_allow_html=True)
     with colM3:
@@ -1680,7 +1681,7 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>🔍</span>
             <div class='value'>{format_number(unique_queries)} ({total_share:.2f}%)</div>
-            <div class='label'>Unique Queries (Top Share)</div>
+            <div class='label'>Unique Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     with colM4:
@@ -1689,16 +1690,16 @@ with tab_overview:
         top_cat_share = (cat_counts.max() / total_counts * 100) if total_counts > 0 else 0
         st.markdown(f"""
         <div class='mini-metric'>
-            <span class='icon'>📦</span>
+            <span class='icon'>🧴</span>
             <div class='value'>{format_number(int(cat_counts.max()))} ({top_cat_share:.2f}%)</div>
-            <div class='label'>Top Cat Counts ({top_cat})</div>
+            <div class='label'>Top Health Category ({top_cat})</div>
         </div>
         """, unsafe_allow_html=True)
 
 
     st.markdown("---")
 
-    st.subheader("🏷 Brand & Category Snapshot")
+    st.subheader("🏷 Brand & Health Category Snapshot")
     g1, g2 = st.columns(2)
     with g1:
         if 'Brand' in queries.columns:
@@ -1735,10 +1736,10 @@ with tab_overview:
                     # Create a beautiful bar chart with text labels
                     fig = px.bar(brand_perf.sort_values('Counts', ascending=False).head(10), 
                                 x='Brand', y='Counts',
-                                title='<b style="color:#FF5A6E; font-size:18px; text-shadow: 2px 2px 4px #00000055;">Top Brands by Search Counts</b>',
-                                labels={'Brand': '<i>Brand</i>', 'Counts': '<b>Search Counts</b>'},
+                                title='<b style="color:#2E7D32; font-size:18px; text-shadow: 2px 2px 4px #00000055;">Top Health Brands by Search Volume</b>',
+                                labels={'Brand': '<i>Health Brand</i>', 'Counts': '<b>Search Volume</b>'},
                                 color=color_column,
-                                color_continuous_scale=['#E6F3FA', '#FFB085', '#FF5A6E'],
+                                color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                                 template='plotly_white',
                                 hover_data=hover_columns)
                     
@@ -1746,7 +1747,7 @@ with tab_overview:
                     fig.update_traces(
                         texttemplate='%{y:,.0f}',
                         textposition='outside',
-                        hovertemplate='<b>%{x}</b><br>Counts: %{y:,.0f}' + 
+                        hovertemplate='<b>%{x}</b><br>Volume: %{y:,.0f}' + 
                                     ('<br>Share: %{customdata[0]:.2f}%' if 'share' in hover_columns else '') +
                                     ('<br>Conversions: %{customdata[1]:,.0f}' if 'conversions' in hover_columns and len(hover_columns) > 1 else '') +
                                     '<extra></extra>'
@@ -1754,23 +1755,23 @@ with tab_overview:
 
                     # Enhance attractiveness: Custom layout for beauty
                     fig.update_layout(
-                        plot_bgcolor='rgba(255,255,255,0.95)',
-                        paper_bgcolor='rgba(255,247,232,0.8)',
-                        font=dict(color='#0B486B', family='Segoe UI'),
+                        plot_bgcolor='rgba(248,253,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
                         title_x=0,  # Left alignment for title
                         title_font_size=16,
                         xaxis=dict(
-                            title='Brand',
+                            title='Health Brand',
                             showgrid=True, 
-                            gridcolor='#E6F3FA', 
-                            linecolor='#FF5A6E', 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
                             linewidth=2
                         ),
                         yaxis=dict(
-                            title='Search Counts',
+                            title='Search Volume',
                             showgrid=True, 
-                            gridcolor='#E6F3FA', 
-                            linecolor='#FF5A6E', 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
                             linewidth=2
                         ),
                         bargap=0.2,
@@ -1779,9 +1780,9 @@ with tab_overview:
                         annotations=[
                             dict(
                                 x=0.5, y=1.05, xref='paper', yref='paper',
-                                text='✨ Hover for details | Top brand highlighted below ✨',
+                                text='🌿 Hover for wellness details | Top health brand highlighted below 🌿',
                                 showarrow=False,
-                                font=dict(size=10, color='#FF5A6E', family='Segoe UI'),
+                                font=dict(size=10, color='#2E7D32', family='Segoe UI'),
                                 align='center'
                             )
                         ]
@@ -1792,21 +1793,21 @@ with tab_overview:
                     top_count = brand_perf['Counts'].max()
                     fig.add_annotation(
                         x=top_brand, y=top_count,
-                        text=f"🏆 Peak: {top_count:,.0f}",
+                        text=f"🏆 Peak Health: {top_count:,.0f}",
                         showarrow=True,
                         arrowhead=3,
-                        arrowcolor='#FF5A6E',
+                        arrowcolor='#2E7D32',
                         ax=0, ay=-30,
-                        font=dict(size=12, color='#FF5A6E', family='Segoe UI', weight='bold')
+                        font=dict(size=12, color='#2E7D32', family='Segoe UI', weight='bold')
                     )
 
                     st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.info("No brand data available after filtering or missing required columns.")
+                    st.info("No health brand data available after filtering or missing required columns.")
             else:
                 st.warning("No valid aggregation columns found for brand analysis.")
         else:
-            st.info("🏷 Brand column not found in the dataset.")
+            st.info("🏷 Health Brand column not found in the dataset.")
 
     with g2:
         if 'Category' in queries.columns:
@@ -1845,7 +1846,7 @@ with tab_overview:
                 else:
                     cat_perf['cr'] = 0
                 
-                st.markdown("**Top Categories by Counts**")
+                st.markdown("**Top Health Categories by Search Volume**")
                 
                 # Prepare display columns based on what's available
                 display_columns = ['Category']
@@ -1870,43 +1871,141 @@ with tab_overview:
                     display_columns.append('cr')
                     format_dict['cr'] = '{:.2f}%'
                 
+                # Rename columns for better display
+                display_cat_perf = cat_perf[display_columns].copy()
+                column_rename = {
+                    'Category': 'Health Category',
+                    'Counts': 'Search Volume',
+                    'share': 'Market Share %',
+                    'clicks': 'Total Clicks',
+                    'conversions': 'Conversions',
+                    'cr': 'Conversion Rate %'
+                }
+                display_cat_perf = display_cat_perf.rename(columns={k: v for k, v in column_rename.items() if k in display_cat_perf.columns})
+                
+                # Update format dict with new column names
+                new_format_dict = {}
+                for old_col, new_col in column_rename.items():
+                    if old_col in format_dict and new_col in display_cat_perf.columns:
+                        new_format_dict[new_col] = format_dict[old_col]
+                
                 # Display the table with available data
-                if len(display_columns) > 1:  # More than just the Category column
-                    # Sort by Counts in descending order
-                    if 'Counts' in cat_perf.columns:
-                        sorted_cat_perf = cat_perf[display_columns].sort_values('Counts', ascending=False).head(10)
+                if len(display_cat_perf.columns) > 1:  # More than just the Category column
+                    # Sort by Search Volume in descending order
+                    if 'Search Volume' in display_cat_perf.columns:
+                        sorted_cat_perf = display_cat_perf.sort_values('Search Volume', ascending=False).head(10)
                     else:
-                        # Fallback to first numeric column if Counts not available
-                        numeric_cols = [col for col in display_columns[1:] if col in cat_perf.columns]
+                        # Fallback to first numeric column if Search Volume not available
+                        numeric_cols = [col for col in display_cat_perf.columns[1:] if col in display_cat_perf.columns]
                         if numeric_cols:
-                            sorted_cat_perf = cat_perf[display_columns].sort_values(numeric_cols[0], ascending=False).head(10)
+                            sorted_cat_perf = display_cat_perf.sort_values(numeric_cols[0], ascending=False).head(10)
                         else:
-                            sorted_cat_perf = cat_perf[display_columns].head(10)
+                            sorted_cat_perf = display_cat_perf.head(10)
                     
                     try:
                         # Try using AgGrid if available
                         if 'AGGRID_OK' in globals() and AGGRID_OK:
                             AgGrid(sorted_cat_perf, height=300, enable_enterprise_modules=False)
                         else:
-                            # Fall back to styled DataFrame
-                            styled_cat_perf = sorted_cat_perf.style.format(format_dict).set_properties(**{
+                            # Fall back to styled DataFrame with health-themed styling
+                            styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
                                 'text-align': 'center',
-                                'font-size': '14px'
-                            }).background_gradient(subset=['cr'] if 'cr' in display_columns else [], cmap='YlGnBu')
+                                'font-size': '14px',
+                                'background-color': '#F8FDF8',
+                                'color': '#1B5E20'
+                            }).background_gradient(
+                                subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
+                                cmap='Greens'
+                            ).set_table_styles([
+                                {'selector': 'th', 'props': [
+                                    ('background-color', '#E8F5E8'),
+                                    ('color', '#1B5E20'),
+                                    ('font-weight', 'bold'),
+                                    ('text-align', 'center')
+                                ]}
+                            ])
                             st.dataframe(styled_cat_perf, use_container_width=True, hide_index=True)
+                            
+                            # Add download button for health categories
+                            csv_cat = sorted_cat_perf.to_csv(index=False)
+                            st.download_button(
+                                label="📥 Download Health Categories CSV",
+                                data=csv_cat,
+                                file_name="health_categories_performance.csv",
+                                mime="text/csv"
+                            )
                     except NameError:
                         # AGGRID_OK not defined, use regular DataFrame
-                        styled_cat_perf = sorted_cat_perf.style.format(format_dict).set_properties(**{
+                        styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
                             'text-align': 'center',
-                            'font-size': '14px'
-                        }).background_gradient(subset=['cr'] if 'cr' in display_columns else [], cmap='YlGnBu')
+                            'font-size': '14px',
+                            'background-color': '#F8FDF8',
+                            'color': '#1B5E20'
+                        }).background_gradient(
+                            subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
+                            cmap='Greens'
+                        ).set_table_styles([
+                            {'selector': 'th', 'props': [
+                                ('background-color', '#E8F5E8'),
+                                ('color', '#1B5E20'),
+                                ('font-weight', 'bold'),
+                                ('text-align', 'center')
+                            ]}
+                        ])
                         st.dataframe(styled_cat_perf, use_container_width=True, hide_index=True)
+                        
+                        # Add download button for health categories
+                        csv_cat = sorted_cat_perf.to_csv(index=False)
+                        st.download_button(
+                            label="📥 Download Health Categories CSV",
+                            data=csv_cat,
+                            file_name="health_categories_performance.csv",
+                            mime="text/csv"
+                        )
                 else:
-                    st.info("Insufficient data columns available for category analysis.")
+                    st.info("Insufficient data columns available for health category analysis.")
             else:
-                st.warning("No valid aggregation columns found for category analysis.")
+                st.warning("No valid aggregation columns found for health category analysis.")
         else:
-            st.info("📦 Category column not found in the dataset.")
+            st.info("🧴 Health Category column not found in the dataset.")
+
+    # Add wellness insights section
+    st.markdown("---")
+    st.subheader("🌿 Wellness Insights & Recommendations")
+    
+    # Create insight boxes with health-themed content
+    insight_col1, insight_col2 = st.columns(2)
+    
+    with insight_col1:
+        st.markdown("""
+        <div class="insight-box">
+            <h4>🌱 Top Performing Health Categories</h4>
+            <p>Focus on high-conversion wellness categories like supplements, vitamins, and natural health products for optimal ROI.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="insight-box">
+            <h4>💚 Seasonal Health Trends</h4>
+            <p>Monitor seasonal patterns in immune support, weight management, and wellness supplements to optimize inventory and marketing.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with insight_col2:
+        st.markdown("""
+        <div class="insight-box">
+            <h4>🧴 Brand Performance Analysis</h4>
+            <p>Identify top-performing supplement brands and optimize product placement for maximum visibility and conversions.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="insight-box">
+            <h4>🔍 Search Optimization</h4>
+            <p>Leverage high-volume health queries to improve product descriptions and SEO for better organic discovery.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
 
 st.markdown("---")
 # ----------------- Search Analysis (Enhanced Core) -----------------
