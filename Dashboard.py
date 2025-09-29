@@ -8282,7 +8282,7 @@ with tab_pivot:
 # ----------------- Insights & Questions (Modified) -----------------
 with tab_insights:
     st.header("🌿 Health Insights & Actionable Questions (10)")
-    st.markdown("Curated health insights focused on **search** data for wellness-driven decisions, with tables and charts. 🚀")
+    st.markdown("Curated health insights focused on **search** data for wellness-driven decisions, with enhanced tables, charts, and visuals. 🚀")
 
     # Hero Image for Insights Tab
     insights_image_options = {
@@ -8294,7 +8294,7 @@ with tab_insights:
     selected_insights_image = st.sidebar.selectbox("Choose Insights Tab Hero", options=list(insights_image_options.keys()), index=0, key="insights_hero_image_selector")
     st.image(insights_image_options[selected_insights_image], use_container_width=True)
 
-    # Apply CSS for green health theme consistency
+    # Apply CSS for enhanced green health theme consistency
     st.markdown("""
     <style>
     .health-insight-metric-card {
@@ -8408,6 +8408,15 @@ with tab_insights:
         border-radius: 10px;
         border-left: 4px solid #4CAF50;
         margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+    }
+    .health-insight-box h4 {
+        color: #2E7D32;
+        margin-bottom: 10px;
+    }
+    .health-insight-box p {
+        color: #388E3C;
+        line-height: 1.5;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -8431,6 +8440,59 @@ with tab_insights:
     except Exception as e:
         st.error(f"Data preprocessing error: {e}")
         st.stop()
+
+    # Overall Health Insights Summary
+    st.subheader("📊 Overall Health Insights Summary")
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    total_queries = len(queries_clean['normalized_query'].unique())
+    total_searches = queries_clean['Counts'].sum()
+    avg_ctr = queries_clean.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1).mean()
+    avg_cr = queries_clean.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1).mean()
+    
+    with summary_col1:
+        st.markdown(f"""
+        <div class='health-insight-metric-card'>
+            <span class='icon'>🔍</span>
+            <div class='value'>{format_number(total_queries)}</div>
+            <div class='label'>Unique Health Queries</div>
+            <div class='sub-label'>Analyzed</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col2:
+        st.markdown(f"""
+        <div class='health-insight-metric-card'>
+            <span class='icon'>📈</span>
+            <div class='value'>{format_number(total_searches)}</div>
+            <div class='label'>Total Health Searches</div>
+            <div class='sub-label'>Volume</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col3:
+        performance_class = "high-health-insight-performance" if avg_ctr > 5 else "medium-health-insight-performance" if avg_ctr > 2 else "low-health-insight-performance"
+        st.markdown(f"""
+        <div class='health-insight-metric-card'>
+            <span class='icon'>📊</span>
+            <div class='value'>{avg_ctr:.2f}% <span class='health-insight-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
+            <div class='label'>Average Health CTR</div>
+            <div class='sub-label'>Engagement</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col4:
+        performance_class = "high-health-insight-performance" if avg_cr > 3 else "medium-health-insight-performance" if avg_cr > 1 else "low-health-insight-performance"
+        st.markdown(f"""
+        <div class='health-insight-metric-card'>
+            <span class='icon'>💚</span>
+            <div class='value'>{avg_cr:.2f}% <span class='health-insight-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
+            <div class='label'>Average Wellness CR</div>
+            <div class='sub-label'>Conversion</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
 
     def q_expand(title, explanation, render_fn, icon="💡"):
         with st.expander(f"{icon} {title}", expanded=False):
@@ -8585,6 +8647,8 @@ with tab_insights:
         fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
                      title='Long-Tail vs Short-Tail Health Counts Share',
                      color_discrete_sequence=['#4CAF50', '#81C784'])
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        fig.update_layout(showlegend=True)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q4 — Long-Tail vs Short-Tail Health Queries",
              "How much Counts come from long-tail queries? Key for wellness content strategy.",
@@ -8622,6 +8686,8 @@ with tab_insights:
             fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
                          title='Branded vs Generic Health Counts Share',
                          color_discrete_sequence=['#4CAF50', '#81C784'])
+            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig.update_layout(showlegend=True)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Brand column not present.")
