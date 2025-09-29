@@ -5950,48 +5950,21 @@ OPTIMIZATION OPPORTUNITIES:
         """)
 
 
-# ----------------- Generic Type Tab (COMPLETE FULL VERSION) -----------------
+# ----------------- Generic Type Tab -----------------
 
+# Assuming tab_generic is defined elsewhere, e.g., tabs = st.tabs(["Generic"]), tab_generic = tabs[0]
 with tab_generic:
     st.header("🛠 Generic Type Insights")
     st.markdown("Dive deep into generic term performance and search trends. 🚀")
 
     try:
-        # ============================================================================
-        # LOAD GENERIC TYPE DATA FROM UPLOADED FILE
-        # ============================================================================
-        
-        # Check if we have the uploaded file from session state
-        if 'uploaded_file' not in st.session_state or st.session_state.uploaded_file is None:
-            st.error("❌ No file found in session state")
-            st.info("Please go to the Data Upload tab first to upload your Excel file")
+        # Check if generic type data exists and is valid
+        if generic_type is None or generic_type.empty:
+            st.warning("⚠️ No generic type data available.")
+            st.info("Please ensure your uploaded file contains a 'generic_type' sheet with data.")
             st.stop()
         
-        # Load the Excel file and get generic_type sheet
-        uploaded_file = st.session_state.uploaded_file
-        excel_data = pd.ExcelFile(uploaded_file)
-        available_sheets = excel_data.sheet_names
-        
-        # Check for generic_type sheet
-        if 'generic_type' in available_sheets:
-            with st.spinner("📊 Loading generic_type data..."):
-                generic_type_raw = pd.read_excel(excel_data, sheet_name='generic_type')
-                st.success(f"✅ Loaded {len(generic_type_raw)} records from 'generic_type' sheet")
-                
-                # Use the existing prepare_df function
-                generic_type = prepare_df(generic_type_raw)
-                
-                if generic_type is None or generic_type.empty:
-                    st.error("❌ No valid data after preparation")
-                    st.stop()
-                    
-                st.success(f"✅ Prepared {len(generic_type)} valid records for analysis")
-        else:
-            st.error("❌ 'generic_type' sheet not found in the uploaded file")
-            st.info(f"Available sheets: {', '.join(available_sheets)}")
-            st.stop()
-        
-        # Use the loaded generic_type data
+        # Use the existing generic_type data directly
         gt = generic_type.copy()
         
         # Data validation and cleaning
@@ -6016,18 +5989,6 @@ with tab_generic:
             st.warning("⚠️ No valid generic type data found after cleaning.")
             st.info("Please check your data for empty search terms or invalid values.")
             st.stop()
-        
-        # Helper function for number formatting
-        def format_number(num):
-            """Format numbers with appropriate suffixes (K, M, B)"""
-            if num >= 1_000_000_000:
-                return f"{num/1_000_000_000:.1f}B"
-            elif num >= 1_000_000:
-                return f"{num/1_000_000:.1f}M"
-            elif num >= 1_000:
-                return f"{num/1_000:.1f}K"
-            else:
-                return f"{num:,.0f}"
         
         # Calculate comprehensive generic type metrics with loading indicator
         with st.spinner("🔄 Processing generic type data..."):
@@ -6057,131 +6018,80 @@ with tab_generic:
             top_5_concentration = gt_agg.head(5)['count'].sum() / gt_agg['count'].sum() * 100
             top_10_concentration = gt_agg.head(10)['count'].sum() / gt_agg['count'].sum() * 100
         
-        # NEW ENHANCED CSS FOR GENERIC TYPE METRICS - BLUE/TEAL THEME
+        # Enhanced CSS for generic type metrics - Unified with Subcategory Tab (Red/Orange Theme)
         st.markdown("""
         <style>
         .generic-metric-card {
-            background: linear-gradient(135deg, #E6F7FF 0%, #B3E5FC 100%);
+            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
             padding: 20px;
             border-radius: 15px;
-            border-left: 5px solid #1890FF;
-            box-shadow: 0 6px 20px rgba(24, 144, 255, 0.15);
+            border-left: 5px solid #FF5A6E;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             margin: 10px 0;
             min-height: 160px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .generic-metric-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #1890FF, #13C2C2, #52C41A);
-            border-radius: 15px 15px 0 0;
+            transition: transform 0.2s ease;
         }
         
         .generic-metric-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(24, 144, 255, 0.25);
-            background: linear-gradient(135deg, #F0F9FF 0%, #E1F5FE 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
         .generic-metric-card .icon {
-            font-size: 2.5em;
-            margin-bottom: 12px;
+            font-size: 2em;
+            margin-bottom: 10px;
             display: block;
-            background: linear-gradient(45deg, #1890FF, #13C2C2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 2px 4px rgba(24, 144, 255, 0.3));
         }
         
         .generic-metric-card .value {
-            font-size: 2em;
-            font-weight: 800;
-            color: #0050B3;
-            margin-bottom: 8px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #0B486B;
+            margin-bottom: 5px;
             word-wrap: break-word;
             overflow-wrap: break-word;
             line-height: 1.2;
-            text-shadow: 0 2px 4px rgba(0, 80, 179, 0.1);
         }
         
         .generic-metric-card .label {
             font-size: 1.1em;
-            color: #1C4E80;
-            font-weight: 700;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #2D3748;
+            font-weight: 600;
+            margin-bottom: 3px;
         }
         
         .generic-metric-card .sub-label {
             font-size: 0.9em;
-            color: #5B8C00;
+            color: #718096;
             font-style: italic;
-            line-height: 1.3;
-            opacity: 0.8;
+            line-height: 1.2;
         }
         
         .performance-badge {
             font-size: 0.7em;
-            padding: 4px 8px;
-            border-radius: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
             font-weight: bold;
-            margin-left: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            margin-left: 5px;
         }
         
         .high-performance {
-            background: linear-gradient(45deg, #52C41A, #73D13D);
-            color: white;
-            box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+            background-color: #C6F6D5;
+            color: #22543D;
         }
         
         .medium-performance {
-            background: linear-gradient(45deg, #FAAD14, #FFC53D);
-            color: white;
-            box-shadow: 0 2px 8px rgba(250, 173, 20, 0.3);
+            background-color: #FEFCBF;
+            color: #744210;
         }
         
         .low-performance {
-            background: linear-gradient(45deg, #FF4D4F, #FF7875);
-            color: white;
-            box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
-        }
-        
-        /* Enhanced table styling */
-        .generic-table-container {
-            background: linear-gradient(135deg, #F0F9FF 0%, #E6F7FF 100%);
-            padding: 25px;
-            border-radius: 20px;
-            border: 2px solid #1890FF;
-            box-shadow: 0 8px 32px rgba(24, 144, 255, 0.15);
-            margin: 15px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .generic-table-container:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 48px rgba(24, 144, 255, 0.2);
-        }
-        
-        /* Chart styling */
-        .plotly-graph-div {
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(24, 144, 255, 0.1);
-            overflow: hidden;
+            background-color: #FED7D7;
+            color: #742A2A;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -6203,7 +6113,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='generic-metric-card'>
                 <span class='icon'>🛠️</span>
-                <div class='value'>{format_number(total_generic_terms)}</div>
+                <div class='value'>{total_generic_terms}</div>
                 <div class='label'>Total Generic Terms</div>
                 <div class='sub-label'>Active search terms</div>
             </div>
@@ -6213,7 +6123,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='generic-metric-card'>
                 <span class='icon'>🔍</span>
-                <div class='value'>{format_number(total_searches)}</div>
+                <div class='value'>{total_searches:,}</div>
                 <div class='label'>Total Searches</div>
                 <div class='sub-label'>Across all generic terms</div>
             </div>
@@ -6260,7 +6170,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='generic-metric-card'>
                 <span class='icon'>🖱️</span>
-                <div class='value'>{format_number(total_clicks)}</div>
+                <div class='value'>{total_clicks:,}</div>
                 <div class='label'>Total Clicks</div>
                 <div class='sub-label'>Across all generic terms</div>
             </div>
@@ -6271,7 +6181,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='generic-metric-card'>
                 <span class='icon'>✅</span>
-                <div class='value'>{format_number(total_conversions)}</div>
+                <div class='value'>{total_conversions:,}</div>
                 <div class='label'>Total Conversions</div>
                 <div class='sub-label'>Successful outcomes</div>
             </div>
@@ -6307,15 +6217,15 @@ with tab_generic:
             
             top_20_gt = gt_agg.head(20).copy()
             
-            # Enhanced bar chart with Blue/Teal Colors
+            # Enhanced bar chart with Red/Orange Colors
             fig_top_generics = px.bar(
                 top_20_gt,
                 x='search',
                 y='count',
-                title='<b style="color:#1890FF;">Top 20 Generic Terms by Search Volume</b>',
+                title='<b style="color:#FF5A6E;">Top 20 Generic Terms by Search Volume</b>',
                 labels={'count': 'Search Volume', 'search': 'Generic Terms'},
                 color='count',
-                color_continuous_scale='Blues',
+                color_continuous_scale='Reds',
                 text='count'
             )
             
@@ -6325,12 +6235,12 @@ with tab_generic:
             )
             
             fig_top_generics.update_layout(
-                plot_bgcolor='rgba(240, 249, 255, 0.95)',
-                paper_bgcolor='rgba(230, 247, 255, 0.8)',
-                font=dict(color='#0050B3', family='Segoe UI'),
+                plot_bgcolor='rgba(255,255,255,0.95)',
+                paper_bgcolor='rgba(255,247,232,0.8)',
+                font=dict(color='#0B486B', family='Segoe UI'),
                 height=600,
-                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F7FF'),
-                yaxis=dict(showgrid=True, gridcolor='#E6F7FF'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
+                yaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
                 showlegend=False
             )
             
@@ -6346,22 +6256,22 @@ with tab_generic:
                 name='CTR %',
                 x=top_20_gt['search'],
                 y=top_20_gt['ctr'],
-                marker_color='#1890FF'
+                marker_color='#FF5A6E'
             ))
             
             fig_metrics_comparison.add_trace(go.Bar(
                 name='Conversion Rate %',
                 x=top_20_gt['search'],
                 y=top_20_gt['conversion_rate'],
-                marker_color='#13C2C2'
+                marker_color='#FFB085'
             ))
             
             fig_metrics_comparison.update_layout(
                 title='<b>CTR vs Conversion Rate Comparison</b>',
                 barmode='group',
-                plot_bgcolor='rgba(240, 249, 255, 0.95)',
-                paper_bgcolor='rgba(230, 247, 255, 0.8)',
-                font=dict(color='#0050B3', family='Segoe UI'),
+                plot_bgcolor='rgba(255,255,255,0.95)',
+                paper_bgcolor='rgba(255,247,232,0.8)',
+                font=dict(color='#0B486B', family='Segoe UI'),
                 height=500,
                 xaxis=dict(tickangle=45),
                 yaxis=dict(title='Percentage (%)')
@@ -6465,7 +6375,7 @@ with tab_generic:
                 }
                 
                 metrics_df = pd.DataFrame(metrics_data)
-                st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+                st.dataframe(metrics_df, use_container_width=True)
                 
                 # Performance comparison radar chart
                 st.markdown("### 📊 Performance Radar Chart")
@@ -6486,7 +6396,7 @@ with tab_generic:
                     theta=list(normalized_data.keys()),
                     fill='toself',
                     name=selected_generic,
-                    line_color='#1890FF'
+                    line_color='#FF5A6E'
                 ))
                 
                 fig_radar.update_layout(
@@ -6498,8 +6408,8 @@ with tab_generic:
                     showlegend=True,
                     title=f'Performance Radar - {selected_generic}',
                     height=400,
-                    font=dict(color='#0050B3', family='Segoe UI'),
-                    paper_bgcolor='rgba(230, 247, 255, 0.8)'
+                    font=dict(color='#0B486B', family='Segoe UI'),
+                    paper_bgcolor='rgba(255,247,232,0.8)'
                 )
                 
                 st.plotly_chart(fig_radar, use_container_width=True)
@@ -6525,7 +6435,7 @@ with tab_generic:
                 # Add traces for different metrics
                 metrics = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
                 metric_names = ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
-                colors = ['#1890FF', '#13C2C2', '#52C41A', '#722ED1']
+                colors = ['#FF5A6E', '#FFB085', '#FF7F94', '#FFA5A5']
                 
                 for i, (metric, name) in enumerate(zip(metrics, metric_names)):
                     fig_comparison.add_trace(go.Bar(
@@ -6538,9 +6448,9 @@ with tab_generic:
                 fig_comparison.update_layout(
                     title='<b>Performance Metrics Comparison</b>',
                     barmode='group',
-                    plot_bgcolor='rgba(240, 249, 255, 0.95)',
-                    paper_bgcolor='rgba(230, 247, 255, 0.8)',
-                    font=dict(color='#0050B3', family='Segoe UI'),
+                    plot_bgcolor='rgba(255,255,255,0.95)',
+                    paper_bgcolor='rgba(255,247,232,0.8)',
+                    font=dict(color='#0B486B', family='Segoe UI'),
                     height=500,
                     xaxis=dict(tickangle=45),
                     yaxis=dict(title='Percentage (%)')
@@ -6565,12 +6475,7 @@ with tab_generic:
                 comparison_table['Click Share %'] = comparison_table['Click Share %'].apply(lambda x: f"{x:.2f}%")
                 comparison_table['Conversion Share %'] = comparison_table['Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
-                # Enhanced table styling
-                st.markdown("""
-                <div class='generic-table-container'>
-                """, unsafe_allow_html=True)
-                st.dataframe(comparison_table, use_container_width=True, hide_index=True)
-                st.markdown("</div>", unsafe_allow_html=True)
+                st.dataframe(comparison_table, use_container_width=True)
                 
                 # Download comparison data
                 csv_comparison = comparison_data.to_csv(index=False)
@@ -6609,14 +6514,14 @@ with tab_generic:
                     values='count',
                     names='search',
                     title='<b>Top 10 Generic Terms Market Share</b>',
-                    color_discrete_sequence=px.colors.sequential.Blues
+                    color_discrete_sequence=px.colors.sequential.Reds
                 )
                 
                 fig_pie.update_traces(textposition='inside', textinfo='percent+label')
                 fig_pie.update_layout(
                     height=400,
-                    font=dict(color='#0050B3', family='Segoe UI'),
-                    paper_bgcolor='rgba(230, 247, 255, 0.8)'
+                    font=dict(color='#0B486B', family='Segoe UI'),
+                    paper_bgcolor='rgba(255,247,232,0.8)'
                 )
                 
                 st.plotly_chart(fig_pie, use_container_width=True)
@@ -6629,14 +6534,14 @@ with tab_generic:
                     values='count',
                     title='<b>Generic Terms Volume Distribution</b>',
                     color='ctr',
-                    color_continuous_scale='Blues',
+                    color_continuous_scale='Reds',
                     hover_data={'count': ':,', 'ctr': ':.2f'}
                 )
                 
                 fig_treemap.update_layout(
                     height=400,
-                    font=dict(color='#0050B3', family='Segoe UI'),
-                    paper_bgcolor='rgba(230, 247, 255, 0.8)'
+                    font=dict(color='#0B486B', family='Segoe UI'),
+                    paper_bgcolor='rgba(255,247,232,0.8)'
                 )
                 st.plotly_chart(fig_treemap, use_container_width=True)
             
@@ -6706,7 +6611,7 @@ with tab_generic:
                 y=lorenz_y,
                 mode='lines',
                 name='Lorenz Curve',
-                line=dict(color='#1890FF', width=3)
+                line=dict(color='#FF5A6E', width=3)
             ))
             
             # Add line of equality
@@ -6722,9 +6627,9 @@ with tab_generic:
                 title='<b>Lorenz Curve - Generic Terms Market Concentration</b>',
                 xaxis_title='Cumulative % of Generic Terms',
                 yaxis_title='Cumulative % of Search Volume',
-                plot_bgcolor='rgba(240, 249, 255, 0.95)',
-                paper_bgcolor='rgba(230, 247, 255, 0.8)',
-                font=dict(color='#0050B3', family='Segoe UI'),
+                plot_bgcolor='rgba(255,255,255,0.95)',
+                paper_bgcolor='rgba(255,247,232,0.8)',
+                font=dict(color='#0B486B', family='Segoe UI'),
                 height=400,
                 showlegend=True
             )
@@ -6951,17 +6856,18 @@ Generated by Generic Terms Analysis Dashboard
                 ]
             
             # Display filtered results
+
             if len(filtered_data) > 0:
                 st.markdown(f"### 📊 Filtered Results: {len(filtered_data)} generic terms")
                 
-                # Quick stats for filtered data
+                # Quick stats for filtered data - USING CSS CARDS WITH RED/ORANGE THEME
                 filtered_col1, filtered_col2, filtered_col3, filtered_col4 = st.columns(4)
                 
                 with filtered_col1:
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
                         <span class='icon'>📊</span>
-                        <div class='value'>{format_number(len(filtered_data))}</div>
+                        <div class='value'>{len(filtered_data):,}</div>
                         <div class='label'>Terms Found</div>
                         <div class='sub-label'>Matching filters</div>
                     </div>
@@ -6970,9 +6876,9 @@ Generated by Generic Terms Analysis Dashboard
                 with filtered_col2:
                     total_searches_filtered = filtered_data['count'].sum()
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
                         <span class='icon'>🔍</span>
-                        <div class='value'>{format_number(total_searches_filtered)}</div>
+                        <div class='value'>{total_searches_filtered:,}</div>
                         <div class='label'>Total Searches</div>
                         <div class='sub-label'>Filtered volume</div>
                     </div>
@@ -6982,7 +6888,7 @@ Generated by Generic Terms Analysis Dashboard
                     avg_ctr_filtered = filtered_data['ctr'].mean()
                     ctr_performance = "high-performance" if avg_ctr_filtered > 5 else "medium-performance" if avg_ctr_filtered > 2 else "low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
                         <span class='icon'>📈</span>
                         <div class='value'>{avg_ctr_filtered:.2f}% <span class='performance-badge {ctr_performance}'>{"High" if avg_ctr_filtered > 5 else "Medium" if avg_ctr_filtered > 2 else "Low"}</span></div>
                         <div class='label'>Avg CTR</div>
@@ -6994,7 +6900,7 @@ Generated by Generic Terms Analysis Dashboard
                     avg_cr_filtered = filtered_data['conversion_rate'].mean()
                     cr_performance = "high-performance" if avg_cr_filtered > 3 else "medium-performance" if avg_cr_filtered > 1 else "low-performance"
                     st.markdown(f"""
-                    <div class='generic-metric-card'>
+                    <div class='generic-metric-card' style='background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%); border-left: 5px solid #FF5A6E;'>
                         <span class='icon'>💰</span>
                         <div class='value'>{avg_cr_filtered:.2f}% <span class='performance-badge {cr_performance}'>{"High" if avg_cr_filtered > 3 else "Medium" if avg_cr_filtered > 1 else "Low"}</span></div>
                         <div class='label'>Avg CR</div>
@@ -7013,11 +6919,51 @@ Generated by Generic Terms Analysis Dashboard
                 display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
                 display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
                 
-                # Enhanced table with styling
+                # Enhanced table UI
                 st.markdown("""
+                <style>
+                .generic-table-container {
+                    background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+                    padding: 20px;
+                    border-radius: 15px;
+                    border-left: 5px solid #FF5A6E;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    margin: 10px 0;
+                    transition: transform 0.2s ease;
+                }
+                .generic-table-container:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+                }
+                .generic-table-container table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-family: Arial, sans-serif;
+                }
+                .generic-table-container th {
+                    background-color: #FF5A6E;
+                    color: white;
+                    font-weight: bold;
+                    padding: 12px;
+                    text-align: left;
+                    font-size: 1.1em;
+                }
+                .generic-table-container td {
+                    padding: 10px;
+                    font-size: 1em;
+                    color: #2D3748;
+                    border-bottom: 1px solid #E2E8F0;
+                }
+                .generic-table-container tr:nth-child(even) {
+                    background-color: #FFF5F5;
+                }
+                .generic-table-container tr:hover {
+                    background-color: #FED7D7;
+                }
+                </style>
                 <div class='generic-table-container'>
                 """, unsafe_allow_html=True)
-                st.dataframe(display_filtered, use_container_width=True, hide_index=True)
+                st.dataframe(display_filtered, use_container_width=True)
                 st.markdown("</div>", unsafe_allow_html=True)
                 
                 # Download filtered data
@@ -7032,6 +6978,7 @@ Generated by Generic Terms Analysis Dashboard
             else:
                 st.warning("⚠️ No generic terms match the selected filters. Try adjusting your criteria.")
 
+
     except KeyError as e:
         st.error(f"❌ Missing required column: {str(e)}")
         st.info("Please ensure your data contains: 'search', 'count', 'Clicks', 'Conversions'")
@@ -7040,9 +6987,7 @@ Generated by Generic Terms Analysis Dashboard
         st.info("Please check that numeric columns contain valid numbers")
     except Exception as e:
         st.error(f"❌ Unexpected error processing generic type data: {str(e)}")
-        st.info("Please check your data format and try again.")
-
-        
+        st.info("Please check your data format and try again.")    
 
 # ----------------- Time Analysis Tab (Enhanced) -----------------
 # ----------------- Time Analysis Tab (Enhanced) -----------------
