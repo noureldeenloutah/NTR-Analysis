@@ -2796,19 +2796,52 @@ with tab_search:
 
 
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
+# ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
 with tab_brand:
-    st.header("🏷 Brand Intelligence Hub")
-    st.markdown("Comprehensive brand performance analysis with competitive insights and strategic recommendations. 🚀")
+    st.header("🏷 Wellness Brand Intelligence Hub")
+    st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
     
     # Hero Image for Brand Tab
     brand_image_options = {
-        "Brand Analytics Focus": "https://placehold.co/1200x200/E6F3FA/FF5A6E?text=Brand+Market+Position",
-        "Competitive Analysis": "https://placehold.co/1200x200/FF5A6E/FFFFFF?text=Brand+Performance+Intelligence",
-        "Abstract Brand": "https://source.unsplash.com/1200x200/?brand,marketing",
-        "Abstract Gradient": "https://placehold.co/1200x200/E6F3FA/FF5A6E?text=Lady+Care+Brand+Insights",
+        "Health Brand Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Brand+Market+Position",
+        "Wellness Competitive Analysis": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Brand+Intelligence",
+        "Abstract Health Brand": "https://source.unsplash.com/1200x200/?health,wellness,green",
+        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Brand+Insights",
     }
     selected_brand_image = st.sidebar.selectbox("Choose Brand Tab Hero", options=list(brand_image_options.keys()), index=0, key="brand_hero_image_selector")
     st.image(brand_image_options[selected_brand_image], use_container_width=True)
+    
+    # Custom CSS for health-focused green styling
+    st.markdown("""
+    <style>
+    .health-brand-metric {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 10px 0;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .wellness-insight-box {
+        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+        margin: 15px 0;
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+    
+    .brand-performance-card {
+        background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #81C784;
+        margin: 10px 0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     # Check for brand column with case sensitivity handling (no debug output)
     brand_column = None
@@ -2824,24 +2857,21 @@ with tab_brand:
                      queries[brand_column].notna().any())
     
     if not has_brand_data:
-        st.error(f"❌ No brand data available. Available columns: {list(queries.columns)}")
+        st.error(f"❌ No wellness brand data available. Available columns: {list(queries.columns)}")
         st.info("💡 Please ensure your dataset contains a brand column (brand, Brand, or Brand Name)")
         st.stop()
     
-    
-    # Filter out "Other" brand from all analysis
     # Filter out "Other" brand from all analysis (CASE-INSENSITIVE)
     brand_queries = queries[
         (queries[brand_column].notna()) & 
         (~queries[brand_column].str.lower().isin(['other', 'others']))
     ]
 
-    
     if brand_queries.empty:
-        st.error("❌ No valid brand data available after filtering.")
+        st.error("❌ No valid wellness brand data available after filtering.")
         st.stop()
     
-    # Brand Performance Metrics Row
+    # Health-focused Brand Performance Metrics Row
     total_brands = brand_queries[brand_column].nunique()
     top_brand = brand_queries.groupby(brand_column)['Counts'].sum().idxmax()
     avg_brand_counts = brand_queries.groupby(brand_column)['Counts'].sum().mean()
@@ -2850,6 +2880,44 @@ with tab_brand:
     brand_counts_sum = brand_queries.groupby(brand_column)['Counts'].sum()
     brand_dominance = (brand_counts_sum.max() / brand_counts_sum.sum() * 100)
     
+    # Health-themed metrics display
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{total_brands}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Total Wellness Brands</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">🏆</div>
+            <div style="font-size: 1.2em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_brand}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Leading Health Brand</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">📊</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{brand_dominance:.1f}%</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Market Concentration</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(int(avg_brand_counts))}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Avg Brand Volume</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -2857,9 +2925,8 @@ with tab_brand:
     col_left, col_right = st.columns([3, 2])
     
     with col_left:
-        
         # Enhanced Brand Performance Analysis
-        st.subheader("📈 Brand Performance Matrix")
+        st.subheader("📈 Wellness Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics
         bs_raw = brand_queries.groupby(brand_column).agg({
@@ -2875,7 +2942,7 @@ with tab_brand:
         # Rename the brand column to 'brand' for consistency
         bs_raw = bs_raw.rename(columns={brand_column: 'brand'})
 
-        # 🎯 FIXED: No need to filter again since brand_queries is already filtered
+        # No need to filter again since brand_queries is already filtered
         bs = bs_raw.copy()
 
         # Calculate Share % based on filtered data
@@ -2887,11 +2954,9 @@ with tab_brand:
         bs['cr'] = ((bs['conversions'] / bs['clicks']) * 100).fillna(0).round(2)
         bs['classic_cr'] = ((bs['conversions'] / bs['Counts']) * 100).round(2)
 
-        
         # Enhanced scatter plot for brand performance
-        # 🎯 OPTION: Show top 50 brands sorted by Counts
         num_scatter_brands = st.slider(
-            "Number of brands in scatter plot:", 
+            "Number of wellness brands in scatter plot:", 
             min_value=20, 
             max_value=100, 
             value=50, 
@@ -2908,13 +2973,12 @@ with tab_brand:
             size='clicks',
             color='cr',
             hover_name='brand',
-            title=f'<b style="color:#FF5A6E; font-size:18px;">Brand Performance Matrix: Top {num_scatter_brands} Brands 🎯</b>',
+            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Wellness Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
             labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
-            color_continuous_scale=['#E6F3FA', '#FFB085', '#FF5A6E'],
+            color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
 
-        
         fig_brand_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
                          'Search Counts: %{x:,.0f}<br>' +
@@ -2924,21 +2988,21 @@ with tab_brand:
         )
         
         fig_brand_perf.update_layout(
-            plot_bgcolor='rgba(255,255,255,0.95)',
-            paper_bgcolor='rgba(255,247,232,0.8)',
-            font=dict(color='#0B486B', family='Segoe UI'),
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
             title_x=0,
-            xaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
-            yaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
         )
         
         st.plotly_chart(fig_brand_perf, use_container_width=True)
         
         # Top Brands Performance Table
-        st.subheader("🏆 Top Brand Performance")
+        st.subheader("🏆 Top Wellness Brand Performance")
         
         num_brands = st.slider(
-            "Number of brands to display:", 
+            "Number of wellness brands to display:", 
             min_value=10, 
             max_value=50, 
             value=20, 
@@ -2951,9 +3015,9 @@ with tab_brand:
         # Create display version
         display_brands = top_brands.copy()
         display_brands = display_brands.rename(columns={
-            'brand': 'Brand',
+            'brand': 'Wellness Brand',
             'Counts': 'Search Counts',
-            'share_pct': 'Share %',
+            'share_pct': 'Market Share %',
             'clicks': 'Total Clicks',
             'conversions': 'Conversions',
             'ctr': 'CTR',
@@ -2963,7 +3027,7 @@ with tab_brand:
         
         # Format numbers
         display_brands['Search Counts'] = display_brands['Search Counts'].apply(lambda x: f"{x:,.0f}")
-        display_brands['Share %'] = display_brands['Share %'].apply(lambda x: f"{x:.2f}%")
+        display_brands['Market Share %'] = display_brands['Market Share %'].apply(lambda x: f"{x:.2f}%")
         display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(lambda x: f"{x:,.0f}")
         display_brands['Conversions'] = display_brands['Conversions'].apply(lambda x: f"{x:,.0f}")
         display_brands['CTR'] = display_brands['CTR'].apply(lambda x: f"{x:.2f}%")
@@ -2971,7 +3035,7 @@ with tab_brand:
         display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
         
         # Reorder columns
-        column_order = ['Brand', 'Search Counts', 'Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
+        column_order = ['Wellness Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
         display_brands = display_brands[column_order]
         
         st.dataframe(display_brands, use_container_width=True, hide_index=True)
@@ -2979,15 +3043,15 @@ with tab_brand:
         # Download button
         csv_brands = top_brands.to_csv(index=False)
         st.download_button(
-            label="📥 Download Brands CSV",
+            label="📥 Download Wellness Brands CSV",
             data=csv_brands,
-            file_name=f"top_{num_brands}_brands.csv",
+            file_name=f"top_{num_brands}_wellness_brands.csv",
             mime="text/csv",
             key="brand_csv_download"
         )
         
         # Brand Summary Data (calculated from queries)
-        st.subheader("📋 Brand Summary Data")
+        st.subheader("📋 Wellness Brand Summary Data")
         
         # Calculate brand summary from queries
         brand_summary_calc = []
@@ -3040,7 +3104,7 @@ with tab_brand:
             top_keywords_str = ', '.join([f"{kw}({cnt:,.0f})" for kw, cnt in top_keywords])
             
             brand_summary_calc.append({
-                'Brand': brand,
+                'Wellness Brand': brand,
                 'Search Counts': total_counts,
                 'Total Clicks': total_clicks,
                 'Conversions': total_conversions,
@@ -3048,7 +3112,7 @@ with tab_brand:
                 'CR': cr,
                 'Classic CR': classic_cr,
                 'Unique Keywords': unique_keywords_count,
-                'Top Keywords': top_keywords_str
+                'Top Health Keywords': top_keywords_str
             })
         
         brand_summary_df = pd.DataFrame(brand_summary_calc)
@@ -3070,54 +3134,58 @@ with tab_brand:
         # Download button for brand summary
         csv_summary = brand_summary_df.to_csv(index=False)
         st.download_button(
-            label="📥 Download Brand Summary CSV",
+            label="📥 Download Wellness Brand Summary CSV",
             data=csv_summary,
-            file_name="brand_summary_calculated.csv",
+            file_name="wellness_brand_summary_calculated.csv",
             mime="text/csv",
             key="brand_summary_calc_csv_download"
         )
     
     with col_right:
         # Brand Market Share Pie Chart (without "Other")
-        st.subheader("📊 Brand Market Share")
+        st.subheader("🌱 Wellness Brand Market Share")
         
         top_brands_pie = bs.nlargest(10, 'Counts')
+        
+        # Health-focused color palette
+        health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
+                        '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
         
         fig_pie = px.pie(
             top_brands_pie, 
             names='brand', 
             values='Counts',
-            title='<b style="color:#FF5A6E;">Market Share Distribution</b>',
-            color_discrete_sequence=['#FF5A6E', '#FFB085', '#E6F3FA', '#FF8A7A', '#FFF7E8', '#B8E6B8', '#87CEEB', '#DDA0DD', '#F0E68C', '#FFB6C1']
+            title='<b style="color:#2E7D32;">🌿 Health Market Distribution</b>',
+            color_discrete_sequence=health_colors
         )
         
         fig_pie.update_layout(
-            font=dict(color='#0B486B', family='Segoe UI'),
-            paper_bgcolor='rgba(255,247,232,0.8)'
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            paper_bgcolor='rgba(232,245,232,0.8)'
         )
         
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Brand Performance Categories
-        st.subheader("🎯 Brand Performance Categories")
+        st.subheader("🎯 Wellness Brand Performance Categories")
         
         # Categorize brands based on performance
         bs['performance_category'] = pd.cut(
             bs['ctr'], 
             bins=[0, 2, 5, 10, float('inf')], 
-            labels=['Low (0-2%)', 'Medium (2-5%)', 'High (5-10%)', 'Excellent (>10%)']
+            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
         )
         
         category_counts = bs['performance_category'].value_counts().reset_index()
-        category_counts.columns = ['Category', 'Count']
+        category_counts.columns = ['Performance Category', 'Count']
         
         fig_cat = px.bar(
             category_counts, 
-            x='Category', 
+            x='Performance Category', 
             y='Count',
-            title='<b style="color:#FF5A6E;">CTR Performance Distribution</b>',
+            title='<b style="color:#2E7D32;">🌿 CTR Performance Distribution</b>',
             color='Count',
-            color_continuous_scale=['#E6F3FA', '#FF5A6E'],
+            color_continuous_scale=['#E8F5E8', '#2E7D32'],
             text='Count'
         )
         
@@ -3127,23 +3195,23 @@ with tab_brand:
         )
         
         fig_cat.update_layout(
-            plot_bgcolor='rgba(255,255,255,0.95)',
-            paper_bgcolor='rgba(255,247,232,0.8)',
-            font=dict(color='#0B486B', family='Segoe UI'),
-            xaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
-            yaxis=dict(showgrid=True, gridcolor='#E6F3FA')
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
         )
         
         st.plotly_chart(fig_cat, use_container_width=True)
         
         # Enhanced Brand Trend Analysis with proper filter application
         if 'Date' in queries.columns:
-            st.subheader("📈 Brand Trend Analysis")
+            st.subheader("📈 Wellness Brand Trend Analysis")
             
             # Get top 5 brands for trend analysis
             top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
             
-            # CRITICAL FIX: Use the already filtered 'queries' data instead of 'brand_queries'
+            # Use the already filtered 'queries' data instead of 'brand_queries'
             trend_data = queries[
                 (queries[brand_column].notna()) & 
                 (queries[brand_column].str.lower() != 'other') &
@@ -3158,7 +3226,7 @@ with tab_brand:
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # FIX: Create proper monthly aggregation
+                        # Create proper monthly aggregation
                         trend_data['Month'] = trend_data['Date'].dt.to_period('M')
                         trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
@@ -3171,7 +3239,7 @@ with tab_brand:
                         
                         # Debug: Check if we have monthly data
                         unique_months = monthly_trends['Month_Display'].unique()
-                        st.write(f"📊 Monthly data available: {', '.join(sorted(unique_months))}")
+                        st.write(f"📊 Monthly wellness data available: {', '.join(sorted(unique_months))}")
                         
                         if len(monthly_trends) > 0:
                             fig_trend = px.line(
@@ -3179,26 +3247,26 @@ with tab_brand:
                                 x='Date', 
                                 y='Counts', 
                                 color='brand',
-                                title='<b style="color:#FF5A6E;">Top 5 Brands Monthly Trend</b>',
-                                color_discrete_sequence=['#FF5A6E', '#FFB085', '#E6F3FA', '#FF8A7A', '#B8E6B8'],
+                                title='<b style="color:#2E7D32;">🌿 Top 5 Wellness Brands Monthly Trend</b>',
+                                color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                 markers=True
                             )
                             
-                            # FIX: Format x-axis to show months properly
+                            # Format x-axis to show months properly
                             fig_trend.update_layout(
-                                plot_bgcolor='rgba(255,255,255,0.95)',
-                                paper_bgcolor='rgba(255,247,232,0.8)',
-                                font=dict(color='#0B486B', family='Segoe UI'),
+                                plot_bgcolor='rgba(248,255,248,0.95)',
+                                paper_bgcolor='rgba(232,245,232,0.8)',
+                                font=dict(color='#1B5E20', family='Segoe UI'),
                                 xaxis=dict(
                                     showgrid=True, 
-                                    gridcolor='#E6F3FA',
+                                    gridcolor='#C8E6C8',
                                     title='Month',
-                                    dtick="M1",  # Show monthly ticks
-                                    tickformat="%b %Y"  # Format as "Jun 2025"
+                                    dtick="M1",
+                                    tickformat="%b %Y"
                                 ),
                                 yaxis=dict(
                                     showgrid=True, 
-                                    gridcolor='#E6F3FA',
+                                    gridcolor='#C8E6C8',
                                     title='Search Counts'
                                 ),
                                 hovermode='x unified'
@@ -3212,20 +3280,18 @@ with tab_brand:
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
                         else:
-                            st.info("No trend data available for the selected date range and brands")
+                            st.info("No wellness trend data available for the selected date range and brands")
                     else:
-                        st.info("No valid dates found in the filtered data")
+                        st.info("No valid dates found in the filtered wellness data")
                 except Exception as e:
-                    st.error(f"Error processing trend data: {str(e)}")
+                    st.error(f"Error processing wellness trend data: {str(e)}")
             else:
-                st.info("No brand data available for the selected date range")
+                st.info("No wellness brand data available for the selected date range")
 
-
-    
     st.markdown("---")
     
     # Brand-Keyword Intelligence Matrix with Interactive Filter
-    st.subheader("🔥 Brand-Keyword Intelligence Matrix")
+    st.subheader("🔥 Wellness Brand-Keyword Intelligence Matrix")
 
     # Create brand filter dropdown
     if 'brand' in queries.columns and 'search' in queries.columns:
@@ -3240,17 +3306,17 @@ with tab_brand:
         available_brands = sorted(available_brands)
         
         # Create dropdown with "All Brands" option
-        brand_options = ['All Brands'] + list(available_brands)
+        brand_options = ['All Wellness Brands'] + list(available_brands)
         
         # Brand selection dropdown
         selected_brand = st.selectbox(
-            "🎯 Select Brand to Analyze:",
+            "🎯 Select Wellness Brand to Analyze:",
             options=brand_options,
             index=0  # Default to "All Brands"
         )
         
         # Filter data based on selection
-        if selected_brand == 'All Brands':
+        if selected_brand == 'All Wellness Brands':
             # Show top 8 brands if "All Brands" is selected - EXCLUDE "Other"
             top_brands = queries[
                 (queries['brand'].str.lower() != 'other') &
@@ -3259,11 +3325,11 @@ with tab_brand:
             ]['brand'].value_counts().head(8).index.tolist()
             
             filtered_data = queries[queries['brand'].isin(top_brands)]
-            matrix_title = "Top Brands vs Search Terms (Sum of Counts)"
+            matrix_title = "Top Wellness Brands vs Health Search Terms (Sum of Counts)"
         else:
             # Filter for selected brand only
             filtered_data = queries[queries['brand'] == selected_brand]
-            matrix_title = f"{selected_brand} - Search Terms Analysis (Sum of Counts)"
+            matrix_title = f"{selected_brand} - Health Search Terms Analysis (Sum of Counts)"
         
         # Remove null values and 'other' categories from search terms as well
         matrix_data = filtered_data[
@@ -3276,7 +3342,7 @@ with tab_brand:
         ].copy()
         
         if not matrix_data.empty:
-            if selected_brand == 'All Brands':
+            if selected_brand == 'All Wellness Brands':
                 # For all brands: Group by brand and search term, sum the counts
                 brand_search_matrix = matrix_data.groupby(['brand', 'search'])['Counts'].sum().reset_index()
                 
@@ -3306,16 +3372,16 @@ with tab_brand:
                     x='Counts',
                     y='search',
                     orientation='h',
-                    title=f'<b style="color:#FF5A6E;">{selected_brand} - Top Search Terms by Count</b>',
-                    labels={'Counts': 'Total Search Counts', 'search': 'Search Terms'},
+                    title=f'<b style="color:#2E7D32;">{selected_brand} - Top Health Search Terms by Count</b>',
+                    labels={'Counts': 'Total Search Counts', 'search': 'Health Search Terms'},
                     color='Counts',
-                    color_continuous_scale='Reds'
+                    color_continuous_scale=['#E8F5E8', '#2E7D32']
                 )
                 
                 fig_single.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
                     yaxis={'categoryorder': 'total ascending'}
                 )
@@ -3324,56 +3390,52 @@ with tab_brand:
                 
                 # Show summary
                 total_counts = search_counts['Counts'].sum()
-                st.info(f"📊 {selected_brand} has {len(search_counts)} top search terms with {total_counts:,} total counts")
+                st.info(f"📊 {selected_brand} has {len(search_counts)} top health search terms with {total_counts:,} total counts")
                 
             # Only create heatmap for "All Brands" view
-            if selected_brand == 'All Brands' and not heatmap_data.empty:
+            # Only create heatmap for "All Brands" view
+            if selected_brand == 'All Wellness Brands' and not heatmap_data.empty:
                 # Create the heatmap
                 fig_matrix = px.imshow(
                     heatmap_data.values,
-                    labels=dict(x="Search Terms", y="Brands", color="Total Counts"),
+                    labels=dict(x="Health Search Terms", y="Wellness Brands", color="Total Counts"),
                     x=heatmap_data.columns,
                     y=heatmap_data.index,
-                    color_continuous_scale='Reds',
-                    title=f'<b style="color:#FF5A6E;">{matrix_title}</b>',
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
                     aspect='auto'
                 )
                 
                 fig_matrix.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     xaxis=dict(tickangle=45),
                     height=500
                 )
                 
                 # Update hover template
                 fig_matrix.update_traces(
-                    hovertemplate='<b>Brand:</b> %{y}<br>' +
-                                '<b>Search Term:</b> %{x}<br>' +
-                                '<b>Total Counts:</b> %{z:,.0f}<extra></extra>'
+                    hovertemplate='<b>%{y}</b><br>' +
+                                 'Health Term: %{x}<br>' +
+                                 'Total Searches: %{z:,.0f}<extra></extra>'
                 )
                 
                 st.plotly_chart(fig_matrix, use_container_width=True)
                 
-                # Show summary statistics
-                total_interactions = brand_search_matrix['Counts'].sum()
-                st.info(f"📊 Matrix shows {len(heatmap_data.index)} brands × {len(heatmap_data.columns)} search terms with {total_interactions:,} total search counts")
-        
+                # Show matrix summary
+                total_matrix_counts = heatmap_data.values.sum()
+                st.info(f"📊 Matrix shows {len(heatmap_data.index)} wellness brands vs {len(heatmap_data.columns)} health search terms with {total_matrix_counts:,.0f} total searches")
         else:
-            st.warning("No data available for the selected brand filter")
-            
+            st.warning("⚠️ No wellness brand-keyword data available for analysis")
     else:
-        st.error("Required columns 'brand' and 'search' not found in the dataset")
+        st.error("❌ Required columns 'brand' and 'search' not found in the dataset")
 
-
-    
-    # Enhanced Key Insights and Recommendations
+    # Health-focused Brand Insights
     st.markdown("---")
     col_insight1, col_insight2 = st.columns(2)
     
     with col_insight1:
-        # Calculate meaningful insights
         top_brand_share = bs.iloc[0]['share_pct'] if not bs.empty else 0
         top_brand_name = bs.iloc[0]['brand'] if not bs.empty else "N/A"
         high_performers = len(bs[bs['ctr'] > 5]) if not bs.empty else 0
@@ -3381,29 +3443,317 @@ with tab_brand:
         brands_above_avg_cr = len(bs[bs['cr'] > avg_conversion_rate]) if not bs.empty else 0
         
         st.markdown(f"""
-        <div class='insight-box'>
-            <h4>🎯 Key Brand Insights</h4>
-            <p>• <strong>{top_brand_name}</strong> dominates with {top_brand_share:.1f}% share<br>
-            • {high_performers} brands achieve CTR > 5% (high performers)<br>
+        <div class='wellness-insight-box'>
+            <h4>🌿 Key Wellness Brand Insights</h4>
+            <p>• <strong>{top_brand_name}</strong> leads health market with {top_brand_share:.1f}% share<br>
+            • {high_performers} wellness brands achieve CTR > 5% (premium performance)<br>
             • {brands_above_avg_cr} brands exceed avg CR of {avg_conversion_rate:.2f}%<br>
-            • Market shows {"high" if brand_dominance > 30 else "moderate" if brand_dominance > 15 else "low"} concentration</p>
+            • Health market shows {"strong" if brand_dominance > 30 else "balanced" if brand_dominance > 15 else "fragmented"} brand concentration</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col_insight2:
-        # Calculate strategic recommendations based on data
         low_performers = len(bs[bs['ctr'] < 2]) if not bs.empty else 0
         opportunity_brands = len(bs[(bs['Counts'] > bs['Counts'].median()) & (bs['ctr'] < 3)]) if not bs.empty else 0
         
         st.markdown(f"""
-        <div class='insight-box'>
-            <h4>💡 Strategic Recommendations</h4>
-            <p>• Optimize {low_performers} underperforming brands (CTR < 2%)<br>
-            • {opportunity_brands} high-volume brands need CTR improvement<br>
-            • Focus on top keywords for leading brands<br>
-            • {"Diversify" if brand_dominance > 40 else "Strengthen"} brand portfolio strategy</p>
+        <div class='wellness-insight-box'>
+            <h4>💚 Health Brand Strategy Recommendations</h4>
+            <p>• Optimize {low_performers} underperforming wellness brands (CTR < 2%)<br>
+            • {opportunity_brands} high-volume health brands need engagement boost<br>
+            • Focus on wellness keywords for leading supplement brands<br>
+            • {"Diversify" if brand_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
         </div>
         """, unsafe_allow_html=True)
+
+    # Health Brand Performance Categories with green styling
+    st.markdown("---")
+    st.subheader("🎯 Wellness Brand Performance Tiers")
+    
+    # Create performance tiers specific to health brands
+    tier_col1, tier_col2, tier_col3 = st.columns(3)
+    
+    with tier_col1:
+        premium_brands = len(bs[bs['ctr'] > 8]) if not bs.empty else 0
+        premium_brand_list = bs[bs['ctr'] > 8]['brand'].tolist() if not bs.empty else []
+        st.markdown(f"""
+        <div class="brand-performance-card">
+            <h4 style="color: #1B5E20; text-align: center;">🏆 Premium Wellness</h4>
+            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{premium_brands}</div>
+            <p style="color: #388E3C; text-align: center; margin: 0;">CTR > 8% (Market Leaders)</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if premium_brand_list:
+            with st.expander("View Premium Wellness Brands"):
+                for brand in premium_brand_list[:5]:  # Show top 5
+                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
+                    st.write(f"🌟 **{brand}** - {brand_ctr:.2f}% CTR")
+    
+    with tier_col2:
+        growing_brands = len(bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)]) if not bs.empty else 0
+        growing_brand_list = bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)]['brand'].tolist() if not bs.empty else []
+        st.markdown(f"""
+        <div class="brand-performance-card">
+            <h4 style="color: #1B5E20; text-align: center;">🌱 Growing Wellness</h4>
+            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{growing_brands}</div>
+            <p style="color: #388E3C; text-align: center; margin: 0;">CTR 3-8% (Developing)</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if growing_brand_list:
+            with st.expander("View Growing Wellness Brands"):
+                for brand in growing_brand_list[:5]:  # Show top 5
+                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
+                    st.write(f"🌿 **{brand}** - {brand_ctr:.2f}% CTR")
+    
+    with tier_col3:
+        emerging_brands = len(bs[bs['ctr'] < 3]) if not bs.empty else 0
+        emerging_brand_list = bs[bs['ctr'] < 3]['brand'].tolist() if not bs.empty else []
+        st.markdown(f"""
+        <div class="brand-performance-card">
+            <h4 style="color: #1B5E20; text-align: center;">🌿 Emerging Wellness</h4>
+            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{emerging_brands}</div>
+            <p style="color: #388E3C; text-align: center; margin: 0;">CTR < 3% (Opportunity)</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if emerging_brand_list:
+            with st.expander("View Emerging Wellness Brands"):
+                for brand in emerging_brand_list[:5]:  # Show top 5
+                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
+                    st.write(f"🌱 **{brand}** - {brand_ctr:.2f}% CTR")
+
+    # Advanced Brand Intelligence Section
+    st.markdown("---")
+    st.subheader("🧠 Advanced Wellness Brand Intelligence")
+    
+    # Create advanced metrics tabs
+    intel_tab1, intel_tab2, intel_tab3 = st.tabs(["🎯 Brand Efficiency", "📈 Growth Potential", "🔍 Competitive Analysis"])
+    
+    with intel_tab1:
+        st.markdown("#### 🎯 Wellness Brand Efficiency Analysis")
+        
+        # Calculate efficiency metrics
+        if not bs.empty:
+            bs['efficiency_score'] = (bs['ctr'] * bs['cr']) / 100  # Combined efficiency
+            bs['cost_efficiency'] = bs['conversions'] / bs['Counts']  # Conversions per search
+            bs['engagement_ratio'] = bs['clicks'] / bs['Counts']  # Click engagement
+            
+            # Create efficiency scatter plot
+            fig_efficiency = px.scatter(
+                bs.head(20),
+                x='engagement_ratio',
+                y='cost_efficiency',
+                size='Counts',
+                color='efficiency_score',
+                hover_name='brand',
+                title='<b style="color:#2E7D32;">🌿 Wellness Brand Efficiency Matrix</b>',
+                labels={
+                    'engagement_ratio': 'Engagement Ratio (Clicks/Searches)',
+                    'cost_efficiency': 'Conversion Efficiency (Conversions/Searches)',
+                    'efficiency_score': 'Combined Efficiency Score'
+                },
+                color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32']
+            )
+            
+            fig_efficiency.update_layout(
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI')
+            )
+            
+            st.plotly_chart(fig_efficiency, use_container_width=True)
+            
+            # Top efficient brands
+            top_efficient = bs.nlargest(5, 'efficiency_score')[['brand', 'efficiency_score', 'ctr', 'cr']]
+            st.markdown("**🏆 Most Efficient Wellness Brands:**")
+            for idx, row in top_efficient.iterrows():
+                st.write(f"• **{row['brand']}** - Efficiency: {row['efficiency_score']:.3f} (CTR: {row['ctr']:.2f}%, CR: {row['cr']:.2f}%)")
+    
+    with intel_tab2:
+        st.markdown("#### 📈 Wellness Brand Growth Potential Analysis")
+        
+        if not bs.empty:
+            # Calculate growth metrics
+            bs['market_opportunity'] = bs['Counts'] * (1 - bs['ctr']/100)  # Untapped potential
+            bs['conversion_opportunity'] = bs['clicks'] * (1 - bs['cr']/100)  # Conversion potential
+            bs['growth_score'] = (bs['market_opportunity'] + bs['conversion_opportunity']) / 2
+            
+            # Growth potential chart
+            growth_data = bs.nlargest(15, 'growth_score')[['brand', 'growth_score', 'market_opportunity', 'conversion_opportunity']]
+            
+            fig_growth = px.bar(
+                growth_data,
+                x='brand',
+                y='growth_score',
+                title='<b style="color:#2E7D32;">🌱 Wellness Brand Growth Potential</b>',
+                color='growth_score',
+                color_continuous_scale=['#E8F5E8', '#2E7D32']
+            )
+            
+            fig_growth.update_layout(
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                xaxis_tickangle=-45
+            )
+            
+            st.plotly_chart(fig_growth, use_container_width=True)
+            
+            # Growth recommendations
+            st.markdown("**🚀 Growth Recommendations:**")
+            high_opportunity = growth_data.head(3)
+            for idx, row in high_opportunity.iterrows():
+                st.write(f"• **{row['brand']}** - Focus on improving engagement and conversion optimization")
+    
+    with intel_tab3:
+        st.markdown("#### 🔍 Competitive Wellness Brand Analysis")
+        
+        if not bs.empty and len(bs) >= 2:
+            # Competitive positioning
+            bs['competitive_index'] = (bs['share_pct'] * bs['ctr'] * bs['cr']) / 10000
+            bs['market_position'] = pd.cut(
+                bs['competitive_index'],
+                bins=[0, 0.001, 0.01, 0.1, float('inf')],
+                labels=['Challenger', 'Contender', 'Leader', 'Dominant']
+            )
+            
+            # Competitive matrix
+            comp_summary = bs['market_position'].value_counts().reset_index()
+            comp_summary.columns = ['Market Position', 'Brand Count']
+            
+            fig_comp = px.pie(
+                comp_summary,
+                names='Market Position',
+                values='Brand Count',
+                title='<b style="color:#2E7D32;">🏆 Wellness Brand Competitive Positioning</b>',
+                color_discrete_sequence=['#E8F5E8', '#A5D6A7', '#66BB6A', '#2E7D32']
+            )
+            
+            fig_comp.update_layout(
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                paper_bgcolor='rgba(232,245,232,0.8)'
+            )
+            
+            st.plotly_chart(fig_comp, use_container_width=True)
+            
+            # Competitive insights
+            leaders = bs[bs['market_position'] == 'Leader']['brand'].tolist() if 'Leader' in bs['market_position'].values else []
+            challengers = bs[bs['market_position'] == 'Challenger']['brand'].tolist() if 'Challenger' in bs['market_position'].values else []
+            
+            col_comp1, col_comp2 = st.columns(2)
+            
+            with col_comp1:
+                if leaders:
+                    st.markdown("**🏆 Market Leaders:**")
+                    for leader in leaders[:3]:
+                        leader_data = bs[bs['brand'] == leader].iloc[0]
+                        st.write(f"• **{leader}** - {leader_data['share_pct']:.1f}% share, {leader_data['ctr']:.2f}% CTR")
+            
+            with col_comp2:
+                if challengers:
+                    st.markdown("**🚀 Rising Challengers:**")
+                    for challenger in challengers[:3]:
+                        challenger_data = bs[bs['brand'] == challenger].iloc[0]
+                        st.write(f"• **{challenger}** - Growth opportunity brand")
+
+    # Final Brand Summary Dashboard
+    st.markdown("---")
+    st.subheader("📊 Wellness Brand Performance Dashboard Summary")
+    
+    # Create final summary metrics
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    with summary_col1:
+        total_searches = bs['Counts'].sum() if not bs.empty else 0
+        st.metric(
+            label="🌿 Total Health Searches",
+            value=f"{total_searches:,.0f}",
+            delta=f"{len(bs)} wellness brands analyzed"
+        )
+    
+    with summary_col2:
+        avg_market_ctr = bs['ctr'].mean() if not bs.empty else 0
+        top_ctr = bs['ctr'].max() if not bs.empty else 0
+        st.metric(
+            label="📈 Market Avg CTR",
+            value=f"{avg_market_ctr:.2f}%",
+            delta=f"Best: {top_ctr:.2f}%"
+        )
+    
+    with summary_col3:
+        total_conversions = bs['conversions'].sum() if not bs.empty else 0
+        avg_cr = bs['cr'].mean() if not bs.empty else 0
+        st.metric(
+            label="💚 Total Conversions",
+            value=f"{total_conversions:,.0f}",
+            delta=f"Avg CR: {avg_cr:.2f}%"
+        )
+    
+    with summary_col4:
+        market_concentration = f"{brand_dominance:.1f}%" if not bs.empty else "0%"
+        concentration_status = "High" if brand_dominance > 30 else "Medium" if brand_dominance > 15 else "Low"
+        st.metric(
+            label="🎯 Market Concentration",
+            value=market_concentration,
+            delta=f"{concentration_status} concentration"
+        )
+    
+    # Export all brand data
+    st.markdown("---")
+    st.subheader("📥 Export Wellness Brand Intelligence")
+    
+    export_col1, export_col2 = st.columns(2)
+    
+    with export_col1:
+        if not bs.empty:
+            # Comprehensive brand export
+            export_data = bs.copy()
+            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
+            
+            csv_export = export_data.to_csv(index=False)
+            st.download_button(
+                label="📊 Download Complete Wellness Brand Analysis",
+                data=csv_export,
+                file_name=f"wellness_brand_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="complete_brand_export"
+            )
+    
+    with export_col2:
+        if not bs.empty:
+            # Summary report
+            summary_report = f"""
+            WELLNESS BRAND INTELLIGENCE REPORT
+            Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
+            
+            MARKET OVERVIEW:
+            • Total Wellness Brands Analyzed: {len(bs)}
+            • Total Health Searches: {bs['Counts'].sum():,.0f}
+            • Market Leader: {bs.iloc[0]['brand']} ({bs.iloc[0]['share_pct']:.1f}% share)
+            • Average CTR: {bs['ctr'].mean():.2f}%
+            • Average CR: {bs['cr'].mean():.2f}%
+            
+            PERFORMANCE TIERS:
+            • Premium Brands (CTR > 8%): {len(bs[bs['ctr'] > 8])}
+            • Growing Brands (CTR 3-8%): {len(bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)])}
+            • Emerging Brands (CTR < 3%): {len(bs[bs['ctr'] < 3])}
+            
+            STRATEGIC INSIGHTS:
+            • Market concentration is {concentration_status.lower()}
+            • {len(bs[bs['ctr'] > 5])} brands achieve premium performance
+            • Growth opportunities exist in engagement optimization
+            """
+            
+            st.download_button(
+                label="📝 Download Executive Summary Report",
+                data=summary_report,
+                file_name=f"wellness_brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                key="executive_summary_export"
+            )
+
 
 
 
