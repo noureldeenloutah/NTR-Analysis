@@ -5957,89 +5957,215 @@ with tab_generic:
     st.markdown("Dive deep into generic term performance and search trends. 🚀")
 
     # Check if uploaded file exists in session state
-    if 'uploaded_file' not in st.session_state or st.session_state.uploaded_file is None:
+    # ============================================================================
+    # UNIFIED FILE LOADING AND PERSISTENCE SYSTEM
+    # ============================================================================
+
+    # Initialize session state for file persistence
+    if 'uploaded_file' not in st.session_state:
+        st.session_state.uploaded_file = None
+    if 'cached_excel_data' not in st.session_state:
+        st.session_state.cached_excel_data = None
+    if 'cached_file_name' not in st.session_state:
+        st.session_state.cached_file_name = None
+
+    # Check for uploaded file
+    uploaded_file = st.session_state.uploaded_file
+
+    if uploaded_file is None:
         st.warning("⚠️ Please upload a file first in the Data Upload section")
-        st.info("Go to the Data Upload tab to upload your Excel file with 'generic_type' sheet")
-        st.stop()
-    
-    try:
-        # Load the Excel file and check available sheets
-        uploaded_file = st.session_state.uploaded_file
-        excel_file = pd.ExcelFile(uploaded_file)
-        available_sheets = excel_file.sheet_names
+        st.info("👆 Go to the **Data Upload** tab to upload your Excel file with 'generic_type' sheet")
         
-        st.info(f"📋 Available sheets in your file: {', '.join(available_sheets)}")
+        # Optional: Add uploader here as fallback
+        fallback_upload = st.file_uploader(
+            "Or upload directly here:", 
+            type=['xlsx', 'xls'],
+            key="generic_fallback_uploader"
+        )
         
-        # Check if generic_type sheet exists
-        if 'generic_type' not in available_sheets:
-            st.error(f"❌ 'generic_type' sheet not found in uploaded file")
-            st.info(f"Available sheets: {', '.join(available_sheets)}")
-            st.info("Please ensure your Excel file contains a sheet named 'generic_type'")
+        if fallback_upload is not None:
+            st.session_state.uploaded_file = fallback_upload
+            st.session_state.cached_excel_data = None  # Reset cache
+            st.rerun()
+        else:
+            st.stop()
+
+    # ============================================================================
+    # CACHED EXCEL LOADING SYSTEM
+    # ============================================================================
+
+    @st.cache_data(show_spinner=False)
+    def load_excel_with_cache(file_bytes, file_name):
+        """Load Excel file with caching based on file content"""
+        try:
+            from io import BytesIO
+            excel_buffer = BytesIO(file_bytes)
+            excel_data = pd.ExcelFile(excel_buffer)
+            return excel_data
+        except Exception as e:
+            st.error(f"Error loading Excel: {str(e)}")
+            return None
+
+    # Load Excel data with caching
+    current_file_name = uploaded_file.name
+    file_bytes = uploaded_file.getvalue()
+
+    # Check if we need to reload (new file or no cached data)
+    if (st.session_state.cached_excel_data is None or 
+        st.session_state.cached_file_name != current_file_name):
+        
+        with st.spinner("📊 Loading Excel file..."):
+            excel_data = load_excel_with_cache(file_bytes, current_file_name)
             
-            # Offer alternative: use queries_clustered if available
-            if 'queries_clustered' in available_sheets:
-                st.info("💡 Found 'queries_clustered' sheet. Would you like to analyze that instead?")
-                use_queries_clustered = st.button("📊 Analyze 'queries_clustered' sheet", key="use_queries_clustered")
-                
-                if use_queries_clustered:
-                    # Load queries_clustered sheet and map columns
-                    with st.spinner("📊 Loading queries_clustered data..."):
-                        generic_type = pd.read_excel(uploaded_file, sheet_name='queries_clustered')
+            if excel_data is None:
+                st.error("❌ Failed to load Excel file")
+                st.stop()
+            
+            # Cache the loaded data
+            st.session_state.cached_excel_data = excel_data
+            st.session_state.cached_file_name = current_file_name
+            
+            st.success(f"✅ File loaded: **{current_file_name}**")
+
+    # Use cached Excel data
+    excel_data = st.session_state.cached_excel_data
+    available_sheets = excel_data.sheet_names
+
+    st.info(f"📋 Available sheets in your file: {', '.join(available_sheets)}")
+
+    # ============================================================================
+    # SHEET SELECTION AND LOADING
+    # ============================================================================
+
+    generic_type = None
+
+    # Check if generic_type sheet exists
+    if 'generic_type' not in available_sheets:
+        st.error(f"❌ 'generic_type' sheet not found in uploaded file")
+        st.info(f"Available sheets: {', '.join(available_sheets)}")
+        
+        # Offer alternative sheets
+        alternative_sheets = [sheet for sheet in available_sheets 
+                            if any(keyword in sheet.lower() 
+                                for keyword in ['queries', 'generic', 'search', 'clustered'])]
+        
+        if alternative_sheets:
+            st.info("💡 Found potential alternative sheets:")
+            selected_sheet = st.selectbox(
+                "Choose an alternative sheet to analyze:",
+                options=[''] + alternative_sheets,
+                key="alternative_sheet_selector"
+            )
+            
+            if selected_sheet:
+                with st.spinner(f"📊 Loading '{selected_sheet}' data..."):
+                    try:
+                        generic_type = pd.read_excel(excel_data, sheet_name=selected_sheet)
                         
-                        # Map columns to expected format
-                        column_mapping = {
-                            'search': 'search',
-                            'Counts': 'count',
-                            'clicks': 'Clicks', 
-                            'conversions': 'Conversions'
-                        }
-                        
-                        # Check if required columns exist (with different names)
-                        missing_cols = []
-                        for expected_col, actual_col in column_mapping.items():
-                            if actual_col not in generic_type.columns:
-                                missing_cols.append(f"{expected_col} (looking for '{actual_col}')")
-                        
-                        if missing_cols:
-                            st.error(f"❌ Missing required columns: {', '.join(missing_cols)}")
-                            st.info(f"Available columns: {', '.join(generic_type.columns.tolist())}")
-                            st.stop()
-                        
-                        # Rename columns to match expected format
-                        generic_type = generic_type.rename(columns={
+                        # Smart column mapping for different sheet types
+                        column_mappings = {
                             'Counts': 'count',
                             'clicks': 'Clicks',
-                            'conversions': 'Conversions'
-                        })
+                            'conversions': 'Conversions',
+                            'Search': 'search',
+                            'Query': 'search',
+                            'query': 'search'
+                        }
                         
-                        st.success(f"✅ Successfully loaded {len(generic_type)} records from 'queries_clustered' sheet")
-                else:
-                    st.stop()
+                        # Apply column mapping
+                        for old_col, new_col in column_mappings.items():
+                            if old_col in generic_type.columns:
+                                generic_type = generic_type.rename(columns={old_col: new_col})
+                        
+                        st.success(f"✅ Successfully loaded {len(generic_type)} records from '{selected_sheet}' sheet")
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error loading '{selected_sheet}': {str(e)}")
+                        st.stop()
             else:
+                st.info("Please select a sheet to continue")
                 st.stop()
         else:
-            # Load generic_type sheet directly
-            with st.spinner("📊 Loading generic_type data..."):
-                generic_type = pd.read_excel(uploaded_file, sheet_name='generic_type')
-                st.success(f"✅ Successfully loaded {len(generic_type)} records from 'generic_type' sheet")
-        
-        # Check if data is empty
-        if generic_type is None or generic_type.empty:
-            st.warning("⚠️ The selected sheet appears to be empty")
-            st.info("Please check your data and try again")
+            st.error("No suitable alternative sheets found")
             st.stop()
+    else:
+        # Load generic_type sheet directly
+        with st.spinner("📊 Loading generic_type data..."):
+            try:
+                generic_type = pd.read_excel(excel_data, sheet_name='generic_type')
+                st.success(f"✅ Successfully loaded {len(generic_type)} records from 'generic_type' sheet")
+            except Exception as e:
+                st.error(f"❌ Error loading generic_type sheet: {str(e)}")
+                st.stop()
+
+    # ============================================================================
+    # DATA VALIDATION AND CLEANING
+    # ============================================================================
+
+    # Check if data is empty
+    if generic_type is None or generic_type.empty:
+        st.warning("⚠️ The selected sheet appears to be empty")
+        st.info("Please check your data and try again")
+        st.stop()
+
+    # Display column information for debugging
+    with st.expander("🔍 Data Structure Information", expanded=False):
+        st.write("**Available Columns:**")
+        st.write(generic_type.columns.tolist())
+        st.write("**First 5 rows:**")
+        st.dataframe(generic_type.head())
+        st.write(f"**Data Shape:** {generic_type.shape[0]} rows × {generic_type.shape[1]} columns")
+
+    # Data validation and cleaning
+    required_columns = ['search', 'count', 'Clicks', 'Conversions']
+    missing_columns = [col for col in required_columns if col not in generic_type.columns]
+
+    if missing_columns:
+        st.error(f"❌ Missing required columns: {', '.join(missing_columns)}")
+        st.info("Please ensure your data contains these columns:")
+        for col in required_columns:
+            st.write(f"- **{col}**")
+        st.info(f"Your data has: {', '.join(generic_type.columns.tolist())}")
         
-        # Display column information for debugging
-        with st.expander("🔍 Data Structure Information", expanded=False):
-            st.write("**Available Columns:**")
-            st.write(generic_type.columns.tolist())
-            st.write("**First 5 rows:**")
-            st.dataframe(generic_type.head())
-            st.write(f"**Data Shape:** {generic_type.shape[0]} rows × {generic_type.shape[1]} columns")
-        
-        # Use the loaded generic_type data directly
-        gt = generic_type.copy()
-        
+        # Show potential column matches
+        st.markdown("### 🔧 Potential Column Matches:")
+        for missing_col in missing_columns:
+            similar_cols = [col for col in generic_type.columns 
+                        if missing_col.lower() in col.lower() or col.lower() in missing_col.lower()]
+            if similar_cols:
+                st.write(f"- **{missing_col}** might be: {', '.join(similar_cols)}")
+        st.stop()
+
+    # Clean numeric data
+    numeric_columns = ['count', 'Clicks', 'Conversions']
+    for col in numeric_columns:
+        generic_type[col] = pd.to_numeric(generic_type[col], errors='coerce').fillna(0)
+
+    # Remove rows with missing search terms
+    original_len = len(generic_type)
+    generic_type = generic_type.dropna(subset=['search'])
+    generic_type = generic_type[generic_type['search'].astype(str).str.strip() != '']
+
+    if len(generic_type) < original_len:
+        removed_rows = original_len - len(generic_type)
+        st.info(f"🧹 Cleaned data: Removed {removed_rows} rows with empty search terms")
+
+    if generic_type.empty:
+        st.warning("⚠️ No valid generic type data found after cleaning.")
+        st.info("Please check your data for empty search terms or invalid values.")
+        st.stop()
+
+    # Use the cleaned data
+    gt = generic_type.copy()
+
+    # Add reload button
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("🔄 Reload Data"):
+            st.session_state.cached_excel_data = None
+            st.session_state.cached_file_name = None
+            st.rerun()
+
         # Data validation and cleaning
         required_columns = ['search', 'count', 'Clicks', 'Conversions']
         missing_columns = [col for col in required_columns if col not in gt.columns]
