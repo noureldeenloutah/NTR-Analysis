@@ -3755,22 +3755,89 @@ with tab_brand:
             )
 
 
-
-
-# ----------------- Category Tab (Enhanced & Optimized) -----------------
+# ----------------- Category Tab (Enhanced & Health-Focused) -----------------
 with tab_category:
-    st.header("📦 Category Intelligence Hub")
-    st.markdown("Comprehensive category performance analysis with strategic insights and competitive intelligence. 🌟")
+    st.header("🌿 Wellness Category Intelligence Hub")
+    st.markdown("Comprehensive health category performance analysis with strategic insights and competitive intelligence. 💚")
     
     # Hero Image for Category Tab
     category_image_options = {
-        "Category Analytics Focus": "https://placehold.co/1200x200/E6F3FA/FF5A6E?text=Category+Performance+Analysis",
-        "Product Categories": "https://placehold.co/1200x200/FF5A6E/FFFFFF?text=Category+Intelligence+Dashboard",
-        "Abstract Categories": "https://source.unsplash.com/1200x200/?categories,products",
-        "Abstract Gradient": "https://placehold.co/1200x200/E6F3FA/FF5A6E?text=Lady+Care+Category+Insights",
+        "Health Category Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Category+Performance+Analysis",
+        "Wellness Categories": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Category+Intelligence+Dashboard",
+        "Abstract Health Categories": "https://source.unsplash.com/1200x200/?health,wellness,categories",
+        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Health+Category+Insights",
     }
     selected_category_image = st.sidebar.selectbox("Choose Category Tab Hero", options=list(category_image_options.keys()), index=0, key="category_hero_image_selector")
     st.image(category_image_options[selected_category_image], use_container_width=True)
+    
+    # Custom CSS for health-focused green styling
+    st.markdown("""
+    <style>
+    .health-category-metric {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 10px 0;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .wellness-category-insight {
+        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+        margin: 15px 0;
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+    
+    .enhanced-health-metric {
+        background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
+        margin: 10px 0;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .enhanced-health-metric .icon {
+        font-size: 3em;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .enhanced-health-metric .value {
+        font-size: 1.6em;
+        font-weight: bold;
+        margin-bottom: 8px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+    }
+    
+    .enhanced-health-metric .label {
+        font-size: 1.1em;
+        opacity: 0.95;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    
+    .enhanced-health-metric .sub-label {
+        font-size: 1em;
+        opacity: 0.9;
+        font-weight: 500;
+        line-height: 1.2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     # Check for category column with case sensitivity handling
     category_column = None
@@ -3786,23 +3853,21 @@ with tab_category:
                         queries[category_column].notna().any())
     
     if not has_category_data:
-        st.error(f"❌ No category data available. Available columns: {list(queries.columns)}")
+        st.error(f"❌ No wellness category data available. Available columns: {list(queries.columns)}")
         st.info("💡 Please ensure your dataset contains a category column (category, Category, or Category Name)")
         st.stop()
-    
     
     # Filter out "Other" category from all analysis
     category_queries = queries[
         (queries[category_column].notna()) & 
-        (queries[category_column].str.lower() != 'other') &
-        (queries[category_column].str.lower() != 'others')
+        (~queries[category_column].str.lower().isin(['other', 'others']))
     ]
     
     if category_queries.empty:
-        st.error("❌ No valid category data available after filtering.")
+        st.error("❌ No valid wellness category data available after filtering.")
         st.stop()
     
-    # Category Performance Metrics Row
+    # Health Category Performance Metrics Row
     total_categories = category_queries[category_column].nunique()
     top_category = category_queries.groupby(category_column)['Counts'].sum().idxmax()
     avg_category_counts = category_queries.groupby(category_column)['Counts'].sum().mean()
@@ -3814,37 +3879,37 @@ with tab_category:
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
         st.markdown(f"""
-        <div class='mini-metric'>
-            <span class='icon'>📦</span>
-            <div class='value'>{format_number(total_categories)}</div>
-            <div class='label'>Total Categories</div>
+        <div class="health-category-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(total_categories)}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Total Health Categories</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m2:
         st.markdown(f"""
-        <div class='mini-metric'>
-            <span class='icon'>👑</span>
-            <div class='value'>{top_category[:15]}...</div>
-            <div class='label'>Top Category</div>
+        <div class="health-category-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">👑</div>
+            <div style="font-size: 1.2em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_category[:15]}...</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Leading Health Category</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m3:
         st.markdown(f"""
-        <div class='mini-metric'>
-            <span class='icon'>⚡</span>
-            <div class='value'>{category_dominance:.1f}%</div>
-            <div class='label'>Category Dominance</div>
+        <div class="health-category-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">⚡</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{category_dominance:.1f}%</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Category Concentration</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m4:
         st.markdown(f"""
-        <div class='mini-metric'>
-            <span class='icon'>📊</span>
-            <div class='value'>{format_number(avg_category_counts)}</div>
-            <div class='label'>Avg Search Counts</div>
+        <div class="health-category-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">📊</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(avg_category_counts)}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Avg Health Searches</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -3855,7 +3920,7 @@ with tab_category:
     
     with col_left:
         # Enhanced Category Performance Analysis
-        st.subheader("📈 Category Performance Matrix")
+        st.subheader("📈 Wellness Category Performance Matrix")
         
         # Calculate comprehensive category metrics
         cs = category_queries.groupby(category_column).agg({
@@ -3863,6 +3928,10 @@ with tab_category:
             'clicks': 'sum', 
             'conversions': 'sum'
         }).reset_index()
+        
+        # Round to integers for cleaner display
+        cs['clicks'] = cs['clicks'].round().astype(int)
+        cs['conversions'] = cs['conversions'].round().astype(int)
         
         # Rename the category column to 'category' for consistency
         cs = cs.rename(columns={category_column: 'category'})
@@ -3884,27 +3953,27 @@ with tab_category:
             size='clicks',
             color='cr',
             hover_name='category',
-            title='<b style="color:#FF5A6E; font-size:18px;">Category Performance Matrix: Search Counts vs CTR 🎯</b>',
-            labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
-            color_continuous_scale=['#E6F3FA', '#FFB085', '#FF5A6E'],
+            title='<b style="color:#2E7D32; font-size:18px;">🌿 Wellness Category Performance Matrix: Search Volume vs CTR</b>',
+            labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
         
         fig_category_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
-                         'Search Counts: %{x:,.0f}<br>' +
+                         'Health Searches: %{x:,.0f}<br>' +
                          'CTR: %{y:.2f}%<br>' +
                          'Total Clicks: %{marker.size:,.0f}<br>' +
                          'Conversion Rate: %{marker.color:.2f}%<extra></extra>'
         )
         
         fig_category_perf.update_layout(
-            plot_bgcolor='rgba(255,255,255,0.95)',
-            paper_bgcolor='rgba(255,247,232,0.8)',
-            font=dict(color='#0B486B', family='Segoe UI'),
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
             title_x=0,
-            xaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
-            yaxis=dict(showgrid=True, gridcolor='#E6F3FA', linecolor='#FF5A6E', linewidth=2),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
         )
         
         st.plotly_chart(fig_category_perf, use_container_width=True)
@@ -3918,9 +3987,9 @@ with tab_category:
                 cs.sort_values('Counts', ascending=False).head(15), 
                 x='category', 
                 y='Counts',
-                title='<b style="color:#FF5A6E;">Search Counts by Category</b>',
+                title='<b style="color:#2E7D32;">🌱 Health Searches by Category</b>',
                 color='Counts',
-                color_continuous_scale='Reds',
+                color_continuous_scale=['#E8F5E8', '#2E7D32'],
                 text='Counts'
             )
             
@@ -3930,11 +3999,11 @@ with tab_category:
             )
             
             fig_counts.update_layout(
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
-                yaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
                 height=400
             )
             
@@ -3946,9 +4015,9 @@ with tab_category:
                 cs.sort_values('cr', ascending=False).head(15), 
                 x='category', 
                 y='cr',
-                title='<b style="color:#FF5A6E;">Conversion Rate by Category (%)</b>',
+                title='<b style="color:#2E7D32;">💚 Wellness Conversion Rate by Category (%)</b>',
                 color='cr',
-                color_continuous_scale='Blues',
+                color_continuous_scale=['#A5D6A7', '#1B5E20'],
                 text='cr'
             )
             
@@ -3958,21 +4027,21 @@ with tab_category:
             )
             
             fig_cr.update_layout(
-                plot_bgcolor='rgba(255,255,255,0.95)',
-                paper_bgcolor='rgba(255,247,232,0.8)',
-                font=dict(color='#0B486B', family='Segoe UI'),
-                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#E6F3FA'),
-                yaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
                 height=400
             )
             
             st.plotly_chart(fig_cr, use_container_width=True)
         
         # Top Categories Performance Table
-        st.subheader("🏆 Top Category Performance")
+        st.subheader("🏆 Top Wellness Category Performance")
         
         num_categories = st.slider(
-            "Number of categories to display:", 
+            "Number of health categories to display:", 
             min_value=10, 
             max_value=50, 
             value=20, 
@@ -3985,9 +4054,9 @@ with tab_category:
         # Create display version
         display_categories = top_categories.copy()
         display_categories = display_categories.rename(columns={
-            'category': 'Category',
+            'category': 'Health Category',
             'Counts': 'Search Counts',
-            'share_pct': 'Share %',
+            'share_pct': 'Market Share %',
             'clicks': 'Total Clicks',
             'conversions': 'Conversions',
             'ctr': 'CTR',
@@ -3997,7 +4066,7 @@ with tab_category:
         
         # Format numbers
         display_categories['Search Counts'] = display_categories['Search Counts'].apply(lambda x: f"{x:,.0f}")
-        display_categories['Share %'] = display_categories['Share %'].apply(lambda x: f"{x:.2f}%")
+        display_categories['Market Share %'] = display_categories['Market Share %'].apply(lambda x: f"{x:.2f}%")
         display_categories['Total Clicks'] = display_categories['Total Clicks'].apply(lambda x: f"{x:,.0f}")
         display_categories['Conversions'] = display_categories['Conversions'].apply(lambda x: f"{x:,.0f}")
         display_categories['CTR'] = display_categories['CTR'].apply(lambda x: f"{x:.2f}%")
@@ -4005,7 +4074,7 @@ with tab_category:
         display_categories['Classic CR'] = display_categories['Classic CR'].apply(lambda x: f"{x:.2f}%")
         
         # Reorder columns
-        column_order = ['Category', 'Search Counts', 'Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
+        column_order = ['Health Category', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
         display_categories = display_categories[column_order]
         
         st.dataframe(display_categories, use_container_width=True, hide_index=True)
@@ -4013,54 +4082,58 @@ with tab_category:
         # Download button
         csv_categories = top_categories.to_csv(index=False)
         st.download_button(
-            label="📥 Download Categories CSV",
+            label="📥 Download Wellness Categories CSV",
             data=csv_categories,
-            file_name=f"top_{num_categories}_categories.csv",
+            file_name=f"top_{num_categories}_wellness_categories.csv",
             mime="text/csv",
             key="category_csv_download"
         )
     
     with col_right:
         # Category Market Share Pie Chart
-        st.subheader("📊 Category Market Share")
+        st.subheader("🌱 Wellness Category Market Share")
         
         top_categories_pie = cs.nlargest(10, 'Counts')
+        
+        # Health-focused color palette
+        health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
+                        '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
         
         fig_pie = px.pie(
             top_categories_pie, 
             names='category', 
             values='Counts',
-            title='<b style="color:#FF5A6E;">Market Share Distribution</b>',
-            color_discrete_sequence=['#FF5A6E', '#FFB085', '#E6F3FA', '#FF8A7A', '#FFF7E8', '#B8E6B8', '#87CEEB', '#DDA0DD', '#F0E68C', '#FFB6C1']
+            title='<b style="color:#2E7D32;">🌿 Health Market Distribution</b>',
+            color_discrete_sequence=health_colors
         )
         
         fig_pie.update_layout(
-            font=dict(color='#0B486B', family='Segoe UI'),
-            paper_bgcolor='rgba(255,247,232,0.8)'
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            paper_bgcolor='rgba(232,245,232,0.8)'
         )
         
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Category Performance Categories
-        st.subheader("🎯 Category Performance Distribution")
+        st.subheader("🎯 Wellness Category Performance Distribution")
         
         # Categorize categories based on performance
         cs['performance_category'] = pd.cut(
             cs['ctr'], 
             bins=[0, 2, 5, 10, float('inf')], 
-            labels=['Low (0-2%)', 'Medium (2-5%)', 'High (5-10%)', 'Excellent (>10%)']
+            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
         )
         
         category_perf_counts = cs['performance_category'].value_counts().reset_index()
-        category_perf_counts.columns = ['Performance', 'Count']
+        category_perf_counts.columns = ['Performance Level', 'Count']
         
         fig_cat_perf = px.bar(
             category_perf_counts, 
-            x='Performance', 
+            x='Performance Level', 
             y='Count',
-            title='<b style="color:#FF5A6E;">CTR Performance Distribution</b>',
+            title='<b style="color:#2E7D32;">🌿 Health CTR Performance Distribution</b>',
             color='Count',
-            color_continuous_scale=['#E6F3FA', '#FF5A6E'],
+            color_continuous_scale=['#E8F5E8', '#2E7D32'],
             text='Count'
         )
         
@@ -4070,18 +4143,18 @@ with tab_category:
         )
         
         fig_cat_perf.update_layout(
-            plot_bgcolor='rgba(255,255,255,0.95)',
-            paper_bgcolor='rgba(255,247,232,0.8)',
-            font=dict(color='#0B486B', family='Segoe UI'),
-            xaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
-            yaxis=dict(showgrid=True, gridcolor='#E6F3FA')
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
         )
         
         st.plotly_chart(fig_cat_perf, use_container_width=True)
         
         # Enhanced Category Trend Analysis
         if 'Date' in queries.columns:
-            st.subheader("📈 Category Trend Analysis")
+            st.subheader("📈 Wellness Category Trend Analysis")
             
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
@@ -4115,26 +4188,26 @@ with tab_category:
                                 x='Date', 
                                 y='Counts', 
                                 color='category',
-                                title='<b style="color:#FF5A6E;">Top 5 Categories Monthly Trend</b>',
-                                color_discrete_sequence=['#FF5A6E', '#FFB085', '#E6F3FA', '#FF8A7A', '#B8E6B8'],
+                                title='<b style="color:#2E7D32;">🌿 Top 5 Health Categories Monthly Trend</b>',
+                                color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                 markers=True
                             )
                             
                             fig_trend.update_layout(
-                                plot_bgcolor='rgba(255,255,255,0.95)',
-                                paper_bgcolor='rgba(255,247,232,0.8)',
-                                font=dict(color='#0B486B', family='Segoe UI'),
+                                plot_bgcolor='rgba(248,255,248,0.95)',
+                                paper_bgcolor='rgba(232,245,232,0.8)',
+                                font=dict(color='#1B5E20', family='Segoe UI'),
                                 xaxis=dict(
                                     showgrid=True, 
-                                    gridcolor='#E6F3FA',
+                                    gridcolor='#C8E6C8',
                                     title='Month',
                                     dtick="M1",
                                     tickformat="%b %Y"
                                 ),
                                 yaxis=dict(
                                     showgrid=True, 
-                                    gridcolor='#E6F3FA',
-                                    title='Search Counts'
+                                    gridcolor='#C8E6C8',
+                                    title='Health Searches'
                                 ),
                                 hovermode='x unified'
                             )
@@ -4142,23 +4215,23 @@ with tab_category:
                             fig_trend.update_traces(
                                 hovertemplate='<b>%{fullData.name}</b><br>' +
                                             'Month: %{x|%B %Y}<br>' +
-                                            'Searches: %{y:,.0f}<extra></extra>'
+                                            'Health Searches: %{y:,.0f}<extra></extra>'
                             )
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
                         else:
-                            st.info("No trend data available for the selected date range and categories")
+                            st.info("No wellness trend data available for the selected date range and categories")
                     else:
-                        st.info("No valid dates found in the filtered data")
+                        st.info("No valid dates found in the filtered wellness data")
                 except Exception as e:
-                    st.error(f"Error processing trend data: {str(e)}")
+                    st.error(f"Error processing wellness trend data: {str(e)}")
             else:
-                st.info("No category data available for the selected date range")
+                st.info("No wellness category data available for the selected date range")
     
     st.markdown("---")
     
     # Enhanced Category-Keyword Intelligence Matrix
-    st.subheader("🔥 Category-Keyword Intelligence Matrix")
+    st.subheader("🔥 Wellness Category-Keyword Intelligence Matrix")
     
     # Create category filter dropdown
     if 'search' in queries.columns:
@@ -4169,36 +4242,35 @@ with tab_category:
         available_categories = sorted(available_categories)
         
         # Create dropdown with "All Categories" option
-        category_options = ['All Categories'] + list(available_categories)
+        category_options = ['All Health Categories'] + list(available_categories)
         
         # Category selection dropdown
         selected_category = st.selectbox(
-            "🎯 Select Category to Analyze:",
+            "🎯 Select Health Category to Analyze:",
             options=category_options,
             index=0  # Default to "All Categories"
         )
         
         # Filter data based on selection
-        if selected_category == 'All Categories':
+        if selected_category == 'All Health Categories':
             # Show top 8 categories if "All Categories" is selected
             top_categories_matrix = cs.nlargest(8, 'Counts')['category'].tolist()
             filtered_data = category_queries[category_queries[category_column].isin(top_categories_matrix)]
-            matrix_title = "Top Categories vs Search Terms (Sum of Counts)"
+            matrix_title = "Top Health Categories vs Wellness Search Terms (Sum of Counts)"
         else:
             # Filter for selected category only
             filtered_data = category_queries[category_queries[category_column] == selected_category]
-            matrix_title = f"{selected_category} - Search Terms Analysis (Sum of Counts)"
+            matrix_title = f"{selected_category} - Wellness Search Terms Analysis (Sum of Counts)"
         
         # Remove null values from search terms
         matrix_data = filtered_data[
             (filtered_data[category_column].notna()) & 
             (filtered_data['search'].notna()) &
-            (filtered_data['search'].str.lower() != 'other') &
-            (filtered_data['search'].str.lower() != 'others')
+            (~filtered_data['search'].str.lower().isin(['other', 'others']))
         ].copy()
         
         if not matrix_data.empty:
-            if selected_category == 'All Categories':
+            if selected_category == 'All Health Categories':
                 # For all categories: Group by category and search term, sum the counts
                 category_search_matrix = matrix_data.groupby([category_column, 'search'])['Counts'].sum().reset_index()
                 category_search_matrix = category_search_matrix.rename(columns={category_column: 'category'})
@@ -4218,34 +4290,34 @@ with tab_category:
                     # Create the heatmap
                     fig_matrix = px.imshow(
                         heatmap_data.values,
-                        labels=dict(x="Search Terms", y="Categories", color="Total Counts"),
+                        labels=dict(x="Wellness Search Terms", y="Health Categories", color="Total Counts"),
                         x=heatmap_data.columns,
                         y=heatmap_data.index,
-                        color_continuous_scale='Reds',
-                        title=f'<b style="color:#FF5A6E;">{matrix_title}</b>',
+                        color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                        title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
                         aspect='auto'
                     )
                     
                     fig_matrix.update_layout(
-                        plot_bgcolor='rgba(255,255,255,0.95)',
-                        paper_bgcolor='rgba(255,247,232,0.8)',
-                        font=dict(color='#0B486B', family='Segoe UI'),
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
                         xaxis=dict(tickangle=45),
                         height=500
                     )
                     
                     # Update hover template
                     fig_matrix.update_traces(
-                        hovertemplate='<b>Category:</b> %{y}<br>' +
-                                    '<b>Search Term:</b> %{x}<br>' +
-                                    '<b>Total Counts:</b> %{z:,.0f}<extra></extra>'
+                        hovertemplate='<b>Health Category:</b> %{y}<br>' +
+                                    '<b>Wellness Term:</b> %{x}<br>' +
+                                    '<b>Total Searches:</b> %{z:,.0f}<extra></extra>'
                     )
                     
                     st.plotly_chart(fig_matrix, use_container_width=True)
                     
                     # Show summary statistics
                     total_interactions = category_search_matrix['Counts'].sum()
-                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} categories × {len(heatmap_data.columns)} search terms with {total_interactions:,} total search counts")
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} wellness search terms with {total_interactions:,} total searches")
             else:
                 # For single category: Show search terms analysis
                 search_counts = matrix_data.groupby('search')['Counts'].sum().reset_index()
@@ -4257,16 +4329,16 @@ with tab_category:
                     x='Counts',
                     y='search',
                     orientation='h',
-                    title=f'<b style="color:#FF5A6E;">{selected_category} - Top Search Terms by Count</b>',
-                    labels={'Counts': 'Total Search Counts', 'search': 'Search Terms'},
+                    title=f'<b style="color:#2E7D32;">{selected_category} - Top Wellness Search Terms by Count</b>',
+                    labels={'Counts': 'Total Health Searches', 'search': 'Wellness Search Terms'},
                     color='Counts',
-                    color_continuous_scale='Reds'
+                    color_continuous_scale=['#E8F5E8', '#2E7D32']
                 )
                 
                 fig_single.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
                     yaxis={'categoryorder': 'total ascending'}
                 )
@@ -4275,14 +4347,14 @@ with tab_category:
                 
                 # Show summary
                 total_counts = search_counts['Counts'].sum()
-                st.info(f"📊 {selected_category} has {len(search_counts)} top search terms with {total_counts:,} total counts")
+                st.info(f"📊 {selected_category} has {len(search_counts)} top wellness search terms with {total_counts:,} total searches")
         else:
-            st.warning("No data available for the selected category filter")
+            st.warning("⚠️ No wellness category data available for the selected filter")
     
     st.markdown("---")
     
     # Enhanced Top Keywords per Category Analysis
-    st.subheader("🔑 Top Keywords per Category Analysis")
+    st.subheader("🔑 Top Health Keywords per Wellness Category Analysis")
     
     try:
         # Calculate keywords per category using the enhanced approach
@@ -4327,8 +4399,8 @@ with tab_category:
             
             # Display options
             display_option = st.radio(
-                "Choose display format:",
-                ["Interactive Table", "Heatmap Visualization", "Top Keywords Summary"],
+                "Choose wellness keyword display format:",
+                ["Interactive Table", "Heatmap Visualization", "Top Health Keywords Summary"],
                 horizontal=True
             )
             
@@ -4344,18 +4416,18 @@ with tab_category:
                 # Create heatmap for keyword-category matrix
                 fig_keyword_heatmap = px.imshow(
                     pivot_ckw.values,
-                    labels=dict(x="Keywords", y="Categories", color="Keyword Count"),
+                    labels=dict(x="Health Keywords", y="Wellness Categories", color="Keyword Count"),
                     x=pivot_ckw.columns,
                     y=pivot_ckw.index,
-                    color_continuous_scale='Blues',
-                    title='<b style="color:#FF5A6E;">Category-Keyword Frequency Heatmap</b>',
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    title='<b style="color:#2E7D32;">🌿 Wellness Category-Health Keyword Frequency Heatmap</b>',
                     aspect='auto'
                 )
                 
                 fig_keyword_heatmap.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     xaxis=dict(tickangle=45),
                     height=600
                 )
@@ -4364,7 +4436,7 @@ with tab_category:
             
             else:  # Top Keywords Summary
                 # Show top keywords summary by category with enhanced accuracy
-                st.subheader("🔥 Top 10 Keywords by Category")
+                st.subheader("🔥 Top 10 Health Keywords by Wellness Category")
                 
                 top_keywords_summary = []
                 category_stats = {}
@@ -4409,14 +4481,14 @@ with tab_category:
                     }
                     
                     top_keywords_summary.append({
-                        'Category': cat,
-                        'Top 10 Keywords (with counts)': keywords_str,
+                        'Wellness Category': cat,
+                        'Top 10 Health Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Category Total Volume': f"{actual_category_total:,}",  # Use actual category total
-                        'Share %': f"{share_percentage:.2f}%",  # Add share percentage column
+                        'Market Share %': f"{share_percentage:.2f}%",  # Add share percentage column
                         'Keyword Analysis Volume': f"{total_keyword_count:,}",  # Show keyword-specific total
                         'Avg Keyword Count': f"{avg_keyword_count:.1f}",
-                        'Top Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
+                        'Top Health Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
                 
@@ -4429,57 +4501,7 @@ with tab_category:
                 
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
-                st.subheader("📊 Category Keyword Intelligence")
-                
-                # Enhanced CSS with LARGER FONTS
-                st.markdown("""
-                <style>
-                .enhanced-mini-metric {
-                    background: linear-gradient(135deg, #FF5A6E 0%, #FFB085 100%);
-                    padding: 25px;
-                    border-radius: 15px;
-                    text-align: center;
-                    color: white;
-                    box-shadow: 0 8px 32px rgba(255, 90, 110, 0.3);
-                    margin: 10px 0;
-                    min-height: 160px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                }
-                
-                .enhanced-mini-metric .icon {
-                    font-size: 3em;
-                    margin-bottom: 10px;
-                    display: block;
-                }
-                
-                .enhanced-mini-metric .value {
-                    font-size: 1.6em;
-                    font-weight: bold;
-                    margin-bottom: 8px;
-                    word-wrap: break-word;
-                    overflow-wrap: break-word;
-                    line-height: 1.2;
-                }
-                
-                .enhanced-mini-metric .label {
-                    font-size: 1.1em;
-                    opacity: 0.95;
-                    font-weight: 600;
-                    margin-bottom: 6px;
-                }
-                
-                .enhanced-mini-metric .sub-label {
-                    font-size: 1em;
-                    opacity: 0.9;
-                    font-weight: 500;
-                    line-height: 1.2;
-                    word-wrap: break-word;
-                    overflow-wrap: break-word;
-                }
-                </style>
-                """, unsafe_allow_html=True)
+                st.subheader("📊 Wellness Category Health Keyword Intelligence")
                 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
                 
@@ -4488,11 +4510,11 @@ with tab_category:
                     most_diverse_cat = max(category_stats.items(), key=lambda x: x[1]['total_keywords'])
                     category_name = most_diverse_cat[0][:15] + "..." if len(most_diverse_cat[0]) > 15 else most_diverse_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-mini-metric'>
+                    <div class='enhanced-health-metric'>
                         <span class='icon'>🌟</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Most Diverse Category</div>
-                        <div class='sub-label'>{most_diverse_cat[1]['total_keywords']} unique keywords</div>
+                        <div class='label'>Most Diverse Health Category</div>
+                        <div class='sub-label'>{most_diverse_cat[1]['total_keywords']} unique health keywords</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -4501,11 +4523,11 @@ with tab_category:
                     highest_volume_cat = max(category_stats.items(), key=lambda x: x[1]['total_count'])
                     category_name = highest_volume_cat[0][:15] + "..." if len(highest_volume_cat[0]) > 15 else highest_volume_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-mini-metric'>
+                    <div class='enhanced-health-metric'>
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Highest Volume Category</div>
-                        <div class='sub-label'>{highest_volume_cat[1]['total_count']:,} total searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% share</div>
+                        <div class='label'>Highest Volume Wellness Category</div>
+                        <div class='sub-label'>{highest_volume_cat[1]['total_count']:,} total health searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -4514,17 +4536,17 @@ with tab_category:
                     most_concentrated_cat = max(category_stats.items(), key=lambda x: x[1]['share_percentage'])
                     category_name = most_concentrated_cat[0][:15] + "..." if len(most_concentrated_cat[0]) > 15 else most_concentrated_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-mini-metric'>
+                    <div class='enhanced-health-metric'>
                         <span class='icon'>🎯</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Most Concentrated Category</div>
-                        <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% market share</div>
+                        <div class='label'>Most Concentrated Health Category</div>
+                        <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% wellness market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 # Top keywords across all categories
                 st.markdown("---")
-                st.subheader("🏆 Global Top Keywords Across All Categories")
+                st.subheader("🏆 Global Top Health Keywords Across All Wellness Categories")
                 
                 # Get top keywords globally
                 global_keywords = df_ckw.groupby('keyword')['count'].sum().reset_index()
@@ -4536,10 +4558,10 @@ with tab_category:
                     x='count',
                     y='keyword',
                     orientation='h',
-                    title='<b style="color:#FF5A6E;">Top 20 Keywords Across All Categories</b>',
-                    labels={'count': 'Total Search Count', 'keyword': 'Keywords'},
+                    title='<b style="color:#2E7D32;">🌿 Top 20 Health Keywords Across All Wellness Categories</b>',
+                    labels={'count': 'Total Health Search Count', 'keyword': 'Health Keywords'},
                     color='count',
-                    color_continuous_scale='Reds',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
                     text='count'
                 )
                 
@@ -4549,30 +4571,30 @@ with tab_category:
                 )
                 
                 fig_global_keywords.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
                     yaxis={'categoryorder': 'total ascending'},
-                    xaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
-                    yaxis_title="Keywords",
-                    xaxis_title="Total Search Count"
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis_title="Health Keywords",
+                    xaxis_title="Total Health Search Count"
                 )
                 
                 st.plotly_chart(fig_global_keywords, use_container_width=True)
                 
                 # Category keyword distribution analysis
                 st.markdown("---")
-                st.subheader("📈 Category Keyword Distribution Analysis")
+                st.subheader("📈 Wellness Category Health Keyword Distribution Analysis")
                 
                 # Create distribution data using corrected totals
                 distribution_data = []
                 for cat, stats in category_stats.items():
                     distribution_data.append({
-                        'Category': cat,
-                        'Unique Keywords': stats['total_keywords'],
-                        'Total Volume': stats['total_count'],  # Use actual category total
-                        'Average Count': stats['avg_count']
+                        'Wellness Category': cat,
+                        'Unique Health Keywords': stats['total_keywords'],
+                        'Total Health Volume': stats['total_count'],  # Use actual category total
+                        'Average Keyword Count': stats['avg_count']
                     })
                 
                 dist_df = pd.DataFrame(distribution_data)
@@ -4580,33 +4602,33 @@ with tab_category:
                 # Create scatter plot for keyword distribution
                 fig_distribution = px.scatter(
                     dist_df,
-                    x='Unique Keywords',
-                    y='Total Volume',
-                    size='Average Count',
-                    hover_name='Category',
-                    title='<b style="color:#FF5A6E;">Category Keyword Diversity vs Volume</b>',
+                    x='Unique Health Keywords',
+                    y='Total Health Volume',
+                    size='Average Keyword Count',
+                    hover_name='Wellness Category',
+                    title='<b style="color:#2E7D32;">🌿 Wellness Category Health Keyword Diversity vs Volume</b>',
                     labels={
-                        'Unique Keywords': 'Number of Unique Keywords',
-                        'Total Volume': 'Total Search Volume',
-                        'Average Count': 'Average Keyword Count'
+                        'Unique Health Keywords': 'Number of Unique Health Keywords',
+                        'Total Health Volume': 'Total Health Search Volume',
+                        'Average Keyword Count': 'Average Health Keyword Count'
                     },
-                    color='Average Count',
-                    color_continuous_scale='Viridis'
+                    color='Average Keyword Count',
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32']
                 )
                 
                 fig_distribution.update_layout(
-                    plot_bgcolor='rgba(255,255,255,0.95)',
-                    paper_bgcolor='rgba(255,247,232,0.8)',
-                    font=dict(color='#0B486B', family='Segoe UI'),
-                    xaxis=dict(showgrid=True, gridcolor='#E6F3FA'),
-                    yaxis=dict(showgrid=True, gridcolor='#E6F3FA')
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
                 )
                 
                 fig_distribution.update_traces(
                     hovertemplate='<b>%{hovertext}</b><br>' +
-                                 'Unique Keywords: %{x}<br>' +
-                                 'Total Volume: %{y:,}<br>' +
-                                 'Avg Count: %{marker.size:.1f}<extra></extra>'
+                                 'Unique Health Keywords: %{x}<br>' +
+                                 'Total Health Volume: %{y:,}<br>' +
+                                 'Avg Keyword Count: %{marker.size:.1f}<extra></extra>'
                 )
                 
                 st.plotly_chart(fig_distribution, use_container_width=True)
@@ -4614,20 +4636,150 @@ with tab_category:
             # Download button for keyword analysis
             csv_keywords = df_ckw.to_csv(index=False)
             st.download_button(
-                label="📥 Download Category Keywords CSV",
+                label="📥 Download Wellness Category Health Keywords CSV",
                 data=csv_keywords,
-                file_name="category_keywords_analysis.csv",
+                file_name="wellness_category_health_keywords_analysis.csv",
                 mime="text/csv",
                 key="category_keywords_csv_download"
             )
         else:
-            st.info("Not enough keyword data per category.")
+            st.info("Not enough health keyword data per wellness category.")
     
     except Exception as e:
-        st.error(f"Error processing keyword analysis: {str(e)}")
-        st.info("Not enough keyword data per category.")
+        st.error(f"Error processing health keyword analysis: {str(e)}")
+        st.info("Not enough health keyword data per wellness category.")
 
+    # Health Category Insights Section
+    st.markdown("---")
+    col_insight1, col_insight2 = st.columns(2)
+    
+    with col_insight1:
+        top_category_share = cs.iloc[0]['share_pct'] if not cs.empty else 0
+        top_category_name = cs.iloc[0]['category'] if not cs.empty else "N/A"
+        high_performers = len(cs[cs['ctr'] > 5]) if not cs.empty else 0
+        avg_conversion_rate = cs['cr'].mean() if not cs.empty else 0
+        categories_above_avg_cr = len(cs[cs['cr'] > avg_conversion_rate]) if not cs.empty else 0
+        
+        st.markdown(f"""
+        <div class='wellness-category-insight'>
+            <h4>🌿 Key Wellness Category Insights</h4>
+            <p>• <strong>{top_category_name}</strong> leads health market with {top_category_share:.1f}% share<br>
+            • {high_performers} wellness categories achieve CTR > 5% (premium performance)<br>
+            • {categories_above_avg_cr} categories exceed avg CR of {avg_conversion_rate:.2f}%<br>
+            • Health market shows {"strong" if category_dominance > 30 else "balanced" if category_dominance > 15 else "fragmented"} category concentration</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_insight2:
+        low_performers = len(cs[cs['ctr'] < 2]) if not cs.empty else 0
+        opportunity_categories = len(cs[(cs['Counts'] > cs['Counts'].median()) & (cs['ctr'] < 3)]) if not cs.empty else 0
+        
+        st.markdown(f"""
+        <div class='wellness-category-insight'>
+            <h4>💚 Health Category Strategy Recommendations</h4>
+            <p>• Optimize {low_performers} underperforming wellness categories (CTR < 2%)<br>
+            • {opportunity_categories} high-volume health categories need engagement boost<br>
+            • Focus on wellness keywords for leading health categories<br>
+            • {"Diversify" if category_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
+        </div>
+        """, unsafe_allow_html=True)
 
+    # Final Category Summary Dashboard
+    st.markdown("---")
+    st.subheader("📊 Wellness Category Performance Dashboard Summary")
+    
+    # Create final summary metrics
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    with summary_col1:
+        total_searches = cs['Counts'].sum() if not cs.empty else 0
+        st.metric(
+            label="🌿 Total Health Searches",
+            value=f"{total_searches:,.0f}",
+            delta=f"{len(cs)} wellness categories analyzed"
+        )
+    
+    with summary_col2:
+        avg_market_ctr = cs['ctr'].mean() if not cs.empty else 0
+        top_ctr = cs['ctr'].max() if not cs.empty else 0
+        st.metric(
+            label="📈 Market Avg CTR",
+            value=f"{avg_market_ctr:.2f}%",
+            delta=f"Best: {top_ctr:.2f}%"
+        )
+    
+    with summary_col3:
+        total_conversions = cs['conversions'].sum() if not cs.empty else 0
+        avg_cr = cs['cr'].mean() if not cs.empty else 0
+        st.metric(
+            label="💚 Total Conversions",
+            value=f"{total_conversions:,.0f}",
+            delta=f"Avg CR: {avg_cr:.2f}%"
+        )
+    
+    with summary_col4:
+        market_concentration = f"{category_dominance:.1f}%" if not cs.empty else "0%"
+        concentration_status = "High" if category_dominance > 30 else "Medium" if category_dominance > 15 else "Low"
+        st.metric(
+            label="🎯 Market Concentration",
+            value=market_concentration,
+            delta=f"{concentration_status} concentration"
+        )
+    
+    # Export all category data
+    st.markdown("---")
+    st.subheader("📥 Export Wellness Category Intelligence")
+    
+    export_col1, export_col2 = st.columns(2)
+    
+    with export_col1:
+        if not cs.empty:
+            # Comprehensive category export
+            export_data = cs.copy()
+            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
+            
+            csv_export = export_data.to_csv(index=False)
+            st.download_button(
+                label="📊 Download Complete Wellness Category Analysis",
+                data=csv_export,
+                file_name=f"wellness_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="complete_category_export"
+            )
+    
+    with export_col2:
+        if not cs.empty:
+            # Summary report
+            summary_report = f"""
+            WELLNESS CATEGORY INTELLIGENCE REPORT
+            Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
+            
+            HEALTH MARKET OVERVIEW:
+            • Total Wellness Categories Analyzed: {len(cs)}
+            • Total Health Searches: {cs['Counts'].sum():,.0f}
+            • Market Leader: {cs.iloc[0]['category']} ({cs.iloc[0]['share_pct']:.1f}% share)
+            • Average CTR: {cs['ctr'].mean():.2f}%
+            • Average CR: {cs['cr'].mean():.2f}%
+            
+            WELLNESS PERFORMANCE TIERS:
+            • Premium Categories (CTR > 10%): {len(cs[cs['ctr'] > 10])}
+            • Strong Categories (CTR 5-10%): {len(cs[(cs['ctr'] >= 5) & (cs['ctr'] <= 10)])}
+            • Growing Categories (CTR 2-5%): {len(cs[(cs['ctr'] >= 2) & (cs['ctr'] < 5)])}
+            • Emerging Categories (CTR < 2%): {len(cs[cs['ctr'] < 2])}
+            
+            STRATEGIC HEALTH INSIGHTS:
+            • Market concentration is {concentration_status.lower()}
+            • {len(cs[cs['ctr'] > 5])} categories achieve premium performance
+            • Growth opportunities exist in wellness engagement optimization
+            """
+            
+            st.download_button(
+                label="📝 Download Wellness Executive Summary Report",
+                data=summary_report,
+                file_name=f"wellness_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                key="category_executive_summary_export"
+            )
 
 
 # ----------------- Subcategory Tab -----------------
