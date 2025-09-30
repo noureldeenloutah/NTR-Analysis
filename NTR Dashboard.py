@@ -2189,69 +2189,217 @@ with tab_search:
     st.markdown("---")
 
     # Second row: Full width for Top Performing Keywords
-    # 🚀 ENHANCED KEYWORD EXTRACTION AND GROUPING
+    # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
     import re
     from collections import defaultdict
+    from fuzzywuzzy import fuzz, process
 
-    def extract_meaningful_keywords(text: str, min_length=2):
-        """Extract meaningful keywords (minimum 2 characters, no single letters)"""
+    def create_master_keyword_dictionary():
+        """
+        Define master keywords with their common variations for fuzzy matching
+        """
+        return {
+            'مغنیسیوم': {
+                'variations': [
+                    'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغن', 'ماغ', 
+                    'مغنیس', 'مغنی', 'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 
+                    'مغانیسیوم', 'ماغن', 'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم',
+                    'مغنیسو', 'مغنسیو', 'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم',
+                    'مغانسیوم', 'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم',
+                    'المغنیسوم', 'المغن', 'magnesium', 'mag', 'meg'
+                ],
+                'compounds': [
+                    'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
+                    'سترات', 'سیترات', 'ستریت', 'سیترات', 'مالات', 'مالیت',
+                    'ثریونات', 'ثریونیت', 'توریت', 'فوار', '400'
+                ],
+                'threshold': 75
+            },
+            
+            'کولاجین': {
+                'variations': [
+                    'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'كولاچين',
+                    'کلاجین', 'کولاژن', 'کولاجن'
+                ],
+                'compounds': ['پپتید', 'هیدرولیز', 'مارین', 'بقری'],
+                'threshold': 80
+            },
+            
+            'فیتامین': {
+                'variations': [
+                    'فیتامین', 'فيتامين', 'ویتامین', 'فیت', 'فيت', 'vit', 'vitamin',
+                    'ویت', 'فیتا', 'فیتامن'
+                ],
+                'compounds': ['د', 'د3', 'ب12', 'ب', 'سی', 'c', 'd', 'd3', 'b12', 'b'],
+                'threshold': 75
+            },
+            
+            'میلاتونین': {
+                'variations': [
+                    'میلاتونین', 'ملاتونین', 'میلانتون', 'ملانتون', 'melatonin',
+                    'میلاتونن', 'ملاتونن'
+                ],
+                'compounds': ['3mg', '5mg', '10mg'],
+                'threshold': 80
+            },
+            
+            'اومگا': {
+                'variations': [
+                    'اومگا', 'اوميجا', 'اوميغا', 'omega', 'امگا', 'اومیگا'
+                ],
+                'compounds': ['3', '6', '9'],
+                'threshold': 75
+            },
+            
+            'زینک': {
+                'variations': [
+                    'زینک', 'زنک', 'زنك', 'zinc', 'زینگ'
+                ],
+                'compounds': ['پیکولینات', 'گلوکونات'],
+                'threshold': 80
+            },
+            
+            'کلسیم': {
+                'variations': [
+                    'کلسیم', 'کالسیم', 'كالسيوم', 'calcium', 'کلسم'
+                ],
+                'compounds': ['کربنات', 'سیترات'],
+                'threshold': 80
+            },
+            
+            'پروتین': {
+                'variations': [
+                    'پروتین', 'پروتئین', 'بروتین', 'protein', 'پروتن'
+                ],
+                'compounds': ['وی', 'whey', 'کازئین'],
+                'threshold': 80
+            },
+            
+            'حدید': {
+                'variations': [
+                    'حدید', 'حديد', 'iron', 'آهن'
+                ],
+                'compounds': ['فومارات', 'سولفات'],
+                'threshold': 85
+            }
+        }
+
+    def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
+        """Extract keywords and prepare for fuzzy grouping"""
         if not isinstance(text, str):
             return []
         
-        # Extract Arabic, English words, and numbers (minimum 2 chars)
-        tokens = re.findall(r'[\u0600-\u06FF]{2,}|[a-zA-Z]{2,}|\d{2,}', text)
-        return [t.strip().lower() for t in tokens if len(t.strip()) >= min_length]
+        text = text.strip().lower()
+        
+        # Enhanced patterns for Arabic and English
+        patterns = [
+            r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}',  # Arabic words 2+ chars
+            r'[a-zA-Z]{3,}',  # English words 3+ chars
+            r'\d{2,}',  # Numbers 2+ digits
+        ]
+        
+        keywords = []
+        for pattern in patterns:
+            matches = re.findall(pattern, text)
+            keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
+        
+        return keywords
 
-    def group_similar_keywords(keyword_data, similarity_threshold=0.7):
-        """Group similar keywords together (like کولاجین variations)"""
-        grouped_keywords = defaultdict(lambda: {'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 'queries': []})
+    def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
+        """
+        Advanced fuzzy matching with compound detection
+        """
+        grouped_keywords = defaultdict(lambda: {
+            'total_counts': 0, 
+            'total_clicks': 0, 
+            'total_conversions': 0, 
+            'queries': [],
+            'variations': []
+        })
         
-        # Convert to list for processing
-        keywords_list = list(keyword_data.items())
-        processed = set()
+        processed_keywords = set()
         
-        for keyword, data in keywords_list:
-            if keyword in processed:
+        # Process each keyword in the data
+        for keyword, data in keyword_data.items():
+            if keyword in processed_keywords:
                 continue
                 
-            # Find the root keyword (longest common substring approach)
-            root_keyword = keyword
-            group_key = keyword
+            best_match = None
+            best_score = 0
+            matched_master = None
             
-            # Check for similar keywords
-            similar_keywords = [keyword]
-            for other_keyword, other_data in keywords_list:
-                if other_keyword != keyword and other_keyword not in processed:
-                    # Check if keywords share a common root (simple approach)
-                    if len(keyword) >= 3 and len(other_keyword) >= 3:
-                        # Check if one contains the other or they share significant overlap
-                        if (keyword in other_keyword or other_keyword in keyword or
-                            len(set(keyword) & set(other_keyword)) / max(len(keyword), len(other_keyword)) > similarity_threshold):
-                            similar_keywords.append(other_keyword)
+            # Try to match against master keywords
+            for master_keyword, master_info in master_dict.items():
+                # Check main variations
+                for variation in master_info['variations']:
+                    # Direct fuzzy match
+                    score = fuzz.ratio(keyword.lower(), variation.lower())
+                    
+                    # Boost score if keyword contains variation or vice versa
+                    if variation.lower() in keyword.lower() or keyword.lower() in variation.lower():
+                        score = max(score, 85)
+                    
+                    if score > best_score and score >= master_info['threshold']:
+                        best_score = score
+                        best_match = variation
+                        matched_master = master_keyword
+                
+                # Check compound variations (e.g., مغنیسیوم جلیسینات)
+                if master_info.get('compounds'):
+                    for compound in master_info['compounds']:
+                        compound_variations = [
+                            f"{var} {compound}" for var in master_info['variations'][:5]  # Top 5 variations
+                        ] + [
+                            f"{compound} {var}" for var in master_info['variations'][:5]
+                        ]
+                        
+                        for compound_var in compound_variations:
+                            score = fuzz.ratio(keyword.lower(), compound_var.lower())
                             
-                            # Use the shortest meaningful keyword as the group key
-                            if len(other_keyword) < len(group_key) and len(other_keyword) >= 3:
-                                group_key = other_keyword
+                            # Special handling for compound keywords
+                            if (compound.lower() in keyword.lower() and 
+                                any(v.lower() in keyword.lower() for v in master_info['variations'][:10])):
+                                score = max(score, 80)
+                            
+                            if score > best_score and score >= (master_info['threshold'] - 10):
+                                best_score = score
+                                best_match = compound_var
+                                matched_master = master_keyword
             
-            # Aggregate all similar keywords
-            for sim_keyword in similar_keywords:
-                if sim_keyword in keyword_data:
-                    grouped_keywords[group_key]['total_counts'] += keyword_data[sim_keyword]['total_counts']
-                    grouped_keywords[group_key]['total_clicks'] += keyword_data[sim_keyword]['total_clicks']
-                    grouped_keywords[group_key]['total_conversions'] += keyword_data[sim_keyword]['total_conversions']
-                    grouped_keywords[group_key]['queries'].extend(keyword_data[sim_keyword]['queries'])
-                    processed.add(sim_keyword)
+            # Group under best match or keep as standalone
+            if matched_master and best_score >= min_score:
+                group_key = matched_master
+                grouped_keywords[group_key]['variations'].append(keyword)
+            else:
+                # Keep as standalone if no good match found
+                group_key = keyword
+                grouped_keywords[group_key]['variations'].append(keyword)
+            
+            # Add data to group
+            grouped_keywords[group_key]['total_counts'] += data['total_counts']
+            grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
+            grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
+            grouped_keywords[group_key]['queries'].extend(data['queries'])
+            
+            processed_keywords.add(keyword)
         
         return dict(grouped_keywords)
 
     @st.cache_data(ttl=1800, show_spinner=False)
     def calculate_enhanced_keyword_performance(_df):
-        """Enhanced keyword performance calculation with grouping"""
+        """
+        Enhanced keyword performance calculation with fuzzy matching
+        """
         if _df.empty:
             return pd.DataFrame()
         
-        # Extract keywords from all queries with minimum length filter
-        keyword_data = defaultdict(lambda: {'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 'queries': []})
+        # Extract all keywords from queries
+        keyword_data = defaultdict(lambda: {
+            'total_counts': 0, 
+            'total_clicks': 0, 
+            'total_conversions': 0, 
+            'queries': []
+        })
         
         for _, row in _df.iterrows():
             query = str(row.get('normalized_query', ''))
@@ -2259,26 +2407,23 @@ with tab_search:
             clicks = row.get('clicks', 0)
             conversions = row.get('conversions', 0)
             
-            # Extract meaningful keywords (min 2 characters)
-            keywords = extract_meaningful_keywords(query, min_length=2)
+            keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
             
             for keyword in keywords:
-                # Skip very short or meaningless keywords
-                if len(keyword) < 2 or keyword.isdigit():
-                    continue
-                    
-                keyword_data[keyword]['total_counts'] += counts
-                keyword_data[keyword]['total_clicks'] += clicks
-                keyword_data[keyword]['total_conversions'] += conversions
-                keyword_data[keyword]['queries'].append(query)
+                if len(keyword.strip()) >= 2:  # Allow 2+ char keywords for fuzzy matching
+                    keyword_data[keyword]['total_counts'] += counts
+                    keyword_data[keyword]['total_clicks'] += clicks
+                    keyword_data[keyword]['total_conversions'] += conversions
+                    keyword_data[keyword]['queries'].append(query)
         
-        # Group similar keywords
-        grouped_data = group_similar_keywords(keyword_data)
+        # Apply fuzzy matching grouping
+        master_dict = create_master_keyword_dictionary()
+        grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=70)
         
         # Convert to DataFrame
         kw_list = []
         for keyword, data in grouped_data.items():
-            if data['total_counts'] > 0:  # Only include keywords with actual data
+            if data['total_counts'] > 0:
                 avg_ctr = (data['total_clicks'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
                 classic_cr = (data['total_conversions'] / data['total_clicks'] * 100) if data['total_clicks'] > 0 else 0
                 health_cr = (data['total_conversions'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
@@ -2292,18 +2437,71 @@ with tab_search:
                     'classic_cr': round(classic_cr, 2),
                     'health_cr': round(health_cr, 2),
                     'unique_queries': len(set(data['queries'])),
-                    'example_queries': list(set(data['queries']))[:5]  # Show up to 5 example queries
+                    'variations_count': len(set(data['variations'])),
+                    'example_queries': list(set(data['queries']))[:5],
+                    'variations': list(set(data['variations']))[:15]  # Show top 15 variations
                 })
         
-        return pd.DataFrame(kw_list)
+        return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
 
-    # 🏆 UPDATED Top Performing Health Keywords Section
-    st.subheader("🏆 Top Performing Health Keywords")
+    # 🏆 UPDATED Top Performing Health Keywords Section with Fuzzy Matching
+    st.subheader("🏆 Top Performing Health Keywords (Fuzzy Matched)")
 
-    # Calculate enhanced keyword performance
+    # Calculate enhanced keyword performance with fuzzy matching
     kw_perf_df = calculate_enhanced_keyword_performance(queries)
 
     if not kw_perf_df.empty:
+        # Show fuzzy matching results summary
+        st.info(f"🔍 **Fuzzy Matching Results:** Found {len(kw_perf_df)} keyword groups from raw keyword extraction")
+        
+        # Check specific high-value keywords and show their grouping success
+        magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
+        collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
+        vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
+        
+        # Show grouping success metrics
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if not magnesium_rows.empty:
+                mag_data = magnesium_rows.iloc[0]
+                st.metric(
+                    "🧲 مغنیسیوم Group", 
+                    f"{mag_data['total_counts']:,}",
+                    f"{mag_data['variations_count']} variations"
+                )
+            else:
+                st.metric("🧲 مغنیسیوم Group", "0", "No matches")
+        
+        with col2:
+            if not collagen_rows.empty:
+                col_data = collagen_rows.iloc[0]
+                st.metric(
+                    "🦴 کولاجین Group", 
+                    f"{col_data['total_counts']:,}",
+                    f"{col_data['variations_count']} variations"
+                )
+            else:
+                st.metric("🦴 کولاجین Group", "0", "No matches")
+        
+        with col3:
+            if not vitamin_rows.empty:
+                vit_data = vitamin_rows.iloc[0]
+                st.metric(
+                    "💊 فیتامین Group", 
+                    f"{vit_data['total_counts']:,}",
+                    f"{vit_data['variations_count']} variations"
+                )
+            else:
+                st.metric("💊 فیتامین Group", "0", "No matches")
+        
+        # Show variations for top keywords in expandable sections
+        if not magnesium_rows.empty:
+            with st.expander(f"🔍 View {magnesium_rows.iloc[0]['variations_count']} مغنیسیوم variations"):
+                st.write("**Grouped variations:**")
+                variations_text = " | ".join(magnesium_rows.iloc[0]['variations'][:25])  # Show first 25
+                st.text(variations_text)
+        
         # Use slider for number of keywords
         num_keywords = st.slider(
             "Number of health keywords to display:", 
@@ -2311,10 +2509,10 @@ with tab_search:
             max_value=min(300, len(kw_perf_df)), 
             value=15, 
             step=10,
-            key="keyword_count_slider_search_tab"
+            key="fuzzy_keyword_count_slider"
         )
 
-        top_keywords = kw_perf_df.sort_values('total_counts', ascending=False).head(num_keywords)
+        top_keywords = kw_perf_df.head(num_keywords)
 
         # Calculate market share
         total_all_counts = queries['Counts'].sum()
@@ -2333,7 +2531,8 @@ with tab_search:
                 'avg_ctr': 'Avg CTR',
                 'health_cr': 'Health CR',
                 'classic_cr': 'Classic CR',
-                'unique_queries': 'Unique Queries'
+                'unique_queries': 'Unique Queries',
+                'variations_count': 'Variations'
             })
             
             # 🚀 USE THE FORMAT_NUMBER FUNCTION
@@ -2345,10 +2544,11 @@ with tab_search:
             display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
             display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
             display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
+            display_df['Variations'] = display_df['Variations'].apply(format_number)
             
-            # Column order
+            # Column order - include variations count
             column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
-                        'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries']
+                        'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
             display_df = display_df[column_order].reset_index(drop=True)
             
             # Display with enhanced styling
@@ -2359,12 +2559,12 @@ with tab_search:
                 column_config={
                     "Health Keyword": st.column_config.TextColumn(
                         "Health Keyword",
-                        help="Grouped wellness search keyword",
+                        help="Fuzzy-matched wellness search keyword group",
                         width="medium"
                     ),
                     "Total Search Volume": st.column_config.TextColumn(
                         "Total Search Volume",
-                        help="Total health search volume (aggregated)",
+                        help="Total health search volume (fuzzy-grouped)",
                         width="small"
                     ),
                     "Market Share %": st.column_config.TextColumn(
@@ -2401,6 +2601,11 @@ with tab_search:
                         "Unique Queries",
                         help="Number of unique search queries for this keyword",
                         width="small"
+                    ),
+                    "Variations": st.column_config.TextColumn(
+                        "Variations",
+                        help="Number of keyword variations grouped together",
+                        width="small"
                     )
                 }
             )
@@ -2434,47 +2639,62 @@ with tab_search:
             </style>
             """, unsafe_allow_html=True)
             
-            # Show example queries for top keyword
-            if st.checkbox("🔍 Show example queries for top keywords", key="show_examples_search"):
-                st.subheader("📝 Example Queries")
+            # Show example queries and variations for top keywords
+            if st.checkbox("🔍 Show example queries and variations for top keywords", key="show_fuzzy_examples"):
+                st.subheader("📝 Example Queries & Variations")
                 for idx, row in top_keywords.head(5).iterrows():
                     keyword = row['keyword']
                     examples = row['example_queries'][:3]  # Show top 3 examples
+                    variations = row['variations'][:10]  # Show top 10 variations
                     
                     st.markdown(f"""
-                    **🔸 {keyword}** ({format_number(row['total_counts'])} searches):
+                    **🔸 {keyword}** ({format_number(row['total_counts'])} searches, {row['variations_count']} variations):
                     """)
-                    for example in examples:
-                        st.markdown(f"   • {example}")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown("**Example Queries:**")
+                        for example in examples:
+                            st.markdown(f"   • {example}")
+                    
+                    with col2:
+                        st.markdown("**Grouped Variations:**")
+                        for var in variations[:5]:  # Show top 5 variations
+                            st.markdown(f"   • {var}")
+                    
                     st.markdown("---")
             
-            # Download button with enhanced data
+            # Download button with enhanced data including variations
             csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
                                     'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
-                                    'unique_queries']].copy()
+                                    'unique_queries', 'variations_count']].copy()
             csv_keywords = csv_data.to_csv(index=False)
             
             st.download_button(
-                label="📥 Download Enhanced Health Keywords CSV",
+                label="📥 Download Fuzzy-Matched Health Keywords CSV",
                 data=csv_keywords,
-                file_name=f"enhanced_top_{num_keywords}_health_keywords.csv",
+                file_name=f"fuzzy_matched_top_{num_keywords}_health_keywords.csv",
                 mime="text/csv",
-                key="keyword_csv_download_search_tab"
+                key="fuzzy_keyword_csv_download"
             )
             
-            # Summary insights
+            # Enhanced summary insights
+            total_variations = top_keywords['variations_count'].sum()
             st.info(f"""
-            **📊 Keyword Analysis Summary:**
-            - **{len(kw_perf_df):,}** unique health keywords identified
+            **📊 Fuzzy Keyword Analysis Summary:**
+            - **{len(kw_perf_df):,}** unique health keyword groups identified
+            - **{total_variations:,}** total keyword variations grouped together
             - **{top_keywords['total_counts'].sum():,}** total search volume for top {num_keywords}
             - **{top_keywords['share_pct'].sum():.1f}%** market share covered
             - **{top_keywords['unique_queries'].sum():,}** unique search queries analyzed
+            - **Average {total_variations/len(top_keywords):.1f}** variations per keyword group
             """)
 
     else:
-        st.warning("⚠️ No keyword data available for analysis")
+        st.warning("⚠️ No keyword data available for fuzzy analysis")
 
     st.markdown("---")
+
 
 
     
