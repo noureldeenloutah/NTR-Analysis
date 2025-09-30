@@ -2189,14 +2189,126 @@ with tab_search:
     st.markdown("---")
 
     # Second row: Full width for Top Performing Keywords
+    # 🚀 ENHANCED KEYWORD EXTRACTION AND GROUPING
+    import re
+    from collections import defaultdict
+
+    def extract_meaningful_keywords(text: str, min_length=2):
+        """Extract meaningful keywords (minimum 2 characters, no single letters)"""
+        if not isinstance(text, str):
+            return []
+        
+        # Extract Arabic, English words, and numbers (minimum 2 chars)
+        tokens = re.findall(r'[\u0600-\u06FF]{2,}|[a-zA-Z]{2,}|\d{2,}', text)
+        return [t.strip().lower() for t in tokens if len(t.strip()) >= min_length]
+
+    def group_similar_keywords(keyword_data, similarity_threshold=0.7):
+        """Group similar keywords together (like کولاجین variations)"""
+        grouped_keywords = defaultdict(lambda: {'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 'queries': []})
+        
+        # Convert to list for processing
+        keywords_list = list(keyword_data.items())
+        processed = set()
+        
+        for keyword, data in keywords_list:
+            if keyword in processed:
+                continue
+                
+            # Find the root keyword (longest common substring approach)
+            root_keyword = keyword
+            group_key = keyword
+            
+            # Check for similar keywords
+            similar_keywords = [keyword]
+            for other_keyword, other_data in keywords_list:
+                if other_keyword != keyword and other_keyword not in processed:
+                    # Check if keywords share a common root (simple approach)
+                    if len(keyword) >= 3 and len(other_keyword) >= 3:
+                        # Check if one contains the other or they share significant overlap
+                        if (keyword in other_keyword or other_keyword in keyword or
+                            len(set(keyword) & set(other_keyword)) / max(len(keyword), len(other_keyword)) > similarity_threshold):
+                            similar_keywords.append(other_keyword)
+                            
+                            # Use the shortest meaningful keyword as the group key
+                            if len(other_keyword) < len(group_key) and len(other_keyword) >= 3:
+                                group_key = other_keyword
+            
+            # Aggregate all similar keywords
+            for sim_keyword in similar_keywords:
+                if sim_keyword in keyword_data:
+                    grouped_keywords[group_key]['total_counts'] += keyword_data[sim_keyword]['total_counts']
+                    grouped_keywords[group_key]['total_clicks'] += keyword_data[sim_keyword]['total_clicks']
+                    grouped_keywords[group_key]['total_conversions'] += keyword_data[sim_keyword]['total_conversions']
+                    grouped_keywords[group_key]['queries'].extend(keyword_data[sim_keyword]['queries'])
+                    processed.add(sim_keyword)
+        
+        return dict(grouped_keywords)
+
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def calculate_enhanced_keyword_performance(_df):
+        """Enhanced keyword performance calculation with grouping"""
+        if _df.empty:
+            return pd.DataFrame()
+        
+        # Extract keywords from all queries with minimum length filter
+        keyword_data = defaultdict(lambda: {'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 'queries': []})
+        
+        for _, row in _df.iterrows():
+            query = str(row.get('normalized_query', ''))
+            counts = row.get('Counts', 0)
+            clicks = row.get('clicks', 0)
+            conversions = row.get('conversions', 0)
+            
+            # Extract meaningful keywords (min 2 characters)
+            keywords = extract_meaningful_keywords(query, min_length=2)
+            
+            for keyword in keywords:
+                # Skip very short or meaningless keywords
+                if len(keyword) < 2 or keyword.isdigit():
+                    continue
+                    
+                keyword_data[keyword]['total_counts'] += counts
+                keyword_data[keyword]['total_clicks'] += clicks
+                keyword_data[keyword]['total_conversions'] += conversions
+                keyword_data[keyword]['queries'].append(query)
+        
+        # Group similar keywords
+        grouped_data = group_similar_keywords(keyword_data)
+        
+        # Convert to DataFrame
+        kw_list = []
+        for keyword, data in grouped_data.items():
+            if data['total_counts'] > 0:  # Only include keywords with actual data
+                avg_ctr = (data['total_clicks'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
+                classic_cr = (data['total_conversions'] / data['total_clicks'] * 100) if data['total_clicks'] > 0 else 0
+                health_cr = (data['total_conversions'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
+                
+                kw_list.append({
+                    'keyword': keyword,
+                    'total_counts': data['total_counts'],
+                    'total_clicks': data['total_clicks'],
+                    'total_conversions': data['total_conversions'],
+                    'avg_ctr': round(avg_ctr, 2),
+                    'classic_cr': round(classic_cr, 2),
+                    'health_cr': round(health_cr, 2),
+                    'unique_queries': len(set(data['queries'])),
+                    'example_queries': list(set(data['queries']))[:5]  # Show up to 5 example queries
+                })
+        
+        return pd.DataFrame(kw_list)
+
+    # 🏆 UPDATED Top Performing Health Keywords Section
     st.subheader("🏆 Top Performing Health Keywords")
 
+    # Calculate enhanced keyword performance
+    kw_perf_df = calculate_enhanced_keyword_performance(queries)
+
     if not kw_perf_df.empty:
-        # Use slider instead of selectbox to avoid key conflicts
+        # Use slider for number of keywords
         num_keywords = st.slider(
             "Number of health keywords to display:", 
             min_value=10, 
-            max_value=300, 
+            max_value=min(300, len(kw_perf_df)), 
             value=15, 
             step=10,
             key="keyword_count_slider_search_tab"
@@ -2204,18 +2316,13 @@ with tab_search:
 
         top_keywords = kw_perf_df.sort_values('total_counts', ascending=False).head(num_keywords)
 
-        # Calculate total counts for share percentage
+        # Calculate market share
         total_all_counts = queries['Counts'].sum()
         top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
 
-        # Check if data exists before applying styling
         if not top_keywords.empty:
-            # Create display version with renamed columns and proper formatting
+            # Create display version with proper formatting
             display_df = top_keywords.copy()
-            
-            # FIXED: Calculate CR as conversions/counts and add Classic CR as conversions/clicks
-            display_df['classic_cr'] = display_df['avg_cr']  # This was conversions/clicks
-            display_df['avg_cr'] = (display_df['total_conversions'] / display_df['total_counts'] * 100).round(2).fillna(0)
             
             display_df = display_df.rename(columns={
                 'keyword': 'Health Keyword',
@@ -2224,40 +2331,40 @@ with tab_search:
                 'total_clicks': 'Total Clicks',
                 'total_conversions': 'Conversions',
                 'avg_ctr': 'Avg CTR',
-                'avg_cr': 'Health CR',
-                'classic_cr': 'Classic CR'
+                'health_cr': 'Health CR',
+                'classic_cr': 'Classic CR',
+                'unique_queries': 'Unique Queries'
             })
             
-            # Format numbers manually
-            display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(lambda x: f"{x:,.0f}")
+            # 🚀 USE THE FORMAT_NUMBER FUNCTION
+            display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
             display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
-            display_df['Total Clicks'] = display_df['Total Clicks'].apply(lambda x: f"{x:,.0f}")
-            display_df['Conversions'] = display_df['Conversions'].apply(lambda x: f"{x:,.0f}")
+            display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
+            display_df['Conversions'] = display_df['Conversions'].apply(format_number)
             display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
             display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
             display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
+            display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
             
-            # FIXED: Reorder columns to place Market Share % right after Total Search Volume
-            column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 'Conversions', 'Avg CTR', 'Health CR', 'Classic CR']
-            display_df = display_df[column_order]
+            # Column order
+            column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
+                        'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries']
+            display_df = display_df[column_order].reset_index(drop=True)
             
-            # Reset index to remove it and display with center alignment
-            display_df = display_df.reset_index(drop=True)
-            
-            # Display dataframe with custom styling for center alignment
+            # Display with enhanced styling
             st.dataframe(
                 display_df, 
                 use_container_width=True,
-                hide_index=True,  # This hides the index column
+                hide_index=True,
                 column_config={
                     "Health Keyword": st.column_config.TextColumn(
                         "Health Keyword",
-                        help="Wellness search keyword",
+                        help="Grouped wellness search keyword",
                         width="medium"
                     ),
                     "Total Search Volume": st.column_config.TextColumn(
                         "Total Search Volume",
-                        help="Total health search volume",
+                        help="Total health search volume (aggregated)",
                         width="small"
                     ),
                     "Market Share %": st.column_config.TextColumn(
@@ -2289,11 +2396,16 @@ with tab_search:
                         "Classic CR",
                         help="Classic Conversion Rate (Conversions/Clicks)",
                         width="small"
+                    ),
+                    "Unique Queries": st.column_config.TextColumn(
+                        "Unique Queries",
+                        help="Number of unique search queries for this keyword",
+                        width="small"
                     )
                 }
             )
             
-            # Add custom CSS for center alignment with health theme
+            # Enhanced CSS styling
             st.markdown("""
             <style>
             .stDataFrame [data-testid="stDataFrameResizeHandle"] {
@@ -2304,28 +2416,66 @@ with tab_search:
             }
             .stDataFrame th {
                 text-align: center !important;
-                background-color: #2E7D32 !important;
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
                 color: white !important;
                 font-weight: bold !important;
+                border: 1px solid #1B5E20 !important;
             }
             .stDataFrame td {
                 text-align: center !important;
+                border: 1px solid #E8F5E8 !important;
+            }
+            .stDataFrame tr:nth-child(even) {
+                background-color: #F1F8E9 !important;
+            }
+            .stDataFrame tr:hover {
+                background-color: #E8F5E8 !important;
             }
             </style>
             """, unsafe_allow_html=True)
             
-            # Download button for keywords
-            csv_keywords = top_keywords.to_csv(index=False)
+            # Show example queries for top keyword
+            if st.checkbox("🔍 Show example queries for top keywords", key="show_examples_search"):
+                st.subheader("📝 Example Queries")
+                for idx, row in top_keywords.head(5).iterrows():
+                    keyword = row['keyword']
+                    examples = row['example_queries'][:3]  # Show top 3 examples
+                    
+                    st.markdown(f"""
+                    **🔸 {keyword}** ({format_number(row['total_counts'])} searches):
+                    """)
+                    for example in examples:
+                        st.markdown(f"   • {example}")
+                    st.markdown("---")
+            
+            # Download button with enhanced data
+            csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
+                                    'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
+                                    'unique_queries']].copy()
+            csv_keywords = csv_data.to_csv(index=False)
+            
             st.download_button(
-                label="📥 Download Health Keywords CSV",
+                label="📥 Download Enhanced Health Keywords CSV",
                 data=csv_keywords,
-                file_name=f"top_{num_keywords}_health_keywords.csv",
+                file_name=f"enhanced_top_{num_keywords}_health_keywords.csv",
                 mime="text/csv",
                 key="keyword_csv_download_search_tab"
             )
+            
+            # Summary insights
+            st.info(f"""
+            **📊 Keyword Analysis Summary:**
+            - **{len(kw_perf_df):,}** unique health keywords identified
+            - **{top_keywords['total_counts'].sum():,}** total search volume for top {num_keywords}
+            - **{top_keywords['share_pct'].sum():.1f}%** market share covered
+            - **{top_keywords['unique_queries'].sum():,}** unique search queries analyzed
+            """)
 
+    else:
+        st.warning("⚠️ No keyword data available for analysis")
 
     st.markdown("---")
+
 
     
     # Advanced Analytics Section
