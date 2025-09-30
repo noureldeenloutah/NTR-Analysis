@@ -9,3 +9,5 @@ xgboost
 openpyxl
 joblib
 reportlab
+fuzzywuzzy
+python-Levenshtein
