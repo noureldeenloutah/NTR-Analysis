@@ -2860,7 +2860,7 @@ with tab_search:
         top_keyword_volume = int(kw_perf_df.iloc[0]['total_counts']) if len(kw_perf_df) > 0 else 0
         
         # Average conversion rate across health keywords
-        avg_health_cr = kw_perf_df['avg_cr'].mean() if len(kw_perf_df) > 0 else 0
+        avg_health_cr = kw_perf_df['health_cr'].mean() if len(kw_perf_df) > 0 else 0
         
         # High-performing keywords (above average CR)
         high_perf_keywords = len(kw_perf_df[kw_perf_df['avg_cr'] > avg_health_cr]) if len(kw_perf_df) > 0 else 0
