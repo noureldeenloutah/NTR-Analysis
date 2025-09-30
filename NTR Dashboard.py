@@ -2702,10 +2702,11 @@ with tab_search:
             )
             
             # Enhanced summary insights
+            # Enhanced summary insights
             total_variations = top_keywords['variations_count'].sum()
             avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 else 0
-            high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 else 0  # FIXED: Use 'health_cr' instead of 'avg_cr'
-            
+            high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 else 0  # FIXED: Use 'health_cr'
+
             st.info(f"""
             **📊 Fuzzy Keyword Analysis Summary:**
             - **{len(kw_perf_df):,}** unique health keyword groups identified
@@ -3111,7 +3112,7 @@ with tab_search:
         avg_health_cr = kw_perf_df['health_cr'].mean() if len(kw_perf_df) > 0 else 0
         
         # High-performing keywords (above average CR)
-        high_perf_keywords = len(kw_perf_df[kw_perf_df['avg_cr'] > avg_health_cr]) if len(kw_perf_df) > 0 else 0
+        high_perf_keywords = len(kw_perf_df[kw_perf_df['health_cr'] > avg_health_cr]) if len(kw_perf_df) > 0 else 0
         
         # Total health search volume from keywords
         total_keyword_volume = int(kw_perf_df['total_counts'].sum()) if len(kw_perf_df) > 0 else 0
