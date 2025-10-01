@@ -2208,6 +2208,10 @@ with tab_search:
                     'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
                     'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
                 ],
+
+                'excluded_terms': [ 'الصمغ'
+
+                ],
                 'compounds': [
                     'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
                     'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
@@ -2224,6 +2228,7 @@ with tab_search:
                     'کولاجی', 'کولاج', 'کولا', 'مولاجین', 'کولاحین', 'کوباجین',
                     'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
                 ],
+                
                 'compounds': [
                     'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 'marine', 'bovine',
                     'بحری', 'بودرة', 'بودره', 'فوار', 'حبوب', 'سایل', 'powder'
@@ -2280,7 +2285,7 @@ with tab_search:
                     'فیتال', 'فیتکس', 'فیرتا', 'تین', 'ادفیتا', 'فیتانین', 'فیتاجلوبین',
                     'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
                     # Additional exclusions
-                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'فیس'
+                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'فتام', 'vite ', 'ادفیتا', 'evit ' , 'فیمی'
                 ],
                 'compounds': [
                     # Vitamin types
@@ -2318,7 +2323,7 @@ with tab_search:
                     'کالسیو', 'کالیسیوم', 'کالوجین', 'کالیسوم', 'کالس'
                 ],
                 'compounds': [
-                    'کربنات', 'سیترات', 'citrate', 'carbonate', 'مغنیسیوم', 'magnesium',
+                    'کربنات', 'سیترات', 'citrate', 'carbonate', 'مغنیسیو', 'magnesium',
                     '600', 'فوار', 'حبوب', 'للاطفال', 'اطفال'
                 ],
                 'threshold': 80,
@@ -2915,20 +2920,50 @@ with tab_search:
                 
                 # Group variations for better display
                 if total_variations > 0:
-                    # Show first 50 variations in a text area for easy copying
-                    variations_to_show = variations_list[:50]
-                    variations_text = " | ".join(variations_to_show)
+                    # User controls
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        display_count = st.selectbox(
+                            "Show variations:",
+                            [25, 50, 100, "All"],
+                            index=1  # Default to 50
+                        )
+                    
+                    with col2:
+                        display_format = st.radio(
+                            "Format:",
+                            ["Pipe separated", "Line by line"],
+                            index=0  # Default to pipe separated
+                        )
+                    
+                    # Process variations
+                    available_variations = len(variations_list)
+                    
+                    if display_count == "All":
+                        variations_to_show = variations_list
+                    else:
+                        variations_to_show = variations_list[:min(display_count, available_variations)]
+                    
+                    # Format output
+                    if display_format == "Line by line":
+                        variations_text = "\n".join(variations_to_show)
+                        height = min(400, max(150, len(variations_to_show) * 25))
+                    else:
+                        variations_text = " | ".join(variations_to_show)
+                        height = 150
                     
                     st.text_area(
-                        f"Variations (showing {len(variations_to_show)} of {total_variations}):",
+                        f"Variations (showing {len(variations_to_show)} of {available_variations}):",
                         variations_text,
-                        height=150,
+                        height=height,
                         help="Copy these variations for your keyword research"
                     )
                     
-                    # Show remaining count if there are more
-                    if total_variations > 50:
-                        st.info(f"ℹ️ {total_variations - 50} additional variations not shown. Total: {total_variations}")
+                    # Show info if more variations exist
+                    if available_variations > len(variations_to_show):
+                        st.info(f"ℹ️ {available_variations - len(variations_to_show)} more variations available. Select 'All' to see them.")
+
                     
                     # Additional insights
                     st.write("### 📊 Additional Insights:")
