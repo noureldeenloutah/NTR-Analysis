@@ -2272,11 +2272,11 @@ with tab_search:
                     '3', '6', '9', 'للاطفال', 'اطفال', 'جونیور', 'لایت', 'ثری',
                     'fish oil', 'زیت السمک', 'kids'
                 ],
-                'threshold': 80,  
+                'threshold': 85,  
                 'min_length': 4,  
                 'exclusions': [    
                     'النوم', 'جامی', 'کرومیو', 'کرومیم', 'کروم', 'نوم', 'جام',
-                    'کرو', 'میو', 'روم', 'رومیو', 'جمیل', 'جمال'
+                    'کرو', 'میو', 'روم', 'رومیو', 'جمیل', 'جمال' , 'کومی' , 'کرومیم'
                 ]
             },
             
@@ -2780,27 +2780,155 @@ with tab_search:
                 st.metric("🐟 اوميجا Group", "0", "No matches")
         
         # Show variations for top keywords in expandable sections
-        if not magnesium_rows.empty:
-            with st.expander(f"🔍 View {magnesium_rows.iloc[0]['variations_count']} مغنیسیوم variations"):
-                st.write("**Grouped variations:**")
-                variations_text = " | ".join(magnesium_rows.iloc[0]['variations'][:25])  # Show first 25
-                st.text(variations_text)
-        
-        if not omega_rows.empty:
-            with st.expander(f"🔍 View {omega_rows.iloc[0]['variations_count']} اوميجا variations"):
-                st.write("**Grouped variations:**")
-                variations_text = " | ".join(omega_rows.iloc[0]['variations'][:25])  # Show first 25
-                st.text(variations_text)
-        
-        # Use slider for number of keywords
-        num_keywords = st.slider(
-            "Number of health keywords to display:", 
-            min_value=10, 
-            max_value=min(300, len(kw_perf_df)), 
-            value=15, 
-            step=10,
-            key="fuzzy_keyword_count_slider"
+        # 🎯 DROPDOWN KEYWORD VARIATIONS EXPLORER
+        st.write("### 🔍 Keyword Variations Explorer")
+
+        # Get top 25 keywords for dropdown
+        top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
+
+        # Create dropdown with emoji mapping
+        emoji_map = {
+            'مغنیسیوم': '⚡',
+            'اوميجا': '🐟', 
+            'فیتامین': '💊',
+            'کولاجین': '✨',
+            'زنک': '🔋',
+            'کالسیوم': '🦴',
+            'حدید': '🩸',
+            'بروتین': '💪',
+            'میلاتونین': '😴',
+            'بیوتین': '💇',
+            'اشواغندا': '🌿',
+            'جنسنج': '🌱',
+            'کرکم': '🧡',
+            'خل التفاح': '🍎',
+            'منوم': '🌙',
+            'بربرین': '🟡',
+            'کرانبری': '🔴',
+            'فحم نشط': '⚫',
+            'عسل مانوکا': '🍯',
+            'کیو10': '❤️',
+            'گلوتاثیون': '✨',
+            'ارجنین': '💊',
+            'سیلینیوم': '🔘',
+            'فولیک اسید': '🤱',
+            'تخسیس': '⚖️'
+        }
+
+        # Create dropdown options with emojis and stats
+        dropdown_options = []
+        for keyword in top_25_keywords:
+            emoji = emoji_map.get(keyword, '💊')
+            keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
+            volume = format_number(keyword_data['total_counts'])
+            variations = keyword_data['variations_count']
+            dropdown_options.append(f"{emoji} {keyword} ({volume} searches, {variations} variations)")
+
+        # Dropdown selection
+        selected_option = st.selectbox(
+            "Select a health keyword to view its variations:",
+            options=["Select a keyword..."] + dropdown_options,
+            key="keyword_variations_dropdown"
         )
+
+        # Show variations when keyword is selected
+        if selected_option != "Select a keyword...":
+            # Extract keyword from selection (remove emoji and stats)
+            selected_keyword = selected_option.split(' ')[1]  # Get keyword part
+            
+            # Get keyword data
+            keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
+            
+            if not keyword_rows.empty:
+                keyword_data = keyword_rows.iloc[0]
+                
+                # Show keyword header with emoji
+                emoji = emoji_map.get(selected_keyword, '💊')
+                st.write(f"## {emoji} {selected_keyword} Variations Analysis")
+                
+                # Show key metrics in columns
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        "Total Volume", 
+                        format_number(keyword_data['total_counts']),
+                        help="Total search volume for this keyword group"
+                    )
+                
+                with col2:
+                    st.metric(
+                        "Variations", 
+                        format_number(keyword_data['variations_count']),
+                        help="Number of different variations grouped together"
+                    )
+                
+                with col3:
+                    st.metric(
+                        "Avg CTR", 
+                        f"{keyword_data['avg_ctr']:.2f}%",
+                        help="Average Click-Through Rate"
+                    )
+                
+                with col4:
+                    st.metric(
+                        "Health CR", 
+                        f"{keyword_data['health_cr']:.2f}%",
+                        help="Health Conversion Rate"
+                    )
+                
+                # Show variations in a nice format
+                st.write("### 📝 All Variations:")
+                
+                variations_list = keyword_data['variations']
+                total_variations = len(variations_list)
+                
+                # Group variations for better display
+                if total_variations > 0:
+                    # Show first 50 variations in a text area for easy copying
+                    variations_to_show = variations_list[:50]
+                    variations_text = " | ".join(variations_to_show)
+                    
+                    st.text_area(
+                        f"Variations (showing {len(variations_to_show)} of {total_variations}):",
+                        variations_text,
+                        height=150,
+                        help="Copy these variations for your keyword research"
+                    )
+                    
+                    # Show remaining count if there are more
+                    if total_variations > 50:
+                        st.info(f"ℹ️ {total_variations - 50} additional variations not shown. Total: {total_variations}")
+                    
+                    # Additional insights
+                    st.write("### 📊 Additional Insights:")
+                    
+                    insight_col1, insight_col2 = st.columns(2)
+                    
+                    with insight_col1:
+                        st.write("**Performance Metrics:**")
+                        st.write(f"• Total Clicks: {format_number(keyword_data['total_clicks'])}")
+                        st.write(f"• Conversions: {format_number(keyword_data['total_conversions'])}")
+                        st.write(f"• Unique Queries: {format_number(keyword_data['unique_queries'])}")
+                    
+                    with insight_col2:
+                        st.write("**Keyword Diversity:**")
+                        avg_searches = keyword_data['total_counts'] / keyword_data['variations_count'] if keyword_data['variations_count'] > 0 else 0
+                        st.write(f"• Avg Searches per Variation: {avg_searches:.1f}")
+                        
+                        # Calculate diversity score
+                        diversity_score = (keyword_data['variations_count'] / keyword_data['total_counts'] * 1000) if keyword_data['total_counts'] > 0 else 0
+                        st.write(f"• Diversity Score: {diversity_score:.2f}")
+                        
+                        # Market share
+                        market_share = (keyword_data['total_counts'] / queries['Counts'].sum() * 100) if 'queries' in locals() else 0
+                        st.write(f"• Market Share: {market_share:.2f}%")
+                        
+                else:
+                    st.warning("No variations found for this keyword.")
+
+        # Add separator before main table
+        st.write("---")
 
         top_keywords = kw_perf_df.head(num_keywords)
 
