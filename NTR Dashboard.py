@@ -2285,7 +2285,7 @@ with tab_search:
                     'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
                 ],
 
-                'excluded_terms': [ 'کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا ', 'کوین ' 
+                'excluded_terms': [ 'کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا', 'کوین' ,'لاین','کوبالین'
 
                 ],
                 'compounds': [
@@ -2370,13 +2370,13 @@ with tab_search:
                     'الز', 'الزن', 'ذنک', 'زنج'
                 ],
                 'excluded_terms': [
-                    'الوزن', 'الز'
+                    'الوزن', 'الز'.'زینیکا','زینکال'
                 ],
                 'compounds': [
                     'پیکولینات', 'گلوکونات', 'picolinate', 'gluconate', 'citrate',
                     '50', '25', '30', 'سترات', 'ونحاس', 'نحاس', 'copper'
                 ],
-                'threshold': 80,
+                'threshold': 75,
                 'min_length': 3
             },
             
@@ -2399,7 +2399,7 @@ with tab_search:
                     'بروت', 'بروتی', 'پروت', 'پروتی'
                 ],
 
-                'excluded_terms': [ 'برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین'
+                'excluded_terms': [ 'برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین','pravotin','بروستا','برین'
 
                 ],
 
@@ -2413,23 +2413,105 @@ with tab_search:
             
             'حدید': {
                 'variations': [
-                    'حدید', 'حديد', 'iron', 'حدی', 'الحدید'
+                    # Arabic/Persian variations
+                    'حدید', 'حديد', 'حدی', 'الحدید',
+                    
+                    # English variations
+                    'iron', 'ferrous', 'ferro', 'ferr', 'ferritin', 'lactoferrin',
+                    
+                    # Brand/Product names
+                    'فیرولایت', 'فیرو لایت', 'ferrolight', 'فیروبیوترون', 'فیرو',
+                    'فیروفول', 'ferrofol', 'فیرومین', 'فیرومن', 'فیرو فول',
+                    'فیروسومال', 'ferrosomal', 'بروفیرون', 'فیروغلوبین',
+                    'فرافیرو', 'فیرو 28', 'ferrose', 'solgar'
                 ],
+                
+                'excluded_terms': [
+                    'حدیث', 'حدیقة', 'حدود', 'حدس', 'حدة', 'حدق', 'حدر',
+                    'فیروز', 'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر'
+                ],
+                
                 'compounds': [
-                    'فومارات', 'سولفات', 'fumarate', 'sulfate', 'bisglycinate',
-                    'فوار', 'شراب', 'حبوب', 'امبولات', 'ابر'
+                    # Chemical forms
+                    'فومارات', 'fumarate', 'سولفات', 'sulfate', 'sulphate',
+                    'bisglycinate', 'بیسگلایسینات', 'liposomal', 'لیپوزومال',
+                    
+                    # Product forms
+                    'فوار', 'شراب', 'حبوب', 'امبولات', 'انبولات', 'ابر', 'ابرة',
+                    'اقراص', 'کبسولات', 'tablet', 'tablets', 'drops', 'syrup',
+                    'gummies', 'supplement', 'supplements',
+                    
+                    # Descriptive terms
+                    'gentle', 'مکمل', 'مکملات', 'مکمل غذایی', 'فیتامین', 'فتامین',
+                    'فیتامینات', 'vitamin', 'vitamins',
+                    
+                    # Target audience
+                    'للاطفال', 'اطفال', 'kids', 'children',
+                    
+                    # Combinations
+                    'folic acid', 'فولیک اسید', 'and folic', 'فولیک',
+                    
+                    # Dosage
+                    '25 mg', '25mg', '28', 'mg',
+                    
+                    # Brand specific
+                    'solgar gentle iron', 'solgar iron', 'gentle iron'
                 ],
-                'threshold': 85,
+                
+                'threshold': 75,  # Lowered from 85 to catch more variations
+                'min_length': 3
+            },
+
+            'ensure': {
+                'variations': [
+                    # English variations
+                    'ensure', 'ensur', 'ensu', 'ensue',
+                    
+                    # Arabic/Persian variations
+                    'انشور', 'انش', 'انشو', 'انشوز', 'انشوو', 'انشر', 'انشار',
+                    'انشوور', 'انشوار', 'انشوری', 'انشوره', 'انشوری',
+                    
+                    # With milk context
+                    'حلیب انشور', 'حلیب انش', 'حلیب انشو', 'حليب انشور',
+                    'حليب انش', 'حليب انشو'
+                ],
+                
+                'excluded_terms': [
+                    'انشاء'
+                ],
+                
+                'compounds': [
+                    # Product variants
+                    'plus', 'بلس', 'بلص', 'پلس',
+                    'max', 'ماکس', 'maximum', 'ماکسیمم',
+                    'complete', 'کومبلیت', 'کامل', 'کمپلیت',
+                    'protein', 'پروتین', 'پروتئین', 'بروتین',
+                    'milk', 'حلیب', 'حليب', 'شیر',
+                    
+                    # Combined variants
+                    'ensure plus', 'انشور بلس', 'انشور بلص', 'انشور پلس',
+                    'ensure max', 'انشور ماکس', 'انشور max',
+                    'ensure max protein', 'انشور ماکس پروتین', 'انشور max protein',
+                    'ensure complete', 'انشور کومبلیت', 'انشور کامل',
+                    'ensure milk', 'انشور حلیب', 'انشور شیر',
+                    'حلیب انشور بلس', 'حلیب انشور ماکس', 'حلیب انشور کومبلیت',                    
+                    
+                    # Flavors
+                    'vanilla', 'وانیل', 'وانیلا', 'فانیل', 'فانیلا',
+                    'chocolate', 'چاکلیت', 'شاکولاتة', 'شکلاته'           
+                ],
+                
+                'threshold': 75,
                 'min_length': 3
             },
             
             'بیوتین': {
                 'variations': [
                     'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'بیوتن',
-                    'البیوتین', 'بیوتیس', 'کیوتن', 'بایوتی'
+                    'البیوتین', 'بیوت', 'کیوتن', 'بایوتی'
                 ],
                 'excluded_terms': [
-                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین'
+                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین','بیوتیک','کیوتن','بایورین' 
                 ],
                 'compounds': [
                     '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
@@ -2447,7 +2529,7 @@ with tab_search:
                 ],
 
                 'excluded_terms': [
-                    'انشوز', 'الشوک '
+                    'انشوز', 'الشوک ','اوراق','انشوو','اوفا','انشو',''
                 ],
 
                 'compounds': [
@@ -2512,6 +2594,11 @@ with tab_search:
                     'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
                     'بربرین حبوب', 'البربری', 'بربر', 'berberine', 'berberin'
                 ],
+
+                'excluded_terms': [
+                    'برابورین', 'بیریورین','بروبین'
+                ],
+
                 'compounds': [
                     '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
                 ],
@@ -2521,12 +2608,74 @@ with tab_search:
             
             'کرانبری': {
                 'variations': [
+                    # Main cranberry variations
                     'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
-                    'الکران بیری', 'بیری', 'کرانبی', 'کرانبیر', 'cranberry'
+                    'الکران بیری', 'بیری', 'کرانبی', 'کرانبیر', 'cranberry',
+                    'کرانبری', 'کرانسید'
                 ],
+                
+                'excluded_terms': [
+                    # Geographic/location terms
+                    'کاندری', 'کانتری', 'بحری', 'کارن',
+                    
+                    # Food/drink terms
+                    'بیرف', 'بریف', 'بیرفی', 'بیرفیک', 'بیرل', 'بیرلی', 'بییر',
+                    
+                    # Medical/scientific terms
+                    'بیورین', 'بکتیری', 'بیور', 'بیروین',
+                    
+                    # General terms
+                    'کاند', 'بیبی', 'بیلی', 'بریج', 'بقری', 'کریا',
+                    
+                    # Non-cranberry berry terms
+                    'strawberry', 'blueberry', 'raspberry', 'blackberry',
+                    'توت', 'فراولة', 'توت الأزرق',
+                    
+                    # Common false matches
+                    'بری', 'کری', 'بیر',
+                    'بیری بیری', 'کرانی', 'برانی', 'کرانه',
+                    
+                    # Technology/brand terms
+                    'blackberry phone', 'بلک بیری',
+                    
+                ],
+                
                 'compounds': [
-                    'حبوب', 'کبسولات', 'tablets', 'sachets', 'extract'
+                    # Product forms
+                    'حبوب', 'کبسولات', 'اقراص', 'tablets', 'capsules', 'pills',
+                    'sachets', 'اکیاس', 'پاکت',
+                    'extract', 'مستخلص', 'عصاره',
+                    'powder', 'پودر', 'مسحوق',
+                    'juice', 'عصیر', 'آب',
+                    'syrup', 'شراب', 'سیروپ',
+                    
+                    # Health benefits context
+                    'urinary', 'بولی', 'مسالک بولیة',
+                    'uti', 'التهاب', 'عفونت',
+                    'bladder', 'مثانة', 'مثانه',
+                    'kidney', 'کلیة', 'کلیه',
+                    'infection', 'عدوی', 'عفونت',
+                    
+                    # Antioxidant context
+                    'antioxidant', 'مضاد اکسدة', 'آنتی اکسیدان',
+                    'vitamin', 'ویتامین', 'فیتامین',
+                    
+                    # Brand/quality terms
+                    'organic', 'عضوی', 'طبیعی',
+                    'pure', 'خالص', 'صافی',
+                    'concentrated', 'مرکز', 'غلیظ',
+                    
+                    # Dosage/strength
+                    '500mg', '1000mg', 'میلی گرام',
+                    'high strength', 'قوی', 'مرکز',
+                    
+                    # Combined terms
+                    'cranberry extract', 'کرانبری عصاره',
+                    'cranberry tablets', 'کرانبری اقراص',
+                    'cranberry capsules', 'کرانبری کبسولات',
+                    'cranberry juice', 'کرانبری عصیر'
                 ],
+                
                 'threshold': 75,
                 'min_length': 4
             },
@@ -2543,16 +2692,65 @@ with tab_search:
                 'min_length': 3
             },
             
-            'عسل مانوکا': {
+            'عسل': {
                 'variations': [
-                    'عسل المنوکا', 'عسل مانوکا', 'مانوکا', 'المانوکا', 'منوکا',
-                    'مانوک', 'مان', 'عسل المانوکا', 'manuka honey', 'manuka'
+                    # Basic honey terms
+                    'عسل', 'العسل', 'honey',
+                    
+                    # Manuka variations
+                    'عسل المنوکا', 'عسل مانوکا', 'عسل المانوکا', 'عسل المونکا',
+                    'عسل مونکا', 'عسل مونیکا', 'عسل المونیکا', 'عسل مونوکا',
+                    'عسل منوکا', 'عسل مانوک', 'عسل المانوک', 'عسل مان',
+                    'عسل مانو', 'عسل الما', 'مانوکا عسل', 'مانوکا', 'المانوکا',
+                    'منوکا', 'مانوک', 'مان', 'manuka honey', 'manuka', 'honey manuka',
+                    
+                    # Royal honey variations
+                    'العسل الملکی', 'عسل ملکی', 'عسل الملکی', 'royal honey',
+                    
+                    # Other honey types
+                    'عسل سدر', 'عسل السدر', 'عسل ابیض', 'عسل مالیزی',
+                    'العسل الحیوی', 'عسل حیوی', 'vital honey', 'true honey',
+                    
+                    # Brand names
+                    'عسل ابو نایف', 'عسل ابو', 'عسل ابونایف',
+                    
+                    # Partial matches (common search patterns)
+                    'عسل ال', 'عسل م', 'عسل ما', 'عسل الم', 'عسل ا'
                 ],
+                
+                'excluded_terms': [
+                    'عسلی', 'عسکر', 'عسر', 'عصل', 'عصر', 'عضل', 'عزل',
+                    'honey badger', 'honey moon', 'honeymoon', 'honey pot'
+                ],
+                
                 'compounds': [
-                    'عسل', 'honey', 'اقراص', 'حلوى', 'raw', 'خام'
+                    # Basic terms
+                    'عسل', 'honey',                
+
+                    # Quality descriptors
+                    'raw', 'خام', 'طبیعی', 'natural', 'organic', 'عضوی',
+                    'pure', 'خالص', 'صافی', 'نقی',
+                    'original', 'اصلی', 
+                    
+                    # Honey types
+                    'manuka', 'مانوکا', 'منوکا', 'مانوک',
+                    'royal', 'ملکی', 'الملکی',
+                    'سدر', 'السدر', 'sidr',
+                    'ابیض', 'white',
+                    'مالیزی', 'malaysian',
+                    'حیوی', 'vital', 'bio',
+                    
+                    # Target audience/usage
+                    'اطفال', 'للاطفال', 'kids', 'children',
+                    'جنسی', 'للجنس', 'sexual', 'للرجال', 'for men',
+                    
+                    # Brand specific
+                    'ابو نایف', 'ابونایف', 'ابو',
+                    'الوانه', 'وانه'                    
                 ],
-                'threshold': 75,
-                'min_length': 4
+                
+                'threshold': 70,  # Lowered to catch more variations
+                'min_length': 3   # Reduced to catch shorter terms like 'عسل م'
             },
             
             'کیو10': {
@@ -2626,7 +2824,63 @@ with tab_search:
                 ],
                 'threshold': 75,
                 'min_length': 3
+             },
+
+            'میلاتونین': {
+                'variations': [
+                    # Arabic/Persian variations
+                    'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'میلاتی', 'میلاتین',
+                    'میلاتونی', 'میلاتوبید', 'میلاتونین', 'میلاتیون', 'میلاتینون',
+                    'میلاتنین', 'میلاتونیین', 'میلاتونورم', 'میلاتنون', 'میلاتولین',
+                    'المیلاتونین', 'میلاتونین', 'میلاتونین',
+                    
+                    # English variations
+                    'melatonin', 'melatonine', 'mela', 'melat', 'melato', 'melaton',
+                    'melatobed', 'melatoni',
+                    
+                    # Brand-specific terms
+                    'هولیستا', 'holista', 'ناترول', 'natrol', 'جامیسون', 'jamieson',
+                    'میلاتو سلیب', 'میلاتونین ستار', 'جی بی میلاتونین', 'jp melatonin',
+                    'jp mela', 'jp melat'
+                ],
+                
+                'excluded_terms': [
+                    'ملاط', 'ملات', 'میلان', 'میلاد', 'میلی', 'تونین', 'تونی',
+                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون'
+                ],
+                
+                'compounds': [
+                    # Dosage variations
+                    '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
+                    'میلاتونین 1', 'میلاتونین 3', 'میلاتونین 5', 'میلاتونین 10',
+                    'میلاتونین5', 'میلاتونین10', 'میلاتونین ١٠',
+                    'melatonin 1', 'melatonin 3', 'melatonin 5', 'melatonin 10',
+                    'melatonin 1 mg', 'melatonin 3 mg', 'melatonin 5 mg', 'melatonin 10 mg',
+                    'melatonin 1mg', 'melatonin 3mg', 'melatonin 5mg', 'melatonin 10mg',
+                    
+                    # Form variations
+                    'gummy', 'gummies', 'حبوب', 'نقط', 'شراب', 'شرایح', 'حلوى',
+                    'melatonin gummy', 'melatonin gummies',
+                    
+                    # Target audience
+                    'اطفال', 'للاطفال', 'الاطفال', 'کیدز', 'kids', 'children',
+                    'میلاتونین اطفال', 'میلاتونین للاطفال', 'میلاتونین الاطفال',
+                    'میلاتونین کیدز', 'میلاتونینللاطفال', 'میلاتون اطفال',
+                    'میلاتون للاطفال', 'ناترول میلاتونین للاطفال',
+                    'melatonin for kids', 'melatonin kids', 'kids melatonin',
+                    
+                    # Usage context
+                    'للنوم', 'sleep', 'سلیب', 'نوم',
+                    
+                    # Additional compounds
+                    'plus', 'بلس', 'میلاتونین بلس', 'melatonin plus',
+                    'extract', 'عصاره'
+                ],
+                
+                'threshold': 70,
+                'min_length': 4
             }
+
         }
 
 
@@ -2931,7 +3185,7 @@ with tab_search:
             'بربرین': '🟡',
             'کرانبری': '🔴',
             'فحم نشط': '⚫',
-            'عسل مانوکا': '🍯',
+            'عسل': '🍯',
             'کیو10': '❤️',
             'گلوتاثیون': '✨',
             'ارجنین': '💊',
@@ -2941,13 +3195,19 @@ with tab_search:
         }
 
         # Create dropdown options with emojis and stats
+        # Create dropdown options with emojis and stats
         dropdown_options = []
-        for keyword in top_25_keywords:
+        keyword_mapping = {}  # Map display text to actual keyword
+
+        for i, keyword in enumerate(top_25_keywords):
             emoji = emoji_map.get(keyword, '💊')
             keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
             volume = format_number(keyword_data['total_counts'])
             variations = keyword_data['variations_count']
-            dropdown_options.append(f"{emoji} {keyword} ({volume} searches, {variations} variations)")
+            
+            display_text = f"{emoji} {keyword} ({volume} searches, {variations} variations)"
+            dropdown_options.append(display_text)
+            keyword_mapping[display_text] = keyword  # Store the mapping
 
         # Dropdown selection
         selected_option = st.selectbox(
@@ -2958,8 +3218,9 @@ with tab_search:
 
         # Show variations when keyword is selected
         if selected_option != "Select a keyword...":
-            # Extract keyword from selection (remove emoji and stats)
-            selected_keyword = selected_option.split(' ')[1]  # Get keyword part
+            # Use mapping instead of text parsing
+            selected_keyword = keyword_mapping[selected_option]
+            
             
             # Get keyword data
             keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
