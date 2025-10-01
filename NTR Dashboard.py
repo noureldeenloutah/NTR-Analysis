@@ -2201,89 +2201,99 @@ with tab_search:
         return {
             'مغنیسیوم': {
                 'variations': [
-                    'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغن', 'ماغ', 
-                    'مغنیس', 'مغنی', 'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 
-                    'مغانیسیوم', 'ماغن', 'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم',
-                    'مغنیسو', 'مغنسیو', 'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم',
-                    'مغانسیوم', 'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم',
-                    'المغنیسوم', 'المغن', 'magnesium', 'mag', 'meg', 'مغنيسيوم'
+                    'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
+                    'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
+                    'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
+                    'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
+                    'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
+                    'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
                 ],
                 'compounds': [
                     'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
-                    'سترات', 'سیترات', 'ستریت', 'سیترات', 'مالات', 'مالیت',
-                    'ثریونات', 'ثریونیت', 'توریت', 'فوار', '400'
+                    'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
+                    'ثریونیت', 'توریت', 'فوار', '400', 'glycinate'
                 ],
-                'threshold': 70
+                'threshold': 80,  # Increased threshold
+                'min_length': 4   # Minimum length for matching
             },
             
             'کولاجین': {
                 'variations': [
                     'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'كولاچين',
-                    'کلاجین', 'کولاژن', 'کولاجن', 'كولاجن'
+                    'کلاجین', 'کولاژن', 'کولاجن', 'كولاجن', 'کولجین'
                 ],
-                'compounds': ['پپتید', 'هیدرولیز', 'مارین', 'بقری'],
-                'threshold': 75
+                'compounds': ['پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides'],
+                'threshold': 80,
+                'min_length': 4
             },
             
             'فیتامین': {
                 'variations': [
                     'فیتامین', 'فيتامين', 'ویتامین', 'فیت', 'فيت', 'vit', 'vitamin',
-                    'ویت', 'فیتا', 'فیتامن', 'فيتامن'
+                    'ویت', 'فیتا', 'فیتامن', 'فيتامن', 'فتامین', 'فایتامین'
                 ],
                 'compounds': ['د', 'د3', 'ب12', 'ب', 'سی', 'c', 'd', 'd3', 'b12', 'b'],
-                'threshold': 70
+                'threshold': 75,
+                'min_length': 3
             },
             
             'میلاتونین': {
                 'variations': [
                     'میلاتونین', 'ملاتونین', 'میلانتون', 'ملانتون', 'melatonin',
-                    'میلاتونن', 'ملاتونن', 'ميلاتونين'
+                    'میلاتونن', 'ملاتونن', 'ميلاتونين', 'میلاتون', 'میلات'
                 ],
-                'compounds': ['3mg', '5mg', '10mg'],
-                'threshold': 75
+                'compounds': ['3mg', '5mg', '10mg', '3', '5', '10'],
+                'threshold': 80,
+                'min_length': 4
             },
             
-            'اوميجا': {  # Changed main key to اوميجا
+            'اوميجا': {  # Your preferred main key
                 'variations': [
                     'اومیگا', 'اومگا', 'اوميجا', 'اوميغا', 'omega', 'امگا', 
-                    'اومكا', 'اوميكا', 'اومیکا', 'امیگا'  # Added اومكا and similar variations
+                    'اومكا', 'اوميكا', 'اومیکا', 'امیگا', 'اومیجا', 'اومیقا'
                 ],
                 'compounds': ['3', '6', '9'],
-                'threshold': 65  # Lower threshold for better matching
+                'threshold': 75,  # Reasonable threshold
+                'min_length': 4   # Must be at least 4 characters
             },
             
             'زینک': {
                 'variations': [
                     'زینک', 'زنک', 'زنك', 'zinc', 'زینگ', 'زينك'
                 ],
-                'compounds': ['پیکولینات', 'گلوکونات'],
-                'threshold': 75
+                'compounds': ['پیکولینات', 'گلوکونات', 'picolinate'],
+                'threshold': 80,
+                'min_length': 3
             },
             
             'کلسیم': {
                 'variations': [
                     'کلسیم', 'کالسیم', 'كالسيوم', 'calcium', 'کلسم'
                 ],
-                'compounds': ['کربنات', 'سیترات'],
-                'threshold': 75
+                'compounds': ['کربنات', 'سیترات', 'citrate'],
+                'threshold': 80,
+                'min_length': 4
             },
             
             'پروتین': {
                 'variations': [
                     'پروتین', 'پروتئین', 'بروتین', 'protein', 'پروتن', 'بروتين'
                 ],
-                'compounds': ['وی', 'whey', 'کازئین'],
-                'threshold': 75
+                'compounds': ['وی', 'whey', 'کازئین', 'casein'],
+                'threshold': 80,
+                'min_length': 4
             },
             
             'حدید': {
                 'variations': [
-                    'حدید', 'حديد', 'iron', 'آهن'
+                    'حدید', 'حديد', 'iron', 'آهن', 'حدی'
                 ],
-                'compounds': ['فومارات', 'سولفات'],
-                'threshold': 80
+                'compounds': ['فومارات', 'سولفات', 'fumarate'],
+                'threshold': 85,  # Very strict for iron
+                'min_length': 3
             }
         }
+
 
     def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
         """Extract keywords and prepare for fuzzy grouping"""
@@ -2306,9 +2316,9 @@ with tab_search:
         
         return keywords
 
-    def fuzzy_match_keywords(keyword_data, master_dict, min_score=65):  # Lowered min_score
+    def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
         """
-        Advanced fuzzy matching with compound detection
+        MUCH MORE CONSERVATIVE fuzzy matching with strict rules
         """
         grouped_keywords = defaultdict(lambda: {
             'total_counts': 0, 
@@ -2325,54 +2335,74 @@ with tab_search:
             if keyword in processed_keywords:
                 continue
                 
+            # Skip very short keywords that are likely noise
+            if len(keyword.strip()) < 3:
+                continue
+                
             best_match = None
             best_score = 0
             matched_master = None
             
             # Try to match against master keywords
             for master_keyword, master_info in master_dict.items():
-                # Check main variations
+                # Skip if keyword is too short for this master
+                if len(keyword) < master_info.get('min_length', 3):
+                    continue
+                    
+                # Check main variations with STRICT matching
                 for variation in master_info['variations']:
-                    # Direct fuzzy match
-                    score = fuzz.ratio(keyword.lower(), variation.lower())
-                    
-                    # Boost score if keyword contains variation or vice versa
-                    if variation.lower() in keyword.lower() or keyword.lower() in variation.lower():
-                        score = max(score, 85)
-                    
-                    # Additional boost for partial matches
-                    if fuzz.partial_ratio(keyword.lower(), variation.lower()) > 80:
-                        score = max(score, 75)
-                    
-                    if score > best_score and score >= master_info['threshold']:
-                        best_score = score
+                    # 1. EXACT MATCH gets highest priority
+                    if keyword.lower() == variation.lower():
+                        best_score = 100
                         best_match = variation
                         matched_master = master_keyword
+                        break
+                    
+                    # 2. CONTAINS MATCH - but both ways and with length check
+                    if (variation.lower() in keyword.lower() and 
+                        len(variation) >= 4 and 
+                        len(keyword) >= 4):
+                        # Must be substantial portion of the word
+                        if len(variation) / len(keyword) >= 0.6:
+                            score = 90
+                            if score > best_score:
+                                best_score = score
+                                best_match = variation
+                                matched_master = master_keyword
+                    
+                    # 3. FUZZY MATCH - but very conservative
+                    score = fuzz.ratio(keyword.lower(), variation.lower())
+                    
+                    # Additional checks to prevent false matches
+                    if score >= master_info['threshold']:
+                        # Must share at least 60% of characters
+                        if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
+                            if score > best_score:
+                                best_score = score
+                                best_match = variation
+                                matched_master = master_keyword
+                
+                # If we found exact match, break
+                if best_score == 100:
+                    break
                 
                 # Check compound variations (e.g., مغنیسیوم جلیسینات)
-                if master_info.get('compounds'):
+                if master_info.get('compounds') and len(keyword) >= 6:
                     for compound in master_info['compounds']:
-                        compound_variations = [
-                            f"{var} {compound}" for var in master_info['variations'][:5]  # Top 5 variations
-                        ] + [
-                            f"{compound} {var}" for var in master_info['variations'][:5]
-                        ]
-                        
-                        for compound_var in compound_variations:
-                            score = fuzz.ratio(keyword.lower(), compound_var.lower())
-                            
-                            # Special handling for compound keywords
-                            if (compound.lower() in keyword.lower() and 
-                                any(v.lower() in keyword.lower() for v in master_info['variations'][:10])):
-                                score = max(score, 80)
-                            
-                            if score > best_score and score >= (master_info['threshold'] - 10):
-                                best_score = score
-                                best_match = compound_var
-                                matched_master = master_keyword
+                        # Check if keyword contains both master variation AND compound
+                        for main_var in master_info['variations'][:5]:  # Top 5 only
+                            if (main_var.lower() in keyword.lower() and 
+                                compound.lower() in keyword.lower() and
+                                len(main_var) >= 4):
+                                
+                                score = 85  # High score for compound matches
+                                if score > best_score:
+                                    best_score = score
+                                    best_match = f"{main_var} {compound}"
+                                    matched_master = master_keyword
             
-            # Group under best match or keep as standalone
-            if matched_master and best_score >= min_score:
+            # Group under best match ONLY if score is high enough
+            if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
                 group_key = matched_master
                 grouped_keywords[group_key]['variations'].append(keyword)
             else:
@@ -2389,6 +2419,7 @@ with tab_search:
             processed_keywords.add(keyword)
         
         return dict(grouped_keywords)
+
 
     @st.cache_data(ttl=1800, show_spinner=False)
     def calculate_enhanced_keyword_performance(_df):
