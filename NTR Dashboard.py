@@ -2345,7 +2345,7 @@ with tab_search:
                     'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
                     # Additional exclusions
                     'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی ' , 'vital', ' فیمی', 'فیتالا','فیتان ', 'فیتو ', 'فینترمین', 'قلوتامین','ادفیتا',
-                    'غلوتامین ','فیفامیون ','فیرت '
+                    'غلوتامین ','فیفامیون ','فیرت ','vitex','بیتا'
                 ],
                 'compounds': [
                     # Vitamin types
@@ -2370,13 +2370,13 @@ with tab_search:
                     'الز', 'الزن', 'ذنک', 'زنج'
                 ],
                 'excluded_terms': [
-                    'الوزن', 'الز','زینیکا','زینکال'
+                    'الوزن', 'الز','زینیکا','زینکال','الارز','زیکو','العن','الهن','الکرز'
                 ],
                 'compounds': [
                     'پیکولینات', 'گلوکونات', 'picolinate', 'gluconate', 'citrate',
                     '50', '25', '30', 'سترات', 'ونحاس', 'نحاس', 'copper'
                 ],
-                'threshold': 75,
+                'threshold': 80,
                 'min_length': 3
             },
             
@@ -2427,8 +2427,54 @@ with tab_search:
                 ],
                 
                 'excluded_terms': [
+                    # Original exclusions
                     'حدیث', 'حدیقة', 'حدود', 'حدس', 'حدة', 'حدق', 'حدر',
-                    'فیروز', 'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر'
+                    'فیروز', 'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر',
+                    
+                    # New exclusions from your list
+                    'فیدروب', 'solaray', 'فیدر', 'فیتالایت', 'فیتو', 'فیدرو',
+                    'دید', 'فیتوسوم', 'sola', 'بورون', 'بیروین', 'هیدرلایت',
+                    'فیجر', 'فینترمین', 'solar', 'هیرو', 'هیدرولایت', 'فیمروز',
+                    'iro', 'solgar', 'نیرو', 'زیرو', 'فیتمین', 'هایدرولایت',
+                    'بروفاریو', 'solary',
+                    
+                    # Additional supplement/brand exclusions
+                    'solaray vitamin', 'solgar vitamin', 'فیتامین',
+                    'phytosome', 'فیتوسوم', 'boron', 'بورون',
+                    'phentermine', 'فینترمین', 'diet pill',
+                    'hydrolyte', 'electrolyte', 'الکترولیت',
+                    'zero', 'hero', 'nitro', 'نیترو',
+                    'fedex', 'فدکس', 'federal', 'فدرال',
+                    
+                    # Non-iron minerals/supplements
+                    'calcium', 'کلسیم', 'magnesium', 'منیزیم',
+                    'zinc', 'روی', 'copper', 'مس',
+                    'selenium', 'سلنیوم', 'chromium', 'کروم',
+                    
+                    # Vitamin exclusions
+                    'vitamin d', 'ویتامین د', 'vitamin c', 'ویتامین س',
+                    'vitamin b', 'ویتامین ب', 'multivitamin', 'مولتی ویتامین',
+                    
+                    # Brand name exclusions (non-iron)
+                    'solaray d3', 'solgar b12', 'solaray calcium',
+                    'phyto soya', 'فیتو سویا', 'phyto collagen',
+                    
+                    # Medical/pharmaceutical exclusions
+                    'ferritin test', 'آزمایش فریتین',
+                    'iron deficiency', 'کمبود آهن',
+                    'anemia', 'کم خونی', 'hemoglobin', 'هموگلوبین',
+                    
+                    # Food/dietary exclusions
+                    'iron rich foods', 'غذاهای غنی از آهن',
+                    'cast iron', 'آهن چدنی', 'iron pan', 'تابه آهنی',
+                    
+                    # Technology/equipment
+                    'iron supplement', 'مکمل آهن',
+                    'curling iron', 'اتو مو', 'iron clothes', 'اتو لباس',
+                    
+                    # Geographic/names
+                    'iron mountain', 'کوه آهن', 'iron man', 'مرد آهنی',
+                    'iron maiden', 'آیرن میدن'
                 ],
                 
                 'compounds': [
@@ -2458,8 +2504,8 @@ with tab_search:
                     'solgar gentle iron', 'solgar iron', 'gentle iron'
                 ],
                 
-                'threshold': 75,  # Lowered from 85 to catch more variations
-                'min_length': 3
+                'threshold': 80,  # Lowered from 85 to catch more variations
+                'min_length': 4
             },
 
             'ensure': {
@@ -2477,7 +2523,9 @@ with tab_search:
                 ],
                 
                 'excluded_terms': [
-                    'انشاء'
+                        'انشاء','المنشاری', 'نوز', 'سانو', 'انسر', 'sens', 'اشو', 
+                        'النشط', 'انوفاری', 'fenu', 'اینو', 'انتر', 
+                        'الانتشار', 'انز', 'انوفار', 'نور'
                 ],
                 
                 'compounds': [
@@ -2501,8 +2549,8 @@ with tab_search:
                     'chocolate', 'چاکلیت', 'شاکولاتة', 'شکلاته'           
                 ],
                 
-                'threshold': 75,
-                'min_length': 3
+                'threshold': 80,
+                'min_length': 40
             },
             
             'بیوتین': {
@@ -2511,7 +2559,7 @@ with tab_search:
                     'البیوتین', 'بیوت', 'کیوتن', 'بایوتی'
                 ],
                 'excluded_terms': [
-                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین','بیوتیک','کیوتن','بایورین' 
+                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین','بیوتیک','کیوتن','بایورین','بیوتیس','بیوتک'
                 ],
                 'compounds': [
                     '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
@@ -2596,7 +2644,7 @@ with tab_search:
                 ],
 
                 'excluded_terms': [
-                    'برابورین', 'بیریورین','بروبین'
+                    'برابورین', 'بیریورین','بروبین','برورین','الربی'
                 ],
 
                 'compounds': [
@@ -2720,7 +2768,7 @@ with tab_search:
                 
                 'excluded_terms': [
                     'عسلی', 'عسکر', 'عسر', 'عصل', 'عصر', 'عضل', 'عزل',
-                    'honey badger', 'honey moon', 'honeymoon', 'honey pot'
+                    'honey badger', 'honey moon', 'honeymoon', 'honey pot','انوفا','رمان','الرمان','المونک','میلان','one','مانکورا','ولمان','horny','الماکا','ماکا','وسلمان'
                 ],
                 
                 'compounds': [
@@ -2749,7 +2797,7 @@ with tab_search:
                     'الوانه', 'وانه'                    
                 ],
                 
-                'threshold': 70,  # Lowered to catch more variations
+                'threshold': 80,  # Lowered to catch more variations
                 'min_length': 3   # Reduced to catch shorter terms like 'عسل م'
             },
             
@@ -2845,8 +2893,35 @@ with tab_search:
                 ],
                 
                 'excluded_terms': [
+                    # Original exclusions
                     'ملاط', 'ملات', 'میلان', 'میلاد', 'میلی', 'تونین', 'تونی',
-                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون'
+                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون',
+                    
+                    # New exclusions from your list
+                    'naturals', 'جلایسین', 'nutrafol', 'entro', 'holis', 'natr',
+                    'هولیستا', 'اورلیستات', 'ناترول', 'nitro', 'نترو', 'لاین',
+                    'الکریاتین', 'megatine', 'سیترولین', 'ملتی', 'holista',
+                    'کریاتین', 'سنترو', 'malate', 'جامیزنج', 'مالتی', 'هولستا',
+                    'میجاتو', 'انترو', 'jameson', 'natural', 'لاکتوفیرین',
+                    'یوراتین', 'میجاتین', 'ملین', 'chelated', 'جامسیون',
+                    'jamison', 'جامیس', 'جلافولین', 'orlistat', 'jamies',
+                    'ناتشورال', 'ملکات',
+                    
+                    # Additional related exclusions
+                    'glycine', 'creatine', 'citrulline', 'lactoferrin',
+                    'multi', 'multivitamin', 'centrum', 'mega',
+                    'nitric', 'oxide', 'chelate', 'malates',
+                    'jamieson', 'jamiesons', 'natrol', 'holistic',
+                    'orlistat', 'xenical', 'alli',
+                    
+                    # Brand name exclusions
+                    'nutrafol hair', 'entro vitality', 'mega creatine',
+                    'nitro tech', 'centrum multi', 'jamieson vitamin',
+                    
+                    # Supplement category exclusions
+                    'protein', 'پروتین', 'amino', 'امینو',
+                    'vitamin', 'ویتامین', 'mineral', 'معدنی',
+                    'omega', 'اومگا', 'fish oil', 'روغن ماهی'
                 ],
                 
                 'compounds': [
@@ -2877,7 +2952,7 @@ with tab_search:
                     'extract', 'عصاره'
                 ],
                 
-                'threshold': 70,
+                'threshold': 75,
                 'min_length': 4
             }
 
