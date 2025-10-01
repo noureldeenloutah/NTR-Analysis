@@ -4075,6 +4075,15 @@ with tab_search:
     st.markdown("---")
     col_insight1, col_insight2 = st.columns(2)
     
+    # Calculate the percentage safely before the format string
+    try:
+        if not kw_counts.empty and len(queries) > 0:
+            top_keyword_pct = kw_counts.iloc[0]['frequency'] / len(queries) * 100
+        else:
+            top_keyword_pct = 0
+    except (NameError, IndexError, AttributeError):
+        top_keyword_pct = 0
+    
     with col_insight1:
         st.markdown("""
         <div class='insight-box' style='background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-left: 4px solid #2E7D32;'>
@@ -4086,7 +4095,7 @@ with tab_search:
         """.format(
             long_tail_pct,
             avg_query_length,
-            (kw_counts.iloc[0]['frequency'] / len(queries) * 100) if (not kw_counts.empty and 'queries' in locals() and len(queries) > 0) else 0
+            top_keyword_pct
         ), unsafe_allow_html=True)
 
     with col_insight2:
@@ -4100,6 +4109,7 @@ with tab_search:
             </p>
         </div>
         """, unsafe_allow_html=True)
+
 
     # Add wellness-specific insights section
     st.markdown("---")
