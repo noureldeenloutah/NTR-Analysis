@@ -2086,7 +2086,217 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # Calculate enhanced keyword performance with fuzzy matching (this creates the grouped data)
+        # First, define the functions if they haven't been defined yet
+        if 'calculate_enhanced_keyword_performance' not in locals():
+            # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
+            import re
+            from collections import defaultdict
+            from fuzzywuzzy import fuzz, process
+
+            def create_master_keyword_dictionary():
+                """
+                Define master keywords with their common variations for fuzzy matching
+                """
+                return {
+                    'مغنیسیوم': {
+                        'variations': [
+                            'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
+                            'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
+                            'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
+                            'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
+                            'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
+                            'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
+                        ],
+                        'excluded_terms': ['الصمغ'],
+                        'compounds': [
+                            'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
+                            'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
+                            'ثریونیت', 'توریت', 'فوار', '400', 'glycinate', 'citrate', 'malate'
+                        ],
+                        'threshold': 80,
+                        'min_length': 4
+                    },
+                    # Add other keywords here - I'll include just a few for brevity
+                    'اوميجا': {
+                        'variations': [
+                            'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
+                            'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
+                            'omega', 'omega3', 'omg3', 'omg', 'ome'
+                        ],
+                        'excluded_terms': [
+                            'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
+                            'زاو', 'milga', 'کرومیم', 'one', 'النوم'
+                        ],
+                        'compounds': ['3', '6', '9', '1000', '2000', 'EPA', 'DHA'],
+                        'threshold': 80,
+                        'min_length': 3
+                    },
+                    'فیتامین': {
+                        'variations': [
+                            'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
+                            'vitamin', 'vitamins', 'multivitamin'
+                        ],
+                        'excluded_terms': ['فیتنس', 'فیتر', 'فیتوری'],
+                        'compounds': ['سی', 'د', 'ب', 'c', 'd', 'b12'],
+                        'threshold': 75,
+                        'min_length': 4
+                    }
+                    # Add more keywords as needed...
+                }
+
+            def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
+                """Extract keywords and prepare for fuzzy grouping"""
+                if not isinstance(text, str):
+                    return []
+                
+                text = text.strip().lower()
+                
+                patterns = [
+                    r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}',  # Arabic words 2+ chars
+                    r'[a-zA-Z]{3,}',  # English words 3+ chars
+                    r'\d{2,}',  # Numbers 2+ digits
+                ]
+                
+                keywords = []
+                for pattern in patterns:
+                    matches = re.findall(pattern, text)
+                    keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
+                
+                return keywords
+
+            def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
+                """Conservative fuzzy matching with strict rules"""
+                grouped_keywords = defaultdict(lambda: {
+                    'total_counts': 0, 
+                    'total_clicks': 0, 
+                    'total_conversions': 0, 
+                    'queries': [],
+                    'variations': []
+                })
+                
+                processed_keywords = set()
+                
+                for keyword, data in keyword_data.items():
+                    if keyword in processed_keywords or len(keyword.strip()) < 3:
+                        continue
+                        
+                    best_match = None
+                    best_score = 0
+                    matched_master = None
+                    
+                    for master_keyword, master_info in master_dict.items():
+                        if len(keyword) < master_info.get('min_length', 3):
+                            continue
+                    
+                        # Exclusion check
+                        excluded_terms = master_info.get('excluded_terms', [])
+                        is_excluded = any(excluded_term.strip().lower() in keyword.lower() 
+                                        for excluded_term in excluded_terms if excluded_term.strip())
+                        
+                        if is_excluded:
+                            continue
+
+                        # Check variations
+                        for variation in master_info['variations']:
+                            if keyword.lower() == variation.lower():
+                                best_score = 100
+                                best_match = variation
+                                matched_master = master_keyword
+                                break
+                            
+                            if (variation.lower() in keyword.lower() and 
+                                len(variation) >= 4 and len(keyword) >= 4):
+                                if len(variation) / len(keyword) >= 0.6:
+                                    score = 90
+                                    if score > best_score:
+                                        best_score = score
+                                        best_match = variation
+                                        matched_master = master_keyword
+                            
+                            score = fuzz.ratio(keyword.lower(), variation.lower())
+                            if score >= master_info['threshold']:
+                                if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
+                                    if score > best_score:
+                                        best_score = score
+                                        best_match = variation
+                                        matched_master = master_keyword
+                        
+                        if best_score == 100:
+                            break
+                    
+                    # Group under best match
+                    if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
+                        group_key = matched_master
+                    else:
+                        group_key = keyword
+                    
+                    grouped_keywords[group_key]['variations'].append(keyword)
+                    grouped_keywords[group_key]['total_counts'] += data['total_counts']
+                    grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
+                    grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
+                    grouped_keywords[group_key]['queries'].extend(data['queries'])
+                    
+                    processed_keywords.add(keyword)
+                
+                return dict(grouped_keywords)
+
+            @st.cache_data(ttl=1800, show_spinner=False)
+            def calculate_enhanced_keyword_performance(_df):
+                """Enhanced keyword performance calculation with fuzzy matching"""
+                if _df.empty:
+                    return pd.DataFrame()
+                
+                keyword_data = defaultdict(lambda: {
+                    'total_counts': 0, 
+                    'total_clicks': 0, 
+                    'total_conversions': 0, 
+                    'queries': []
+                })
+                
+                for _, row in _df.iterrows():
+                    query = str(row.get('normalized_query', ''))
+                    counts = row.get('Counts', 0)
+                    clicks = row.get('clicks', 0)
+                    conversions = row.get('conversions', 0)
+                    
+                    keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
+                    
+                    for keyword in keywords:
+                        if len(keyword.strip()) >= 2:
+                            keyword_data[keyword]['total_counts'] += counts
+                            keyword_data[keyword]['total_clicks'] += clicks
+                            keyword_data[keyword]['total_conversions'] += conversions
+                            keyword_data[keyword]['queries'].append(query)
+                
+                # Apply fuzzy matching grouping
+                master_dict = create_master_keyword_dictionary()
+                grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=65)
+                
+                # Convert to DataFrame
+                kw_list = []
+                for keyword, data in grouped_data.items():
+                    if data['total_counts'] > 0:
+                        avg_ctr = (data['total_clicks'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
+                        classic_cr = (data['total_conversions'] / data['total_clicks'] * 100) if data['total_clicks'] > 0 else 0
+                        health_cr = (data['total_conversions'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
+                        
+                        kw_list.append({
+                            'keyword': keyword,
+                            'total_counts': data['total_counts'],
+                            'total_clicks': data['total_clicks'],
+                            'total_conversions': data['total_conversions'],
+                            'avg_ctr': round(avg_ctr, 2),
+                            'classic_cr': round(classic_cr, 2),
+                            'health_cr': round(health_cr, 2),
+                            'unique_queries': len(set(data['queries'])),
+                            'variations_count': len(set(data['variations'])),
+                            'example_queries': list(set(data['queries']))[:5],
+                            'variations': list(set(data['variations']))
+                        })
+                
+                return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
+        
+        # Now calculate the keyword performance
         kw_perf_df = calculate_enhanced_keyword_performance(queries)
         
         if not kw_perf_df.empty:
@@ -2096,7 +2306,7 @@ with tab_search:
                 x='total_counts', 
                 y='avg_ctr',
                 size='total_clicks',
-                color='health_cr',  # Using health_cr instead of avg_cr
+                color='health_cr',
                 hover_name='keyword',
                 title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
                 labels={
@@ -2148,7 +2358,6 @@ with tab_search:
             
         else:
             st.warning("No health keywords found after fuzzy matching processing.")
-
 
 
     with col_right:
