@@ -2249,7 +2249,7 @@ with tab_search:
                 
                 'excluded_terms': [
                     'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
-                    'زاو', 'milga', 'megamind', 'megatine'
+                    'زاو', 'milga', 'کرومیم', 'one', 'النوم', 'milga', 'میاه', 'الاوریغانو'
                 ],
                 
                 'compounds': [
@@ -2273,10 +2273,10 @@ with tab_search:
                     'advancis', 'mega q'
                 ],
                 
-                'threshold': 75,
+                'threshold': 80,
                 'min_length': 3  # Reduced to 3 to catch short forms like 'اوم', 'omg'
             },
-            
+
             'کولاجین': {
                 'variations': [
                     'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'كولاچين',
@@ -2284,7 +2284,10 @@ with tab_search:
                     'کولاجی', 'کولاج', 'کولا', 'مولاجین', 'کولاحین', 'کوباجین',
                     'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
                 ],
-                
+
+                'excluded_terms': [ 'کوین', 'کولایت '
+
+                ],
                 'compounds': [
                     'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 'marine', 'bovine',
                     'بحری', 'بودرة', 'بودره', 'فوار', 'حبوب', 'سایل', 'powder'
@@ -2341,7 +2344,7 @@ with tab_search:
                     'فیتال', 'فیتکس', 'فیرتا', 'تین', 'ادفیتا', 'فیتانین', 'فیتاجلوبین',
                     'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
                     # Additional exclusions
-                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'فتام', 'vite ', 'ادفیتا', 'evit ' , 'فیمی'
+                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی '
                 ],
                 'compounds': [
                     # Vitamin types
@@ -2364,6 +2367,9 @@ with tab_search:
                 'variations': [
                     'زنک', 'زینک', 'زنك', 'zinc', 'زینگ', 'زينك', 'الزنک', 'الزینک',
                     'الز', 'الزن', 'ذنک', 'زنج'
+                ],
+                'excluded_terms': [
+                    'الوزن', 'الز'
                 ],
                 'compounds': [
                     'پیکولینات', 'گلوکونات', 'picolinate', 'gluconate', 'citrate',
@@ -2391,6 +2397,11 @@ with tab_search:
                     'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 'پروتن',
                     'بروت', 'بروتی', 'پروت', 'پروتی'
                 ],
+
+                'excluded_terms': [ 'برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین'
+
+                ],
+
                 'compounds': [
                     'وی', 'وای', 'whey', 'کازئین', 'casein', 'ایزو', 'iso', 'بار', 'bar',
                     'باودر', 'بودرة', 'powder', 'ماس', 'mass', 'beef', 'نباتی'
@@ -2416,10 +2427,13 @@ with tab_search:
                     'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'بیوتن',
                     'البیوتین', 'بیوتیس', 'کیوتن', 'بایوتی'
                 ],
+                'excluded_terms': [
+                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین'
+                ],
                 'compounds': [
                     '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
                 ],
-                'threshold': 80,
+                'threshold': 85,
                 'min_length': 4
             },
             
@@ -2430,6 +2444,11 @@ with tab_search:
                     'الاشواجاندا', 'الاشواجندا', 'الاشواغندا', 'الاشوغندا',
                     'ashwagandha', 'ashwaganda', 'ashwa', 'ksm66'
                 ],
+
+                'excluded_terms': [
+                    'انشوز', 'الشوک '
+                ],
+
                 'compounds': [
                     'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
                 ],
@@ -2791,7 +2810,7 @@ with tab_search:
                     'unique_queries': len(set(data['queries'])),
                     'variations_count': len(set(data['variations'])),
                     'example_queries': list(set(data['queries']))[:5],
-                    'variations': list(set(data['variations']))[:15]  # Show top 15 variations
+                    'variations': list(set(data['variations']))  # Show top 15 variations
                 })
         
         return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
