@@ -2249,7 +2249,7 @@ with tab_search:
                 
                 'excluded_terms': [
                     'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
-                    'زاو', 'milga', 'کرومیم', 'one', 'النوم', 'milga', 'میاه', 'الاوریغانو', 'کرومیم','کوی', 'milga','ایزوبیور', 'کوم', 'اومیف'
+                    'زاو', 'milga', 'کرومیم', 'one', 'النوم', 'milga', 'میاه', 'الاوریغانو', 'کرومیم','کوی', 'milga ','ایزوبیور', 'کوم', 'اومیف', 'کوم ','کوی','میجاتو ','کومی '
                 ],
                 
                 'compounds': [
@@ -2285,7 +2285,7 @@ with tab_search:
                     'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
                 ],
 
-                'excluded_terms': [ 'کوین', 'کولایت '
+                'excluded_terms': [ 'کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا ', 'کوین ' 
 
                 ],
                 'compounds': [
@@ -2344,7 +2344,8 @@ with tab_search:
                     'فیتال', 'فیتکس', 'فیرتا', 'تین', 'ادفیتا', 'فیتانین', 'فیتاجلوبین',
                     'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
                     # Additional exclusions
-                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی ' , 'vital', ' فیمی', 'فیتالا','فیتان ', 'فیتو ', 'فینترمین', 'قلوتامین','ادفیتا'
+                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی ' , 'vital', ' فیمی', 'فیتالا','فیتان ', 'فیتو ', 'فینترمین', 'قلوتامین','ادفیتا',
+                    'غلوتامین ','فیفامیون ','فیرت '
                 ],
                 'compounds': [
                     # Vitamin types
@@ -2683,7 +2684,21 @@ with tab_search:
                 # Skip if keyword is too short for this master
                 if len(keyword) < master_info.get('min_length', 3):
                     continue
-                    
+            
+                # 🚨 EXCLUSION CHECK - INDENT THIS PART TO BE INSIDE THE LOOP:
+                excluded_terms = master_info.get('excluded_terms', [])
+                is_excluded = False
+
+                for excluded_term in excluded_terms:
+                    excluded_term = excluded_term.strip()
+                    if excluded_term and excluded_term.lower() in keyword.lower():
+                        is_excluded = True
+                        break
+
+                # Skip this master keyword if current keyword matches exclusion
+                if is_excluded:
+                    continue
+
                 # Check main variations with STRICT matching
                 for variation in master_info['variations']:
                     # 1. EXACT MATCH gets highest priority
