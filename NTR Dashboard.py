@@ -4086,16 +4086,18 @@ with tab_search:
         """.format(
             long_tail_pct,
             avg_query_length,
-            (kw_counts.iloc[0]['frequency'] / len(queries) * 100) if not kw_counts.empty else 0
+            (kw_counts.iloc[0]['frequency'] / len(queries) * 100) if (not kw_counts.empty and 'queries' in locals() and len(queries) > 0) else 0
         ), unsafe_allow_html=True)
-    
+
     with col_insight2:
         st.markdown("""
         <div class='insight-box' style='background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); border-left: 4px solid #4CAF50;'>
             <h4 style='color: #1B5E20;'>💚 Wellness Recommendations</h4>
-            <p style='color: #2E7D32;'>• Focus on high-performing health keywords for content optimization<br>
-            • Analyze long-tail wellness queries for niche supplement opportunities<br>
-            • Monitor health search intent patterns for nutrition strategy alignment</p>
+            <p style='color: #2E7D32;'>
+                • Focus on high-performing health keywords for content optimization<br>
+                • Analyze long-tail wellness queries for niche supplement opportunities<br>
+                • Monitor health search intent patterns for nutrition strategy alignment
+            </p>
         </div>
         """, unsafe_allow_html=True)
 
