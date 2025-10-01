@@ -2346,18 +2346,6 @@ with tab_search:
                 ]
             )
             
-            st.plotly_chart(fig_kw, use_container_width=True)
-            
-            # Show top performing matched keywords table
-            st.subheader("📊 Top Health Keywords Performance")
-            display_df = kw_perf_df.head(10)[['keyword', 'variations_count', 'total_counts', 'total_clicks', 'avg_ctr', 'health_cr']].copy()
-            display_df.columns = ['Health Keyword', 'Variations', 'Total Volume', 'Total Clicks', 'CTR (%)', 'Health CR (%)']
-            display_df['CTR (%)'] = display_df['CTR (%)'].round(2)
-            display_df['Health CR (%)'] = display_df['Health CR (%)'].round(2)
-            st.dataframe(display_df, use_container_width=True)
-            
-        else:
-            st.warning("No health keywords found after fuzzy matching processing.")
 
 
     with col_right:
