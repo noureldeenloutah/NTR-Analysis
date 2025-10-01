@@ -2220,6 +2220,62 @@ with tab_search:
                 'threshold': 80,
                 'min_length': 4
             },
+
+            'اوميجا': {
+                'variations': [
+                    # Core Arabic variations
+                    'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
+                    'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
+                    
+                    # With Arabic numerals
+                    'اومیجا3', 'اومیغا3', 'اومیقا3', 'اومجا3', 'اومقا3', 'اومغا3',
+                    
+                    # With Persian/Arabic numerals  
+                    'اومیجا٣', 'اومیغا٣', 'اومیقا٣', 'اومجا٣', 'اومقا٣', 'اومغا٣',
+                    
+                    # With definite article
+                    'الاومیجا', 'الاومیغا', 'الاومیقا', 'الاومجا', 'الاومقا',
+                    
+                    # Common misspellings
+                    'اوکیقا', 'اوکیغا', 'اوکیجا', 'امیغا', 'امیقا', 'اویجا', 'اویغا',
+                    'کومیجا', 'کومی', 'اونیغا', 'ارمیغا', 'اومیجانا', 'اومیجور',
+                    'اومبیور', 'اومیبیور', 'اومیف', 'اومیقت',
+                    
+                    # English variations
+                    'omega', 'omega3', 'omg3', 'omg', 'ome', 'omiga', 'omga3', 'omeg',
+                    'omga', 'comega', 'stromega', 'mega', 'omiga3', 'meg', 'ovega',
+                    'onega', 'oma', 'omacor', 'omaga'
+                ],
+                
+                'excluded_terms': [
+                    'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
+                    'زاو', 'milga', 'megamind', 'megatine'
+                ],
+                
+                'compounds': [
+                    # Numbers
+                    '3', '6', '9', '٣', '٦', '٩', 'ثری', 'سیکس', 'نه', 'نین', 'تری', 'سه', 'شش', 'نو',
+                    
+                    # Dosages
+                    '1000', '2000', '1000mg', '2000mg', '1000 mg', '2000 mg',
+                    
+                    # Target groups
+                    'للاطفال', 'اطفال', 'جونیور', 'kids', 'junior', 'children',
+                    
+                    # Product types
+                    'حبوب', 'کپسول', 'شربت', 'نرم', 'ژل', 'لایت', 'capsules', 'syrup', 'soft', 'gel', 'light',
+                    
+                    # Fatty acids
+                    'EPA', 'DHA', 'ALA', 'ای پی ای', 'دی اچ ای', 'ای ال ای',
+                    
+                    # Brands/Types
+                    'nordic', 'jp', 'now', 'ultimate', 'triple', 'strength', 'sports', 'research',
+                    'advancis', 'mega q'
+                ],
+                
+                'threshold': 75,
+                'min_length': 3  # Reduced to 3 to catch short forms like 'اوم', 'omg'
+            },
             
             'کولاجین': {
                 'variations': [
@@ -2491,7 +2547,7 @@ with tab_search:
                 'min_length': 3
             },
             
-            'گلوتاثیون': {
+            'جلوتاثیون': {
                 'variations': [
                     'جلوتاثیون', 'الجلوتاثیون', 'حبوب جلوتاثیون', 'جلوتا',
                     'جلوتاثیوم', 'ثیو', 'جلوتاثین', 'جلوت', 'جلوتاثیو',
