@@ -2086,101 +2086,69 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # Process matched keywords (letters) safely
-        if 'matched_keywords' in queries.columns:
-            matched_kw_series = queries['matched_keywords'].explode().dropna()
-            if matched_kw_series.empty:
-                st.warning("No matched health keywords found in the dataset.")
-            else:
-                matched_kw_counts = matched_kw_series.value_counts().reset_index()
-                matched_kw_counts.columns = ['matched_keyword', 'frequency']
-                
-                # Create matched keyword performance data
-                matched_keyword_performance = []
-                for matched_keyword in matched_kw_counts['matched_keyword'].head(50):  # Top 50 matched keywords
-                    # Filter rows where the matched keyword appears
-                    matched_keyword_queries = queries[
-                        queries['matched_keywords'].apply(
-                            lambda x: matched_keyword in x if isinstance(x, list) else False
-                        )
-                    ]
-                    
-                    if not matched_keyword_queries.empty:
-                        total_counts = matched_keyword_queries['Counts'].sum()
-                        total_clicks = matched_keyword_queries['clicks'].sum()
-                        total_conversions = matched_keyword_queries['conversions'].sum()
-                        
-                        performance = {
-                            'matched_keyword': matched_keyword,
-                            'total_counts': total_counts,
-                            'total_clicks': total_clicks,
-                            'total_conversions': total_conversions,
-                            'avg_ctr': (total_clicks / total_counts * 100) if total_counts > 0 else 0,
-                            'avg_cr': (total_conversions / total_clicks * 100) if total_clicks > 0 else 0,
-                            'frequency': matched_kw_counts[matched_kw_counts['matched_keyword'] == matched_keyword]['frequency'].iloc[0]
-                        }
-                        matched_keyword_performance.append(performance)
-                
-                matched_kw_perf_df = pd.DataFrame(matched_keyword_performance)
-                
-                if not matched_kw_perf_df.empty:
-                    # Enhanced matched keyword visualization
-                    fig_kw = px.scatter(
-                        matched_kw_perf_df.head(30), 
-                        x='total_counts', 
-                        y='avg_ctr',
-                        size='total_clicks',
-                        color='avg_cr',
-                        hover_name='matched_keyword',
-                        title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
-                        labels={
-                            'total_counts': 'Total Search Volume', 
-                            'avg_ctr': 'Average CTR (%)', 
-                            'avg_cr': 'Avg CR (%)'
-                        },
-                        color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                        template='plotly_white'
+        # Calculate enhanced keyword performance with fuzzy matching (this creates the grouped data)
+        kw_perf_df = calculate_enhanced_keyword_performance(queries)
+        
+        if not kw_perf_df.empty:
+            # Use the fuzzy-matched keyword performance data directly
+            fig_kw = px.scatter(
+                kw_perf_df.head(30), 
+                x='total_counts', 
+                y='avg_ctr',
+                size='total_clicks',
+                color='health_cr',  # Using health_cr instead of avg_cr
+                hover_name='keyword',
+                title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
+                labels={
+                    'total_counts': 'Total Search Volume', 
+                    'avg_ctr': 'Average CTR (%)', 
+                    'health_cr': 'Health CR (%)'
+                },
+                color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                template='plotly_white'
+            )
+            
+            fig_kw.update_traces(
+                hovertemplate='<b>%{hovertext}</b><br>' +
+                            'Total Volume: %{x:,.0f}<br>' +
+                            'CTR: %{y:.2f}%<br>' +
+                            'Total Clicks: %{marker.size:,.0f}<br>' +
+                            'Health CR: %{marker.color:.2f}%<br>' +
+                            'Variations: %{customdata}<extra></extra>',
+                customdata=kw_perf_df.head(30)['variations_count']
+            )
+            
+            fig_kw.update_layout(
+                plot_bgcolor='rgba(248,253,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                title_x=0,
+                xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                annotations=[
+                    dict(
+                        x=0.95, y=0.95, xref='paper', yref='paper',
+                        text='💡 Size = Total Clicks | Color = Health CR',
+                        showarrow=False,
+                        font=dict(size=11, color='#1B5E20'),
+                        align='right'
                     )
-                    
-                    fig_kw.update_traces(
-                        hovertemplate='<b>%{hovertext}</b><br>' +
-                                    'Total Volume: %{x:,.0f}<br>' +
-                                    'CTR: %{y:.2f}%<br>' +
-                                    'Total Clicks: %{marker.size:,.0f}<br>' +
-                                    'Conversion Rate: %{marker.color:.2f}%<br>' +
-                                    'Query Frequency: %{customdata}<extra></extra>',
-                        customdata=matched_kw_perf_df.head(30)['frequency']
-                    )
-                    
-                    fig_kw.update_layout(
-                        plot_bgcolor='rgba(248,253,248,0.95)',
-                        paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'),
-                        title_x=0,
-                        xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                        yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                        annotations=[
-                            dict(
-                                x=0.95, y=0.95, xref='paper', yref='paper',
-                                text='💡 Size = Total Clicks | Color = Conversion Rate',
-                                showarrow=False,
-                                font=dict(size=11, color='#1B5E20'),
-                                align='right'
-                            )
-                        ]
-                    )
-                    
-                    st.plotly_chart(fig_kw, use_container_width=True)
-                    
-                    # Optional: Show top performing matched keywords table
-                    st.subheader("📊 Top Matched Keywords Performance")
-                    display_df = matched_kw_perf_df.head(10)[['matched_keyword', 'frequency', 'total_counts', 'total_clicks', 'avg_ctr', 'avg_cr']].copy()
-                    display_df.columns = ['Keyword', 'Query Frequency', 'Total Volume', 'Total Clicks', 'CTR (%)', 'CR (%)']
-                    display_df['CTR (%)'] = display_df['CTR (%)'].round(2)
-                    display_df['CR (%)'] = display_df['CR (%)'].round(2)
-                    st.dataframe(display_df, use_container_width=True)
+                ]
+            )
+            
+            st.plotly_chart(fig_kw, use_container_width=True)
+            
+            # Show top performing matched keywords table
+            st.subheader("📊 Top Health Keywords Performance")
+            display_df = kw_perf_df.head(10)[['keyword', 'variations_count', 'total_counts', 'total_clicks', 'avg_ctr', 'health_cr']].copy()
+            display_df.columns = ['Health Keyword', 'Variations', 'Total Volume', 'Total Clicks', 'CTR (%)', 'Health CR (%)']
+            display_df['CTR (%)'] = display_df['CTR (%)'].round(2)
+            display_df['Health CR (%)'] = display_df['Health CR (%)'].round(2)
+            st.dataframe(display_df, use_container_width=True)
+            
         else:
-            st.warning("No matched_keywords column found. Please run the keyword matching process first.")
+            st.warning("No health keywords found after fuzzy matching processing.")
+
 
 
     with col_right:
