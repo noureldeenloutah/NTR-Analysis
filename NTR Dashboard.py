@@ -2086,78 +2086,102 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # Process keywords safely
-        kw_series = queries['keywords'].explode().dropna()
-        if kw_series.empty:
-            st.warning("No health keywords found in the dataset.")
-        else:
-            kw_counts = kw_series.value_counts().reset_index()
-            kw_counts.columns = ['keyword', 'frequency']
-            
-            # Fixed: Create keyword performance data with correct calculation logic
-            keyword_performance = []
-            for keyword in kw_counts['keyword'].head(50):  # Top 50 keywords
-                # Filter rows where the keyword appears in the search column
-                keyword_queries = queries[queries['search'].str.contains(keyword, case=False, na=False)]
-                if not keyword_queries.empty:
-                    total_counts = keyword_queries['Counts'].sum()
-                    total_clicks = keyword_queries['clicks'].sum()
-                    total_conversions = keyword_queries['conversions'].sum()
-                    
-                    performance = {
-                        'keyword': keyword,
-                        'total_counts': total_counts,
-                        'total_clicks': total_clicks,
-                        'total_conversions': total_conversions,
-                        'avg_ctr': (total_clicks / total_counts * 100) if total_counts > 0 else 0,
-                        'avg_cr': (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
-                    }
-                    keyword_performance.append(performance)
-            
-            kw_perf_df = pd.DataFrame(keyword_performance)
-            
-            if not kw_perf_df.empty:
-                # Enhanced keyword visualization - Fixed: Removed frequency, using counts vs CTR and CR
-                fig_kw = px.scatter(
-                    kw_perf_df.head(30), 
-                    x='total_counts', 
-                    y='avg_ctr',
-                    size='total_clicks',
-                    color='avg_cr',
-                    hover_name='keyword',
-                    title='<b style="color:#2E7D32; font-size:18px;">Health Keyword Performance Matrix: Volume vs CTR 🌿</b>',
-                    labels={'total_counts': 'Total Search Volume', 'avg_ctr': 'Average CTR (%)', 'avg_cr': 'Avg CR (%)'},
-                    color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                    template='plotly_white'
-                )
+        # Process matched keywords (letters) safely
+        if 'matched_keywords' in queries.columns:
+            matched_kw_series = queries['matched_keywords'].explode().dropna()
+            if matched_kw_series.empty:
+                st.warning("No matched health keywords found in the dataset.")
+            else:
+                matched_kw_counts = matched_kw_series.value_counts().reset_index()
+                matched_kw_counts.columns = ['matched_keyword', 'frequency']
                 
-                fig_kw.update_traces(
-                    hovertemplate='<b>%{hovertext}</b><br>' +
-                                'Total Volume: %{x:,.0f}<br>' +
-                                'CTR: %{y:.2f}%<br>' +
-                                'Total Clicks: %{marker.size:,.0f}<br>' +
-                                'Conversion Rate: %{marker.color:.2f}%<extra></extra>'
-                )
-                
-                fig_kw.update_layout(
-                    plot_bgcolor='rgba(248,253,248,0.95)',
-                    paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'),
-                    title_x=0,
-                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                    annotations=[
-                        dict(
-                            x=0.95, y=0.95, xref='paper', yref='paper',
-                            text='💡 Size = Total Clicks | Color = Conversion Rate',
-                            showarrow=False,
-                            font=dict(size=11, color='#1B5E20'),
-                            align='right'
+                # Create matched keyword performance data
+                matched_keyword_performance = []
+                for matched_keyword in matched_kw_counts['matched_keyword'].head(50):  # Top 50 matched keywords
+                    # Filter rows where the matched keyword appears
+                    matched_keyword_queries = queries[
+                        queries['matched_keywords'].apply(
+                            lambda x: matched_keyword in x if isinstance(x, list) else False
                         )
                     ]
-                )
+                    
+                    if not matched_keyword_queries.empty:
+                        total_counts = matched_keyword_queries['Counts'].sum()
+                        total_clicks = matched_keyword_queries['clicks'].sum()
+                        total_conversions = matched_keyword_queries['conversions'].sum()
+                        
+                        performance = {
+                            'matched_keyword': matched_keyword,
+                            'total_counts': total_counts,
+                            'total_clicks': total_clicks,
+                            'total_conversions': total_conversions,
+                            'avg_ctr': (total_clicks / total_counts * 100) if total_counts > 0 else 0,
+                            'avg_cr': (total_conversions / total_clicks * 100) if total_clicks > 0 else 0,
+                            'frequency': matched_kw_counts[matched_kw_counts['matched_keyword'] == matched_keyword]['frequency'].iloc[0]
+                        }
+                        matched_keyword_performance.append(performance)
                 
-                st.plotly_chart(fig_kw, use_container_width=True)
+                matched_kw_perf_df = pd.DataFrame(matched_keyword_performance)
+                
+                if not matched_kw_perf_df.empty:
+                    # Enhanced matched keyword visualization
+                    fig_kw = px.scatter(
+                        matched_kw_perf_df.head(30), 
+                        x='total_counts', 
+                        y='avg_ctr',
+                        size='total_clicks',
+                        color='avg_cr',
+                        hover_name='matched_keyword',
+                        title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
+                        labels={
+                            'total_counts': 'Total Search Volume', 
+                            'avg_ctr': 'Average CTR (%)', 
+                            'avg_cr': 'Avg CR (%)'
+                        },
+                        color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                        template='plotly_white'
+                    )
+                    
+                    fig_kw.update_traces(
+                        hovertemplate='<b>%{hovertext}</b><br>' +
+                                    'Total Volume: %{x:,.0f}<br>' +
+                                    'CTR: %{y:.2f}%<br>' +
+                                    'Total Clicks: %{marker.size:,.0f}<br>' +
+                                    'Conversion Rate: %{marker.color:.2f}%<br>' +
+                                    'Query Frequency: %{customdata}<extra></extra>',
+                        customdata=matched_kw_perf_df.head(30)['frequency']
+                    )
+                    
+                    fig_kw.update_layout(
+                        plot_bgcolor='rgba(248,253,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
+                        title_x=0,
+                        xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                        yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                        annotations=[
+                            dict(
+                                x=0.95, y=0.95, xref='paper', yref='paper',
+                                text='💡 Size = Total Clicks | Color = Conversion Rate',
+                                showarrow=False,
+                                font=dict(size=11, color='#1B5E20'),
+                                align='right'
+                            )
+                        ]
+                    )
+                    
+                    st.plotly_chart(fig_kw, use_container_width=True)
+                    
+                    # Optional: Show top performing matched keywords table
+                    st.subheader("📊 Top Matched Keywords Performance")
+                    display_df = matched_kw_perf_df.head(10)[['matched_keyword', 'frequency', 'total_counts', 'total_clicks', 'avg_ctr', 'avg_cr']].copy()
+                    display_df.columns = ['Keyword', 'Query Frequency', 'Total Volume', 'Total Clicks', 'CTR (%)', 'CR (%)']
+                    display_df['CTR (%)'] = display_df['CTR (%)'].round(2)
+                    display_df['CR (%)'] = display_df['CR (%)'].round(2)
+                    st.dataframe(display_df, use_container_width=True)
+        else:
+            st.warning("No matched_keywords column found. Please run the keyword matching process first.")
+
 
     with col_right:
         # Query Length Distribution
@@ -2429,13 +2453,12 @@ with tab_search:
                 'excluded_terms': [
                     # Original exclusions
                     'حدیث', 'حدیقة', 'حدود', 'حدس', 'حدة', 'حدق', 'حدر',
-                    'فیروز', 'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر',
+                    'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر',
                     
                     # New exclusions from your list
                     'فیدروب', 'solaray', 'فیدر', 'فیتالایت', 'فیتو', 'فیدرو',
                     'دید', 'فیتوسوم', 'sola', 'بورون', 'بیروین', 'هیدرلایت',
-                    'فیجر', 'فینترمین', 'solar', 'هیرو', 'هیدرولایت', 'فیمروز',
-                    'iro', 'solgar', 'نیرو', 'زیرو', 'فیتمین', 'هایدرولایت',
+                    'فیجر', 'فینترمین', 'solar', 'هیرو', 'هیدرولایت', 'فیمروز', 'solgar', 'نیرو', 'زیرو', 'فیتمین', 'هایدرولایت',
                     'بروفاریو', 'solary',
                     
                     # Additional supplement/brand exclusions
@@ -2457,24 +2480,9 @@ with tab_search:
                     
                     # Brand name exclusions (non-iron)
                     'solaray d3', 'solgar b12', 'solaray calcium',
-                    'phyto soya', 'فیتو سویا', 'phyto collagen',
+                    'phyto soya', 'فیتو سویا', 'phyto collagen'
                     
-                    # Medical/pharmaceutical exclusions
-                    'ferritin test', 'آزمایش فریتین',
-                    'iron deficiency', 'کمبود آهن',
-                    'anemia', 'کم خونی', 'hemoglobin', 'هموگلوبین',
-                    
-                    # Food/dietary exclusions
-                    'iron rich foods', 'غذاهای غنی از آهن',
-                    'cast iron', 'آهن چدنی', 'iron pan', 'تابه آهنی',
-                    
-                    # Technology/equipment
-                    'iron supplement', 'مکمل آهن',
-                    'curling iron', 'اتو مو', 'iron clothes', 'اتو لباس',
-                    
-                    # Geographic/names
-                    'iron mountain', 'کوه آهن', 'iron man', 'مرد آهنی',
-                    'iron maiden', 'آیرن میدن'
+
                 ],
                 
                 'compounds': [
@@ -2852,27 +2860,44 @@ with tab_search:
             
             'فولیک اسید': {
                 'variations': [
+                    # Arabic variations
                     'فولیک', 'فولیک اسید', 'فولیک اسد', 'فول', 'حمض فولیک',
-                    'الفولیک', 'فولک اسد', 'فولیکو', 'فولی', 'folic acid'
+                    'الفولیک', 'فولک اسد', 'فولیکو', 'فولی', 'حامض فولیک',
+                    'حمض الفولیک', 'حامض الفولیک', 'حمض الفولی', 'حمض الفول',
+                    'حمض الفو', 'الفلولیک', 'حمض الفلولیک',
+                    
+                    # English variations  
+                    'folic acid', 'folic', 'foliko', 'foli'
                 ],
+                
+                'excluded_terms': [
+                    # Generic acid terms without folic context
+                    'الفا', 'الفا لیبویک', ' البوریک',
+                     'فلک', 'فولیکوم', 'جولی', 'فولیت'
+                ],
+                
                 'compounds': [
-                    'اسید', 'acid', '5mg', '400', 'حبوب', 'حمض'
+                    # Dosages
+                    '5mg', '5 mg', '400', '400mg', '400 mg', '1mg', '1 mg',
+                    '٥', '5', '1',
+                    
+                    # Forms
+                    'حبوب', 'أقراص', 'كبسولات', 'tablets', 'capsules', 'pills',
+                    'حبوب حمض الفولیک', 'أقراص حمض الفولیک',
+                    
+                    # Combined products
+                    'iron and folic acid', 'حديد وحمض الفولیک', 'آهن و فولیک اسید',
+                    'iron', 'حديد', 'آهن', 'فرروس',
+                    
+                    # Medical terms
+                    'اسید', 'acid', 'حمض', 'حامض',
+                    'vitamin', 'ویتامین', 'فیتامین',
+                    'supplement', 'مکمل', 'مكمل'
                 ],
-                'threshold': 75,
-                'min_length': 3
+                
+                'threshold': 85,
+                'min_length': 4
             },
-            
-            'تخسیس': {
-                'variations': [
-                    'تخسیس', 'حبوب تخسیس', 'سیس', 'حبوب التخسیس', 'للتخسیس',
-                    'تخس', 'ادویة تخسیس', 'حبوب للتخسیس', 'weight loss'
-                ],
-                'compounds': [
-                    'حبوب', 'pills', 'کبسولات', 'طبیعی', 'natural'
-                ],
-                'threshold': 75,
-                'min_length': 3
-             },
 
             'میلاتونین': {
                 'variations': [
@@ -2895,7 +2920,7 @@ with tab_search:
                 'excluded_terms': [
                     # Original exclusions
                     'ملاط', 'ملات', 'میلان', 'میلاد', 'میلی', 'تونین', 'تونی',
-                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون',
+                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون','هولیست','میجاتاین',
                     
                     # New exclusions from your list
                     'naturals', 'جلایسین', 'nutrafol', 'entro', 'holis', 'natr',
@@ -2952,7 +2977,7 @@ with tab_search:
                     'extract', 'عصاره'
                 ],
                 
-                'threshold': 75,
+                'threshold': 80,
                 'min_length': 4
             }
 
