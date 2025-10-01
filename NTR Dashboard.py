@@ -2783,6 +2783,17 @@ with tab_search:
         # 🎯 DROPDOWN KEYWORD VARIATIONS EXPLORER
         st.write("### 🔍 Keyword Variations Explorer")
 
+        # Use slider for number of keywords
+        num_keywords = st.slider(
+            "Number of health keywords to display:", 
+            min_value=10, 
+            max_value=min(300, len(kw_perf_df)), 
+            value=15, 
+            step=10,
+            key="fuzzy_keyword_count_slider"
+        )
+        top_keywords = kw_perf_df.head(num_keywords)
+
         # Get top 25 keywords for dropdown
         top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
 
