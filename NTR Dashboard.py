@@ -2346,6 +2346,10 @@ with tab_search:
                 ]
             )
             
+            # Display only the chart
+            st.plotly_chart(fig_kw, use_container_width=True)
+        else:
+            st.warning("⚠️ No keyword performance data available to display chart.")
 
 
     with col_right:
