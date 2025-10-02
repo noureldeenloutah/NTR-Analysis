@@ -1403,43 +1403,48 @@ with tab_overview:
     else:
         try:
             # 🚀 LAZY CSS LOADING - Only load once per session
-            if 'top50_css_loaded' not in st.session_state:
+            if 'top50_health_css_loaded' not in st.session_state:
                 st.markdown("""
                 <style>
-                .top50-metric-card {
+                .top50-health-metric-card {
                     background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
                     padding: 20px; border-radius: 15px; text-align: center; color: white;
                     box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
                     min-height: 120px; display: flex; flex-direction: column; justify-content: center;
                     transition: transform 0.2s ease; width: 100%;
                 }
-                .top50-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-                .top50-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-                .top50-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-                .top50-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-                .monthly-metric-card {
+                .top50-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
+                .top50-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+                .top50-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
+                .top50-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+                .monthly-health-metric-card {
                     background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
                     padding: 18px; border-radius: 12px; text-align: center; color: white;
                     box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
                     min-height: 100px; display: flex; flex-direction: column; justify-content: center;
                     transition: transform 0.2s ease; width: 100%;
                 }
-                .monthly-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
-                .monthly-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
-                .monthly-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
-                .monthly-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-                .download-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
-                .insights-section { background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 25px rgba(46, 125, 50, 0.3); }
-                .mom-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
-                .gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
-                .decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
+                .monthly-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
+                .monthly-health-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
+                .monthly-health-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
+                .monthly-health-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+                .download-health-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
+                .insights-health-section { background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 25px rgba(46, 125, 50, 0.3); }
+                .mom-health-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
+                .health-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
+                .health-decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
+                .health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
+                .health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
+                .health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
+                .health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+                .health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
                 </style>
                 """, unsafe_allow_html=True)
-                st.session_state.top50_css_loaded = True
+                st.session_state.top50_health_css_loaded = True
 
             # 🚀 OPTIMIZED: Show debug info only in sidebar (non-blocking)
-            if st.sidebar.checkbox("Show Debug Info", value=False):
-                st.sidebar.write("**Available columns in queries:**", list(queries.columns))
+            if st.sidebar.checkbox("Show Health Debug Info", value=False):
+                st.sidebar.write("**Available columns in health queries:**", list(queries.columns))
 
             # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
             month_names = {
@@ -1448,8 +1453,7 @@ with tab_overview:
                 '2025-08': 'August 2025'
             }
 
-            # 🚀 COMPUTE: Get data with caching (filter-aware)
-            # Create a unique filter key based on current filter state
+            # 🚀 COMPUTE: Get data with caching (filter-aware) - ENHANCED WITH BETTER ARRANGEMENT
             filter_state = {
                 'filters_applied': st.session_state.get('filters_applied', False),
                 'data_shape': queries.shape,
@@ -1457,62 +1461,256 @@ with tab_overview:
             }
             filter_key = str(hash(str(filter_state)))
 
-            top50, unique_months = compute_top50_queries_ultra(queries, month_names, filter_key)
+            @st.cache_data(ttl=1800, show_spinner=False)
+            def compute_top50_health_queries_better_arrangement(_df, month_names_dict, cache_key):
+                """🔄 FIXED: Proper monthly CTR/CR calculations for health queries"""
+                if _df.empty:
+                    return pd.DataFrame(), []
+                
+                # Group by search query and sum counts
+                grouped = _df.groupby('search').agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum', 
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                # Get top 50 by total counts
+                top50_queries = grouped.nlargest(50, 'Counts')['search'].tolist()
+                
+                # Filter original data for top 50 queries
+                top50_data = _df[_df['search'].isin(top50_queries)].copy()
+                
+                # Get unique months from the data
+                if 'month' in top50_data.columns:
+                    unique_months = sorted(top50_data['month'].unique())
+                else:
+                    unique_months = []
+                
+                # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
+                result_data = []
+                
+                for query in top50_queries:
+                    query_data = top50_data[top50_data['search'] == query]
+                    
+                    # Base information
+                    total_counts = int(query_data['Counts'].sum())
+                    total_clicks = int(query_data['clicks'].sum())
+                    total_conversions = int(query_data['conversions'].sum())
+                    overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                    overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                    
+                    row = {
+                        'Health Query': query,
+                        'Total Volume': total_counts,
+                        'Share %': (total_counts / _df['Counts'].sum()) * 100,
+                        'Overall CTR': overall_ctr,
+                        'Overall CR': overall_cr,
+                        'Total Clicks': total_clicks,
+                        'Total Conversions': total_conversions
+                    }
+                    
+                    # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
+                    for month in unique_months:
+                        month_data = query_data[query_data['month'] == month]
+                        month_display = month_names_dict.get(month, month)
+                        
+                        if not month_data.empty:
+                            # ✅ FIXED: Calculate month-specific metrics
+                            month_counts = int(month_data['Counts'].sum())
+                            month_clicks = int(month_data['clicks'].sum())
+                            month_conversions = int(month_data['conversions'].sum())
+                            
+                            # ✅ FIXED: Month-specific CTR and CR calculations
+                            month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                            month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                            
+                            row[f'{month_display} Vol'] = month_counts
+                            row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
+                            row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
+                        else:
+                            row[f'{month_display} Vol'] = 0
+                            row[f'{month_display} CTR'] = 0
+                            row[f'{month_display} CR'] = 0
+                    
+                    result_data.append(row)
+                
+                result_df = pd.DataFrame(result_data)
+                result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+                
+                return result_df, unique_months
+
+            top50, unique_months = compute_top50_health_queries_better_arrangement(queries, month_names, filter_key)
 
             if top50.empty:
                 st.warning("No valid data after processing top 50 health queries.")
             else:
-                # 🚀 ENHANCED: Smart styling cache with hash-based invalidation
+                # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
+                base_columns = ['Health Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+                
+                # Group monthly columns by type for easier comparison
+                volume_columns = []
+                ctr_columns = []
+                cr_columns = []
+                
+                for month in sorted(unique_months):
+                    month_display = month_names.get(month, month)
+                    volume_columns.append(f'{month_display} Vol')
+                    ctr_columns.append(f'{month_display} CTR')
+                    cr_columns.append(f'{month_display} CR')
+                
+                # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+                ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+                existing_columns = [col for col in ordered_columns if col in top50.columns]
+                top50 = top50[existing_columns]
+
+                # 🚀 ENHANCED: Smart styling with better comparison highlighting
                 top50_hash = hash(str(top50.shape) + str(top50.columns.tolist()) + str(top50.iloc[0].to_dict()) if len(top50) > 0 else "empty")
                 
-                if ('styled_top50' not in st.session_state or 
-                    st.session_state.get('top50_cache_key') != top50_hash):
+                if ('styled_top50_health' not in st.session_state or 
+                    st.session_state.get('top50_health_cache_key') != top50_hash):
                     
-                    st.session_state.top50_cache_key = top50_hash
+                    st.session_state.top50_health_cache_key = top50_hash
                     
                     # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_top50 = top50.copy()
                     
-                    # Format Total Search Volume with format_number
-                    if 'Total Search Volume' in display_top50.columns:
-                        display_top50['Total Search Volume'] = display_top50['Total Search Volume'].apply(lambda x: format_number(int(x)))
+                    # Format volume columns with format_number
+                    volume_cols_to_format = ['Total Volume'] + volume_columns
+                    for col in volume_cols_to_format:
+                        if col in display_top50.columns:
+                            display_top50[col] = display_top50[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
                     
-                    # Format monthly columns with format_number
-                    for month in unique_months:
-                        month_display_name = month_names.get(month, month)
-                        if month_display_name in display_top50.columns:
-                            display_top50[month_display_name] = display_top50[month_display_name].apply(lambda x: format_number(int(x)))
+                    # Format clicks and conversions
+                    if 'Total Clicks' in display_top50.columns:
+                        display_top50['Total Clicks'] = display_top50['Total Clicks'].apply(lambda x: format_number(int(x)))
+                    if 'Total Conversions' in display_top50.columns:
+                        display_top50['Total Conversions'] = display_top50['Total Conversions'].apply(lambda x: format_number(int(x)))
+                    
+                    # 🔄 ENHANCED: Better performance highlighting with comparison focus
+                    def highlight_health_performance_with_comparison(df):
+                        """Enhanced highlighting for better health comparison"""
+                        styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                        
+                        if len(unique_months) < 2:
+                            return styles
+                        
+                        sorted_months = sorted(unique_months)
+                        
+                        # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
+                        for i in range(1, len(sorted_months)):
+                            current_month = month_names.get(sorted_months[i], sorted_months[i])
+                            prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                            
+                            current_ctr_col = f'{current_month} CTR'
+                            prev_ctr_col = f'{prev_month} CTR'
+                            current_cr_col = f'{current_month} CR'
+                            prev_cr_col = f'{prev_month} CR'
+                            
+                            # CTR comparison with threshold
+                            if current_ctr_col in df.columns and prev_ctr_col in df.columns:
+                                for idx in df.index:
+                                    current_ctr = df.loc[idx, current_ctr_col]
+                                    prev_ctr = df.loc[idx, prev_ctr_col]
+                                    
+                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                            
+                            # CR comparison with threshold
+                            if current_cr_col in df.columns and prev_cr_col in df.columns:
+                                for idx in df.index:
+                                    current_cr = df.loc[idx, current_cr_col]
+                                    prev_cr = df.loc[idx, prev_cr_col]
+                                    
+                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                        
+                        # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                        for col in volume_columns:
+                            if col in df.columns:
+                                styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                        
+                        return styles
                     
                     # Create styled DataFrame from the formatted copy
-                    styled_top50 = display_top50.style.set_properties(**{
+                    styled_top50 = display_top50.style.apply(highlight_health_performance_with_comparison, axis=None)
+                    
+                    styled_top50 = styled_top50.set_properties(**{
                         'text-align': 'center',
                         'vertical-align': 'middle',
-                        'font-size': '14px',
-                        'padding': '8px',
-                        'line-height': '1.2'
+                        'font-size': '11px',
+                        'padding': '4px',
+                        'line-height': '1.1'
                     }).set_table_styles([
-                        {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '10px'), ('border', '1px solid #ddd')]},
-                        {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '8px'), ('border', '1px solid #ddd')]},
+                        {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                        {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
                         {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
                     ])
                     
-                    # Create format dictionary for remaining columns
+                    # 🔄 IMPROVED: Format dictionary
                     format_dict = {
                         'Share %': '{:.2f}%',
-                        'Clicks': '{:,.0f}',
-                        'Conversions': '{:,.0f}',
-                        'Conversion Rate': '{:.2f}%'
+                        'Overall CTR': '{:.2f}%',
+                        'Overall CR': '{:.2f}%'
                     }
+                    
+                    # Add formatting for monthly CTR and CR columns
+                    for col in ctr_columns + cr_columns:
+                        if col in display_top50.columns:
+                            format_dict[col] = '{:.2f}%'
 
                     styled_top50 = styled_top50.format(format_dict)
+                    st.session_state.styled_top50_health = styled_top50
 
                 # 🚀 DISPLAY: Cached styled DataFrame
                 st.dataframe(
-                    styled_top50, 
+                    st.session_state.styled_top50_health, 
                     use_container_width=True, 
                     height=600,
                     hide_index=True
                 )
+
+                # 🔄 ENHANCED: Better legend with comparison focus
+                st.markdown("""
+                <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Comparison Guide:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                        <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # 🔄 ENHANCED: Column grouping explanation
+                if unique_months:
+                    month_list = [month_names.get(m, m) for m in sorted(unique_months)]
+                    st.markdown(f"""
+                    <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Column Organization:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div><strong>🌱 Base Metrics:</strong> Health Query, Total Volume, Share %, Overall CTR/CR</div>
+                            <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
+                            <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
+                            <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 # 🚀 ENHANCED SUMMARY METRICS
                 st.markdown("---")
@@ -1520,9 +1718,9 @@ with tab_overview:
                 # 🚀 FAST: Pre-calculate all metrics at once
                 metrics = {
                     'total_queries': len(top50),
-                    'total_search_volume': int(pd.to_numeric(top50['Total Search Volume'], errors='coerce').sum()),
-                    'total_clicks': int(top50['Clicks'].sum()),
-                    'total_conversions': int(top50['Conversions'].sum())
+                    'total_search_volume': int(pd.to_numeric(top50['Total Volume'], errors='coerce').sum()),
+                    'total_clicks': int(top50['Total Clicks'].sum()),
+                    'total_conversions': int(top50['Total Conversions'].sum())
                 }
                 
                 col1, col2, col3, col4 = st.columns(4)
@@ -1538,34 +1736,67 @@ with tab_overview:
                 for col, icon, value, label in metric_configs:
                     with col:
                         st.markdown(f"""
-                        <div class="top50-metric-card">
+                        <div class="top50-health-metric-card">
                             <div class="icon">{icon}</div>
                             <div class="value">{value}</div>
                             <div class="label">{label}</div>
                         </div>
                         """, unsafe_allow_html=True)
 
-                # 🚀 MONTHLY BREAKDOWN
+                # 🚀 MONTHLY BREAKDOWN WITH PERFORMANCE TRENDS
                 if unique_months:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("### 📅 Monthly Wellness Search Volume Breakdown")
+                    st.markdown("### 📅 Monthly Wellness Performance Trends")
+                    
+                    # Calculate average CTR and CR for each month
+                    monthly_performance = {}
+                    for month in unique_months:
+                        month_display = month_names.get(month, month)
+                        ctr_col = f'{month_display} CTR'
+                        cr_col = f'{month_display} CR'
+                        vol_col = f'{month_display} Vol'
+                        
+                        if ctr_col in top50.columns and cr_col in top50.columns and vol_col in top50.columns:
+                            avg_ctr = top50[ctr_col].mean()
+                            avg_cr = top50[cr_col].mean()
+                            monthly_total = int(pd.to_numeric(top50[vol_col], errors='coerce').sum())
+                            
+                            monthly_performance[month_display] = {
+                                'volume': monthly_total,
+                                'avg_ctr': avg_ctr,
+                                'avg_cr': avg_cr
+                            }
                     
                     month_cols = st.columns(len(unique_months))
                     
                     for i, month in enumerate(unique_months):
                         month_display_name = month_names.get(month, month)
-                        if month_display_name in top50.columns:
+                        if month_display_name in monthly_performance:
                             with month_cols[i]:
-                                monthly_total = int(top50[month_display_name].sum())
+                                perf = monthly_performance[month_display_name]
+                                
+                                # Determine trend indicators
+                                ctr_trend = ""
+                                cr_trend = ""
+                                if i > 0:
+                                    prev_month_display = month_names.get(unique_months[i-1], unique_months[i-1])
+                                    if prev_month_display in monthly_performance:
+                                        prev_perf = monthly_performance[prev_month_display]
+                                        ctr_trend = "📈" if perf['avg_ctr'] > prev_perf['avg_ctr'] else "📉" if perf['avg_ctr'] < prev_perf['avg_ctr'] else "➡️"
+                                        cr_trend = "📈" if perf['avg_cr'] > prev_perf['avg_cr'] else "📉" if perf['avg_cr'] < prev_perf['avg_cr'] else "➡️"
+                                
                                 st.markdown(f"""
-                                <div class="monthly-metric-card">
+                                <div class="monthly-health-metric-card">
                                     <div class="icon">🌱</div>
-                                    <div class="value">{format_number(monthly_total)}</div>
+                                    <div class="value">{format_number(perf['volume'])}</div>
                                     <div class="label">{month_display_name}</div>
+                                    <div style="font-size: 0.8em; margin-top: 5px;">
+                                        CTR: {perf['avg_ctr']:.2f}% {ctr_trend}<br>
+                                        CR: {perf['avg_cr']:.2f}% {cr_trend}
+                                    </div>
                                 </div>
                                 """, unsafe_allow_html=True)
 
-                # 🚀 ENHANCED DOWNLOAD SECTION
                 # 🚀 ENHANCED DOWNLOAD SECTION
                 st.markdown("<br>", unsafe_allow_html=True)
                 
@@ -1574,7 +1805,7 @@ with tab_overview:
                 col_download = st.columns([1, 2, 1])
                 with col_download[1]:
                     st.markdown("""
-                    <div class="download-section">
+                    <div class="download-health-section">
                         <h4 style="color: white; margin-bottom: 15px;">📥 Export Health Data</h4>
                     </div>
                     """, unsafe_allow_html=True)
@@ -1582,57 +1813,87 @@ with tab_overview:
                     st.download_button(
                         label="📥 Download Health Queries CSV",
                         data=csv,
-                        file_name=f"top_50_health_queries_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        file_name=f"top_50_health_queries_better_arrangement_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
-                        help="Download the complete table with monthly wellness breakdown",
+                        help="Download the health table with improved column arrangement for easier comparison",
                         use_container_width=True
                     )
                 
-                # 🚀 OPTIMIZED MONTHLY INSIGHTS
-                with st.expander("📊 Monthly Wellness Insights", expanded=False):
+                # 🚀 OPTIMIZED MONTHLY INSIGHTS WITH PERFORMANCE ANALYSIS
+                with st.expander("📊 Monthly Wellness Performance Analysis", expanded=False):
                     if unique_months and len(unique_months) >= 2:
                         st.markdown("""
-                        <div class="insights-section">
-                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">📈 Month-over-Month Health Analysis</h3>
+                        <div class="insights-health-section">
+                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Wellness Performance Trend Analysis</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
-                        # 🚀 CACHED: MoM analysis
-                        gainers, losers = compute_mom_analysis_ultra(top50, unique_months, month_names, filter_key)
+                        # Performance trend analysis
+                        col1, col2 = st.columns(2)
                         
-                        if not gainers.empty and not losers.empty:
-                            col1, col2 = st.columns(2)
+                        with col1:
+                            st.markdown("#### 🚀 Health CTR Performance Leaders")
+                            # Find queries with best CTR improvement
+                            ctr_improvements = []
+                            for _, row in top50.iterrows():
+                                if len(unique_months) >= 2:
+                                    latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                                    prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                                    
+                                    latest_ctr = row.get(f'{latest_month} CTR', 0)
+                                    prev_ctr = row.get(f'{prev_month} CTR', 0)
+                                    
+                                    if prev_ctr > 0:
+                                        improvement = ((latest_ctr - prev_ctr) / prev_ctr) * 100
+                                        ctr_improvements.append({
+                                            'query': row['Health Query'],
+                                            'improvement': improvement,
+                                            'latest_ctr': latest_ctr
+                                        })
                             
-                            with col1:
-                                st.markdown("""
-                                <div class="mom-analysis">
-                                    <h4 style="color: #4CAF50; text-align: center; margin-bottom: 15px;">🚀 Top Health Gainers (MoM %)</h4>
+                            ctr_improvements = sorted(ctr_improvements, key=lambda x: x['improvement'], reverse=True)[:5]
+                            
+                            for item in ctr_improvements:
+                                color = "#4CAF50" if item['improvement'] > 0 else "#F44336"
+                                sign = "+" if item['improvement'] > 0 else ""
+                                st.markdown(f"""
+                                <div class="health-gainer-item">
+                                    <strong>{item['query'][:30]}...</strong><br>
+                                    <small>CTR: {item['latest_ctr']:.2f}% ({sign}{item['improvement']:.1f}%)</small>
                                 </div>
                                 """, unsafe_allow_html=True)
-                                
-                                for _, row in gainers.iterrows():
-                                    change_val = row['MoM Change']
-                                    sign = "+" if change_val > 0 else ""
-                                    st.markdown(f"""
-                                    <div class="gainer-item">
-                                        <strong>{row['Health Query']}</strong>: <span style="color: #4CAF50; font-weight: bold;">{sign}{change_val:.1f}%</span>
-                                    </div>
-                                    """, unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("#### 🎯 Health CR Performance Leaders")
+                            # Find queries with best CR improvement
+                            cr_improvements = []
+                            for _, row in top50.iterrows():
+                                if len(unique_months) >= 2:
+                                    latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                                    prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                                    
+                                    latest_cr = row.get(f'{latest_month} CR', 0)
+                                    prev_cr = row.get(f'{prev_month} CR', 0)
+                                    
+                                    if prev_cr > 0:
+                                        improvement = ((latest_cr - prev_cr) / prev_cr) * 100
+                                        cr_improvements.append({
+                                            'query': row['Health Query'],
+                                            'improvement': improvement,
+                                            'latest_cr': latest_cr
+                                        })
                             
-                            with col2:
-                                st.markdown("""
-                                <div class="mom-analysis">
-                                    <h4 style="color: #F44336; text-align: center; margin-bottom: 15px;">📉 Top Health Decliners (MoM %)</h4>
+                            cr_improvements = sorted(cr_improvements, key=lambda x: x['improvement'], reverse=True)[:5]
+                            
+                            for item in cr_improvements:
+                                color = "#4CAF50" if item['improvement'] > 0 else "#F44336"
+                                sign = "+" if item['improvement'] > 0 else ""
+                                st.markdown(f"""
+                                <div class="health-gainer-item">
+                                    <strong>{item['query'][:30]}...</strong><br>
+                                    <small>CR: {item['latest_cr']:.2f}% ({sign}{item['improvement']:.1f}%)</small>
                                 </div>
                                 """, unsafe_allow_html=True)
-                                
-                                for _, row in losers.iterrows():
-                                    change_val = row['MoM Change']
-                                    st.markdown(f"""
-                                    <div class="decliner-item">
-                                        <strong>{row['Health Query']}</strong>: <span style="color: #F44336; font-weight: bold;">{change_val:.1f}%</span>
-                                    </div>
-                                    """, unsafe_allow_html=True)
 
         except KeyError as e:
             st.error(f"Column error: {e}. Check column names in your data.")
@@ -1643,9 +1904,9 @@ with tab_overview:
             st.write(f"Available columns: {list(queries.columns)}")
             if 'top50' in locals() and not top50.empty:
                 st.write(f"Top50 shape: {top50.shape}")
-                if 'Total Search Volume' in top50.columns:
-                    st.write(f"Total Search Volume dtype: {top50['Total Search Volume'].dtype}")
-                    st.write(f"Sample values: {top50['Total Search Volume'].head()}")
+                if 'Total Volume' in top50.columns:
+                    st.write(f"Total Volume dtype: {top50['Total Volume'].dtype}")
+                    st.write(f"Sample values: {top50['Total Volume'].head()}")
 
     st.markdown("---")
 
