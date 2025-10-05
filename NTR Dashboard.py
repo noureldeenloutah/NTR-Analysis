@@ -2291,6 +2291,13 @@ def calculate_search_metrics(queries_hash, queries_data):
             avg_ctr = queries['Click Through Rate'].mean()
             metrics['high_perf_queries'] = len(queries[queries['Click Through Rate'] > avg_ctr])
         
+        # ✅ ADD TOP KEYWORD PERCENTAGE
+        if 'keywords' in queries.columns and not queries.empty:
+            top_keyword_count = queries['keywords'].value_counts().iloc[0] if len(queries) > 0 else 0
+            metrics['top_keyword_pct'] = (top_keyword_count / len(queries)) * 100
+        else:
+            metrics['top_keyword_pct'] = 0.0
+        
         return metrics
     except Exception as e:
         st.error(f"Error calculating metrics: {str(e)}")
@@ -4384,7 +4391,7 @@ with tab_search:
         </div>
         """.format(
             metrics['long_tail_pct'],
-            avg_query_length,
+            metrics['avg_query_length'],
             top_keyword_pct
         ), unsafe_allow_html=True)
 
