@@ -2379,12 +2379,17 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # First, define the functions if they haven't been defined yet
-        if 'calculate_enhanced_keyword_performance' not in locals():
+        # ✅ ENHANCED: Check if functions exist using session state for better performance
+        if 'calculate_enhanced_keyword_performance' not in st.session_state:
             # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
             import re
             from collections import defaultdict
-            from fuzzywuzzy import fuzz, process
+            try:
+                from fuzzywuzzy import fuzz, process
+            except ImportError:
+                st.error("⚠️ fuzzywuzzy library not found. Please install it:")
+                st.code("pip install fuzzywuzzy python-levenshtein")
+                st.stop()
 
             def create_master_keyword_dictionary():
                 """
@@ -2439,7 +2444,8 @@ with tab_search:
 
             def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
                 """Extract keywords and prepare for fuzzy grouping"""
-                if not isinstance(text, str):
+                # ✅ ENHANCED: Better validation for empty or invalid text
+                if not isinstance(text, str) or not text.strip():
                     return []
                 
                 text = text.strip().lower()
@@ -2455,7 +2461,8 @@ with tab_search:
                     matches = re.findall(pattern, text)
                     keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
                 
-                return keywords
+                # ✅ ENHANCED: Remove duplicates for better performance
+                return list(set(keywords))
 
             def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
                 """Conservative fuzzy matching with strict rules"""
@@ -2588,9 +2595,17 @@ with tab_search:
                         })
                 
                 return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
+            
+            # ✅ ENHANCED: Mark functions as loaded in session state for better performance
+            st.session_state['calculate_enhanced_keyword_performance'] = calculate_enhanced_keyword_performance
+            st.session_state['create_master_keyword_dictionary'] = create_master_keyword_dictionary
+            st.session_state['extract_keywords_with_fuzzy_grouping'] = extract_keywords_with_fuzzy_grouping
+            st.session_state['fuzzy_match_keywords'] = fuzzy_match_keywords
         
-        # Now calculate the keyword performance
-        kw_perf_df = calculate_enhanced_keyword_performance(queries)
+        # ✅ ENHANCED: Add loading spinner for better user experience
+        with st.spinner("🔍 Analyzing health keywords with advanced fuzzy matching..."):
+            # Now calculate the keyword performance
+            kw_perf_df = calculate_enhanced_keyword_performance(queries)
         
         if not kw_perf_df.empty:
             # Use the fuzzy-matched keyword performance data directly
@@ -2641,8 +2656,80 @@ with tab_search:
             
             # Display only the chart
             st.plotly_chart(fig_kw, use_container_width=True)
+            
+            # ✅ ENHANCED: Add performance insights section
+            with st.expander("📊 **Keyword Performance Insights**", expanded=False):
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    total_keywords = len(kw_perf_df)
+                    st.metric("🔤 Total Keywords", f"{total_keywords:,}")
+                
+                with col2:
+                    avg_ctr = kw_perf_df['avg_ctr'].mean()
+                    st.metric("📈 Average CTR", f"{avg_ctr:.2f}%")
+                
+                with col3:
+                    top_keyword = kw_perf_df.iloc[0]['keyword'] if not kw_perf_df.empty else "N/A"
+                    st.metric("🏆 Top Keyword", top_keyword)
+                
+                # ✅ ENHANCED: Show top performing keywords table
+                st.markdown("### 🎯 **Top 10 Health Keywords Performance**")
+                top_keywords = kw_perf_df.head(10)[['keyword', 'total_counts', 'avg_ctr', 'health_cr', 'variations_count']]
+                st.dataframe(
+                    top_keywords,
+                    use_container_width=True,
+                    column_config={
+                        "keyword": st.column_config.TextColumn("🧴 Health Keyword", width="medium"),
+                        "total_counts": st.column_config.NumberColumn("📊 Volume", format="%d"),
+                        "avg_ctr": st.column_config.NumberColumn("📈 CTR %", format="%.2f%%"),
+                        "health_cr": st.column_config.NumberColumn("💚 Health CR %", format="%.2f%%"),
+                        "variations_count": st.column_config.NumberColumn("🔄 Variations", format="%d")
+                    },
+                    hide_index=True
+                )
+                
+                # ✅ ENHANCED: Show keyword variations for top performers
+                if not kw_perf_df.empty:
+                    st.markdown("### 🔍 **Keyword Variations Analysis**")
+                    selected_keyword = st.selectbox(
+                        "Select a keyword to see its variations:",
+                        options=kw_perf_df.head(10)['keyword'].tolist(),
+                        key="keyword_variations_selector"
+                    )
+                    
+                    if selected_keyword:
+                        selected_row = kw_perf_df[kw_perf_df['keyword'] == selected_keyword].iloc[0]
+                        variations = selected_row['variations']
+                        example_queries = selected_row['example_queries']
+                        
+                        col_var1, col_var2 = st.columns(2)
+                        
+                        with col_var1:
+                            st.markdown(f"**🔤 Variations for '{selected_keyword}':**")
+                            for i, var in enumerate(variations[:10], 1):
+                                st.write(f"{i}. {var}")
+                        
+                        with col_var2:
+                            st.markdown(f"**📝 Example Queries:**")
+                            for i, query in enumerate(example_queries[:5], 1):
+                                st.write(f"{i}. {query}")
         else:
             st.warning("⚠️ No keyword performance data available to display chart.")
+            
+            # ✅ ENHANCED: Show helpful message when no data
+            st.info("""
+            **💡 Possible reasons for no data:**
+            - No queries in the dataset
+            - All queries filtered out during processing
+            - Missing required columns (normalized_query, Counts, clicks, conversions)
+            
+            **🔧 Try:**
+            - Check your data source
+            - Verify column names match expected format
+            - Ensure data contains health-related keywords
+            """)
+
 
 
     with col_right:
