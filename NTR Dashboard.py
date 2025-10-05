@@ -2270,6 +2270,33 @@ with tab_overview:
 
 st.markdown("---")
 # ----------------- Search Analysis (Enhanced Core) -----------------
+# =================== CACHED FUNCTION (PUT AT TOP OF FILE) ===================
+@st.cache_data(ttl=1800, show_spinner=False)
+def calculate_search_metrics(queries_hash, queries_data):
+    """Calculate all search metrics with caching"""
+    try:
+        # Convert back from cached data
+        queries = pd.DataFrame(queries_data)
+        
+        # Calculate all metrics in one pass (vectorized)
+        metrics = {
+            'unique_queries': queries['normalized_query'].nunique(),
+            'avg_query_length': queries['query_length'].mean(),
+            'long_tail_pct': (queries['query_length'] >= 20).mean() * 100,
+            'high_perf_queries': 0
+        }
+        
+        # CTR calculation (if available)
+        if 'Click Through Rate' in queries.columns and not queries.empty:
+            avg_ctr = queries['Click Through Rate'].mean()
+            metrics['high_perf_queries'] = len(queries[queries['Click Through Rate'] > avg_ctr])
+        
+        return metrics
+    except Exception as e:
+        st.error(f"Error calculating metrics: {str(e)}")
+        return None
+
+# =================== MAIN TAB CODE ===================
 with tab_search:
     st.header("🔍 Health Search Analysis — Deep Dive into Nutraceuticals & Nutrition Queries")
     st.markdown("Analyze nutritional search patterns with advanced keyword insights, supplement performance metrics, and actionable health intelligence. 🌿")
@@ -2284,61 +2311,59 @@ with tab_search:
     selected_search_image = st.sidebar.selectbox("Choose Health Search Hero", options=list(search_image_options.keys()), index=0, key="search_hero_image_selector")
     st.image(search_image_options[selected_search_image], use_container_width=True)
     
-    # Add error handling and data validation
+    # Data validation
     if queries.empty or 'keywords' not in queries.columns:
         st.error("❌ No health keyword data available. Please ensure your data contains properly processed Nutraceuticals & Nutrition keywords.")
         st.stop()
     
-    # Quick Health Search Metrics Row
+    # Calculate metrics with caching
+    queries_hash = hash(str(queries.shape) + str(queries.columns.tolist()))
+    metrics = calculate_search_metrics(queries_hash, queries.to_dict('records'))
+    
+    if metrics is None:
+        st.stop()
+    
+    # Quick Health Search Metrics Row (using cached metrics)
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    
     with col_m1:
-        unique_queries = queries['normalized_query'].nunique()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌿</span>
-            <div class='value'>{format_number(unique_queries)}</div>
+            <div class='value'>{format_number(metrics['unique_queries'])}</div>
             <div class='label'>Unique Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m2:
-        avg_query_length = queries['query_length'].mean()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>📏</span>
-            <div class='value'>{avg_query_length:.1f}</div>
+            <div class='value'>{metrics['avg_query_length']:.1f}</div>
             <div class='label'>Avg Query Length</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m3:
-        # Fixed: Total Keywords = Total number of rows (each search query counts as 1)
-        # Queries with above-average CTR
-        if 'Click Through Rate' in queries.columns and not queries.empty:
-            avg_ctr = queries['Click Through Rate'].mean()
-            high_perf_queries = len(queries[queries['Click Through Rate'] > avg_ctr])
-        else:
-            high_perf_queries = 0
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>⚡</span>
-            <div class='value'>{format_number(high_perf_queries)}</div>
-            <div class='label'>High-Performance Nutraceuticals & Nutrition Queries</div>
+            <div class='value'>{format_number(metrics['high_perf_queries'])}</div>
+            <div class='label'>High-Performance Queries</div>
         </div>
         """, unsafe_allow_html=True)
-
     
     with col_m4:
-        long_tail_pct = (queries['query_length'] >= 20).mean() * 100
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌱</span>
-            <div class='value'>{long_tail_pct:.1f}%</div>
+            <div class='value'>{metrics['long_tail_pct']:.1f}%</div>
             <div class='label'>Long-tail Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("---")
+
     
     # Two-column layout for main analysis
     col_left, col_right = st.columns([3, 2])
