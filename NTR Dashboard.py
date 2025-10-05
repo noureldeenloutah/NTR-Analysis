@@ -1052,13 +1052,13 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
 st.markdown("""
 <div class="welcome-box">
     <h2>🌿 Welcome to Nutraceuticals & Nutrition Analytics! 💚</h2>
-    <p>Discover wellness trends, nutritional insights, and supplement performance data. Navigate through health categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
+    <p>Discover Nutraceuticals & Nutrition trends, nutritional insights, and supplement performance data. Navigate through health categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
 </div>
 """, unsafe_allow_html=True)
 
 # ----------------- KPI cards -----------------
 st.markdown('<div class="main-header">🌱 Nutraceuticals & Nutrition — Advanced Analytics Hub</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Explore wellness search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Explore Nutraceuticals & Nutrition search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
 
 # 🚀 CACHED Calculate metrics
 @st.cache_data(ttl=300, show_spinner=False)
@@ -1132,8 +1132,8 @@ tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_generic, tab_
 
 # ----------------- Overview -----------------
 with tab_overview:
-    st.header("🌿 Wellness Overview & Health Insights")
-    st.markdown("Discover nutritional trends and supplement performance patterns. 🌱 Based on **nutraceuticals data** (e.g., millions of health-conscious searches across wellness categories).")
+    st.header("🌿 Nutraceuticals & Nutrition Overview & Health Insights")
+    st.markdown("Discover nutritional trends and supplement performance patterns. 🌱 Based on **nutraceuticals data** (e.g., millions of health-conscious searches across Nutraceuticals & Nutrition categories).")
 
     # Accuracy Fix: Ensure Date conversion (Excel serial)
     if not queries['Date'].dtype == 'datetime64[ns]':
@@ -1144,9 +1144,9 @@ with tab_overview:
         st.rerun()
 
     # Image Selection in Sidebar
-    st.sidebar.header("🌿 Customize Wellness Theme")
+    st.sidebar.header("🌿 Customize Nutraceuticals & Nutrition Theme")
     image_options = {
-        "Natural Green Gradient": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=🌿+Nutraceuticals+%26+Nutrition+Analytics",
+        "Natural Green Gradient": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Nutraceuticals+%26+Nutrition+Analytics",
         "Wellness & Supplements": "https://picsum.photos/1200/250?random=wellness_supplements",
         "Organic Health Theme": "https://source.unsplash.com/1200x250/?health,nutrition,supplements",
         "Custom Health Banner": "https://placehold.co/1200x250/F1F8E9/1B5E20?text=💚+Health+%26+Wellness+Insights",
@@ -1158,7 +1158,7 @@ with tab_overview:
     st.image(image_options[selected_image], use_container_width=True)
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
-    st.markdown("## 🌱 Monthly Wellness Analysis Overview")
+    st.markdown("## 🌱 Monthly Nutraceuticals & Nutrition Analysis Overview")
     col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
@@ -1214,11 +1214,11 @@ with tab_overview:
             </div>
             """, unsafe_allow_html=True)
         else:
-            st.info("No monthly wellness data available")
+            st.info("No monthly Nutraceuticals & Nutrition data available")
 
 
     with col_chart:
-        st.markdown("### 📈 Monthly Wellness Trends Visualization")
+        st.markdown("### 📈 Monthly Nutraceuticals & Nutrition Trends Visualization")
         
         if not monthly_counts.empty and len(monthly_counts) >= 2:
             try:
@@ -1258,7 +1258,7 @@ with tab_overview:
                 peak_value = monthly_counts['Counts'].max()
                 fig.add_annotation(
                     x=peak_month, y=peak_value,
-                    text=f"🏆 Peak Wellness: {peak_value:,.0f}",
+                    text=f"🏆 Peak Nutraceuticals & Nutrition: {peak_value:,.0f}",
                     showarrow=True,
                     arrowhead=3,
                     arrowcolor='#2E7D32',
@@ -1270,7 +1270,7 @@ with tab_overview:
             except Exception as e:
                 st.error(f"Error generating chart: {e}")
         else:
-            st.info("📅 Add more date range for wellness trends visualization")
+            st.info("📅 Add more date range for Nutraceuticals & Nutrition trends visualization")
 
     # Add separator between sections
     st.markdown("---")
@@ -1746,7 +1746,7 @@ with tab_overview:
                 # 🚀 MONTHLY BREAKDOWN WITH PERFORMANCE TRENDS
                 if unique_months:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("### 📅 Monthly Wellness Performance Trends")
+                    st.markdown("### 📅 Monthly Nutraceuticals & Nutrition Performance Trends")
                     
                     # Calculate average CTR and CR for each month
                     monthly_performance = {}
@@ -1820,11 +1820,11 @@ with tab_overview:
                     )
                 
                 # 🚀 OPTIMIZED MONTHLY INSIGHTS WITH PERFORMANCE ANALYSIS
-                with st.expander("📊 Monthly Wellness Performance Analysis", expanded=False):
+                with st.expander("📊 Monthly Nutraceuticals & Nutrition Performance Analysis", expanded=False):
                     if unique_months and len(unique_months) >= 2:
                         st.markdown("""
                         <div class="insights-health-section">
-                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Wellness Performance Trend Analysis</h3>
+                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Nutraceuticals & Nutrition Performance Trend Analysis</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -1912,7 +1912,7 @@ with tab_overview:
 
 
 # ----------------- Performance Snapshot -----------------
-    st.subheader("🌱 Wellness Performance Snapshot")
+    st.subheader("🌱 Nutraceuticals & Nutrition Performance Snapshot")
 
     # Mini-Metrics Row (Data-Driven: From Analysis with Share)
     colM1, colM2, colM3, colM4 = st.columns(4)
@@ -1931,7 +1931,7 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>💚</span>
             <div class='value'>{avg_cr:.2f}%</div>
-            <div class='label'>Avg CR (Wellness)</div>
+            <div class='label'>Avg CR (Nutraceuticals & Nutrition)</div>
         </div>
         """, unsafe_allow_html=True)
     with colM3:
@@ -2041,7 +2041,7 @@ with tab_overview:
                         annotations=[
                             dict(
                                 x=0.5, y=1.05, xref='paper', yref='paper',
-                                text='🌿 Hover for wellness details | Top health brand highlighted below 🌿',
+                                text='🌿 Hover for Nutraceuticals & Nutrition details | Top health brand highlighted below 🌿',
                                 showarrow=False,
                                 font=dict(size=10, color='#2E7D32', family='Segoe UI'),
                                 align='center'
@@ -2230,9 +2230,9 @@ with tab_overview:
         else:
             st.info("🧴 Health Category column not found in the dataset.")
 
-    # Add wellness insights section
+    # Add Nutraceuticals & Nutrition insights section
     st.markdown("---")
-    st.subheader("🌿 Wellness Insights & Recommendations")
+    st.subheader("🌿 Nutraceuticals & Nutrition Insights & Recommendations")
     
     # Create insight boxes with health-themed content
     insight_col1, insight_col2 = st.columns(2)
@@ -2241,14 +2241,14 @@ with tab_overview:
         st.markdown("""
         <div class="insight-box">
             <h4>🌱 Top Performing Health Categories</h4>
-            <p>Focus on high-conversion wellness categories like supplements, vitamins, and natural health products for optimal ROI.</p>
+            <p>Focus on high-conversion Nutraceuticals & Nutrition categories like supplements, vitamins, and natural health products for optimal ROI.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="insight-box">
             <h4>💚 Seasonal Health Trends</h4>
-            <p>Monitor seasonal patterns in immune support, weight management, and wellness supplements to optimize inventory and marketing.</p>
+            <p>Monitor seasonal patterns in immune support, weight management, and Nutraceuticals & Nutrition supplements to optimize inventory and marketing.</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -2271,12 +2271,12 @@ with tab_overview:
 st.markdown("---")
 # ----------------- Search Analysis (Enhanced Core) -----------------
 with tab_search:
-    st.header("🔍 Health Search Analysis — Deep Dive into Wellness Queries")
+    st.header("🔍 Health Search Analysis — Deep Dive into Nutraceuticals & Nutrition Queries")
     st.markdown("Analyze nutritional search patterns with advanced keyword insights, supplement performance metrics, and actionable health intelligence. 🌿")
     
     # Hero Image for Search Tab
     search_image_options = {
-        "Health Search Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=🌿+Health+Keyword+Performance+Hub",
+        "Health Search Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Keyword+Performance+Hub",
         "Wellness Data Visualization": "https://placehold.co/1200x200/2E7D32/FFFFFF?text=🧴+Supplement+Query+Intelligence",
         "Natural Health Focus": "https://source.unsplash.com/1200x200/?health,nutrition,wellness",
         "Nutrition Gradient": "https://placehold.co/1200x200/E8F5E8/1B5E20?text=💚+Nutraceutical+Insights",
@@ -2286,7 +2286,7 @@ with tab_search:
     
     # Add error handling and data validation
     if queries.empty or 'keywords' not in queries.columns:
-        st.error("❌ No health keyword data available. Please ensure your data contains properly processed wellness keywords.")
+        st.error("❌ No health keyword data available. Please ensure your data contains properly processed Nutraceuticals & Nutrition keywords.")
         st.stop()
     
     # Quick Health Search Metrics Row
@@ -2323,7 +2323,7 @@ with tab_search:
         <div class='mini-metric'>
             <span class='icon'>⚡</span>
             <div class='value'>{format_number(high_perf_queries)}</div>
-            <div class='label'>High-Performance Wellness Queries</div>
+            <div class='label'>High-Performance Nutraceuticals & Nutrition Queries</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2623,7 +2623,7 @@ with tab_search:
             queries, 
             x='query_length', 
             nbins=30,
-            title='<b style="color:#2E7D32;">Wellness Query Length Distribution</b>',
+            title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
             labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
             color_discrete_sequence=['#66BB6A']
         )
@@ -3923,7 +3923,7 @@ with tab_search:
                 column_config={
                     "Health Keyword": st.column_config.TextColumn(
                         "Health Keyword",
-                        help="Fuzzy-matched wellness search keyword group",
+                        help="Fuzzy-matched Nutraceuticals & Nutrition search keyword group",
                         width="medium"
                     ),
                     "Total Search Volume": st.column_config.TextColumn(
@@ -4075,7 +4075,7 @@ with tab_search:
     adv_col1, adv_col2, adv_col3 = st.columns(3)
     
     with adv_col1:
-        st.markdown("**🎯 Query Length vs Wellness Performance**")
+        st.markdown("**🎯 Query Length vs Nutraceuticals & Nutrition Performance**")
         ql_analysis = queries.groupby('query_length').agg({
             'Counts': 'sum', 
             'clicks': 'sum',
@@ -4260,7 +4260,7 @@ with tab_search:
                 column_config={
                     "Health Query": st.column_config.TextColumn(
                         "Health Query",
-                        help="Wellness search query text",
+                        help="Nutraceuticals & Nutrition search query text",
                         width="large"
                     ),
                     "Query Length": st.column_config.TextColumn(
@@ -4353,7 +4353,7 @@ with tab_search:
         st.markdown("""
         <div class='insight-box' style='background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-left: 4px solid #2E7D32;'>
             <h4 style='color: #1B5E20;'>🌿 Health Search Insights</h4>
-            <p style='color: #2E7D32;'>• Long-tail health queries represent {:.1f}% of total wellness traffic<br>
+            <p style='color: #2E7D32;'>• Long-tail health queries represent {:.1f}% of total Nutraceuticals & Nutrition traffic<br>
             • Average health query length is {:.1f} characters<br>
             • Top health keyword appears in {:.1f}% of searches</p>
         </div>
@@ -4366,10 +4366,10 @@ with tab_search:
     with col_insight2:
         st.markdown("""
         <div class='insight-box' style='background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); border-left: 4px solid #4CAF50;'>
-            <h4 style='color: #1B5E20;'>💚 Wellness Recommendations</h4>
+            <h4 style='color: #1B5E20;'>💚 Nutraceuticals & Nutrition Recommendations</h4>
             <p style='color: #2E7D32;'>
                 • Focus on high-performing health keywords for content optimization<br>
-                • Analyze long-tail wellness queries for niche supplement opportunities<br>
+                • Analyze long-tail Nutraceuticals & Nutrition queries for niche supplement opportunities<br>
                 • Monitor health search intent patterns for nutrition strategy alignment
             </p>
         </div>
@@ -4378,7 +4378,7 @@ with tab_search:
 
     # Add wellness-specific insights section
     st.markdown("---")
-    st.subheader("🧴 Supplement & Wellness Category Insights")
+    st.subheader("🧴 Nutraceuticals & Nutrition Category Insights")
     
     # Create health-specific insight boxes
     health_col1, health_col2, health_col3 = st.columns(3)
@@ -4399,7 +4399,7 @@ with tab_search:
                     padding: 20px; border-radius: 12px; text-align: center; 
                     box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2); margin: 10px 0;">
             <h4 style="color: #1B5E20; margin-bottom: 10px;">💊 Supplement Trends</h4>
-            <p style="color: #2E7D32; font-size: 14px;">Immune support and wellness supplements show highest conversion rates</p>
+            <p style="color: #2E7D32; font-size: 14px;">Immune support and Nutraceuticals & Nutrition supplements show highest conversion rates</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -4409,13 +4409,13 @@ with tab_search:
                     padding: 20px; border-radius: 12px; text-align: center; 
                     box-shadow: 0 4px 15px rgba(56, 142, 60, 0.2); margin: 10px 0;">
             <h4 style="color: #1B5E20; margin-bottom: 10px;">🔍 Search Patterns</h4>
-            <p style="color: #2E7D32; font-size: 14px;">Long-tail health queries indicate specific wellness needs and higher intent</p>
+            <p style="color: #2E7D32; font-size: 14px;">Long-tail health queries indicate specific Nutraceuticals & Nutrition needs and higher intent</p>
         </div>
         """, unsafe_allow_html=True)
 
     # Add seasonal health trends section
     st.markdown("---")
-    st.subheader("📅 Seasonal Wellness Trends")
+    st.subheader("📅 Seasonal Nutraceuticals & Nutrition Trends")
     
     seasonal_col1, seasonal_col2 = st.columns(2)
     
@@ -4424,7 +4424,7 @@ with tab_search:
         <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
                     padding: 25px; border-radius: 15px; color: white; margin: 10px 0;
                     box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);">
-            <h4 style="margin-bottom: 15px;">🌿 Peak Wellness Seasons</h4>
+            <h4 style="margin-bottom: 15px;">🌿 Peak Nutraceuticals & Nutrition Seasons</h4>
             <ul style="list-style: none; padding: 0; margin: 0;">
                 <li style="margin: 8px 0;">🍂 <strong>Fall:</strong> Immune support supplements surge</li>
                 <li style="margin: 8px 0;">❄️ <strong>Winter:</strong> Vitamin D and cold prevention</li>
@@ -4441,7 +4441,7 @@ with tab_search:
                     box-shadow: 0 6px 20px rgba(56, 142, 60, 0.3);">
             <h4 style="margin-bottom: 15px;">💚 Health Search Optimization</h4>
             <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin: 8px 0;">🎯 <strong>Target:</strong> High-intent wellness keywords</li>
+                <li style="margin: 8px 0;">🎯 <strong>Target:</strong> High-intent Nutraceuticals & Nutrition keywords</li>
                 <li style="margin: 8px 0;">📈 <strong>Optimize:</strong> Product descriptions for health SEO</li>
                 <li style="margin: 8px 0;">🔄 <strong>Monitor:</strong> Seasonal supplement demand shifts</li>
                 <li style="margin: 8px 0;">💡 <strong>Leverage:</strong> Long-tail queries for niche products</li>
@@ -4490,7 +4490,7 @@ with tab_search:
                 <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
                 <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{avg_health_cr:.2f}%</div>
                 <div style="color: #2E7D32; font-size: 0.9em;">Avg Health Conversion Rate</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Across all wellness keywords</div>
+                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Across all Nutraceuticals & Nutrition keywords</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -4524,13 +4524,13 @@ with tab_search:
     <div style="background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%); 
                 padding: 30px; border-radius: 15px; color: white; margin: 20px 0;
                 box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);">
-        <h3 style="text-align: center; margin-bottom: 20px;">🌿 Wellness Search Strategy Recommendations</h3>
+        <h3 style="text-align: center; margin-bottom: 20px;">🌿 Nutraceuticals & Nutrition Search Strategy Recommendations</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
                 <h4 style="margin-bottom: 10px;">🎯 Immediate Actions:</h4>
                 <ul style="margin: 0; padding-left: 20px;">
                     <li>Optimize product pages for top-performing health keywords</li>
-                    <li>Create content around long-tail wellness queries</li>
+                    <li>Create content around long-tail Nutraceuticals & Nutrition queries</li>
                     <li>Focus on seasonal supplement trends</li>
                 </ul>
             </div>
@@ -4539,7 +4539,7 @@ with tab_search:
                 <ul style="margin: 0; padding-left: 20px;">
                     <li>Monitor emerging health trends and adapt keyword strategy</li>
                     <li>Develop category-specific landing pages for supplements</li>
-                    <li>Track conversion patterns across different wellness segments</li>
+                    <li>Track conversion patterns across different Nutraceuticals & Nutrition segments</li>
                 </ul>
             </div>
         </div>
@@ -4550,7 +4550,7 @@ with tab_search:
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
 # ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
 with tab_brand:
-    st.header("🏷 Wellness Brand Intelligence Hub")
+    st.header("🏷 Nutraceuticals & Nutrition Brand Intelligence Hub")
     st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
     
     # Hero Image for Brand Tab
@@ -4576,7 +4576,7 @@ with tab_brand:
         border-left: 4px solid #4CAF50;
     }
     
-    .wellness-insight-box {
+    .Nutraceuticals & Nutrition-insight-box {
         background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
         padding: 25px;
         border-radius: 15px;
@@ -4609,7 +4609,7 @@ with tab_brand:
                      queries[brand_column].notna().any())
     
     if not has_brand_data:
-        st.error(f"❌ No wellness brand data available. Available columns: {list(queries.columns)}")
+        st.error(f"❌ No Nutraceuticals & Nutrition brand data available. Available columns: {list(queries.columns)}")
         st.info("💡 Please ensure your dataset contains a brand column (brand, Brand, or Brand Name)")
         st.stop()
     
@@ -4620,7 +4620,7 @@ with tab_brand:
     ]
 
     if brand_queries.empty:
-        st.error("❌ No valid wellness brand data available after filtering.")
+        st.error("❌ No valid Nutraceuticals & Nutrition brand data available after filtering.")
         st.stop()
     
     # Health-focused Brand Performance Metrics Row
@@ -4640,7 +4640,7 @@ with tab_brand:
         <div class="health-brand-metric">
             <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
             <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{total_brands}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Total Wellness Brands</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Total Nutraceuticals & Nutrition Brands</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -4678,7 +4678,7 @@ with tab_brand:
     
     with col_left:
         # Enhanced Brand Performance Analysis
-        st.subheader("📈 Wellness Brand Performance Matrix")
+        st.subheader("📈 Nutraceuticals & Nutrition Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics
         bs_raw = brand_queries.groupby(brand_column).agg({
@@ -4708,7 +4708,7 @@ with tab_brand:
 
         # Enhanced scatter plot for brand performance
         num_scatter_brands = st.slider(
-            "Number of wellness brands in scatter plot:", 
+            "Number of Nutraceuticals & Nutrition brands in scatter plot:", 
             min_value=20, 
             max_value=100, 
             value=50, 
@@ -4725,7 +4725,7 @@ with tab_brand:
             size='clicks',
             color='cr',
             hover_name='brand',
-            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Wellness Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
+            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Nutraceuticals & Nutrition Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
             labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
@@ -4751,10 +4751,10 @@ with tab_brand:
         st.plotly_chart(fig_brand_perf, use_container_width=True)
         
         # Top Brands Performance Table
-        st.subheader("🏆 Top Wellness Brand Performance")
+        st.subheader("🏆 Top Nutraceuticals & Nutrition Brand Performance")
         
         num_brands = st.slider(
-            "Number of wellness brands to display:", 
+            "Number of Nutraceuticals & Nutrition brands to display:", 
             min_value=10, 
             max_value=50, 
             value=20, 
@@ -4767,7 +4767,7 @@ with tab_brand:
         # Create display version
         display_brands = top_brands.copy()
         display_brands = display_brands.rename(columns={
-            'brand': 'Wellness Brand',
+            'brand': 'Nutraceuticals & Nutrition Brand',
             'Counts': 'Search Counts',
             'share_pct': 'Market Share %',
             'clicks': 'Total Clicks',
@@ -4787,7 +4787,7 @@ with tab_brand:
         display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
         
         # Reorder columns
-        column_order = ['Wellness Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
+        column_order = ['Nutraceuticals & Nutrition Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
         display_brands = display_brands[column_order]
         
         st.dataframe(display_brands, use_container_width=True, hide_index=True)
@@ -4795,15 +4795,15 @@ with tab_brand:
         # Download button
         csv_brands = top_brands.to_csv(index=False)
         st.download_button(
-            label="📥 Download Wellness Brands CSV",
+            label="📥 Download Nutraceuticals & Nutrition Brands CSV",
             data=csv_brands,
-            file_name=f"top_{num_brands}_wellness_brands.csv",
+            file_name=f"top_{num_brands}_Nutraceuticals & Nutrition_brands.csv",
             mime="text/csv",
             key="brand_csv_download"
         )
         
         # Brand Summary Data (calculated from queries)
-        st.subheader("📋 Wellness Brand Summary Data")
+        st.subheader("📋 Nutraceuticals & Nutrition Brand Summary Data")
         
         # Calculate brand summary from queries
         brand_summary_calc = []
@@ -4856,7 +4856,7 @@ with tab_brand:
             top_keywords_str = ', '.join([f"{kw}({cnt:,.0f})" for kw, cnt in top_keywords])
             
             brand_summary_calc.append({
-                'Wellness Brand': brand,
+                'Nutraceuticals & Nutrition Brand': brand,
                 'Search Counts': total_counts,
                 'Total Clicks': total_clicks,
                 'Conversions': total_conversions,
@@ -4886,16 +4886,16 @@ with tab_brand:
         # Download button for brand summary
         csv_summary = brand_summary_df.to_csv(index=False)
         st.download_button(
-            label="📥 Download Wellness Brand Summary CSV",
+            label="📥 Download Nutraceuticals & Nutrition Brand Summary CSV",
             data=csv_summary,
-            file_name="wellness_brand_summary_calculated.csv",
+            file_name="Nutraceuticals & Nutrition_brand_summary_calculated.csv",
             mime="text/csv",
             key="brand_summary_calc_csv_download"
         )
     
     with col_right:
         # Brand Market Share Pie Chart (without "Other")
-        st.subheader("🌱 Wellness Brand Market Share")
+        st.subheader("🌱 Nutraceuticals & Nutrition Brand Market Share")
         
         top_brands_pie = bs.nlargest(10, 'Counts')
         
@@ -4919,7 +4919,7 @@ with tab_brand:
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Brand Performance Categories
-        st.subheader("🎯 Wellness Brand Performance Categories")
+        st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Categories")
         
         # Categorize brands based on performance
         bs['performance_category'] = pd.cut(
@@ -4958,7 +4958,7 @@ with tab_brand:
         
         # Enhanced Brand Trend Analysis with proper filter application
         if 'Date' in queries.columns:
-            st.subheader("📈 Wellness Brand Trend Analysis")
+            st.subheader("📈 Nutraceuticals & Nutrition Brand Trend Analysis")
             
             # Get top 5 brands for trend analysis
             top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
@@ -4991,7 +4991,7 @@ with tab_brand:
                         
                         # Debug: Check if we have monthly data
                         unique_months = monthly_trends['Month_Display'].unique()
-                        st.write(f"📊 Monthly wellness data available: {', '.join(sorted(unique_months))}")
+                        st.write(f"📊 Monthly Nutraceuticals & Nutrition data available: {', '.join(sorted(unique_months))}")
                         
                         if len(monthly_trends) > 0:
                             fig_trend = px.line(
@@ -4999,7 +4999,7 @@ with tab_brand:
                                 x='Date', 
                                 y='Counts', 
                                 color='brand',
-                                title='<b style="color:#2E7D32;">🌿 Top 5 Wellness Brands Monthly Trend</b>',
+                                title='<b style="color:#2E7D32;">🌿 Top 5 Nutraceuticals & Nutrition Brands Monthly Trend</b>',
                                 color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                 markers=True
                             )
@@ -5032,18 +5032,18 @@ with tab_brand:
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
                         else:
-                            st.info("No wellness trend data available for the selected date range and brands")
+                            st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and brands")
                     else:
-                        st.info("No valid dates found in the filtered wellness data")
+                        st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
                 except Exception as e:
-                    st.error(f"Error processing wellness trend data: {str(e)}")
+                    st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
             else:
-                st.info("No wellness brand data available for the selected date range")
+                st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")
 
     st.markdown("---")
     
     # Brand-Keyword Intelligence Matrix with Interactive Filter
-    st.subheader("🔥 Wellness Brand-Keyword Intelligence Matrix")
+    st.subheader("🔥 Nutraceuticals & Nutrition Brand-Keyword Intelligence Matrix")
 
     # Create brand filter dropdown
     if 'brand' in queries.columns and 'search' in queries.columns:
@@ -5058,17 +5058,17 @@ with tab_brand:
         available_brands = sorted(available_brands)
         
         # Create dropdown with "All Brands" option
-        brand_options = ['All Wellness Brands'] + list(available_brands)
+        brand_options = ['All Nutraceuticals & Nutrition Brands'] + list(available_brands)
         
         # Brand selection dropdown
         selected_brand = st.selectbox(
-            "🎯 Select Wellness Brand to Analyze:",
+            "🎯 Select Nutraceuticals & Nutrition Brand to Analyze:",
             options=brand_options,
             index=0  # Default to "All Brands"
         )
         
         # Filter data based on selection
-        if selected_brand == 'All Wellness Brands':
+        if selected_brand == 'All Nutraceuticals & Nutrition Brands':
             # Show top 8 brands if "All Brands" is selected - EXCLUDE "Other"
             top_brands = queries[
                 (queries['brand'].str.lower() != 'other') &
@@ -5077,7 +5077,7 @@ with tab_brand:
             ]['brand'].value_counts().head(8).index.tolist()
             
             filtered_data = queries[queries['brand'].isin(top_brands)]
-            matrix_title = "Top Wellness Brands vs Health Search Terms (Sum of Counts)"
+            matrix_title = "Top Nutraceuticals & Nutrition Brands vs Health Search Terms (Sum of Counts)"
         else:
             # Filter for selected brand only
             filtered_data = queries[queries['brand'] == selected_brand]
@@ -5094,7 +5094,7 @@ with tab_brand:
         ].copy()
         
         if not matrix_data.empty:
-            if selected_brand == 'All Wellness Brands':
+            if selected_brand == 'All Nutraceuticals & Nutrition Brands':
                 # For all brands: Group by brand and search term, sum the counts
                 brand_search_matrix = matrix_data.groupby(['brand', 'search'])['Counts'].sum().reset_index()
                 
@@ -5146,11 +5146,11 @@ with tab_brand:
                 
             # Only create heatmap for "All Brands" view
             # Only create heatmap for "All Brands" view
-            if selected_brand == 'All Wellness Brands' and not heatmap_data.empty:
+            if selected_brand == 'All Nutraceuticals & Nutrition Brands' and not heatmap_data.empty:
                 # Create the heatmap
                 fig_matrix = px.imshow(
                     heatmap_data.values,
-                    labels=dict(x="Health Search Terms", y="Wellness Brands", color="Total Counts"),
+                    labels=dict(x="Health Search Terms", y="Nutraceuticals & Nutrition Brands", color="Total Counts"),
                     x=heatmap_data.columns,
                     y=heatmap_data.index,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
@@ -5177,9 +5177,9 @@ with tab_brand:
                 
                 # Show matrix summary
                 total_matrix_counts = heatmap_data.values.sum()
-                st.info(f"📊 Matrix shows {len(heatmap_data.index)} wellness brands vs {len(heatmap_data.columns)} health search terms with {total_matrix_counts:,.0f} total searches")
+                st.info(f"📊 Matrix shows {len(heatmap_data.index)} Nutraceuticals & Nutrition brands vs {len(heatmap_data.columns)} health search terms with {total_matrix_counts:,.0f} total searches")
         else:
-            st.warning("⚠️ No wellness brand-keyword data available for analysis")
+            st.warning("⚠️ No Nutraceuticals & Nutrition brand-keyword data available for analysis")
     else:
         st.error("❌ Required columns 'brand' and 'search' not found in the dataset")
 
@@ -5195,10 +5195,10 @@ with tab_brand:
         brands_above_avg_cr = len(bs[bs['cr'] > avg_conversion_rate]) if not bs.empty else 0
         
         st.markdown(f"""
-        <div class='wellness-insight-box'>
-            <h4>🌿 Key Wellness Brand Insights</h4>
+        <div class='Nutraceuticals & Nutrition-insight-box'>
+            <h4>🌿 Key Nutraceuticals & Nutrition Brand Insights</h4>
             <p>• <strong>{top_brand_name}</strong> leads health market with {top_brand_share:.1f}% share<br>
-            • {high_performers} wellness brands achieve CTR > 5% (premium performance)<br>
+            • {high_performers} Nutraceuticals & Nutrition brands achieve CTR > 5% (premium performance)<br>
             • {brands_above_avg_cr} brands exceed avg CR of {avg_conversion_rate:.2f}%<br>
             • Health market shows {"strong" if brand_dominance > 30 else "balanced" if brand_dominance > 15 else "fragmented"} brand concentration</p>
         </div>
@@ -5209,18 +5209,18 @@ with tab_brand:
         opportunity_brands = len(bs[(bs['Counts'] > bs['Counts'].median()) & (bs['ctr'] < 3)]) if not bs.empty else 0
         
         st.markdown(f"""
-        <div class='wellness-insight-box'>
+        <div class='Nutraceuticals & Nutrition-insight-box'>
             <h4>💚 Health Brand Strategy Recommendations</h4>
-            <p>• Optimize {low_performers} underperforming wellness brands (CTR < 2%)<br>
+            <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition brands (CTR < 2%)<br>
             • {opportunity_brands} high-volume health brands need engagement boost<br>
-            • Focus on wellness keywords for leading supplement brands<br>
+            • Focus on Nutraceuticals & Nutrition keywords for leading supplement brands<br>
             • {"Diversify" if brand_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
         </div>
         """, unsafe_allow_html=True)
 
     # Health Brand Performance Categories with green styling
     st.markdown("---")
-    st.subheader("🎯 Wellness Brand Performance Tiers")
+    st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Tiers")
     
     # Create performance tiers specific to health brands
     tier_col1, tier_col2, tier_col3 = st.columns(3)
@@ -5230,14 +5230,14 @@ with tab_brand:
         premium_brand_list = bs[bs['ctr'] > 8]['brand'].tolist() if not bs.empty else []
         st.markdown(f"""
         <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🏆 Premium Wellness</h4>
+            <h4 style="color: #1B5E20; text-align: center;">🏆 Premium Nutraceuticals & Nutrition</h4>
             <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{premium_brands}</div>
             <p style="color: #388E3C; text-align: center; margin: 0;">CTR > 8% (Market Leaders)</p>
         </div>
         """, unsafe_allow_html=True)
         
         if premium_brand_list:
-            with st.expander("View Premium Wellness Brands"):
+            with st.expander("View Premium Nutraceuticals & Nutrition Brands"):
                 for brand in premium_brand_list[:5]:  # Show top 5
                     brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
                     st.write(f"🌟 **{brand}** - {brand_ctr:.2f}% CTR")
@@ -5247,14 +5247,14 @@ with tab_brand:
         growing_brand_list = bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)]['brand'].tolist() if not bs.empty else []
         st.markdown(f"""
         <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🌱 Growing Wellness</h4>
+            <h4 style="color: #1B5E20; text-align: center;">🌱 Growing Nutraceuticals & Nutrition</h4>
             <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{growing_brands}</div>
             <p style="color: #388E3C; text-align: center; margin: 0;">CTR 3-8% (Developing)</p>
         </div>
         """, unsafe_allow_html=True)
         
         if growing_brand_list:
-            with st.expander("View Growing Wellness Brands"):
+            with st.expander("View Growing Nutraceuticals & Nutrition Brands"):
                 for brand in growing_brand_list[:5]:  # Show top 5
                     brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
                     st.write(f"🌿 **{brand}** - {brand_ctr:.2f}% CTR")
@@ -5264,27 +5264,27 @@ with tab_brand:
         emerging_brand_list = bs[bs['ctr'] < 3]['brand'].tolist() if not bs.empty else []
         st.markdown(f"""
         <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🌿 Emerging Wellness</h4>
+            <h4 style="color: #1B5E20; text-align: center;">🌿 Emerging Nutraceuticals & Nutrition</h4>
             <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{emerging_brands}</div>
             <p style="color: #388E3C; text-align: center; margin: 0;">CTR < 3% (Opportunity)</p>
         </div>
         """, unsafe_allow_html=True)
         
         if emerging_brand_list:
-            with st.expander("View Emerging Wellness Brands"):
+            with st.expander("View Emerging Nutraceuticals & Nutrition Brands"):
                 for brand in emerging_brand_list[:5]:  # Show top 5
                     brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
                     st.write(f"🌱 **{brand}** - {brand_ctr:.2f}% CTR")
 
     # Advanced Brand Intelligence Section
     st.markdown("---")
-    st.subheader("🧠 Advanced Wellness Brand Intelligence")
+    st.subheader("🧠 Advanced Nutraceuticals & Nutrition Brand Intelligence")
     
     # Create advanced metrics tabs
     intel_tab1, intel_tab2, intel_tab3 = st.tabs(["🎯 Brand Efficiency", "📈 Growth Potential", "🔍 Competitive Analysis"])
     
     with intel_tab1:
-        st.markdown("#### 🎯 Wellness Brand Efficiency Analysis")
+        st.markdown("#### 🎯 Nutraceuticals & Nutrition Brand Efficiency Analysis")
         
         # Calculate efficiency metrics
         if not bs.empty:
@@ -5300,7 +5300,7 @@ with tab_brand:
                 size='Counts',
                 color='efficiency_score',
                 hover_name='brand',
-                title='<b style="color:#2E7D32;">🌿 Wellness Brand Efficiency Matrix</b>',
+                title='<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Brand Efficiency Matrix</b>',
                 labels={
                     'engagement_ratio': 'Engagement Ratio (Clicks/Searches)',
                     'cost_efficiency': 'Conversion Efficiency (Conversions/Searches)',
@@ -5319,12 +5319,12 @@ with tab_brand:
             
             # Top efficient brands
             top_efficient = bs.nlargest(5, 'efficiency_score')[['brand', 'efficiency_score', 'ctr', 'cr']]
-            st.markdown("**🏆 Most Efficient Wellness Brands:**")
+            st.markdown("**🏆 Most Efficient Nutraceuticals & Nutrition Brands:**")
             for idx, row in top_efficient.iterrows():
                 st.write(f"• **{row['brand']}** - Efficiency: {row['efficiency_score']:.3f} (CTR: {row['ctr']:.2f}%, CR: {row['cr']:.2f}%)")
     
     with intel_tab2:
-        st.markdown("#### 📈 Wellness Brand Growth Potential Analysis")
+        st.markdown("#### 📈 Nutraceuticals & Nutrition Brand Growth Potential Analysis")
         
         if not bs.empty:
             # Calculate growth metrics
@@ -5339,7 +5339,7 @@ with tab_brand:
                 growth_data,
                 x='brand',
                 y='growth_score',
-                title='<b style="color:#2E7D32;">🌱 Wellness Brand Growth Potential</b>',
+                title='<b style="color:#2E7D32;">🌱 Nutraceuticals & Nutrition Brand Growth Potential</b>',
                 color='growth_score',
                 color_continuous_scale=['#E8F5E8', '#2E7D32']
             )
@@ -5360,7 +5360,7 @@ with tab_brand:
                 st.write(f"• **{row['brand']}** - Focus on improving engagement and conversion optimization")
     
     with intel_tab3:
-        st.markdown("#### 🔍 Competitive Wellness Brand Analysis")
+        st.markdown("#### 🔍 Competitive Nutraceuticals & Nutrition Brand Analysis")
         
         if not bs.empty and len(bs) >= 2:
             # Competitive positioning
@@ -5379,7 +5379,7 @@ with tab_brand:
                 comp_summary,
                 names='Market Position',
                 values='Brand Count',
-                title='<b style="color:#2E7D32;">🏆 Wellness Brand Competitive Positioning</b>',
+                title='<b style="color:#2E7D32;">🏆 Nutraceuticals & Nutrition Brand Competitive Positioning</b>',
                 color_discrete_sequence=['#E8F5E8', '#A5D6A7', '#66BB6A', '#2E7D32']
             )
             
@@ -5412,7 +5412,7 @@ with tab_brand:
 
     # Final Brand Summary Dashboard
     st.markdown("---")
-    st.subheader("📊 Wellness Brand Performance Dashboard Summary")
+    st.subheader("📊 Nutraceuticals & Nutrition Brand Performance Dashboard Summary")
     
     # Create final summary metrics
     summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
@@ -5422,7 +5422,7 @@ with tab_brand:
         st.metric(
             label="🌿 Total Health Searches",
             value=f"{total_searches:,.0f}",
-            delta=f"{len(bs)} wellness brands analyzed"
+            delta=f"{len(bs)} Nutraceuticals & Nutrition brands analyzed"
         )
     
     with summary_col2:
@@ -5454,7 +5454,7 @@ with tab_brand:
     
     # Export all brand data
     st.markdown("---")
-    st.subheader("📥 Export Wellness Brand Intelligence")
+    st.subheader("📥 Export Nutraceuticals & Nutrition Brand Intelligence")
     
     export_col1, export_col2 = st.columns(2)
     
@@ -5466,9 +5466,9 @@ with tab_brand:
             
             csv_export = export_data.to_csv(index=False)
             st.download_button(
-                label="📊 Download Complete Wellness Brand Analysis",
+                label="📊 Download Complete Nutraceuticals & Nutrition Brand Analysis",
                 data=csv_export,
-                file_name=f"wellness_brand_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                file_name=f"Nutraceuticals & Nutrition_brand_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv",
                 key="complete_brand_export"
             )
@@ -5477,11 +5477,11 @@ with tab_brand:
         if not bs.empty:
             # Summary report
             summary_report = f"""
-            WELLNESS BRAND INTELLIGENCE REPORT
+            Nutraceuticals & Nutrition BRAND INTELLIGENCE REPORT
             Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
             
             MARKET OVERVIEW:
-            • Total Wellness Brands Analyzed: {len(bs)}
+            • Total Nutraceuticals & Nutrition Brands Analyzed: {len(bs)}
             • Total Health Searches: {bs['Counts'].sum():,.0f}
             • Market Leader: {bs.iloc[0]['brand']} ({bs.iloc[0]['share_pct']:.1f}% share)
             • Average CTR: {bs['ctr'].mean():.2f}%
@@ -5501,7 +5501,7 @@ with tab_brand:
             st.download_button(
                 label="📝 Download Executive Summary Report",
                 data=summary_report,
-                file_name=f"wellness_brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                file_name=f"Nutraceuticals & Nutrition_brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 key="executive_summary_export"
             )
@@ -5509,7 +5509,7 @@ with tab_brand:
 
 # ----------------- Category Tab (Enhanced & Health-Focused) -----------------
 with tab_category:
-    st.header("🌿 Wellness Category Intelligence Hub")
+    st.header("🌿 Nutraceuticals & Nutrition Category Intelligence Hub")
     st.markdown("Comprehensive health category performance analysis with strategic insights and competitive intelligence. 💚")
     
     # Hero Image for Category Tab
@@ -5535,7 +5535,7 @@ with tab_category:
         border-left: 4px solid #4CAF50;
     }
     
-    .wellness-category-insight {
+    .Nutraceuticals & Nutrition-category-insight {
         background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
         padding: 25px;
         border-radius: 15px;
@@ -5605,7 +5605,7 @@ with tab_category:
                         queries[category_column].notna().any())
     
     if not has_category_data:
-        st.error(f"❌ No wellness category data available. Available columns: {list(queries.columns)}")
+        st.error(f"❌ No Nutraceuticals & Nutrition category data available. Available columns: {list(queries.columns)}")
         st.info("💡 Please ensure your dataset contains a category column (category, Category, or Category Name)")
         st.stop()
     
@@ -5616,7 +5616,7 @@ with tab_category:
     ]
     
     if category_queries.empty:
-        st.error("❌ No valid wellness category data available after filtering.")
+        st.error("❌ No valid Nutraceuticals & Nutrition category data available after filtering.")
         st.stop()
     
     # Health Category Performance Metrics Row
@@ -5672,7 +5672,7 @@ with tab_category:
     
     with col_left:
         # Enhanced Category Performance Analysis
-        st.subheader("📈 Wellness Category Performance Matrix")
+        st.subheader("📈 Nutraceuticals & Nutrition Category Performance Matrix")
         
         # Calculate comprehensive category metrics
         cs = category_queries.groupby(category_column).agg({
@@ -5705,7 +5705,7 @@ with tab_category:
             size='clicks',
             color='cr',
             hover_name='category',
-            title='<b style="color:#2E7D32; font-size:18px;">🌿 Wellness Category Performance Matrix: Search Volume vs CTR</b>',
+            title='<b style="color:#2E7D32; font-size:18px;">🌿 Nutraceuticals & Nutrition Category Performance Matrix: Search Volume vs CTR</b>',
             labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
@@ -5767,7 +5767,7 @@ with tab_category:
                 cs.sort_values('cr', ascending=False).head(15), 
                 x='category', 
                 y='cr',
-                title='<b style="color:#2E7D32;">💚 Wellness Conversion Rate by Category (%)</b>',
+                title='<b style="color:#2E7D32;">💚 Nutraceuticals & Nutrition Conversion Rate by Category (%)</b>',
                 color='cr',
                 color_continuous_scale=['#A5D6A7', '#1B5E20'],
                 text='cr'
@@ -5790,7 +5790,7 @@ with tab_category:
             st.plotly_chart(fig_cr, use_container_width=True)
         
         # Top Categories Performance Table
-        st.subheader("🏆 Top Wellness Category Performance")
+        st.subheader("🏆 Top Nutraceuticals & Nutrition Category Performance")
         
         num_categories = st.slider(
             "Number of health categories to display:", 
@@ -5834,16 +5834,16 @@ with tab_category:
         # Download button
         csv_categories = top_categories.to_csv(index=False)
         st.download_button(
-            label="📥 Download Wellness Categories CSV",
+            label="📥 Download Nutraceuticals & Nutrition Categories CSV",
             data=csv_categories,
-            file_name=f"top_{num_categories}_wellness_categories.csv",
+            file_name=f"top_{num_categories}_Nutraceuticals & Nutrition_categories.csv",
             mime="text/csv",
             key="category_csv_download"
         )
     
     with col_right:
         # Category Market Share Pie Chart
-        st.subheader("🌱 Wellness Category Market Share")
+        st.subheader("🌱 Nutraceuticals & Nutrition Category Market Share")
         
         top_categories_pie = cs.nlargest(10, 'Counts')
         
@@ -5867,7 +5867,7 @@ with tab_category:
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Category Performance Categories
-        st.subheader("🎯 Wellness Category Performance Distribution")
+        st.subheader("🎯 Nutraceuticals & Nutrition Category Performance Distribution")
         
         # Categorize categories based on performance
         cs['performance_category'] = pd.cut(
@@ -5906,7 +5906,7 @@ with tab_category:
         
         # Enhanced Category Trend Analysis
         if 'Date' in queries.columns:
-            st.subheader("📈 Wellness Category Trend Analysis")
+            st.subheader("📈 Nutraceuticals & Nutrition Category Trend Analysis")
             
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
@@ -5972,18 +5972,18 @@ with tab_category:
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
                         else:
-                            st.info("No wellness trend data available for the selected date range and categories")
+                            st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and categories")
                     else:
-                        st.info("No valid dates found in the filtered wellness data")
+                        st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
                 except Exception as e:
-                    st.error(f"Error processing wellness trend data: {str(e)}")
+                    st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
             else:
-                st.info("No wellness category data available for the selected date range")
+                st.info("No Nutraceuticals & Nutrition category data available for the selected date range")
     
     st.markdown("---")
     
     # Enhanced Category-Keyword Intelligence Matrix
-    st.subheader("🔥 Wellness Category-Keyword Intelligence Matrix")
+    st.subheader("🔥 Nutraceuticals & Nutrition Category-Keyword Intelligence Matrix")
     
     # Create category filter dropdown
     if 'search' in queries.columns:
@@ -6008,11 +6008,11 @@ with tab_category:
             # Show top 8 categories if "All Categories" is selected
             top_categories_matrix = cs.nlargest(8, 'Counts')['category'].tolist()
             filtered_data = category_queries[category_queries[category_column].isin(top_categories_matrix)]
-            matrix_title = "Top Health Categories vs Wellness Search Terms (Sum of Counts)"
+            matrix_title = "Top Health Categories vs Nutraceuticals & Nutrition Search Terms (Sum of Counts)"
         else:
             # Filter for selected category only
             filtered_data = category_queries[category_queries[category_column] == selected_category]
-            matrix_title = f"{selected_category} - Wellness Search Terms Analysis (Sum of Counts)"
+            matrix_title = f"{selected_category} - Nutraceuticals & Nutrition Search Terms Analysis (Sum of Counts)"
         
         # Remove null values from search terms
         matrix_data = filtered_data[
@@ -6042,7 +6042,7 @@ with tab_category:
                     # Create the heatmap
                     fig_matrix = px.imshow(
                         heatmap_data.values,
-                        labels=dict(x="Wellness Search Terms", y="Health Categories", color="Total Counts"),
+                        labels=dict(x="Nutraceuticals & Nutrition Search Terms", y="Health Categories", color="Total Counts"),
                         x=heatmap_data.columns,
                         y=heatmap_data.index,
                         color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
@@ -6061,7 +6061,7 @@ with tab_category:
                     # Update hover template
                     fig_matrix.update_traces(
                         hovertemplate='<b>Health Category:</b> %{y}<br>' +
-                                    '<b>Wellness Term:</b> %{x}<br>' +
+                                    '<b>Nutraceuticals & Nutrition Term:</b> %{x}<br>' +
                                     '<b>Total Searches:</b> %{z:,.0f}<extra></extra>'
                     )
                     
@@ -6069,7 +6069,7 @@ with tab_category:
                     
                     # Show summary statistics
                     total_interactions = category_search_matrix['Counts'].sum()
-                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} wellness search terms with {total_interactions:,} total searches")
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {total_interactions:,} total searches")
             else:
                 # For single category: Show search terms analysis
                 search_counts = matrix_data.groupby('search')['Counts'].sum().reset_index()
@@ -6081,8 +6081,8 @@ with tab_category:
                     x='Counts',
                     y='search',
                     orientation='h',
-                    title=f'<b style="color:#2E7D32;">{selected_category} - Top Wellness Search Terms by Count</b>',
-                    labels={'Counts': 'Total Health Searches', 'search': 'Wellness Search Terms'},
+                    title=f'<b style="color:#2E7D32;">{selected_category} - Top Nutraceuticals & Nutrition Search Terms by Count</b>',
+                    labels={'Counts': 'Total Health Searches', 'search': 'Nutraceuticals & Nutrition Search Terms'},
                     color='Counts',
                     color_continuous_scale=['#E8F5E8', '#2E7D32']
                 )
@@ -6099,14 +6099,14 @@ with tab_category:
                 
                 # Show summary
                 total_counts = search_counts['Counts'].sum()
-                st.info(f"📊 {selected_category} has {len(search_counts)} top wellness search terms with {total_counts:,} total searches")
+                st.info(f"📊 {selected_category} has {len(search_counts)} top Nutraceuticals & Nutrition search terms with {total_counts:,} total searches")
         else:
-            st.warning("⚠️ No wellness category data available for the selected filter")
+            st.warning("⚠️ No Nutraceuticals & Nutrition category data available for the selected filter")
     
     st.markdown("---")
     
     # Enhanced Top Keywords per Category Analysis
-    st.subheader("🔑 Top Health Keywords per Wellness Category Analysis")
+    st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Category Analysis")
     
     try:
         # Calculate keywords per category using the enhanced approach
@@ -6151,7 +6151,7 @@ with tab_category:
             
             # Display options
             display_option = st.radio(
-                "Choose wellness keyword display format:",
+                "Choose Nutraceuticals & Nutrition keyword display format:",
                 ["Interactive Table", "Heatmap Visualization", "Top Health Keywords Summary"],
                 horizontal=True
             )
@@ -6168,11 +6168,11 @@ with tab_category:
                 # Create heatmap for keyword-category matrix
                 fig_keyword_heatmap = px.imshow(
                     pivot_ckw.values,
-                    labels=dict(x="Health Keywords", y="Wellness Categories", color="Keyword Count"),
+                    labels=dict(x="Health Keywords", y="Nutraceuticals & Nutrition Categories", color="Keyword Count"),
                     x=pivot_ckw.columns,
                     y=pivot_ckw.index,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    title='<b style="color:#2E7D32;">🌿 Wellness Category-Health Keyword Frequency Heatmap</b>',
+                    title='<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Category-Health Keyword Frequency Heatmap</b>',
                     aspect='auto'
                 )
                 
@@ -6188,7 +6188,7 @@ with tab_category:
             
             else:  # Top Keywords Summary
                 # Show top keywords summary by category with enhanced accuracy
-                st.subheader("🔥 Top 10 Health Keywords by Wellness Category")
+                st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Category")
                 
                 top_keywords_summary = []
                 category_stats = {}
@@ -6233,7 +6233,7 @@ with tab_category:
                     }
                     
                     top_keywords_summary.append({
-                        'Wellness Category': cat,
+                        'Nutraceuticals & Nutrition Category': cat,
                         'Top 10 Health Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Category Total Volume': f"{actual_category_total:,}",  # Use actual category total
@@ -6253,7 +6253,7 @@ with tab_category:
                 
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
-                st.subheader("📊 Wellness Category Health Keyword Intelligence")
+                st.subheader("📊 Nutraceuticals & Nutrition Category Health Keyword Intelligence")
                 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
                 
@@ -6278,7 +6278,7 @@ with tab_category:
                     <div class='enhanced-health-metric'>
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Highest Volume Wellness Category</div>
+                        <div class='label'>Highest Volume Nutraceuticals & Nutrition Category</div>
                         <div class='sub-label'>{highest_volume_cat[1]['total_count']:,} total health searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -6292,13 +6292,13 @@ with tab_category:
                         <span class='icon'>🎯</span>
                         <div class='value'>{category_name}</div>
                         <div class='label'>Most Concentrated Health Category</div>
-                        <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% wellness market share</div>
+                        <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 # Top keywords across all categories
                 st.markdown("---")
-                st.subheader("🏆 Global Top Health Keywords Across All Wellness Categories")
+                st.subheader("🏆 Global Top Health Keywords Across All Nutraceuticals & Nutrition Categories")
                 
                 # Get top keywords globally
                 global_keywords = df_ckw.groupby('keyword')['count'].sum().reset_index()
@@ -6310,7 +6310,7 @@ with tab_category:
                     x='count',
                     y='keyword',
                     orientation='h',
-                    title='<b style="color:#2E7D32;">🌿 Top 20 Health Keywords Across All Wellness Categories</b>',
+                    title='<b style="color:#2E7D32;">🌿 Top 20 Health Keywords Across All Nutraceuticals & Nutrition Categories</b>',
                     labels={'count': 'Total Health Search Count', 'keyword': 'Health Keywords'},
                     color='count',
                     color_continuous_scale=['#E8F5E8', '#2E7D32'],
@@ -6337,13 +6337,13 @@ with tab_category:
                 
                 # Category keyword distribution analysis
                 st.markdown("---")
-                st.subheader("📈 Wellness Category Health Keyword Distribution Analysis")
+                st.subheader("📈 Nutraceuticals & Nutrition Category Health Keyword Distribution Analysis")
                 
                 # Create distribution data using corrected totals
                 distribution_data = []
                 for cat, stats in category_stats.items():
                     distribution_data.append({
-                        'Wellness Category': cat,
+                        'Nutraceuticals & Nutrition Category': cat,
                         'Unique Health Keywords': stats['total_keywords'],
                         'Total Health Volume': stats['total_count'],  # Use actual category total
                         'Average Keyword Count': stats['avg_count']
@@ -6357,8 +6357,8 @@ with tab_category:
                     x='Unique Health Keywords',
                     y='Total Health Volume',
                     size='Average Keyword Count',
-                    hover_name='Wellness Category',
-                    title='<b style="color:#2E7D32;">🌿 Wellness Category Health Keyword Diversity vs Volume</b>',
+                    hover_name='Nutraceuticals & Nutrition Category',
+                    title='<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Category Health Keyword Diversity vs Volume</b>',
                     labels={
                         'Unique Health Keywords': 'Number of Unique Health Keywords',
                         'Total Health Volume': 'Total Health Search Volume',
@@ -6388,18 +6388,18 @@ with tab_category:
             # Download button for keyword analysis
             csv_keywords = df_ckw.to_csv(index=False)
             st.download_button(
-                label="📥 Download Wellness Category Health Keywords CSV",
+                label="📥 Download Nutraceuticals & Nutrition Category Health Keywords CSV",
                 data=csv_keywords,
-                file_name="wellness_category_health_keywords_analysis.csv",
+                file_name="Nutraceuticals & Nutrition_category_health_keywords_analysis.csv",
                 mime="text/csv",
                 key="category_keywords_csv_download"
             )
         else:
-            st.info("Not enough health keyword data per wellness category.")
+            st.info("Not enough health keyword data per Nutraceuticals & Nutrition category.")
     
     except Exception as e:
         st.error(f"Error processing health keyword analysis: {str(e)}")
-        st.info("Not enough health keyword data per wellness category.")
+        st.info("Not enough health keyword data per Nutraceuticals & Nutrition category.")
 
     # Health Category Insights Section
     st.markdown("---")
@@ -6413,10 +6413,10 @@ with tab_category:
         categories_above_avg_cr = len(cs[cs['cr'] > avg_conversion_rate]) if not cs.empty else 0
         
         st.markdown(f"""
-        <div class='wellness-category-insight'>
-            <h4>🌿 Key Wellness Category Insights</h4>
+        <div class='Nutraceuticals & Nutrition-category-insight'>
+            <h4>🌿 Key Nutraceuticals & Nutrition Category Insights</h4>
             <p>• <strong>{top_category_name}</strong> leads health market with {top_category_share:.1f}% share<br>
-            • {high_performers} wellness categories achieve CTR > 5% (premium performance)<br>
+            • {high_performers} Nutraceuticals & Nutrition categories achieve CTR > 5% (premium performance)<br>
             • {categories_above_avg_cr} categories exceed avg CR of {avg_conversion_rate:.2f}%<br>
             • Health market shows {"strong" if category_dominance > 30 else "balanced" if category_dominance > 15 else "fragmented"} category concentration</p>
         </div>
@@ -6427,18 +6427,18 @@ with tab_category:
         opportunity_categories = len(cs[(cs['Counts'] > cs['Counts'].median()) & (cs['ctr'] < 3)]) if not cs.empty else 0
         
         st.markdown(f"""
-        <div class='wellness-category-insight'>
+        <div class='Nutraceuticals & Nutrition-category-insight'>
             <h4>💚 Health Category Strategy Recommendations</h4>
-            <p>• Optimize {low_performers} underperforming wellness categories (CTR < 2%)<br>
+            <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition categories (CTR < 2%)<br>
             • {opportunity_categories} high-volume health categories need engagement boost<br>
-            • Focus on wellness keywords for leading health categories<br>
+            • Focus on Nutraceuticals & Nutrition keywords for leading health categories<br>
             • {"Diversify" if category_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
         </div>
         """, unsafe_allow_html=True)
 
     # Final Category Summary Dashboard
     st.markdown("---")
-    st.subheader("📊 Wellness Category Performance Dashboard Summary")
+    st.subheader("📊 Nutraceuticals & Nutrition Category Performance Dashboard Summary")
     
     # Create final summary metrics
     summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
@@ -6448,7 +6448,7 @@ with tab_category:
         st.metric(
             label="🌿 Total Health Searches",
             value=f"{total_searches:,.0f}",
-            delta=f"{len(cs)} wellness categories analyzed"
+            delta=f"{len(cs)} Nutraceuticals & Nutrition categories analyzed"
         )
     
     with summary_col2:
@@ -6480,7 +6480,7 @@ with tab_category:
     
     # Export all category data
     st.markdown("---")
-    st.subheader("📥 Export Wellness Category Intelligence")
+    st.subheader("📥 Export Nutraceuticals & Nutrition Category Intelligence")
     
     export_col1, export_col2 = st.columns(2)
     
@@ -6492,9 +6492,9 @@ with tab_category:
             
             csv_export = export_data.to_csv(index=False)
             st.download_button(
-                label="📊 Download Complete Wellness Category Analysis",
+                label="📊 Download Complete Nutraceuticals & Nutrition Category Analysis",
                 data=csv_export,
-                file_name=f"wellness_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                file_name=f"wNutraceuticals & Nutrition_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv",
                 key="complete_category_export"
             )
@@ -6503,17 +6503,17 @@ with tab_category:
         if not cs.empty:
             # Summary report
             summary_report = f"""
-            WELLNESS CATEGORY INTELLIGENCE REPORT
+            Nutraceuticals & Nutrition CATEGORY INTELLIGENCE REPORT
             Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
             
             HEALTH MARKET OVERVIEW:
-            • Total Wellness Categories Analyzed: {len(cs)}
+            • Total Nutraceuticals & Nutrition Categories Analyzed: {len(cs)}
             • Total Health Searches: {cs['Counts'].sum():,.0f}
             • Market Leader: {cs.iloc[0]['category']} ({cs.iloc[0]['share_pct']:.1f}% share)
             • Average CTR: {cs['ctr'].mean():.2f}%
             • Average CR: {cs['cr'].mean():.2f}%
             
-            WELLNESS PERFORMANCE TIERS:
+            Nutraceuticals & Nutrition PERFORMANCE TIERS:
             • Premium Categories (CTR > 10%): {len(cs[cs['ctr'] > 10])}
             • Strong Categories (CTR 5-10%): {len(cs[(cs['ctr'] >= 5) & (cs['ctr'] <= 10)])}
             • Growing Categories (CTR 2-5%): {len(cs[(cs['ctr'] >= 2) & (cs['ctr'] < 5)])}
@@ -6522,13 +6522,13 @@ with tab_category:
             STRATEGIC HEALTH INSIGHTS:
             • Market concentration is {concentration_status.lower()}
             • {len(cs[cs['ctr'] > 5])} categories achieve premium performance
-            • Growth opportunities exist in wellness engagement optimization
+            • Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
             """
             
             st.download_button(
-                label="📝 Download Wellness Executive Summary Report",
+                label="📝 Download Nutraceuticals & Nutrition Executive Summary Report",
                 data=summary_report,
-                file_name=f"wellness_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                file_name=f"Nutraceuticals & Nutrition_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 key="category_executive_summary_export"
             )
@@ -6538,7 +6538,7 @@ with tab_category:
 # ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
 with tab_subcat:
     st.header("🌿 Health Subcategory Intelligence Hub")
-    st.markdown("Deep dive into wellness subcategory performance and health search trends. 💚")
+    st.markdown("Deep dive into Nutraceuticals & Nutrition subcategory performance and health search trends. 💚")
 
     # Hero Image for Subcategory Tab
     subcat_image_options = {
@@ -6639,7 +6639,7 @@ with tab_subcat:
                 color: #388E3C;
             }
             
-            .wellness-performance-badge {
+            .Nutraceuticals & Nutrition-performance-badge {
                 padding: 4px 8px;
                 border-radius: 12px;
                 font-size: 0.8em;
@@ -6647,22 +6647,22 @@ with tab_subcat:
                 margin-left: 8px;
             }
             
-            .high-wellness-performance {
+            .high-Nutraceuticals & Nutrition-performance {
                 background-color: #4CAF50;
                 color: white;
             }
             
-            .medium-wellness-performance {
+            .medium-Nutraceuticals & Nutrition-performance {
                 background-color: #81C784;
                 color: white;
             }
             
-            .low-wellness-performance {
+            .low-Nutraceuticals & Nutrition-performance {
                 background-color: #A5D6A7;
                 color: #1B5E20;
             }
             
-            .wellness-insight-card {
+            .Nutraceuticals & Nutrition-insight-card {
                 background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
                 padding: 25px;
                 border-radius: 15px;
@@ -6689,7 +6689,7 @@ with tab_subcat:
                     <span class='icon'>🌿</span>
                     <div class='value'>{format_number(total_subcategories)}</div>
                     <div class='label'>Total Health Subcategories</div>
-                    <div class='sub-label'>Active wellness segments</div>
+                    <div class='sub-label'>Active Nutraceuticals & Nutrition segments</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -6699,16 +6699,16 @@ with tab_subcat:
                     <span class='icon'>🔍</span>
                     <div class='value'>{format_number(total_searches)}</div>
                     <div class='label'>Total Health Searches</div>
-                    <div class='sub-label'>Across all wellness subcategories</div>
+                    <div class='sub-label'>Across all Nutraceuticals & Nutrition subcategories</div>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col3:
-                performance_class = "high-wellness-performance" if avg_ctr > 5 else "medium-wellness-performance" if avg_ctr > 2 else "low-wellness-performance"
+                performance_class = "high-Nutraceuticals & Nutrition-performance" if avg_ctr > 5 else "medium-Nutraceuticals & Nutrition-performance" if avg_ctr > 2 else "low-Nutraceuticals & Nutrition-performance"
                 st.markdown(f"""
                 <div class='health-subcat-metric-card'>
                     <span class='icon'>📈</span>
-                    <div class='value'>{avg_ctr:.2f}% <span class='wellness-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
+                    <div class='value'>{avg_ctr:.2f}% <span class='Nutraceuticals & Nutrition-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
                     <div class='label'>Average Health CTR</div>
                     <div class='sub-label'>Click-through rate</div>
                 </div>
@@ -6722,7 +6722,7 @@ with tab_subcat:
                     <span class='icon'>👑</span>
                     <div class='value'>{top_subcat_display}</div>
                     <div class='label'>Top Health Subcategory</div>
-                    <div class='sub-label'>{market_share:.1f}% wellness market share</div>
+                    <div class='sub-label'>{market_share:.1f}% Nutraceuticals & Nutrition market share</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -6734,7 +6734,7 @@ with tab_subcat:
                 <div class='health-subcat-metric-card'>
                     <span class='icon'>💚</span>
                     <div class='value'>{avg_cr:.2f}%</div>
-                    <div class='label'>Avg Wellness Conversion Rate</div>
+                    <div class='label'>Avg Nutraceuticals & Nutrition Conversion Rate</div>
                     <div class='sub-label'>Overall health performance</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -6746,7 +6746,7 @@ with tab_subcat:
                     <span class='icon'>🖱️</span>
                     <div class='value'>{format_number(total_clicks)}</div>
                     <div class='label'>Total Health Clicks</div>
-                    <div class='sub-label'>Across all wellness subcategories</div>
+                    <div class='sub-label'>Across all Nutraceuticals & Nutrition subcategories</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -6756,7 +6756,7 @@ with tab_subcat:
                 <div class='health-subcat-metric-card'>
                     <span class='icon'>✅</span>
                     <div class='value'>{format_number(total_conversions)}</div>
-                    <div class='label'>Total Wellness Conversions</div>
+                    <div class='label'>Total Nutraceuticals & Nutrition Conversions</div>
                     <div class='sub-label'>Successful health outcomes</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -6768,7 +6768,7 @@ with tab_subcat:
                 <div class='health-subcat-metric-card'>
                     <span class='icon'>🏆</span>
                     <div class='value'>{top_conversion_display}</div>
-                    <div class='label'>Wellness Conversion Leader</div>
+                    <div class='label'>Nutraceuticals & Nutrition Conversion Leader</div>
                     <div class='sub-label'>Most health conversions</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -6790,7 +6790,7 @@ with tab_subcat:
                     df_sckw_grouped['keyword_ctr'] = df_sckw_grouped.apply(lambda r: (r['clicks']/r['count']*100) if r['count']>0 else 0, axis=1)
                     df_sckw_grouped['keyword_cr'] = df_sckw_grouped.apply(lambda r: (r['conversions']/r['count']*100) if r['count']>0 else 0, axis=1)
                     
-                    st.subheader("🔥 Top 10 Health Keywords by Wellness Subcategory")
+                    st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Subcategory")
                     
                     top_keywords_summary = []
                     subcategory_stats = {}
@@ -6833,7 +6833,7 @@ with tab_subcat:
                             'Top 10 Health Keywords (with counts)': keywords_str,
                             'Total Health Keywords': unique_keywords,
                             'Subcategory Total Volume': f"{actual_subcategory_total:,}",
-                            'Wellness Share %': f"{share_percentage:.2f}%",
+                            'Nutraceuticals & Nutrition Share %': f"{share_percentage:.2f}%",
                             'Keyword Analysis Volume': f"{total_keyword_count:,}",
                             'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
                             'Top Health Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
@@ -6881,7 +6881,7 @@ with tab_subcat:
                             <span class='icon'>🚀</span>
                             <div class='value'>{subcategory_name}</div>
                             <div class='label'>Highest Volume Health Subcategory</div>
-                            <div class='sub-label'>{highest_volume_subcat[1]['total_count']:,} total health searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% wellness share</div>
+                            <div class='sub-label'>{highest_volume_subcat[1]['total_count']:,} total health searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition share</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
@@ -6893,13 +6893,13 @@ with tab_subcat:
                             <span class='icon'>🎯</span>
                             <div class='value'>{subcategory_name}</div>
                             <div class='label'>Most Concentrated Health Subcategory</div>
-                            <div class='sub-label'>{most_concentrated_subcat[1]['share_percentage']:.2f}% wellness market share</div>
+                            <div class='sub-label'>{most_concentrated_subcat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     st.markdown("---")
             else:
-                st.subheader("🔥 Top 10 Health Keywords by Wellness Subcategory")
+                st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Subcategory")
                 st.info("Health keyword data not available for subcategory analysis.")
                 st.markdown("---")
             
@@ -6907,8 +6907,8 @@ with tab_subcat:
             st.subheader("🎯 Interactive Health Subcategory Analysis")
 
             analysis_type = st.radio(
-                "Choose Wellness Analysis Type:",
-                ["📊 Top Health Performers Overview", "🔍 Detailed Health Subcategory Deep Dive", "📈 Health Performance Comparison", "📊 Wellness Market Share Analysis"],
+                "Choose Nutraceuticals & Nutrition Analysis Type:",
+                ["📊 Top Health Performers Overview", "🔍 Detailed Health Subcategory Deep Dive", "📈 Health Performance Comparison", "📊 Nutraceuticals & Nutrition Market Share Analysis"],
                 horizontal=True
             )
 
@@ -6959,14 +6959,14 @@ with tab_subcat:
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
-                    name='Wellness Conversion Rate %',
+                    name='Nutraceuticals & Nutrition Conversion Rate %',
                     x=top_20_sc['sub_category'],
                     y=top_20_sc['conversion_rate'],
                     marker_color='#81C784'
                 ))
                 
                 fig_metrics_comparison.update_layout(
-                    title='<b style="color:#2E7D32;">🌿 Health CTR vs Wellness Conversion Rate Comparison</b>',
+                    title='<b style="color:#2E7D32;">🌿 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Comparison</b>',
                     barmode='group',
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
@@ -6982,7 +6982,7 @@ with tab_subcat:
                 st.subheader("🔬 Health Subcategory Deep Dive Analysis")
                 
                 selected_subcategory = st.selectbox(
-                    "Select a health subcategory for detailed wellness analysis:",
+                    "Select a health subcategory for detailed Nutraceuticals & Nutrition analysis:",
                     options=sc['sub_category'].tolist(),
                     index=0
                 )
@@ -6994,35 +6994,35 @@ with tab_subcat:
                     col_detail1, col_detail2, col_detail3, col_detail4 = st.columns(4)
                     
                     with col_detail1:
-                        rank_performance = "high-wellness-performance" if subcat_rank <= 3 else "medium-wellness-performance" if subcat_rank <= 10 else "low-wellness-performance"
+                        rank_performance = "high-Nutraceuticals & Nutrition-performance" if subcat_rank <= 3 else "medium-Nutraceuticals & Nutrition-performance" if subcat_rank <= 10 else "low-Nutraceuticals & Nutrition-performance"
                         st.markdown(f"""
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>🏆</span>
-                            <div class='value'>#{subcat_rank} <span class='wellness-performance-badge {rank_performance}'>{"Top 3" if subcat_rank <= 3 else "Top 10" if subcat_rank <= 10 else "Lower"}</span></div>
+                            <div class='value'>#{subcat_rank} <span class='Nutraceuticals & Nutrition-performance-badge {rank_performance}'>{"Top 3" if subcat_rank <= 3 else "Top 10" if subcat_rank <= 10 else "Lower"}</span></div>
                             <div class='label'>Health Market Rank</div>
-                            <div class='sub-label'>Out of {total_subcategories} wellness subcategories</div>
+                            <div class='sub-label'>Out of {total_subcategories} Nutraceuticals & Nutrition subcategories</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_detail2:
                         market_share = (subcat_data['Counts'] / total_searches * 100)
-                        share_performance = "high-wellness-performance" if market_share > 5 else "medium-wellness-performance" if market_share > 2 else "low-wellness-performance"
+                        share_performance = "high-Nutraceuticals & Nutrition-performance" if market_share > 5 else "medium-Nutraceuticals & Nutrition-performance" if market_share > 2 else "low-Nutraceuticals & Nutrition-performance"
                         st.markdown(f"""
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>📊</span>
-                            <div class='value'>{market_share:.2f}% <span class='wellness-performance-badge {share_performance}'>{"High" if market_share > 5 else "Medium" if market_share > 2 else "Low"}</span></div>
-                            <div class='label'>Wellness Market Share</div>
+                            <div class='value'>{market_share:.2f}% <span class='Nutraceuticals & Nutrition-performance-badge {share_performance}'>{"High" if market_share > 5 else "Medium" if market_share > 2 else "Low"}</span></div>
+                            <div class='label'>Nutraceuticals & Nutrition Market Share</div>
                             <div class='sub-label'>Of total health search volume</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with col_detail3:
                         performance_score = (subcat_data['ctr'] + subcat_data['conversion_rate']) / 2
-                        score_performance = "high-wellness-performance" if performance_score > 3 else "medium-wellness-performance" if performance_score > 1 else "low-wellness-performance"
+                        score_performance = "high-Nutraceuticals & Nutrition-performance" if performance_score > 3 else "medium-Nutraceuticals & Nutrition-performance" if performance_score > 1 else "low-Nutraceuticals & Nutrition-performance"
                         st.markdown(f"""
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>⭐</span>
-                            <div class='value'>{performance_score:.1f} <span class='wellness-performance-badge {score_performance}'>{"High" if performance_score > 3 else "Medium" if performance_score > 1 else "Low"}</span></div>
+                            <div class='value'>{performance_score:.1f} <span class='Nutraceuticals & Nutrition-performance-badge {score_performance}'>{"High" if performance_score > 3 else "Medium" if performance_score > 1 else "Low"}</span></div>
                             <div class='label'>Health Performance Score</div>
                             <div class='sub-label'>Combined CTR & CR</div>
                         </div>
@@ -7030,12 +7030,12 @@ with tab_subcat:
                     
                     with col_detail4:
                         conversion_efficiency = subcat_data['conversion_rate'] / subcat_data['ctr'] * 100 if subcat_data['ctr'] > 0 else 0
-                        efficiency_performance = "high-wellness-performance" if conversion_efficiency > 50 else "medium-wellness-performance" if conversion_efficiency > 25 else "low-wellness-performance"
+                        efficiency_performance = "high-Nutraceuticals & Nutrition-performance" if conversion_efficiency > 50 else "medium-Nutraceuticals & Nutrition-performance" if conversion_efficiency > 25 else "low-Nutraceuticals & Nutrition-performance"
                         st.markdown(f"""
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>⚡</span>
-                            <div class='value'>{conversion_efficiency:.1f}% <span class='wellness-performance-badge {efficiency_performance}'>{"High" if conversion_efficiency > 50 else "Medium" if conversion_efficiency > 25 else "Low"}</span></div>
-                            <div class='label'>Wellness Conversion Efficiency</div>
+                            <div class='value'>{conversion_efficiency:.1f}% <span class='Nutraceuticals & Nutrition-performance-badge {efficiency_performance}'>{"High" if conversion_efficiency > 50 else "Medium" if conversion_efficiency > 25 else "Low"}</span></div>
+                            <div class='label'>Nutraceuticals & Nutrition Conversion Efficiency</div>
                             <div class='sub-label'>CR as % of CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -7046,7 +7046,7 @@ with tab_subcat:
                     metrics_data = {
                         'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
                                 'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
-                                'Wellness Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
+                                'Nutraceuticals & Nutrition Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
                         'Value': [
                             f"{int(subcat_data['Counts']):,}",
                             f"{int(subcat_data['clicks']):,}",
@@ -7079,9 +7079,9 @@ with tab_subcat:
                     normalized_data = {
                         'Health Search Volume': subcat_data['Counts'] / sc['Counts'].max() * 100,
                         'Health CTR': subcat_data['ctr'] / sc['ctr'].max() * 100 if sc['ctr'].max() > 0 else 0,
-                        'Wellness Conversion Rate': subcat_data['conversion_rate'] / sc['conversion_rate'].max() * 100 if sc['conversion_rate'].max() > 0 else 0,
+                        'Nutraceuticals & Nutrition Conversion Rate': subcat_data['conversion_rate'] / sc['conversion_rate'].max() * 100 if sc['conversion_rate'].max() > 0 else 0,
                         'Health Click Share': subcat_data['click_share'],
-                        'Wellness Conversion Share': subcat_data['conversion_share']
+                        'Nutraceuticals & Nutrition Conversion Share': subcat_data['conversion_share']
                     }
                     
                     fig_radar = go.Figure()
@@ -7173,7 +7173,7 @@ with tab_subcat:
                             keyword_display['keyword_cr'] = keyword_display['keyword_cr'].apply(lambda x: f"{x:.2f}%")
                             
                             keyword_display.columns = ['Health Keyword', 'Health Search Volume', 'Health Clicks', 
-                                                     'Wellness Conversions', 'Health CTR %', 'Wellness CR %']
+                                                     'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition CR %']
                             
                             st.dataframe(keyword_display, use_container_width=True, hide_index=True)
                         else:
@@ -7220,7 +7220,7 @@ with tab_subcat:
                         fig_competitive.update_layout(
                             title=f'<b style="color:#2E7D32;">🌿 Health Competitive Analysis - {selected_subcategory} vs Similar Volume Subcategories</b>',
                             xaxis_title='Health CTR (%)',
-                            yaxis_title='Wellness Conversion Rate (%)',
+                            yaxis_title='Nutraceuticals & Nutrition Conversion Rate (%)',
                             plot_bgcolor='rgba(248,255,248,0.95)',
                             paper_bgcolor='rgba(232,245,232,0.8)',
                             font=dict(color='#1B5E20', family='Segoe UI'),
@@ -7237,14 +7237,14 @@ with tab_subcat:
                         'Health Subcategory': [selected_subcategory],
                         'Health Search Volume': [subcat_data['Counts']],
                         'Total Health Clicks': [subcat_data['clicks']],
-                        'Total Wellness Conversions': [subcat_data['conversions']],
+                        'Total Nutraceuticals & Nutrition Conversions': [subcat_data['conversions']],
                         'Health CTR %': [subcat_data['ctr']],
                         'Classic CVR %': [subcat_data['classic_cvr']],
-                        'Wellness Conversion Rate %': [subcat_data['conversion_rate']],
+                        'Nutraceuticals & Nutrition Conversion Rate %': [subcat_data['conversion_rate']],
                         'Health Market Rank': [subcat_rank],
-                        'Wellness Market Share %': [market_share],
+                        'Nutraceuticals & Nutrition Market Share %': [market_share],
                         'Health Performance Score': [performance_score],
-                        'Wellness Conversion Efficiency %': [conversion_efficiency]
+                        'Nutraceuticals & Nutrition Conversion Efficiency %': [conversion_efficiency]
                     }
                     
                     detailed_df = pd.DataFrame(detailed_analysis_data)
@@ -7274,7 +7274,7 @@ with tab_subcat:
                     fig_comparison = go.Figure()
                     
                     metrics = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
-                    metric_names = ['Health CTR %', 'Wellness Conversion Rate %', 'Health Click Share %', 'Wellness Conversion Share %']
+                    metric_names = ['Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %', 'Health Click Share %', 'Nutraceuticals & Nutrition Conversion Share %']
                     colors = ['#4CAF50', '#81C784', '#66BB6A', '#A5D6A7']
                     
                     for i, (metric, name) in enumerate(zip(metrics, metric_names)):
@@ -7299,7 +7299,7 @@ with tab_subcat:
                     st.plotly_chart(fig_comparison, use_container_width=True)
                     
                     # Health performance scatter plot
-                    st.markdown("### 📊 Health CTR vs Wellness Conversion Rate Scatter Analysis")
+                    st.markdown("### 📊 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Scatter Analysis")
                     
                     fig_scatter = px.scatter(
                         comparison_data,
@@ -7310,7 +7310,7 @@ with tab_subcat:
                         title='<b style="color:#2E7D32;">🌿 Health Performance Matrix - CTR vs Conversion Rate</b>',
                         labels={
                             'ctr': 'Health CTR (%)',
-                            'conversion_rate': 'Wellness Conversion Rate (%)',
+                            'conversion_rate': 'Nutraceuticals & Nutrition Conversion Rate (%)',
                             'Counts': 'Health Search Volume'
                         },
                         color_discrete_sequence=px.colors.qualitative.Set2
@@ -7330,17 +7330,17 @@ with tab_subcat:
                     
                     comparison_table = comparison_data[['sub_category', 'Counts', 'clicks', 'conversions', 
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
-                    comparison_table.columns = ['Health Subcategory', 'Health Search Volume', 'Health Clicks', 'Wellness Conversions', 
-                                            'Health CTR %', 'Wellness Conversion Rate %', 'Health Click Share %', 'Wellness Conversion Share %']
+                    comparison_table.columns = ['Health Subcategory', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 
+                                            'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %', 'Health Click Share %', 'Nutraceuticals & Nutrition Conversion Share %']
                     
                     # Format numeric columns
                     comparison_table['Health Search Volume'] = comparison_table['Health Search Volume'].apply(lambda x: f"{int(x):,}")
                     comparison_table['Health Clicks'] = comparison_table['Health Clicks'].apply(lambda x: f"{int(x):,}")
-                    comparison_table['Wellness Conversions'] = comparison_table['Wellness Conversions'].apply(lambda x: f"{int(x):,}")
+                    comparison_table['Nutraceuticals & Nutrition Conversions'] = comparison_table['Nutraceuticals & Nutrition Conversions'].apply(lambda x: f"{int(x):,}")
                     comparison_table['Health CTR %'] = comparison_table['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Wellness Conversion Rate %'] = comparison_table['Wellness Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Nutraceuticals & Nutrition Conversion Rate %'] = comparison_table['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
                     comparison_table['Health Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Wellness Conversion Share %'] = comparison_table['Wellness Conversion Share %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Nutraceuticals & Nutrition Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
                     st.dataframe(comparison_table, use_container_width=True, hide_index=True)
                     
@@ -7394,8 +7394,8 @@ with tab_subcat:
                 else:
                     st.info("Please select health subcategories to compare.")
 
-            elif analysis_type == "📊 Wellness Market Share Analysis":
-                st.subheader("📊 Wellness Market Share & Distribution Analysis")
+            elif analysis_type == "📊 Nutraceuticals & Nutrition Market Share Analysis":
+                st.subheader("📊 Nutraceuticals & Nutrition Market Share & Distribution Analysis")
                 
                 # Health market share visualization
                 col_pie, col_treemap = st.columns(2)
@@ -7463,7 +7463,7 @@ with tab_subcat:
                         <span class='icon'>📊</span>
                         <div class='value'>{gini_coefficient:.3f}</div>
                         <div class='label'>Health Gini Coefficient</div>
-                        <div class='sub-label'>Wellness market concentration</div>
+                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -7473,7 +7473,7 @@ with tab_subcat:
                         <span class='icon'>📈</span>
                         <div class='value'>{herfindahl_index:.4f}</div>
                         <div class='label'>Health Herfindahl Index</div>
-                        <div class='sub-label'>Wellness market dominance</div>
+                        <div class='sub-label'>Nutraceuticals & Nutrition market dominance</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -7483,7 +7483,7 @@ with tab_subcat:
                         <span class='icon'>🔝</span>
                         <div class='value'>{top_5_concentration:.1f}%</div>
                         <div class='label'>Top 5 Health Share</div>
-                        <div class='sub-label'>Wellness market concentration</div>
+                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -7493,7 +7493,7 @@ with tab_subcat:
                         <span class='icon'>💯</span>
                         <div class='value'>{top_10_concentration:.1f}%</div>
                         <div class='label'>Top 10 Health Share</div>
-                        <div class='sub-label'>Wellness market concentration</div>
+                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -7550,9 +7550,9 @@ with tab_subcat:
                 subcats_above_avg_cr = len(sc[sc['conversion_rate'] > avg_conversion_rate]) if not sc.empty else 0
                 
                 st.markdown(f"""
-                <div class='wellness-insight-card'>
+                <div class='Nutraceuticals & Nutrition-insight-card'>
                     <h4>🌿 Key Health Subcategory Insights</h4>
-                    <p>• <strong>{top_subcat_name}</strong> leads wellness market with {top_subcat_share:.1f}% click share<br>
+                    <p>• <strong>{top_subcat_name}</strong> leads Nutraceuticals & Nutrition market with {top_subcat_share:.1f}% click share<br>
                     • {high_performers} health subcategories achieve CTR > 5% (premium performance)<br>
                     • {subcats_above_avg_cr} subcategories exceed avg CR of {avg_conversion_rate:.2f}%<br>
                     • Health market shows balanced subcategory distribution</p>
@@ -7564,11 +7564,11 @@ with tab_subcat:
                 opportunity_subcats = len(sc[(sc['Counts'] > sc['Counts'].median()) & (sc['ctr'] < 3)]) if not sc.empty else 0
                 
                 st.markdown(f"""
-                <div class='wellness-insight-card'>
+                <div class='Nutraceuticals & Nutrition-insight-card'>
                     <h4>💚 Health Subcategory Strategy Recommendations</h4>
                     <p>• Optimize {low_performers} underperforming health subcategories (CTR < 2%)<br>
                     • {opportunity_subcats} high-volume health subcategories need engagement boost<br>
-                    • Focus on health keywords for leading wellness subcategories<br>
+                    • Focus on health keywords for leading Nutraceuticals & Nutrition subcategories<br>
                     • Strengthen health product portfolio strategy</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -7585,7 +7585,7 @@ with tab_subcat:
                 st.metric(
                     label="🌿 Total Health Searches",
                     value=f"{total_searches:,.0f}",
-                    delta=f"{len(sc)} wellness subcategories analyzed"
+                    delta=f"{len(sc)} Nutraceuticals & Nutrition subcategories analyzed"
                 )
             
             with summary_col2:
@@ -7601,7 +7601,7 @@ with tab_subcat:
                 total_conversions = sc['conversions'].sum() if not sc.empty else 0
                 avg_cr = sc['conversion_rate'].mean() if not sc.empty else 0
                 st.metric(
-                    label="💚 Total Wellness Conversions",
+                    label="💚 Total Nutraceuticals & Nutrition Conversions",
                     value=f"{total_conversions:,.0f}",
                     delta=f"Avg CR: {avg_cr:.2f}%"
                 )
@@ -7641,12 +7641,12 @@ with tab_subcat:
 HEALTH SUBCATEGORY INTELLIGENCE REPORT
 Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
 
-WELLNESS MARKET OVERVIEW:
+Nutraceuticals & Nutrition MARKET OVERVIEW:
 • Total Health Subcategories Analyzed: {len(sc)}
 • Total Health Searches: {sc['Counts'].sum():,.0f}
 • Market Leader: {sc.iloc[0]['sub_category']} ({sc.iloc[0]['click_share']:.1f}% click share)
 • Average Health CTR: {sc['ctr'].mean():.2f}%
-• Average Wellness CR: {sc['conversion_rate'].mean():.2f}%
+• Average Nutraceuticals & Nutrition CR: {sc['conversion_rate'].mean():.2f}%
 
 HEALTH PERFORMANCE TIERS:
 • Premium Subcategories (CTR > 10%): {len(sc[sc['ctr'] > 10])}
@@ -7664,7 +7664,7 @@ MARKET CONCENTRATION ANALYSIS:
 STRATEGIC HEALTH INSIGHTS:
 • Market concentration is {concentration_status.lower()}
 • {len(sc[sc['ctr'] > 5])} subcategories achieve premium performance
-• Growth opportunities exist in wellness engagement optimization
+• Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
 • Focus areas: {', '.join(sc[sc['ctr'] < 2]['sub_category'].head(3).tolist()) if len(sc[sc['ctr'] < 2]) > 0 else 'All subcategories performing well'}
 
 TOP PERFORMING HEALTH SUBCATEGORIES:
@@ -7674,7 +7674,7 @@ OPTIMIZATION OPPORTUNITIES:
 • High-volume, low-CTR subcategories need attention
 • Conversion rate optimization potential across {len(sc[sc['conversion_rate'] < avg_conversion_rate])} subcategories
 • Keyword expansion opportunities in top-performing health segments
-• Cross-subcategory wellness strategy development recommended
+• Cross-subcategory Nutraceuticals & Nutrition strategy development recommended
                     """
                     
                     st.download_button(
@@ -7687,7 +7687,7 @@ OPTIMIZATION OPPORTUNITIES:
                 
         else:
             st.warning("No health subcategory data available in the uploaded file.")
-            st.info("Please ensure your data contains a 'sub_category' column with valid health and wellness values.")
+            st.info("Please ensure your data contains a 'sub_category' column with valid health and Nutraceuticals & Nutrition values.")
             
     except Exception as e:
         st.error(f"An error occurred in the Health Subcategory analysis: {str(e)}")
@@ -8816,7 +8816,7 @@ Generated by Generic Terms Analysis Dashboard
 # ----------------- Time Analysis Tab (Enhanced) -----------------
 with tab_time:
     st.header("🌿 Temporal Health Intelligence Hub")
-    st.markdown("Deep dive into monthly performance and wellness search trends. 💚")
+    st.markdown("Deep dive into monthly performance and Nutraceuticals & Nutrition search trends. 💚")
 
     # Hero Image for Time Analysis Tab
     time_image_options = {
@@ -9054,7 +9054,7 @@ with tab_time:
             <div class='time-metric-card'>
                 <span class='icon'>💚</span>
                 <div class='value'>{avg_cr:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
-                <div class='label'>Avg Wellness CR</div>
+                <div class='label'>Avg Nutraceuticals & Nutrition CR</div>
                 <div class='sub-label'>Monthly average</div>
             </div>
             """, unsafe_allow_html=True)
@@ -9065,7 +9065,7 @@ with tab_time:
         
         analysis_type = st.radio(
             "Choose Analysis Type:",
-            ["📊 Health Trends Overview", "🔍 Detailed Month Health Analysis", "🏷 Brand Health Comparison", "📊 Wellness Distribution Analysis"],
+            ["📊 Health Trends Overview", "🔍 Detailed Month Health Analysis", "🏷 Brand Health Comparison", "📊 Nutraceuticals & Nutrition Distribution Analysis"],
             horizontal=True
         )
         
@@ -9103,11 +9103,11 @@ with tab_time:
             fig_metrics.add_trace(go.Scatter(
                 x=monthly['month'],
                 y=monthly['conversion_rate'],
-                name='Wellness Conversion Rate %',
+                name='Nutraceuticals & Nutrition Conversion Rate %',
                 line=dict(color='#81C784', width=3)
             ))
             fig_metrics.update_layout(
-                title='<b style="color:#2E7D32;">🌿 Monthly Health CTR and Wellness Conversion Rate Trends</b>',
+                title='<b style="color:#2E7D32;">🌿 Monthly Health CTR and Nutraceuticals & Nutrition Conversion Rate Trends</b>',
                 plot_bgcolor='rgba(248,255,248,0.95)',
                 paper_bgcolor='rgba(232,245,232,0.8)',
                 font=dict(color='#1B5E20', family='Segoe UI'),
@@ -9121,7 +9121,7 @@ with tab_time:
             st.subheader("🔬 Detailed Monthly Health Performance")
             
             selected_month = st.selectbox(
-                "Select a month for detailed wellness analysis:",
+                "Select a month for detailed Nutraceuticals & Nutrition analysis:",
                 options=monthly['month'].tolist(),
                 index=0
             )
@@ -9150,7 +9150,7 @@ with tab_time:
                     <div class='time-metric-card'>
                         <span class='icon'>📊</span>
                         <div class='value'>{market_share:.2f}%</div>
-                        <div class='label'>Wellness Market Share</div>
+                        <div class='label'>Nutraceuticals & Nutrition Market Share</div>
                         <div class='sub-label'>Of total health searches</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -9170,7 +9170,7 @@ with tab_time:
                     <div class='time-metric-card'>
                         <span class='icon'>💚</span>
                         <div class='value'>{month_data['conversion_rate']:.2f}% <span class='time-performance-badge {"high-time-performance" if month_data['conversion_rate'] > 3 else "medium-time-performance" if month_data['conversion_rate'] > 1 else "low-time-performance"}'>{"High" if month_data['conversion_rate'] > 3 else "Medium" if month_data['conversion_rate'] > 1 else "Low"}</span></div>
-                        <div class='label'>Wellness Conversion Rate</div>
+                        <div class='label'>Nutraceuticals & Nutrition Conversion Rate</div>
                         <div class='sub-label'>Month performance</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -9248,12 +9248,12 @@ with tab_time:
                 # Comparison table
                 st.markdown("### 📊 Brand Health Performance Table")
                 display_brands = brand_month[['month', 'brand', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
-                display_brands.columns = ['Month', 'Brand', 'Health Search Volume', 'Health Clicks', 'Wellness Conversions', 'Health CTR %', 'Wellness Conversion Rate %']
+                display_brands.columns = ['Month', 'Brand', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %']
                 display_brands['Health Search Volume'] = display_brands['Health Search Volume'].apply(lambda x: f"{int(x):,}")
                 display_brands['Health Clicks'] = display_brands['Health Clicks'].apply(lambda x: f"{int(x):,}")
-                display_brands['Wellness Conversions'] = display_brands['Wellness Conversions'].apply(lambda x: f"{int(x):,}")
+                display_brands['Nutraceuticals & Nutrition Conversions'] = display_brands['Nutraceuticals & Nutrition Conversions'].apply(lambda x: f"{int(x):,}")
                 display_brands['Health CTR %'] = display_brands['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                display_brands['Wellness Conversion Rate %'] = display_brands['Wellness Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                display_brands['Nutraceuticals & Nutrition Conversion Rate %'] = display_brands['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
                 st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_brands, use_container_width=True, hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
@@ -9270,8 +9270,8 @@ with tab_time:
             else:
                 st.info("Brand or month data not available for brand-month health analysis.")
         
-        elif analysis_type == "📊 Wellness Distribution Analysis":
-            st.subheader("📊 Monthly Wellness Distribution Analysis")
+        elif analysis_type == "📊 Nutraceuticals & Nutrition Distribution Analysis":
+            st.subheader("📊 Monthly Nutraceuticals & Nutrition Distribution Analysis")
             
             # Pie chart for market share
             fig_pie = px.pie(
@@ -9299,7 +9299,7 @@ with tab_time:
                     <span class='icon'>📊</span>
                     <div class='value'>{gini_coefficient:.3f}</div>
                     <div class='label'>Health Gini Coefficient</div>
-                    <div class='sub-label'>Wellness concentration</div>
+                    <div class='sub-label'>Nutraceuticals & Nutrition concentration</div>
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -9327,7 +9327,7 @@ with tab_time:
             st.markdown(f"""
             <div class='time-insight-card'>
                 <h4>🌿 Key Temporal Health Insights</h4>
-                <p>• <strong>{top_month_name}</strong> leads wellness period with {top_month_share:.1f}% click share<br>
+                <p>• <strong>{top_month_name}</strong> leads Nutraceuticals & Nutrition period with {top_month_share:.1f}% click share<br>
                 • {high_performers} months achieve CTR > 5% (premium performance)<br>
                 • {months_above_avg_cr} months exceed avg CR of {avg_conversion_rate:.2f}%<br>
                 • Health trends show seasonal distribution</p>
@@ -9343,7 +9343,7 @@ with tab_time:
                 <h4>💚 Temporal Strategy Recommendations</h4>
                 <p>• Optimize {low_performers} underperforming months (CTR < 2%)<br>
                 • {opportunity_months} high-volume periods need engagement boost<br>
-                • Plan seasonal campaigns for peak wellness months<br>
+                • Plan seasonal campaigns for peak Nutraceuticals & Nutrition months<br>
                 • Strengthen year-round health strategy</p>
             </div>
             """, unsafe_allow_html=True)
@@ -9502,19 +9502,19 @@ with tab_time:
                     <div class='time-metric-card'>
                         <span class='icon'>💚</span>
                         <div class='value'>{avg_cr_filtered:.2f}% <span class='time-performance-badge {cr_performance}'>{"High" if avg_cr_filtered > 3 else "Medium" if avg_cr_filtered > 1 else "Low"}</span></div>
-                        <div class='label'>Avg Wellness CR</div>
+                        <div class='label'>Avg Nutraceuticals & Nutrition CR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 # Display filtered data
                 display_filtered = filtered_data[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
-                display_filtered.columns = ['Month', 'Health Search Volume', 'Health Clicks', 'Wellness Conversions', 'Health CTR %', 'Wellness Conversion Rate %']
+                display_filtered.columns = ['Month', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %']
                 display_filtered['Health Search Volume'] = display_filtered['Health Search Volume'].apply(lambda x: f"{int(x):,}")
                 display_filtered['Health Clicks'] = display_filtered['Health Clicks'].apply(lambda x: f"{int(x):,}")
-                display_filtered['Wellness Conversions'] = display_filtered['Wellness Conversions'].apply(lambda x: f"{int(x):,}")
+                display_filtered['Nutraceuticals & Nutrition Conversions'] = display_filtered['Nutraceuticals & Nutrition Conversions'].apply(lambda x: f"{int(x):,}")
                 display_filtered['Health CTR %'] = display_filtered['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                display_filtered['Wellness Conversion Rate %'] = display_filtered['Wellness Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                display_filtered['Nutraceuticals & Nutrition Conversion Rate %'] = display_filtered['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
                 
                 st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_filtered, use_container_width=True, hide_index=True)
@@ -9556,9 +9556,9 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 - Total Months Analyzed: {total_months}
 - Total Health Search Volume: {total_searches:,}
 - Average Health CTR: {avg_ctr:.2f}%
-- Average Wellness Conversion Rate: {avg_cr:.2f}%
+- Average Nutraceuticals & Nutrition Conversion Rate: {avg_cr:.2f}%
 - Total Health Clicks: {int(total_clicks):,}
-- Total Wellness Conversions: {int(total_conversions):,}
+- Total Nutraceuticals & Nutrition Conversions: {int(total_conversions):,}
 
 ## Top Performing Months
 {chr(10).join([f"{row['month']}: {int(row['Counts']):,} searches ({row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR)" for _, row in monthly.head(3).iterrows()])}
@@ -9568,7 +9568,7 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 - Top 3 Months Share: {top_3_concentration:.1f}%
 
 ## Recommendations
-- Focus on high-performing months for wellness campaign optimization
+- Focus on high-performing months for Nutraceuticals & Nutrition campaign optimization
 - Investigate low-performing months for health improvement opportunities
 
 Generated by Temporal Health Analysis Dashboard
@@ -9594,7 +9594,7 @@ Generated by Temporal Health Analysis Dashboard
 # ----------------- Pivot Builder Tab -----------------
 with tab_pivot:
     st.header("🌿 Pivot Health Intelligence Hub")
-    st.markdown("Deep dive into custom pivots and wellness data insights. 💚")
+    st.markdown("Deep dive into custom pivots and Nutraceuticals & Nutrition data insights. 💚")
 
     # Hero Image for Pivot Builder Tab
     pivot_image_options = {
@@ -9795,7 +9795,7 @@ with tab_pivot:
                 <div class='pivot-metric-card'>
                     <span class='icon'>💚</span>
                     <div class='value'>{avg_cr:.2f}% <span class='pivot-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
-                    <div class='label'>Avg Wellness CR</div>
+                    <div class='label'>Avg Nutraceuticals & Nutrition CR</div>
                     <div class='sub-label'>Top 300 pairs</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -9972,7 +9972,7 @@ with tab_pivot:
             st.markdown(f"""
             <div class='pivot-insight-card'>
                 <h4>🌿 Key Pivot Health Insights</h4>
-                <p>• Analyze brand-query interactions for wellness patterns<br>
+                <p>• Analyze brand-query interactions for Nutraceuticals & Nutrition patterns<br>
                 • Identify high-performing combinations<br>
                 • Spot seasonal health trends in data<br>
                 • Uncover conversion opportunities</p>
@@ -9985,7 +9985,7 @@ with tab_pivot:
                 <h4>💚 Pivot Strategy Recommendations</h4>
                 <p>• Customize pivots for specific health metrics<br>
                 • Focus on top brand-query pairs<br>
-                • Optimize wellness campaigns based on insights<br>
+                • Optimize Nutraceuticals & Nutrition campaigns based on insights<br>
                 • Explore multi-dimensional analysis</p>
             </div>
             """, unsafe_allow_html=True)
@@ -10013,7 +10013,7 @@ with tab_pivot:
         
         with summary_col3:
             st.metric(
-                label="💚 Total Wellness Conversions",
+                label="💚 Total Nutraceuticals & Nutrition Conversions",
                 value=f"{pv_top['conversions'].sum():,.0f}",
                 delta=f"Avg CR: {avg_cr:.2f}%"
             )
@@ -10034,7 +10034,7 @@ with tab_pivot:
 # ----------------- Insights & Questions (Modified) -----------------
 with tab_insights:
     st.header("🌿 Health Insights & Actionable Questions (10)")
-    st.markdown("Curated health insights focused on **search** data for wellness-driven decisions, with enhanced tables, charts, and visuals. 🚀")
+    st.markdown("Curated health insights focused on **search** data for Nutraceuticals & Nutrition-driven decisions, with enhanced tables, charts, and visuals. 🚀")
 
     # Hero Image for Insights Tab
     insights_image_options = {
@@ -10239,7 +10239,7 @@ with tab_insights:
         <div class='health-insight-metric-card'>
             <span class='icon'>💚</span>
             <div class='value'>{avg_cr:.2f}% <span class='health-insight-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
-            <div class='label'>Average Wellness CR</div>
+            <div class='label'>Average Nutraceuticals & Nutrition CR</div>
             <div class='sub-label'>Conversion</div>
         </div>
         """, unsafe_allow_html=True)
@@ -10292,7 +10292,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="Query", yaxis_title="Counts", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q1 — Top Health Queries by Counts (Top 10)",
-             "Which queries drive the most Counts? Prioritize for wellness search tuning and inventory planning.",
+             "Which queries drive the most Counts? Prioritize for Nutraceuticals & Nutrition search tuning and inventory planning.",
              q1, "📈")
 
     # Q2: High Counts, Low CTR Queries (Top 10)
@@ -10329,7 +10329,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="Counts", yaxis_title="CTR (%)")
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q2 — High Counts, Low CTR Health Queries (Top 10)",
-             "Queries with high Counts but low engagement. Improve wellness relevance, snippets, or imagery.",
+             "Queries with high Counts but low engagement. Improve Nutraceuticals & Nutrition relevance, snippets, or imagery.",
              q2, "⚠️")
 
     # Q3: Top Queries by Conversion Rate (Min Counts=200, Top 10)
@@ -10367,7 +10367,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="Query", yaxis_title="Conversion Rate (%)", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q3 — Top Health Queries by Conversion Rate (Min Counts=200)",
-             "High-converting queries for wellness paid promotions or product focus.",
+             "High-converting queries for Nutraceuticals & Nutrition paid promotions or product focus.",
              q3, "🎯")
 
     # Q4: Long-Tail vs Short-Tail Queries
@@ -10403,7 +10403,7 @@ with tab_insights:
         fig.update_layout(showlegend=True)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q4 — Long-Tail vs Short-Tail Health Queries",
-             "How much Counts come from long-tail queries? Key for wellness content strategy.",
+             "How much Counts come from long-tail queries? Key for Nutraceuticals & Nutrition content strategy.",
              q4, "📏")
 
     # Q5: Branded vs Generic Counts Share
@@ -10486,7 +10486,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="Query", yaxis_title="Value", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q6 — Health Query Funnel Snapshot (Top 10)",
-             "View top queries' wellness funnel: Counts → clicks → conversions.",
+             "View top queries' Nutraceuticals & Nutrition funnel: Counts → clicks → conversions.",
              q6, "📊")
 
     # Q7: Top Queries by CTR (Min Counts=200, Top 10)
@@ -10522,7 +10522,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="Query", yaxis_title="CTR (%)", xaxis_tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q7 — Top Health Queries by CTR (Min Counts=200)",
-             "High-engagement queries for wellness ad campaigns or content.",
+             "High-engagement queries for Nutraceuticals & Nutrition ad campaigns or content.",
              q7, "📈")
 
     # Q8: High Counts, Low CTR & Conversion Rate (Top 10)
@@ -10566,7 +10566,7 @@ with tab_insights:
         fig.update_layout(xaxis_title="CTR (%)", yaxis_title="Conversion Rate (%)")
         st.plotly_chart(fig, use_container_width=True)
     q_expand("Q8 — High Counts, Low CTR & Conversion Rate Health (Top 10)",
-             "Optimize wellness search results for these underperforming queries.",
+             "Optimize Nutraceuticals & Nutrition search results for these underperforming queries.",
              q8, "⚠️")
 
     # Q9: Top Brands by Counts (Top 10, Excluding "Other")
@@ -10608,7 +10608,7 @@ with tab_insights:
         else:
             st.info("Brand column not present.")
     q_expand("Q9 — Top Brands by Health Counts (Top 10)",
-             "Rank brands by Counts for wellness partnerships or promotions, excluding 'Other'.",
+             "Rank brands by Counts for Nutraceuticals & Nutrition partnerships or promotions, excluding 'Other'.",
              q9, "🏷")
 
     # Q10: Category vs Brand Performance (Pivot)
@@ -10648,10 +10648,10 @@ with tab_insights:
         else:
             st.info("Category or brand column missing.")
     q_expand("Q10 — Health Category vs Brand Performance (Pivot)",
-             "Analyze brand performance within wellness categories for targeted strategies.",
+             "Analyze brand performance within Nutraceuticals & Nutrition categories for targeted strategies.",
              q10, "📦🏷")
 
-    st.info("For advanced health analyses (e.g., anomaly detection, semantic clustering), contact Nour Eldeen for custom wellness solutions.")
+    st.info("For advanced health analyses (e.g., anomaly detection, semantic clustering), contact Nour Eldeen for custom Nutraceuticals & Nutrition solutions.")
 
 # ----------------- Export / Downloads -----------------
 # Export Tab - FIXED with correct dataframe name
