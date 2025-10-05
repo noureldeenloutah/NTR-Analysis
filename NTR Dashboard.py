@@ -3898,8 +3898,8 @@ with tab_search:
 
 
         
-        # Advanced Analytics Section
-        st.subheader("📈 Advanced Health Query Performance Analytics")
+    # Advanced Analytics Section
+    st.subheader("📈 Advanced Health Query Performance Analytics")
     
     # Three-column layout for advanced metrics
     adv_col1, adv_col2, adv_col3 = st.columns(3)
