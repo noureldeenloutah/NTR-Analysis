@@ -2362,8 +2362,8 @@ with tab_search:
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("---")
 
+    st.markdown("---")
     
     # Two-column layout for main analysis
     col_left, col_right = st.columns([3, 2])
@@ -4383,7 +4383,7 @@ with tab_search:
             • Top health keyword appears in {:.1f}% of searches</p>
         </div>
         """.format(
-            long_tail_pct,
+            metrics['long_tail_pct'],
             avg_query_length,
             top_keyword_pct
         ), unsafe_allow_html=True)
