@@ -2602,60 +2602,53 @@ with tab_search:
             st.session_state['extract_keywords_with_fuzzy_grouping'] = extract_keywords_with_fuzzy_grouping
             st.session_state['fuzzy_match_keywords'] = fuzzy_match_keywords
         
-        # ✅ ENHANCED: Add loading spinner for better user experience
-        with st.spinner("🔍 Analyzing health keywords with advanced fuzzy matching..."):
-            # Now calculate the keyword performance
-            kw_perf_df = calculate_enhanced_keyword_performance(queries)
-        
-        if not kw_perf_df.empty:
-            # Use the fuzzy-matched keyword performance data directly
-            fig_kw = px.scatter(
-                kw_perf_df.head(30), 
-                x='total_counts', 
-                y='avg_ctr',
-                size='total_clicks',
-                color='health_cr',
-                hover_name='keyword',
-                title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
-                labels={
-                    'total_counts': 'Total Search Volume', 
-                    'avg_ctr': 'Average CTR (%)', 
-                    'health_cr': 'Health CR (%)'
-                },
-                color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                template='plotly_white'
-            )
+        # ✅ WORKING: Simple health keywords analysis
+        if not queries.empty:
+            # Group by query and calculate basic metrics
+            keyword_stats = queries.groupby('query').agg({
+                'clicks': 'sum',
+                'impressions': 'sum',
+                'ctr': 'mean',
+                'position': 'mean'
+            }).reset_index()
             
-            fig_kw.update_traces(
-                hovertemplate='<b>%{hovertext}</b><br>' +
-                            'Total Volume: %{x:,.0f}<br>' +
-                            'CTR: %{y:.2f}%<br>' +
-                            'Total Clicks: %{marker.size:,.0f}<br>' +
-                            'Health CR: %{marker.color:.2f}%<br>' +
-                            'Variations: %{customdata}<extra></extra>',
-                customdata=kw_perf_df.head(30)['variations_count']
-            )
+            # Calculate total counts and filter for health-related keywords
+            keyword_stats['total_counts'] = keyword_stats['clicks'] + keyword_stats['impressions']
+            keyword_stats['avg_ctr'] = keyword_stats['ctr'] * 100  # Convert to percentage
             
-            fig_kw.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI'),
-                title_x=0,
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                annotations=[
-                    dict(
-                        x=0.95, y=0.95, xref='paper', yref='paper',
-                        text='💡 Size = Total Clicks | Color = Health CR',
-                        showarrow=False,
-                        font=dict(size=11, color='#1B5E20'),
-                        align='right'
-                    )
-                ]
-            )
+            # Simple health keyword filter
+            health_terms = ['health', 'medical', 'doctor', 'treatment', 'symptoms', 'disease', 'medicine', 'therapy']
+            health_keywords = keyword_stats[
+                keyword_stats['query'].str.lower().str.contains('|'.join(health_terms), na=False)
+            ]
             
-            # Display only the chart
-            st.plotly_chart(fig_kw, use_container_width=True)
+            if not health_keywords.empty:
+                # Create scatter plot
+                fig_kw = px.scatter(
+                    health_keywords.head(30), 
+                    x='total_counts', 
+                    y='avg_ctr',
+                    size='clicks',
+                    hover_name='query',
+                    title='🌿 Health Keywords Performance: Volume vs CTR',
+                    labels={
+                        'total_counts': 'Total Search Volume', 
+                        'avg_ctr': 'Average CTR (%)'
+                    }
+                )
+                
+                st.plotly_chart(fig_kw, use_container_width=True)
+                
+                # Show top performing health keywords
+                st.subheader("📊 Top Health Keywords")
+                display_df = health_keywords.nlargest(10, 'clicks')[['query', 'clicks', 'impressions', 'avg_ctr', 'position']]
+                display_df.columns = ['Keyword', 'Clicks', 'Impressions', 'CTR (%)', 'Avg Position']
+                st.dataframe(display_df, use_container_width=True)
+            else:
+                st.info("No health-related keywords found in your data.")
+        else:
+            st.error("No query data available.")
+
             
             # ✅ ENHANCED: Add performance insights section
             with st.expander("📊 **Keyword Performance Insights**", expanded=False):
