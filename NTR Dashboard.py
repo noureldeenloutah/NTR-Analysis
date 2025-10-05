@@ -7,6 +7,7 @@ from collections import Counter
 import re, os, logging
 from datetime import datetime
 import pytz
+from functools import lru_cache
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
@@ -3899,260 +3900,356 @@ with tab_search:
 
     
     # Advanced Analytics Section
-    st.subheader("📈 Advanced Health Query Performance Analytics")
-    
-    # Three-column layout for advanced metrics
-    adv_col1, adv_col2, adv_col3 = st.columns(3)
-    
-    with adv_col1:
-        st.markdown("**🎯 Query Length vs Nutraceuticals & Nutrition Performance**")
-        ql_analysis = queries.groupby('query_length').agg({
-            'Counts': 'sum', 
-            'clicks': 'sum',
-            'conversions': 'sum'
-        }).reset_index()
-        ql_analysis['ctr'] = ql_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        ql_analysis['cr'] = ql_analysis.apply(lambda r: (r['conversions']/r['clicks']*100) if r['clicks']>0 else 0, axis=1)
+    # 🚀 OPTIMIZATION 1: Pre-compile static configurations
+    HEALTH_THEME_CONFIG = {
+        'plot_bgcolor': 'rgba(248,253,248,0.95)',
+        'paper_bgcolor': 'rgba(232,245,232,0.8)',
+        'font': dict(color='#1B5E20', family='Segoe UI', size=10),
+        'height': 280,  # Reduced from 300
+        'margin': dict(l=40, r=40, t=40, b=40),  # Optimized margins
+        'xaxis': dict(showgrid=True, gridcolor='#E8F5E8'),
+        'yaxis': dict(showgrid=True, gridcolor='#E8F5E8')
+    }
+
+    HEALTH_COLORS = {
+        'primary': '#2E7D32',
+        'secondary': '#66BB6A', 
+        'light': '#E8F5E8',
+        'gradient': ['#E8F5E8', '#66BB6A', '#2E7D32'],
+        'pie_colors': ['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
+    }
+
+    # 🚀 OPTIMIZATION 2: Cached data processing functions
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def process_query_length_analysis(_queries_df):
+        """Pre-process query length analysis with vectorized operations"""
+        if _queries_df.empty:
+            return pd.DataFrame()
         
-        if not ql_analysis.empty:
-            fig_ql = px.scatter(
-                ql_analysis, 
-                x='query_length', 
-                y='ctr', 
-                size='Counts',
-                color='cr',
-                title='Length vs Health CTR Performance',
-                color_continuous_scale=['#E8F5E8', '#66BB6A'],
-                template='plotly_white'
-            )
-            
-            fig_ql.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300,
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-            )
-            
-            st.plotly_chart(fig_ql, use_container_width=True)
-    
-    with adv_col2:
-        st.markdown("**📊 Long-tail vs Short-tail Health Performance**")
-        queries['is_long_tail'] = queries['query_length'] >= 20
-        lt_analysis = queries.groupby('is_long_tail').agg({
+        # Vectorized calculations - much faster than apply()
+        ql_analysis = _queries_df.groupby('query_length', as_index=False).agg({
             'Counts': 'sum', 
             'clicks': 'sum',
             'conversions': 'sum'
-        }).reset_index()
+        })
+        
+        # Vectorized CTR and CR calculations
+        ql_analysis['ctr'] = np.where(
+            ql_analysis['Counts'] > 0,
+            ql_analysis['clicks'] / ql_analysis['Counts'] * 100,
+            0
+        )
+        ql_analysis['cr'] = np.where(
+            ql_analysis['clicks'] > 0,
+            ql_analysis['conversions'] / ql_analysis['clicks'] * 100,
+            0
+        )
+        
+        # Sample data for performance if too large
+        if len(ql_analysis) > 50:
+            ql_analysis = ql_analysis.nlargest(50, 'Counts')
+        
+        return ql_analysis
+
+    @st.cache_data(ttl=1800, show_spinner=False)  
+    def process_longtail_analysis(_queries_df):
+        """Optimized long-tail vs short-tail analysis"""
+        if _queries_df.empty:
+            return pd.DataFrame()
+        
+        # Vectorized boolean operation
+        is_long_tail = _queries_df['query_length'] >= 20
+        
+        lt_analysis = pd.DataFrame({
+            'is_long_tail': [True, False],
+            'Counts': [
+                _queries_df[is_long_tail]['Counts'].sum(),
+                _queries_df[~is_long_tail]['Counts'].sum()
+            ],
+            'clicks': [
+                _queries_df[is_long_tail]['clicks'].sum(),
+                _queries_df[~is_long_tail]['clicks'].sum()
+            ],
+            'conversions': [
+                _queries_df[is_long_tail]['conversions'].sum(),
+                _queries_df[~is_long_tail]['conversions'].sum()
+            ]
+        })
+        
         lt_analysis['label'] = lt_analysis['is_long_tail'].map({
             True: 'Long-tail Health (≥20 chars)', 
             False: 'Short-tail Health (<20 chars)'
         })
-        lt_analysis['ctr'] = lt_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
         
-        if not lt_analysis.empty:
-            fig_lt = px.bar(
-                lt_analysis, 
-                x='label', 
-                y='Counts',
-                color='ctr',
-                title='Health Traffic: Long-tail vs Short-tail',
-                color_continuous_scale=['#E8F5E8', '#2E7D32'],
-                text='Counts'
-            )
-            
-            fig_lt.update_traces(
-                texttemplate='%{text:,.0f}',
-                textposition='outside'
-            )
-            
-            fig_lt.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300,
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-            )
-            
-            st.plotly_chart(fig_lt, use_container_width=True)
-    
-    with adv_col3:
-        st.markdown("**🔍 Health Keyword Density Analysis**")
-        # FIXED: Replace labels with character ranges instead of descriptive names
-        density_bins = pd.cut(queries['query_length'], 
-                            bins=[0, 10, 20, 30, 50, 100], 
-                            labels=['0-10 chars', '11-20 chars', '21-30 chars', '31-50 chars', '51-100 chars'])
-        density_analysis = queries.groupby(density_bins).agg({
+        # Vectorized CTR calculation
+        lt_analysis['ctr'] = np.where(
+            lt_analysis['Counts'] > 0,
+            lt_analysis['clicks'] / lt_analysis['Counts'] * 100,
+            0
+        )
+        
+        return lt_analysis
+
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def process_density_analysis(_queries_df):
+        """Optimized density analysis with pre-defined bins"""
+        if _queries_df.empty:
+            return pd.DataFrame()
+        
+        # Pre-defined bins for consistent performance
+        bins = [0, 10, 20, 30, 50, 100]
+        labels = ['0-10 chars', '11-20 chars', '21-30 chars', '31-50 chars', '51-100 chars']
+        
+        density_bins = pd.cut(_queries_df['query_length'], bins=bins, labels=labels, include_lowest=True)
+        
+        density_analysis = _queries_df.groupby(density_bins, as_index=False, observed=True).agg({
             'Counts': 'sum',
-            'clicks': 'sum',
+            'clicks': 'sum', 
             'conversions': 'sum'
-        }).reset_index()
-        density_analysis['ctr'] = density_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
+        })
         
-        if not density_analysis.empty:
-            fig_density = px.pie(
-                density_analysis, 
-                names='query_length', 
-                values='Counts',
-                title='Health Query Length Distribution',
-                color_discrete_sequence=['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
-            )
-            
-            fig_density.update_layout(
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300
-            )
-            
-            st.plotly_chart(fig_density, use_container_width=True)
+        # Handle missing categories
+        density_analysis = density_analysis.dropna()
+        
+        if density_analysis.empty:
+            return pd.DataFrame()
+        
+        density_analysis['ctr'] = np.where(
+            density_analysis['Counts'] > 0,
+            density_analysis['clicks'] / density_analysis['Counts'] * 100,
+            0
+        )
+        
+        return density_analysis
 
-    
-    st.markdown("---")
-    
-    # Replace Detailed Query Performance Analysis with Top Queries from Tab 1
-    st.subheader("📋 Top Performing Health Queries")
+    # 🚀 OPTIMIZATION 3: Lightweight chart creation functions
+    @lru_cache(maxsize=32)
+    def create_base_layout(chart_type='scatter'):
+        """Cached base layout configuration"""
+        layout = HEALTH_THEME_CONFIG.copy()
+        if chart_type == 'pie':
+            layout.pop('xaxis', None)
+            layout.pop('yaxis', None)
+        return layout
 
-    # Use slider instead of selectbox for queries too
-    num_queries = st.slider(
-        "Number of health queries to display:", 
-        min_value=10, 
-        max_value=300, 
-        value=50, 
-        step=10,
-        key="query_count_slider_search_tab"
-    )
+    def create_optimized_scatter(data, title):
+        """Optimized scatter plot with reduced data points"""
+        if data.empty:
+            return None
+        
+        # Sample data if too large for performance
+        if len(data) > 100:
+            data = data.nlargest(100, 'Counts')
+        
+        fig = px.scatter(
+            data, 
+            x='query_length', 
+            y='ctr', 
+            size='Counts',
+            color='cr',
+            title=title,
+            color_continuous_scale=HEALTH_COLORS['gradient'],
+            template='plotly_white'
+        )
+        
+        fig.update_layout(**create_base_layout('scatter'))
+        fig.update_traces(marker=dict(sizemin=4, sizemax=20))  # Limit marker sizes
+        
+        return fig
 
-    if queries.empty or 'Counts' not in queries.columns or queries['Counts'].isna().all():
-        st.warning("No valid health data available for top queries.")
-    else:
-        try:
-            # Group by 'search' and aggregate
-            # Group by 'search' and aggregate
-            top_queries = queries.groupby('search').agg({
-                'Counts': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            }).reset_index()
+    def create_optimized_bar(data, title):
+        """Optimized bar chart"""
+        if data.empty:
+            return None
+        
+        fig = px.bar(
+            data, 
+            x='label', 
+            y='Counts',
+            color='ctr',
+            title=title,
+            color_continuous_scale=HEALTH_COLORS['gradient'],
+            text='Counts'
+        )
+        
+        fig.update_traces(
+            texttemplate='%{text:,.0f}',
+            textposition='outside'
+        )
+        
+        fig.update_layout(**create_base_layout('bar'))
+        
+        return fig
 
-            # Calculate total Counts for share percentage
-            total_counts = queries['Counts'].sum()
-
-            # Calculate query length (number of characters)
-            top_queries['Query Length'] = top_queries['search'].str.len()
-
-            # Calculate Conversion Rate based on conversions / Counts if column exists or as fallback
-            if 'Conversion Rate' in queries.columns:
-                top_queries['Conversion Rate'] = pd.to_numeric(queries.groupby('search')['Conversion Rate'].mean(), errors='coerce').fillna(0)
+    def create_optimized_pie(data, title):
+        """Optimized pie chart"""
+        if data.empty:
+            return None
+        
+        # Limit to top 5 categories for performance
+        if len(data) > 5:
+            top_data = data.nlargest(4, 'Counts')
+            others_sum = data.iloc[4:]['Counts'].sum()
+            if others_sum > 0:
+                others_row = pd.DataFrame({
+                    'query_length': ['Others'],
+                    'Counts': [others_sum]
+                })
+                data = pd.concat([top_data, others_row], ignore_index=True)
             else:
-                # Derive Conversion Rate as (conversions / Counts * 100)
-                top_queries['Conversion Rate'] = (top_queries['conversions'] / top_queries['Counts'] * 100).round(2).fillna(0).replace([float('inf'), -float('inf')], 0)
+                data = top_data
+        
+        fig = px.pie(
+            data, 
+            names='query_length', 
+            values='Counts',
+            title=title,
+            color_discrete_sequence=HEALTH_COLORS['pie_colors']
+        )
+        
+        fig.update_layout(**create_base_layout('pie'))
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        
+        return fig
 
-            # 🎯 FIX DECIMALS: Round conversions to integers BEFORE renaming
+    # 🚀 OPTIMIZATION 4: Batch processing for top queries
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def process_top_queries(_queries_df, num_queries=50):
+        """Optimized top queries processing with batch operations"""
+        if _queries_df.empty or 'Counts' not in _queries_df.columns:
+            return pd.DataFrame()
+        
+        try:
+            # Batch aggregation - much faster than iterative processing
+            top_queries = _queries_df.groupby('search', as_index=False).agg({
+                'Counts': 'sum',
+                'clicks': 'sum', 
+                'conversions': 'sum'
+            })
+            
+            # Vectorized calculations
+            total_counts = _queries_df['Counts'].sum()
+            top_queries['Query Length'] = top_queries['search'].str.len()
+            top_queries['Share %'] = (top_queries['Counts'] / total_counts * 100).round(2)
+            top_queries['Conversion Rate'] = np.where(
+                top_queries['Counts'] > 0,
+                (top_queries['conversions'] / top_queries['Counts'] * 100).round(2),
+                0
+            )
+            
+            # Integer conversion for display
             top_queries['conversions'] = top_queries['conversions'].round().astype(int)
             top_queries['clicks'] = top_queries['clicks'].round().astype(int)
-
-            # Calculate share percentage
-            top_queries['Share %'] = (top_queries['Counts'] / total_counts * 100).round(2)
-
-            # Sort by 'Counts' and get top N
+            
+            # Get top N efficiently
             top_queries = top_queries.nlargest(num_queries, 'Counts')
-
-            # Rename columns for display and format
-            top_queries = top_queries.rename(columns={
+            
+            # Rename columns for display
+            display_columns = {
                 'search': 'Health Query',
-                'Counts': 'Search Volume',
+                'Counts': 'Search Volume', 
                 'clicks': 'Clicks',
                 'conversions': 'Conversions'
-            })
-
-            # No need to round again since we already did it above
-
+            }
+            top_queries = top_queries.rename(columns=display_columns)
             
-            # Format Search Counts with commas
+            # Format columns efficiently
             top_queries['Search Volume'] = top_queries['Search Volume'].apply(lambda x: f"{x:,.0f}")
             top_queries['Share %'] = top_queries['Share %'].apply(lambda x: f"{x:.2f}%")
-            top_queries['Conversion Rate'] = top_queries['Conversion Rate'].apply(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else str(x))
-            top_queries['Query Length'] = top_queries['Query Length'].apply(lambda x: f"{x}")
+            top_queries['Conversion Rate'] = top_queries['Conversion Rate'].apply(lambda x: f"{x:.2f}%")
+            
+            return top_queries[['Health Query', 'Query Length', 'Search Volume', 'Share %', 'Clicks', 'Conversions', 'Conversion Rate']].reset_index(drop=True)
+            
+        except Exception as e:
+            st.error(f"Error processing queries: {e}")
+            return pd.DataFrame()
 
-            # Reorder columns to include Query Length after Query
-            column_order = ['Health Query', 'Query Length', 'Search Volume', 'Share %', 'Clicks', 'Conversions', 'Conversion Rate']
-            top_queries = top_queries[column_order]
+    # 🚀 MAIN OPTIMIZED ANALYTICS SECTION
+    def display_advanced_analytics(queries, kw_perf_df, metrics, kw_counts, format_number):
+        """Ultra-optimized advanced analytics display"""
+        
+        st.subheader("📈 Advanced Health Query Performance Analytics")
+        
+        # Pre-process all data with caching
+        ql_data = process_query_length_analysis(queries)
+        lt_data = process_longtail_analysis(queries) 
+        density_data = process_density_analysis(queries)
+        
+        # Three-column layout with optimized charts
+        adv_col1, adv_col2, adv_col3 = st.columns(3)
+        
+        with adv_col1:
+            st.markdown("**🎯 Query Length vs Performance**")
+            if not ql_data.empty:
+                fig_ql = create_optimized_scatter(ql_data, 'Length vs Health CTR Performance')
+                if fig_ql:
+                    st.plotly_chart(fig_ql, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.info("No query length data available")
+        
+        with adv_col2:
+            st.markdown("**📊 Long-tail vs Short-tail Performance**")
+            if not lt_data.empty:
+                fig_lt = create_optimized_bar(lt_data, 'Health Traffic: Long-tail vs Short-tail')
+                if fig_lt:
+                    st.plotly_chart(fig_lt, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.info("No long-tail data available")
+        
+        with adv_col3:
+            st.markdown("**🔍 Health Query Length Distribution**")
+            if not density_data.empty:
+                fig_density = create_optimized_pie(density_data, 'Health Query Length Distribution')
+                if fig_density:
+                    st.plotly_chart(fig_density, use_container_width=True, config={'displayModeBar': False})
+            else:
+                st.info("No density data available")
 
-            # Reset index to remove it
-            top_queries = top_queries.reset_index(drop=True)
-
-            # Display the DataFrame with custom styling for center alignment
+        st.markdown("---")
+        
+        # Optimized top queries section
+        st.subheader("📋 Top Performing Health Queries")
+        
+        num_queries = st.slider(
+            "Number of health queries to display:", 
+            min_value=10, 
+            max_value=300, 
+            value=50, 
+            step=10,
+            key="query_count_slider_search_tab"
+        )
+        
+        # Process and display top queries
+        top_queries_df = process_top_queries(queries, num_queries)
+        
+        if not top_queries_df.empty:
+            # Optimized dataframe display
             st.dataframe(
-                top_queries, 
+                top_queries_df, 
                 use_container_width=True,
-                hide_index=True,  # This hides the index column
+                hide_index=True,
                 column_config={
-                    "Health Query": st.column_config.TextColumn(
-                        "Health Query",
-                        help="Nutraceuticals & Nutrition search query text",
-                        width="large"
-                    ),
-                    "Query Length": st.column_config.TextColumn(
-                        "Query Length",
-                        help="Number of characters in health query",
-                        width="small"
-                    ),
-                    "Search Volume": st.column_config.TextColumn(
-                        "Search Volume",
-                        help="Total health search volume",
-                        width="medium"
-                    ),
-                    "Share %": st.column_config.TextColumn(
-                        "Share %",
-                        help="Percentage of total health searches",
-                        width="small"
-                    ),
-                    "Clicks": st.column_config.TextColumn(
-                        "Clicks",
-                        help="Total clicks received",
-                        width="small"
-                    ),
-                    "Conversions": st.column_config.TextColumn(
-                        "Conversions",
-                        help="Total conversions",
-                        width="small"
-                    ),
-                    "Conversion Rate": st.column_config.TextColumn(
-                        "Conversion Rate",
-                        help="Health conversion rate percentage",
-                        width="small"
-                    )
+                    "Health Query": st.column_config.TextColumn("Health Query", width="large"),
+                    "Query Length": st.column_config.NumberColumn("Query Length", width="small"),
+                    "Search Volume": st.column_config.TextColumn("Search Volume", width="medium"),
+                    "Share %": st.column_config.TextColumn("Share %", width="small"),
+                    "Clicks": st.column_config.NumberColumn("Clicks", width="small"),
+                    "Conversions": st.column_config.NumberColumn("Conversions", width="small"),
+                    "Conversion Rate": st.column_config.TextColumn("Conversion Rate", width="small")
                 }
             )
-
-            # Add custom CSS for center alignment with health theme
+            
+            # Optimized CSS (reduced complexity)
             st.markdown("""
             <style>
-            .stDataFrame [data-testid="stDataFrameResizeHandle"] {
-                display: none !important;
-            }
-            .stDataFrame > div {
-                text-align: center;
-            }
-            .stDataFrame th {
-                text-align: center !important;
-                background-color: #2E7D32 !important;
-                color: white !important;
-                font-weight: bold !important;
-            }
-            .stDataFrame td {
-                text-align: center !important;
-            }
-            /* Keep Health Query column left-aligned for better readability */
-            .stDataFrame td:first-child {
-                text-align: left !important;
-            }
+            .stDataFrame th { text-align: center !important; background-color: #2E7D32 !important; color: white !important; }
+            .stDataFrame td { text-align: center !important; }
+            .stDataFrame td:first-child { text-align: left !important; }
             </style>
             """, unsafe_allow_html=True)
-
-            # Add download button
-            csv = top_queries.to_csv(index=False)
+            
+            # Download functionality
+            csv = top_queries_df.to_csv(index=False)
             st.download_button(
                 label="📥 Download Health Queries CSV",
                 data=csv,
@@ -4160,221 +4257,112 @@ with tab_search:
                 mime="text/csv",
                 key="query_csv_download_search_tab"
             )
-        except KeyError as e:
-            st.error(f"Column error: {e}. Check column names in your health data (e.g., 'search', 'Counts', 'clicks', 'conversions', 'Conversion Rate').")
-        except Exception as e:
-            st.error(f"Error processing top health queries: {e}")
-
-    
-    # Key Insights Box
-    st.markdown("---")
-    col_insight1, col_insight2 = st.columns(2)
-    
-    # Calculate the percentage safely before the format string
-    try:
-        if not kw_counts.empty and len(queries) > 0:
-            top_keyword_pct = kw_counts.iloc[0]['frequency'] / len(queries) * 100
         else:
+            st.warning("No valid health data available for top queries.")
+
+        # Optimized insights section (static HTML for performance)
+        display_optimized_insights(metrics, kw_counts, queries, kw_perf_df, format_number)
+
+    # 🚀 OPTIMIZATION 5: Static insights with pre-calculated metrics
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def calculate_insight_metrics(_queries_df, _kw_counts_df, _kw_perf_df):
+        """Pre-calculate all insight metrics"""
+        try:
+            # Safe calculations with error handling
+            long_tail_pct = getattr(_queries_df, 'long_tail_pct', 0) if hasattr(_queries_df, 'long_tail_pct') else 0
+            avg_query_length = _queries_df['query_length'].mean() if 'query_length' in _queries_df.columns else 0
+            
             top_keyword_pct = 0
-    except (NameError, IndexError, AttributeError):
-        top_keyword_pct = 0
-    
-    with col_insight1:
-        st.markdown("""
-        <div class='insight-box' style='background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-left: 4px solid #2E7D32;'>
-            <h4 style='color: #1B5E20;'>🌿 Health Search Insights</h4>
-            <p style='color: #2E7D32;'>• Long-tail health queries represent {:.1f}% of total Nutraceuticals & Nutrition traffic<br>
-            • Average health query length is {:.1f} characters<br>
-            • Top health keyword appears in {:.1f}% of searches</p>
-        </div>
-        """.format(
-            metrics['long_tail_pct'],
-            metrics['avg_query_length'],
-            top_keyword_pct
-        ), unsafe_allow_html=True)
+            if not _kw_counts_df.empty and len(_queries_df) > 0:
+                top_keyword_pct = _kw_counts_df.iloc[0]['frequency'] / len(_queries_df) * 100
+            
+            # Health-specific metrics
+            top_health_keyword = _kw_perf_df.iloc[0]['keyword'] if len(_kw_perf_df) > 0 else "N/A"
+            top_keyword_volume = int(_kw_perf_df.iloc[0]['total_counts']) if len(_kw_perf_df) > 0 else 0
+            avg_health_cr = _kw_perf_df['health_cr'].mean() if len(_kw_perf_df) > 0 else 0
+            high_perf_keywords = len(_kw_perf_df[_kw_perf_df['health_cr'] > avg_health_cr]) if len(_kw_perf_df) > 0 else 0
+            total_keyword_volume = int(_kw_perf_df['total_counts'].sum()) if len(_kw_perf_df) > 0 else 0
+            
+            return {
+                'long_tail_pct': long_tail_pct,
+                'avg_query_length': avg_query_length,
+                'top_keyword_pct': top_keyword_pct,
+                'top_health_keyword': top_health_keyword,
+                'top_keyword_volume': top_keyword_volume,
+                'avg_health_cr': avg_health_cr,
+                'high_perf_keywords': high_perf_keywords,
+                'total_keyword_volume': total_keyword_volume
+            }
+        except Exception as e:
+            st.error(f"Error calculating metrics: {e}")
+            return {}
 
-    with col_insight2:
-        st.markdown("""
-        <div class='insight-box' style='background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); border-left: 4px solid #4CAF50;'>
-            <h4 style='color: #1B5E20;'>💚 Nutraceuticals & Nutrition Recommendations</h4>
-            <p style='color: #2E7D32;'>
-                • Focus on high-performing health keywords for content optimization<br>
-                • Analyze long-tail Nutraceuticals & Nutrition queries for niche supplement opportunities<br>
-                • Monitor health search intent patterns for nutrition strategy alignment
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-    # Add wellness-specific insights section
-    st.markdown("---")
-    st.subheader("🧴 Nutraceuticals & Nutrition Category Insights")
-    
-    # Create health-specific insight boxes
-    health_col1, health_col2, health_col3 = st.columns(3)
-    
-    with health_col1:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
-                    padding: 20px; border-radius: 12px; text-align: center; 
-                    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); margin: 10px 0;">
-            <h4 style="color: #1B5E20; margin-bottom: 10px;">🌱 Top Health Categories</h4>
-            <p style="color: #2E7D32; font-size: 14px;">Vitamins, supplements, and natural health products dominate search volume</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with health_col2:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); 
-                    padding: 20px; border-radius: 12px; text-align: center; 
-                    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2); margin: 10px 0;">
-            <h4 style="color: #1B5E20; margin-bottom: 10px;">💊 Supplement Trends</h4>
-            <p style="color: #2E7D32; font-size: 14px;">Immune support and Nutraceuticals & Nutrition supplements show highest conversion rates</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with health_col3:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #A5D6A7 100%); 
-                    padding: 20px; border-radius: 12px; text-align: center; 
-                    box-shadow: 0 4px 15px rgba(56, 142, 60, 0.2); margin: 10px 0;">
-            <h4 style="color: #1B5E20; margin-bottom: 10px;">🔍 Search Patterns</h4>
-            <p style="color: #2E7D32; font-size: 14px;">Long-tail health queries indicate specific Nutraceuticals & Nutrition needs and higher intent</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Add seasonal health trends section
-    st.markdown("---")
-    st.subheader("📅 Seasonal Nutraceuticals & Nutrition Trends")
-    
-    seasonal_col1, seasonal_col2 = st.columns(2)
-    
-    with seasonal_col1:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
-                    padding: 25px; border-radius: 15px; color: white; margin: 10px 0;
-                    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);">
-            <h4 style="margin-bottom: 15px;">🌿 Peak Nutraceuticals & Nutrition Seasons</h4>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin: 8px 0;">🍂 <strong>Fall:</strong> Immune support supplements surge</li>
-                <li style="margin: 8px 0;">❄️ <strong>Winter:</strong> Vitamin D and cold prevention</li>
-                <li style="margin: 8px 0;">🌸 <strong>Spring:</strong> Detox and cleanse products</li>
-                <li style="margin: 8px 0;">☀️ <strong>Summer:</strong> Weight management and energy</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with seasonal_col2:
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); 
-                    padding: 25px; border-radius: 15px; color: white; margin: 10px 0;
-                    box-shadow: 0 6px 20px rgba(56, 142, 60, 0.3);">
-            <h4 style="margin-bottom: 15px;">💚 Health Search Optimization</h4>
-            <ul style="list-style: none; padding: 0; margin: 0;">
-                <li style="margin: 8px 0;">🎯 <strong>Target:</strong> High-intent Nutraceuticals & Nutrition keywords</li>
-                <li style="margin: 8px 0;">📈 <strong>Optimize:</strong> Product descriptions for health SEO</li>
-                <li style="margin: 8px 0;">🔄 <strong>Monitor:</strong> Seasonal supplement demand shifts</li>
-                <li style="margin: 8px 0;">💡 <strong>Leverage:</strong> Long-tail queries for niche products</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Add health keyword performance summary
-    st.markdown("---")
-    st.subheader("📊 Health Keyword Performance Summary")
-    
-    # Calculate health-specific metrics
-    if not kw_perf_df.empty:
-        summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    def display_optimized_insights(metrics, kw_counts, queries, kw_perf_df, format_number):
+        """Display insights with pre-calculated metrics"""
         
-        # Top performing health keyword
-        top_health_keyword = kw_perf_df.iloc[0]['keyword'] if len(kw_perf_df) > 0 else "N/A"
-        top_keyword_volume = int(kw_perf_df.iloc[0]['total_counts']) if len(kw_perf_df) > 0 else 0
+        # Calculate metrics once
+        insight_metrics = calculate_insight_metrics(queries, kw_counts, kw_perf_df)
         
-        # Average conversion rate across health keywords
-        avg_health_cr = kw_perf_df['health_cr'].mean() if len(kw_perf_df) > 0 else 0
+        if not insight_metrics:
+            return
         
-        # High-performing keywords (above average CR)
-        high_perf_keywords = len(kw_perf_df[kw_perf_df['health_cr'] > avg_health_cr]) if len(kw_perf_df) > 0 else 0
+        st.markdown("---")
+        col_insight1, col_insight2 = st.columns(2)
         
-        # Total health search volume from keywords
-        total_keyword_volume = int(kw_perf_df['total_counts'].sum()) if len(kw_perf_df) > 0 else 0
-        
-        with summary_col1:
+        with col_insight1:
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">🏆</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_health_keyword}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Top Health Keyword</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">{format_number(top_keyword_volume)} searches</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col2:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{avg_health_cr:.2f}%</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Avg Health Conversion Rate</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Across all Nutraceuticals & Nutrition keywords</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col3:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #A5D6A7 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(56, 142, 60, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">⚡</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{high_perf_keywords}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">High-Performance Keywords</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Above average CR</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col4:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #C8E6C8 0%, #81C784 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(129, 199, 132, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(total_keyword_volume)}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Total Keyword Volume</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">All health searches</div>
+            <div class='insight-box' style='background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-left: 4px solid #2E7D32; padding: 20px; border-radius: 10px;'>
+                <h4 style='color: #1B5E20;'>🌿 Health Search Insights</h4>
+                <p style='color: #2E7D32;'>
+                    • Long-tail health queries: {insight_metrics['long_tail_pct']:.1f}% of total traffic<br>
+                    • Average health query length: {insight_metrics['avg_query_length']:.1f} characters<br>
+                    • Top health keyword: {insight_metrics['top_keyword_pct']:.1f}% of searches
+                </p>
             </div>
             """, unsafe_allow_html=True)
 
-    # Final wellness recommendations
-    st.markdown("---")
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%); 
-                padding: 30px; border-radius: 15px; color: white; margin: 20px 0;
-                box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);">
-        <h3 style="text-align: center; margin-bottom: 20px;">🌿 Nutraceuticals & Nutrition Search Strategy Recommendations</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <h4 style="margin-bottom: 10px;">🎯 Immediate Actions:</h4>
-                <ul style="margin: 0; padding-left: 20px;">
-                    <li>Optimize product pages for top-performing health keywords</li>
-                    <li>Create content around long-tail Nutraceuticals & Nutrition queries</li>
-                    <li>Focus on seasonal supplement trends</li>
-                </ul>
+        with col_insight2:
+            st.markdown("""
+            <div class='insight-box' style='background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); border-left: 4px solid #4CAF50; padding: 20px; border-radius: 10px;'>
+                <h4 style='color: #1B5E20;'>💚 Optimization Recommendations</h4>
+                <p style='color: #2E7D32;'>
+                    • Focus on high-performing health keywords<br>
+                    • Analyze long-tail queries for niche opportunities<br>
+                    • Monitor health search intent patterns
+                </p>
             </div>
-            <div>
-                <h4 style="margin-bottom: 10px;">📈 Long-term Strategy:</h4>
-                <ul style="margin: 0; padding-left: 20px;">
-                    <li>Monitor emerging health trends and adapt keyword strategy</li>
-                    <li>Develop category-specific landing pages for supplements</li>
-                    <li>Track conversion patterns across different Nutraceuticals & Nutrition segments</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+
+        # Performance summary with cached metrics
+        if insight_metrics['top_health_keyword'] != "N/A":
+            st.markdown("---")
+            st.subheader("📊 Health Keyword Performance Summary")
+            
+            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+            
+            summary_boxes = [
+                ("🏆", insight_metrics['top_health_keyword'], "Top Health Keyword", f"{format_number(insight_metrics['top_keyword_volume'])} searches"),
+                ("💚", f"{insight_metrics['avg_health_cr']:.2f}%", "Avg Health Conversion Rate", "Across all keywords"),
+                ("⚡", str(insight_metrics['high_perf_keywords']), "High-Performance Keywords", "Above average CR"),
+                ("🌿", format_number(insight_metrics['total_keyword_volume']), "Total Keyword Volume", "All health searches")
+            ]
+            
+            for i, (emoji, value, title, subtitle) in enumerate(summary_boxes):
+                with [summary_col1, summary_col2, summary_col3, summary_col4][i]:
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
+                                padding: 20px; border-radius: 12px; text-align: center; 
+                                box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); margin: 5px 0;">
+                        <div style="font-size: 2em; margin-bottom: 8px;">{emoji}</div>
+                        <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{value}</div>
+                        <div style="color: #2E7D32; font-size: 0.9em;">{title}</div>
+                        <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">{subtitle}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    # Usage in main app:
+    # display_advanced_analytics(queries, kw_perf_df, metrics, kw_counts, format_number)
+
 
 
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
