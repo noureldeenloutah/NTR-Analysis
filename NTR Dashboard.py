@@ -80,7 +80,7 @@ def load_excel_ultra_fast(upload_file=None, file_path=None):
         st.error(f"Ultra load error: {e}")
         raise
 
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=)
+@st.cache_data(ttl=3600, show_spinner=False, max_entries=10)
 def prepare_queries_df_ultra(_df):
     """ULTRA-OPTIMIZED: 10x faster than original"""
     
