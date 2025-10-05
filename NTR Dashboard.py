@@ -2762,24 +2762,16 @@ with tab_search:
     st.markdown("---")
 
     # Second row: Full width for Top Performing Keywords
-    # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING - OPTIMIZED
+    # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
     import re
     from collections import defaultdict
     from fuzzywuzzy import fuzz, process
-
-    # 🔧 OPTIMIZATION 1: Cache master dictionary as module-level variable
-    _MASTER_DICT_CACHE = None
 
     def create_master_keyword_dictionary():
         """
         Define master keywords with their common variations for fuzzy matching
         """
-        global _MASTER_DICT_CACHE
-        if _MASTER_DICT_CACHE is not None:
-            return _MASTER_DICT_CACHE
-        
-        # 🔧 OPTIMIZATION 2: Pre-compile exclusion patterns for faster lookup
-        _MASTER_DICT_CACHE = {
+        return {
             'مغنیسیوم': {
                 'variations': [
                     'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
@@ -2789,7 +2781,10 @@ with tab_search:
                     'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
                     'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
                 ],
-                'excluded_terms': ['الصمغ'],
+
+                'excluded_terms': [ 'الصمغ'
+
+                ],
                 'compounds': [
                     'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
                     'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
@@ -2852,7 +2847,7 @@ with tab_search:
                 ],
                 
                 'threshold': 80,
-                'min_length': 3
+                'min_length': 3  # Reduced to 3 to catch short forms like 'اوم', 'omg'
             },
 
             'کولاجین': {
@@ -2862,7 +2857,10 @@ with tab_search:
                     'کولاجی', 'کولاج', 'کولا', 'مولاجین', 'کولاحین', 'کوباجین',
                     'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
                 ],
-                'excluded_terms': ['کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا', 'کوین' ,'لاین','کوبالین'],
+
+                'excluded_terms': [ 'کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا', 'کوین' ,'لاین','کوبالین'
+
+                ],
                 'compounds': [
                     'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 'marine', 'bovine',
                     'بحری', 'بودرة', 'بودره', 'فوار', 'حبوب', 'سایل', 'powder'
@@ -2914,9 +2912,11 @@ with tab_search:
                     'kids vitamins', 'vitamin drops', 'vitamin tablets', 'vitamin gummies'
                 ],
                 'excluded_terms': [
+                    # Clear non-vitamin terms
                     'سویتش', 'فیمی', 'فیفا', 'فیرومین', 'وایت', 'فاتمین', 'مین',
                     'فیتال', 'فیتکس', 'فیرتا', 'تین', 'ادفیتا', 'فیتانین', 'فیتاجلوبین',
                     'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
+                    # Additional exclusions
                     'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی ' , 'vital', ' فیمی', 'فیتالا','فیتان ', 'فیتو ', 'فینترمین', 'قلوتامین','ادفیتا',
                     'غلوتامین ','فیفامیون ','فیرت ','vitex','بیتا'
                 ],
@@ -2933,8 +2933,8 @@ with tab_search:
                     'فوار', 'حبوب', 'شراب', 'قطرات', 'نقط', 'مضغ', 'جلی', 'کبسولات',
                     'اقراص', 'زیت', 'کریم', 'حقن'
                 ],
-                'threshold': 75,
-                'min_length': 4
+                'threshold': 75,  # Increased for better accuracy
+                'min_length': 4   # Increased to avoid very short false matches
             },
             
             'زنک': {
@@ -2971,7 +2971,11 @@ with tab_search:
                     'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 'پروتن',
                     'بروت', 'بروتی', 'پروت', 'پروتی'
                 ],
-                'excluded_terms': ['برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین','pravotin','بروستا','برین'],
+
+                'excluded_terms': [ 'برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین','pravotin','بروستا','برین'
+
+                ],
+
                 'compounds': [
                     'وی', 'وای', 'whey', 'کازئین', 'casein', 'ایزو', 'iso', 'بار', 'bar',
                     'باودر', 'بودرة', 'powder', 'ماس', 'mass', 'beef', 'نباتی'
@@ -2982,81 +2986,128 @@ with tab_search:
             
             'حدید': {
                 'variations': [
+                    # Arabic/Persian variations
                     'حدید', 'حديد', 'حدی', 'الحدید',
+                    
+                    # English variations
                     'iron', 'ferrous', 'ferro', 'ferr', 'ferritin', 'lactoferrin',
+                    
+                    # Brand/Product names
                     'فیرولایت', 'فیرو لایت', 'ferrolight', 'فیروبیوترون', 'فیرو',
                     'فیروفول', 'ferrofol', 'فیرومین', 'فیرومن', 'فیرو فول',
                     'فیروسومال', 'ferrosomal', 'بروفیرون', 'فیروغلوبین',
                     'فرافیرو', 'فیرو 28', 'ferrose', 'solgar'
                 ],
+                
                 'excluded_terms': [
+                    # Original exclusions
                     'حدیث', 'حدیقة', 'حدود', 'حدس', 'حدة', 'حدق', 'حدر',
                     'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر',
+                    
+                    # New exclusions from your list
                     'فیدروب', 'solaray', 'فیدر', 'فیتالایت', 'فیتو', 'فیدرو',
                     'دید', 'فیتوسوم', 'sola', 'بورون', 'بیروین', 'هیدرلایت',
                     'فیجر', 'فینترمین', 'solar', 'هیرو', 'هیدرولایت', 'فیمروز', 'solgar', 'نیرو', 'زیرو', 'فیتمین', 'هایدرولایت',
                     'بروفاریو', 'solary',
+                    
+                    # Additional supplement/brand exclusions
                     'solaray vitamin', 'solgar vitamin', 'فیتامین',
                     'phytosome', 'فیتوسوم', 'boron', 'بورون',
                     'phentermine', 'فینترمین', 'diet pill',
                     'hydrolyte', 'electrolyte', 'الکترولیت',
                     'zero', 'hero', 'nitro', 'نیترو',
                     'fedex', 'فدکس', 'federal', 'فدرال',
+                    
+                    # Non-iron minerals/supplements
                     'calcium', 'کلسیم', 'magnesium', 'منیزیم',
                     'zinc', 'روی', 'copper', 'مس',
                     'selenium', 'سلنیوم', 'chromium', 'کروم',
+                    
+                    # Vitamin exclusions
                     'vitamin d', 'ویتامین د', 'vitamin c', 'ویتامین س',
                     'vitamin b', 'ویتامین ب', 'multivitamin', 'مولتی ویتامین',
+                    
+                    # Brand name exclusions (non-iron)
                     'solaray d3', 'solgar b12', 'solaray calcium',
                     'phyto soya', 'فیتو سویا', 'phyto collagen'
+                    
+
                 ],
+                
                 'compounds': [
+                    # Chemical forms
                     'فومارات', 'fumarate', 'سولفات', 'sulfate', 'sulphate',
                     'bisglycinate', 'بیسگلایسینات', 'liposomal', 'لیپوزومال',
+                    
+                    # Product forms
                     'فوار', 'شراب', 'حبوب', 'امبولات', 'انبولات', 'ابر', 'ابرة',
                     'اقراص', 'کبسولات', 'tablet', 'tablets', 'drops', 'syrup',
                     'gummies', 'supplement', 'supplements',
+                    
+                    # Descriptive terms
                     'gentle', 'مکمل', 'مکملات', 'مکمل غذایی', 'فیتامین', 'فتامین',
                     'فیتامینات', 'vitamin', 'vitamins',
+                    
+                    # Target audience
                     'للاطفال', 'اطفال', 'kids', 'children',
+                    
+                    # Combinations
                     'folic acid', 'فولیک اسید', 'and folic', 'فولیک',
+                    
+                    # Dosage
                     '25 mg', '25mg', '28', 'mg',
+                    
+                    # Brand specific
                     'solgar gentle iron', 'solgar iron', 'gentle iron'
                 ],
-                'threshold': 80,
+                
+                'threshold': 80,  # Lowered from 85 to catch more variations
                 'min_length': 4
             },
 
             'ensure': {
                 'variations': [
+                    # English variations
                     'ensure', 'ensur', 'ensu', 'ensue',
+                    
+                    # Arabic/Persian variations
                     'انشور', 'انش', 'انشو', 'انشوز', 'انشوو', 'انشر', 'انشار',
                     'انشوور', 'انشوار', 'انشوری', 'انشوره', 'انشوری',
+                    
+                    # With milk context
                     'حلیب انشور', 'حلیب انش', 'حلیب انشو', 'حليب انشور',
                     'حليب انش', 'حليب انشو'
                 ],
+                
                 'excluded_terms': [
-                    'انشاء','المنشاری', 'نوز', 'سانو', 'انسر', 'sens', 'اشو', 
-                    'النشط', 'انوفاری', 'fenu', 'اینو', 'انتر', 
-                    'الانتشار', 'انز', 'انوفار', 'نور'
+                        'انشاء','المنشاری', 'نوز', 'سانو', 'انسر', 'sens', 'اشو', 
+                        'النشط', 'انوفاری', 'fenu', 'اینو', 'انتر', 
+                        'الانتشار', 'انز', 'انوفار', 'نور'
                 ],
+                
                 'compounds': [
+                    # Product variants
                     'plus', 'بلس', 'بلص', 'پلس',
                     'max', 'ماکس', 'maximum', 'ماکسیمم',
                     'complete', 'کومبلیت', 'کامل', 'کمپلیت',
                     'protein', 'پروتین', 'پروتئین', 'بروتین',
                     'milk', 'حلیب', 'حليب', 'شیر',
+                    
+                    # Combined variants
                     'ensure plus', 'انشور بلس', 'انشور بلص', 'انشور پلس',
                     'ensure max', 'انشور ماکس', 'انشور max',
                     'ensure max protein', 'انشور ماکس پروتین', 'انشور max protein',
                     'ensure complete', 'انشور کومبلیت', 'انشور کامل',
                     'ensure milk', 'انشور حلیب', 'انشور شیر',
                     'حلیب انشور بلس', 'حلیب انشور ماکس', 'حلیب انشور کومبلیت',                    
+                    
+                    # Flavors
                     'vanilla', 'وانیل', 'وانیلا', 'فانیل', 'فانیلا',
                     'chocolate', 'چاکلیت', 'شاکولاتة', 'شکلاته'           
                 ],
+                
                 'threshold': 80,
-                'min_length': 4
+                'min_length': 40
             },
             
             'بیوتین': {
@@ -3081,9 +3132,11 @@ with tab_search:
                     'الاشواجاندا', 'الاشواجندا', 'الاشواغندا', 'الاشوغندا',
                     'ashwagandha', 'ashwaganda', 'ashwa', 'ksm66'
                 ],
+
                 'excluded_terms': [
                     'انشوز', 'الشوک ','اوراق','انشوو','اوفا','انشو',''
                 ],
+
                 'compounds': [
                     'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
                 ],
@@ -3146,9 +3199,11 @@ with tab_search:
                     'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
                     'بربرین حبوب', 'البربری', 'بربر', 'berberine', 'berberin'
                 ],
+
                 'excluded_terms': [
                     'برابورین', 'بیریورین','بروبین','برورین','الربی'
                 ],
+
                 'compounds': [
                     '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
                 ],
@@ -3158,45 +3213,74 @@ with tab_search:
             
             'کرانبری': {
                 'variations': [
+                    # Main cranberry variations
                     'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
                     'الکران بیری', 'بیری', 'کرانبی', 'کرانبیر', 'cranberry',
                     'کرانبری', 'کرانسید'
                 ],
+                
                 'excluded_terms': [
+                    # Geographic/location terms
                     'کاندری', 'کانتری', 'بحری', 'کارن',
+                    
+                    # Food/drink terms
                     'بیرف', 'بریف', 'بیرفی', 'بیرفیک', 'بیرل', 'بیرلی', 'بییر',
+                    
+                    # Medical/scientific terms
                     'بیورین', 'بکتیری', 'بیور', 'بیروین',
+                    
+                    # General terms
                     'کاند', 'بیبی', 'بیلی', 'بریج', 'بقری', 'کریا',
+                    
+                    # Non-cranberry berry terms
                     'strawberry', 'blueberry', 'raspberry', 'blackberry',
                     'توت', 'فراولة', 'توت الأزرق',
+                    
+                    # Common false matches
                     'بری', 'کری', 'بیر',
                     'بیری بیری', 'کرانی', 'برانی', 'کرانه',
-                    'blackberry phone', 'بلک بیری'
+                    
+                    # Technology/brand terms
+                    'blackberry phone', 'بلک بیری',
+                    
                 ],
+                
                 'compounds': [
+                    # Product forms
                     'حبوب', 'کبسولات', 'اقراص', 'tablets', 'capsules', 'pills',
                     'sachets', 'اکیاس', 'پاکت',
                     'extract', 'مستخلص', 'عصاره',
                     'powder', 'پودر', 'مسحوق',
                     'juice', 'عصیر', 'آب',
                     'syrup', 'شراب', 'سیروپ',
+                    
+                    # Health benefits context
                     'urinary', 'بولی', 'مسالک بولیة',
                     'uti', 'التهاب', 'عفونت',
                     'bladder', 'مثانة', 'مثانه',
                     'kidney', 'کلیة', 'کلیه',
                     'infection', 'عدوی', 'عفونت',
+                    
+                    # Antioxidant context
                     'antioxidant', 'مضاد اکسدة', 'آنتی اکسیدان',
                     'vitamin', 'ویتامین', 'فیتامین',
+                    
+                    # Brand/quality terms
                     'organic', 'عضوی', 'طبیعی',
                     'pure', 'خالص', 'صافی',
                     'concentrated', 'مرکز', 'غلیظ',
+                    
+                    # Dosage/strength
                     '500mg', '1000mg', 'میلی گرام',
                     'high strength', 'قوی', 'مرکز',
+                    
+                    # Combined terms
                     'cranberry extract', 'کرانبری عصاره',
                     'cranberry tablets', 'کرانبری اقراص',
                     'cranberry capsules', 'کرانبری کبسولات',
                     'cranberry juice', 'کرانبری عصیر'
                 ],
+                
                 'threshold': 75,
                 'min_length': 4
             },
@@ -3215,40 +3299,63 @@ with tab_search:
             
             'عسل': {
                 'variations': [
+                    # Basic honey terms
                     'عسل', 'العسل', 'honey',
+                    
+                    # Manuka variations
                     'عسل المنوکا', 'عسل مانوکا', 'عسل المانوکا', 'عسل المونکا',
                     'عسل مونکا', 'عسل مونیکا', 'عسل المونیکا', 'عسل مونوکا',
                     'عسل منوکا', 'عسل مانوک', 'عسل المانوک', 'عسل مان',
                     'عسل مانو', 'عسل الما', 'مانوکا عسل', 'مانوکا', 'المانوکا',
                     'منوکا', 'مانوک', 'مان', 'manuka honey', 'manuka', 'honey manuka',
+                    
+                    # Royal honey variations
                     'العسل الملکی', 'عسل ملکی', 'عسل الملکی', 'royal honey',
+                    
+                    # Other honey types
                     'عسل سدر', 'عسل السدر', 'عسل ابیض', 'عسل مالیزی',
                     'العسل الحیوی', 'عسل حیوی', 'vital honey', 'true honey',
+                    
+                    # Brand names
                     'عسل ابو نایف', 'عسل ابو', 'عسل ابونایف',
+                    
+                    # Partial matches (common search patterns)
                     'عسل ال', 'عسل م', 'عسل ما', 'عسل الم', 'عسل ا'
                 ],
+                
                 'excluded_terms': [
                     'عسلی', 'عسکر', 'عسر', 'عصل', 'عصر', 'عضل', 'عزل',
                     'honey badger', 'honey moon', 'honeymoon', 'honey pot','انوفا','رمان','الرمان','المونک','میلان','one','مانکورا','ولمان','horny','الماکا','ماکا','وسلمان'
                 ],
+                
                 'compounds': [
+                    # Basic terms
                     'عسل', 'honey',                
+
+                    # Quality descriptors
                     'raw', 'خام', 'طبیعی', 'natural', 'organic', 'عضوی',
                     'pure', 'خالص', 'صافی', 'نقی',
                     'original', 'اصلی', 
+                    
+                    # Honey types
                     'manuka', 'مانوکا', 'منوکا', 'مانوک',
                     'royal', 'ملکی', 'الملکی',
                     'سدر', 'السدر', 'sidr',
                     'ابیض', 'white',
                     'مالیزی', 'malaysian',
                     'حیوی', 'vital', 'bio',
+                    
+                    # Target audience/usage
                     'اطفال', 'للاطفال', 'kids', 'children',
                     'جنسی', 'للجنس', 'sexual', 'للرجال', 'for men',
+                    
+                    # Brand specific
                     'ابو نایف', 'ابونایف', 'ابو',
                     'الوانه', 'وانه'                    
                 ],
-                'threshold': 80,
-                'min_length': 3
+                
+                'threshold': 80,  # Lowered to catch more variations
+                'min_length': 3   # Reduced to catch shorter terms like 'عسل م'
             },
             
             'کیو10': {
@@ -3302,68 +3409,97 @@ with tab_search:
             
             'فولیک اسید': {
                 'variations': [
+                    # Arabic variations
                     'فولیک', 'فولیک اسید', 'فولیک اسد', 'فول', 'حمض فولیک',
                     'الفولیک', 'فولک اسد', 'فولیکو', 'فولی', 'حامض فولیک',
                     'حمض الفولیک', 'حامض الفولیک', 'حمض الفولی', 'حمض الفول',
                     'حمض الفو', 'الفلولیک', 'حمض الفلولیک',
+                    
+                    # English variations  
                     'folic acid', 'folic', 'foliko', 'foli'
                 ],
+                
                 'excluded_terms': [
+                    # Generic acid terms without folic context
                     'الفا', 'الفا لیبویک', ' البوریک',
-                    'فلک', 'فولیکوم', 'جولی', 'فولیت'
+                     'فلک', 'فولیکوم', 'جولی', 'فولیت'
                 ],
+                
                 'compounds': [
+                    # Dosages
                     '5mg', '5 mg', '400', '400mg', '400 mg', '1mg', '1 mg',
                     '٥', '5', '1',
+                    
+                    # Forms
                     'حبوب', 'أقراص', 'كبسولات', 'tablets', 'capsules', 'pills',
                     'حبوب حمض الفولیک', 'أقراص حمض الفولیک',
+                    
+                    # Combined products
                     'iron and folic acid', 'حديد وحمض الفولیک', 'آهن و فولیک اسید',
                     'iron', 'حديد', 'آهن', 'فرروس',
+                    
+                    # Medical terms
                     'اسید', 'acid', 'حمض', 'حامض',
                     'vitamin', 'ویتامین', 'فیتامین',
                     'supplement', 'مکمل', 'مكمل'
                 ],
+                
                 'threshold': 85,
                 'min_length': 4
             },
 
             'میلاتونین': {
                 'variations': [
-                    # Core Arabic/Persian variations only
+                    # Arabic/Persian variations
                     'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'میلاتی', 'میلاتین',
-                    'میلاتونی', 'میلاتوبید', 'میلاتیون', 'میلاتینون',
+                    'میلاتونی', 'میلاتوبید', 'میلاتونین', 'میلاتیون', 'میلاتینون',
                     'میلاتنین', 'میلاتونیین', 'میلاتونورم', 'میلاتنون', 'میلاتولین',
-                    'المیلاتونین',
+                    'المیلاتونین', 'میلاتونین', 'میلاتونین',
                     
-                    # Core English variations only
+                    # English variations
                     'melatonin', 'melatonine', 'mela', 'melat', 'melato', 'melaton',
-                    'melatobed', 'melatoni'
+                    'melatobed', 'melatoni',
+                    
+                    # Brand-specific terms
+                    'هولیستا', 'holista', 'ناترول', 'natrol', 'جامیسون', 'jamieson',
+                    'میلاتو سلیب', 'میلاتونین ستار', 'جی بی میلاتونین', 'jp melatonin',
+                    'jp mela', 'jp melat'
                 ],
                 
                 'excluded_terms': [
-                    # Keep only true exclusions (non-melatonin terms)
+                    # Original exclusions
                     'ملاط', 'ملات', 'میلان', 'میلاد', 'میلی', 'تونین', 'تونی',
-                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون', 'میجاتاین',
+                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون','هولیست','میجاتاین',
+                    
+                    # New exclusions from your list
                     'naturals', 'جلایسین', 'nutrafol', 'entro', 'holis', 'natr',
-                    'اورلیستات', 'nitro', 'نترو', 'لاین',
-                    'الکریاتین', 'megatine', 'سیترولین', 'ملتی',
+                    'هولیستا', 'اورلیستات', 'ناترول', 'nitro', 'نترو', 'لاین',
+                    'الکریاتین', 'megatine', 'سیترولین', 'ملتی', 'holista',
                     'کریاتین', 'سنترو', 'malate', 'جامیزنج', 'مالتی', 'هولستا',
-                    'میجاتو', 'انترو', 'natural', 'لاکتوفیرین',
-                    'یوراتین', 'میجاتین', 'ملین', 'chelated',
-                    'جلافولین', 'orlistat', 'ناتشورال', 'ملکات',
+                    'میجاتو', 'انترو', 'jameson', 'natural', 'لاکتوفیرین',
+                    'یوراتین', 'میجاتین', 'ملین', 'chelated', 'جامسیون',
+                    'jamison', 'جامیس', 'جلافولین', 'orlistat', 'jamies',
+                    'ناتشورال', 'ملکات',
+                    
+                    # Additional related exclusions
                     'glycine', 'creatine', 'citrulline', 'lactoferrin',
                     'multi', 'multivitamin', 'centrum', 'mega',
                     'nitric', 'oxide', 'chelate', 'malates',
-                    'holistic', 'xenical', 'alli',
+                    'jamieson', 'jamiesons', 'natrol', 'holistic',
+                    'orlistat', 'xenical', 'alli',
+                    
+                    # Brand name exclusions
                     'nutrafol hair', 'entro vitality', 'mega creatine',
-                    'nitro tech', 'centrum multi',
+                    'nitro tech', 'centrum multi', 'jamieson vitamin',
+                    
+                    # Supplement category exclusions
                     'protein', 'پروتین', 'amino', 'امینو',
                     'vitamin', 'ویتامین', 'mineral', 'معدنی',
                     'omega', 'اومگا', 'fish oil', 'روغن ماهی'
                 ],
                 
                 'compounds': [
-                    # Dosages
+                    # Dosage variations
                     '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
                     'میلاتونین 1', 'میلاتونین 3', 'میلاتونین 5', 'میلاتونین 10',
                     'میلاتونین5', 'میلاتونین10', 'میلاتونین ١٠',
@@ -3371,12 +3507,7 @@ with tab_search:
                     'melatonin 1 mg', 'melatonin 3 mg', 'melatonin 5 mg', 'melatonin 10 mg',
                     'melatonin 1mg', 'melatonin 3mg', 'melatonin 5mg', 'melatonin 10mg',
                     
-                    # Brands (moved from variations)
-                    'هولیستا', 'holista', 'ناترول', 'natrol', 'جامیسون', 'jamieson',
-                    'میلاتو سلیب', 'میلاتونین ستار', 'جی بی میلاتونین', 'jp melatonin',
-                    'jp mela', 'jp melat', 'ناترول میلاتونین للاطفال',
-                    
-                    # Forms
+                    # Form variations
                     'gummy', 'gummies', 'حبوب', 'نقط', 'شراب', 'شرایح', 'حلوى',
                     'melatonin gummy', 'melatonin gummies',
                     
@@ -3384,126 +3515,155 @@ with tab_search:
                     'اطفال', 'للاطفال', 'الاطفال', 'کیدز', 'kids', 'children',
                     'میلاتونین اطفال', 'میلاتونین للاطفال', 'میلاتونین الاطفال',
                     'میلاتونین کیدز', 'میلاتونینللاطفال', 'میلاتون اطفال',
-                    'میلاتون للاطفال', 'melatonin for kids', 'melatonin kids', 'kids melatonin',
+                    'میلاتون للاطفال', 'ناترول میلاتونین للاطفال',
+                    'melatonin for kids', 'melatonin kids', 'kids melatonin',
                     
                     # Usage context
                     'للنوم', 'sleep', 'سلیب', 'نوم',
+                    
+                    # Additional compounds
                     'plus', 'بلس', 'میلاتونین بلس', 'melatonin plus',
                     'extract', 'عصاره'
                 ],
+                
                 'threshold': 80,
                 'min_length': 4
             }
-        }
-        
-        return _MASTER_DICT_CACHE
 
-    # 🔧 OPTIMIZATION 2: Pre-compile regex patterns at module level
-    _REGEX_PATTERNS = [
-        re.compile(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}'),  # Arabic/Persian
-        re.compile(r'[a-zA-Z]{3,}'),  # English
-        re.compile(r'\d{2,}')  # Numbers
-    ]
+        }
+
+
 
     def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
-        """
-        Extract keywords from text using pre-compiled regex patterns
-        """
-        if not text or len(text.strip()) < min_length:
+        """Extract keywords and prepare for fuzzy grouping"""
+        if not isinstance(text, str):
             return []
         
-        text_lower = text.lower().strip()
+        text = text.strip().lower()
+        
+        # Enhanced patterns for Arabic and English
+        patterns = [
+            r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}',  # Arabic words 2+ chars
+            r'[a-zA-Z]{3,}',  # English words 3+ chars
+            r'\d{2,}',  # Numbers 2+ digits
+        ]
+        
         keywords = []
+        for pattern in patterns:
+            matches = re.findall(pattern, text)
+            keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
         
-        # Use pre-compiled patterns
-        for pattern in _REGEX_PATTERNS:
-            matches = pattern.findall(text_lower)
-            keywords.extend(matches)
-        
-        # Use set for fast deduplication
-        unique_keywords = list(set(kw.strip() for kw in keywords if len(kw.strip()) >= min_length))
-        
-        return unique_keywords
+        return keywords
 
-    # 🔧 OPTIMIZATION 3: Pre-compile exclusion cache
-    _EXCLUSION_CACHE = {}
-
-    def get_exclusion_cache():
-        """
-        Get pre-processed exclusion cache
-        """
-        global _EXCLUSION_CACHE
-        if not _EXCLUSION_CACHE:
-            master_dict = create_master_keyword_dictionary()
-            for master_keyword, master_info in master_dict.items():
-                _EXCLUSION_CACHE[master_keyword] = [
-                    term.strip().lower() for term in master_info.get('excluded_terms', [])
-                ]
-        return _EXCLUSION_CACHE
-
-    # 🚀 ENHANCED fuzzy_match_keywords function
     def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
         """
-        Ultra-optimized fuzzy matching with early exits and caching
+        MUCH MORE CONSERVATIVE fuzzy matching with strict rules
         """
         grouped_keywords = defaultdict(lambda: {
-            'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 
-            'queries': [], 'variations': []
+            'total_counts': 0, 
+            'total_clicks': 0, 
+            'total_conversions': 0, 
+            'queries': [],
+            'variations': []
         })
         
         processed_keywords = set()
-        exclusion_cache = get_exclusion_cache()
         
-        # 🔧 NEW: Pre-compile variation lookups for O(1) exact matches
-        exact_match_cache = {}
-        for master_keyword, master_info in master_dict.items():
-            for variation in master_info['variations']:
-                exact_match_cache[variation.lower()] = master_keyword
-        
-        # Sort by length for better matching priority
-        sorted_keywords = sorted(keyword_data.items(), key=lambda x: len(x[0]), reverse=True)
-        
-        for keyword, data in sorted_keywords:
-            if keyword in processed_keywords or len(keyword.strip()) < 3:
+        # Process each keyword in the data
+        for keyword, data in keyword_data.items():
+            if keyword in processed_keywords:
                 continue
                 
-            keyword_lower = keyword.lower()
+            # Skip very short keywords that are likely noise
+            if len(keyword.strip()) < 3:
+                continue
+                
+            best_match = None
+            best_score = 0
             matched_master = None
             
-            # 🚀 FASTEST: Check exact match cache first
-            if keyword_lower in exact_match_cache:
-                matched_master = exact_match_cache[keyword_lower]
-            else:
-                # Fallback to fuzzy matching only if needed
-                best_score = 0
-                
-                for master_keyword, master_info in master_dict.items():
-                    if len(keyword) < master_info.get('min_length', 3):
-                        continue
-                        
-                    # Fast exclusion check
-                    if any(exc in keyword_lower for exc in exclusion_cache.get(master_keyword, [])):
-                        continue
-                    
-                    # Limited fuzzy matching with optimizations
-                    for variation in master_info['variations'][:10]:  # Reduced from 15 to 10
-                        if abs(len(keyword) - len(variation)) > 3:  # Reduced from 4 to 3
-                            continue
-                            
-                        score = fuzz.ratio(keyword_lower, variation.lower())
-                        if score >= master_info['threshold'] and score > best_score:
-                            if len(set(keyword_lower) & set(variation.lower())) >= 3:
-                                best_score = score
-                                matched_master = master_keyword
-                                break  # 🚀 Early exit on good match
+            # Try to match against master keywords
+            for master_keyword, master_info in master_dict.items():
+                # Skip if keyword is too short for this master
+                if len(keyword) < master_info.get('min_length', 3):
+                    continue
             
-            # Group results
-            if matched_master:
-                group_key = matched_master
-            else:
-                group_key = keyword
+                # 🚨 EXCLUSION CHECK - INDENT THIS PART TO BE INSIDE THE LOOP:
+                excluded_terms = master_info.get('excluded_terms', [])
+                is_excluded = False
+
+                for excluded_term in excluded_terms:
+                    excluded_term = excluded_term.strip()
+                    if excluded_term and excluded_term.lower() in keyword.lower():
+                        is_excluded = True
+                        break
+
+                # Skip this master keyword if current keyword matches exclusion
+                if is_excluded:
+                    continue
+
+                # Check main variations with STRICT matching
+                for variation in master_info['variations']:
+                    # 1. EXACT MATCH gets highest priority
+                    if keyword.lower() == variation.lower():
+                        best_score = 100
+                        best_match = variation
+                        matched_master = master_keyword
+                        break
+                    
+                    # 2. CONTAINS MATCH - but both ways and with length check
+                    if (variation.lower() in keyword.lower() and 
+                        len(variation) >= 4 and 
+                        len(keyword) >= 4):
+                        # Must be substantial portion of the word
+                        if len(variation) / len(keyword) >= 0.6:
+                            score = 90
+                            if score > best_score:
+                                best_score = score
+                                best_match = variation
+                                matched_master = master_keyword
+                    
+                    # 3. FUZZY MATCH - but very conservative
+                    score = fuzz.ratio(keyword.lower(), variation.lower())
+                    
+                    # Additional checks to prevent false matches
+                    if score >= master_info['threshold']:
+                        # Must share at least 60% of characters
+                        if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
+                            if score > best_score:
+                                best_score = score
+                                best_match = variation
+                                matched_master = master_keyword
                 
-            grouped_keywords[group_key]['variations'].append(keyword)
+                # If we found exact match, break
+                if best_score == 100:
+                    break
+                
+                # Check compound variations (e.g., مغنیسیوم جلیسینات)
+                if master_info.get('compounds') and len(keyword) >= 6:
+                    for compound in master_info['compounds']:
+                        # Check if keyword contains both master variation AND compound
+                        for main_var in master_info['variations'][:5]:  # Top 5 only
+                            if (main_var.lower() in keyword.lower() and 
+                                compound.lower() in keyword.lower() and
+                                len(main_var) >= 4):
+                                
+                                score = 85  # High score for compound matches
+                                if score > best_score:
+                                    best_score = score
+                                    best_match = f"{main_var} {compound}"
+                                    matched_master = master_keyword
+            
+            # Group under best match ONLY if score is high enough
+            if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
+                group_key = matched_master
+                grouped_keywords[group_key]['variations'].append(keyword)
+            else:
+                # Keep as standalone if no good match found
+                group_key = keyword
+                grouped_keywords[group_key]['variations'].append(keyword)
+            
+            # Add data to group
             grouped_keywords[group_key]['total_counts'] += data['total_counts']
             grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
             grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
@@ -3514,390 +3674,519 @@ with tab_search:
         return dict(grouped_keywords)
 
 
-    # 🔧 OPTIMIZATION 4: Cached performance calculation
     @st.cache_data(ttl=1800, show_spinner=False)
     def calculate_enhanced_keyword_performance(_df):
         """
-        Memory-optimized performance calculation
+        Enhanced keyword performance calculation with fuzzy matching
         """
         if _df.empty:
             return pd.DataFrame()
         
+        # Extract all keywords from queries
         keyword_data = defaultdict(lambda: {
-            'total_counts': 0, 'total_clicks': 0, 'total_conversions': 0, 'queries': []
+            'total_counts': 0, 
+            'total_clicks': 0, 
+            'total_conversions': 0, 
+            'queries': []
         })
         
-        # Process in batches for memory efficiency
-        batch_size = 2000
-        
-        for i in range(0, len(_df), batch_size):
-            batch = _df.iloc[i:i+batch_size]
+        for _, row in _df.iterrows():
+            query = str(row.get('normalized_query', ''))
+            counts = row.get('Counts', 0)
+            clicks = row.get('clicks', 0)
+            conversions = row.get('conversions', 0)
             
-            for _, row in batch.iterrows():
-                query = str(row.get('normalized_query', '')).strip().lower()
-                if not query:
-                    continue
-                    
-                counts = row.get('Counts', 0)
-                clicks = row.get('clicks', 0)
-                conversions = row.get('conversions', 0)
-                
-                # Use pre-compiled patterns
-                keywords = []
-                for pattern in _REGEX_PATTERNS:
-                    keywords.extend(pattern.findall(query))
-                
-                # Set-based deduplication
-                unique_keywords = set(kw.strip() for kw in keywords if len(kw.strip()) >= 2)
-                
-                for keyword in unique_keywords:
+            keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
+            
+            for keyword in keywords:
+                if len(keyword.strip()) >= 2:  # Allow 2+ char keywords for fuzzy matching
                     keyword_data[keyword]['total_counts'] += counts
                     keyword_data[keyword]['total_clicks'] += clicks
                     keyword_data[keyword]['total_conversions'] += conversions
                     keyword_data[keyword]['queries'].append(query)
         
-        # Apply fuzzy matching
+        # Apply fuzzy matching grouping
         master_dict = create_master_keyword_dictionary()
         grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=65)
         
-        # Vectorized DataFrame creation
+        # Convert to DataFrame
         kw_list = []
         for keyword, data in grouped_data.items():
             if data['total_counts'] > 0:
-                total_counts = data['total_counts']
-                total_clicks = data['total_clicks']
-                total_conversions = data['total_conversions']
-                
-                # Pre-calculate to avoid repeated operations
-                avg_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
-                health_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                avg_ctr = (data['total_clicks'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
+                classic_cr = (data['total_conversions'] / data['total_clicks'] * 100) if data['total_clicks'] > 0 else 0
+                health_cr = (data['total_conversions'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
                 
                 kw_list.append({
                     'keyword': keyword,
-                    'total_counts': total_counts,
-                    'total_clicks': total_clicks,
-                    'total_conversions': total_conversions,
+                    'total_counts': data['total_counts'],
+                    'total_clicks': data['total_clicks'],
+                    'total_conversions': data['total_conversions'],
                     'avg_ctr': round(avg_ctr, 2),
                     'classic_cr': round(classic_cr, 2),
-                    'health_cr': round(health_cr, 2),
+                    'health_cr': round(health_cr, 2),  # This is the correct column name
                     'unique_queries': len(set(data['queries'])),
                     'variations_count': len(set(data['variations'])),
                     'example_queries': list(set(data['queries']))[:5],
-                    'variations': list(set(data['variations']))
+                    'variations': list(set(data['variations']))  # Show top 15 variations
                 })
         
         return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
 
-    # 🏆 STREAMLIT UI SECTION
-    def display_fuzzy_keyword_analysis(queries, format_number):
-        """
-        Display the fuzzy keyword analysis UI
-        """
-        st.subheader("🏆 Top Performing Health Keywords (Fuzzy Matched)")
+    # 🏆 UPDATED Top Performing Health Keywords Section with Fuzzy Matching
+    st.subheader("🏆 Top Performing Health Keywords (Fuzzy Matched)")
 
-        # Calculate enhanced keyword performance with fuzzy matching
-        kw_perf_df = calculate_enhanced_keyword_performance(queries)
+    # Calculate enhanced keyword performance with fuzzy matching
+    kw_perf_df = calculate_enhanced_keyword_performance(queries)
 
-        if not kw_perf_df.empty:
-            # Show fuzzy matching results summary
-            st.info(f"🔍 **Fuzzy Matching Results:** Found {len(kw_perf_df)} keyword groups from raw keyword extraction")
-            
-            # Check specific high-value keywords and show their grouping success
-            magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
-            collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
-            vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
-            omega_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('اوميجا', case=False, na=False)]
-            
-            # Show grouping success metrics
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                if not magnesium_rows.empty:
-                    mag_data = magnesium_rows.iloc[0]
-                    st.metric(
-                        "🧲 مغنیسیوم Group", 
-                        f"{mag_data['total_counts']:,}",
-                        f"{mag_data['variations_count']} variations"
-                    )
-                else:
-                    st.metric("🧲 مغنیسیوم Group", "0", "No matches")
-            
-            with col2:
-                if not collagen_rows.empty:
-                    col_data = collagen_rows.iloc[0]
-                    st.metric(
-                        "🦴 کولاجین Group", 
-                        f"{col_data['total_counts']:,}",
-                        f"{col_data['variations_count']} variations"
-                    )
-                else:
-                    st.metric("🦴 کولاجین Group", "0", "No matches")
-            
-            with col3:
-                if not vitamin_rows.empty:
-                    vit_data = vitamin_rows.iloc[0]
-                    st.metric(
-                        "💊 فیتامین Group", 
-                        f"{vit_data['total_counts']:,}",
-                        f"{vit_data['variations_count']} variations"
-                    )
-                else:
-                    st.metric("💊 فیتامین Group", "0", "No matches")
-            
-            with col4:
-                if not omega_rows.empty:
-                    omega_data = omega_rows.iloc[0]
-                    st.metric(
-                        "🐟 اوميجا Group", 
-                        f"{omega_data['total_counts']:,}",
-                        f"{omega_data['variations_count']} variations"
-                    )
-                else:
-                    st.metric("🐟 اوميجا Group", "0", "No matches")
-            
-            # Keyword Variations Explorer
-            st.write("### 🔍 Keyword Variations Explorer")
+    if not kw_perf_df.empty:
+        # Show fuzzy matching results summary
+        st.info(f"🔍 **Fuzzy Matching Results:** Found {len(kw_perf_df)} keyword groups from raw keyword extraction")
+        
+        # Check specific high-value keywords and show their grouping success
+        magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
+        collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
+        vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
+        omega_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('اوميجا', case=False, na=False)]  # Check for اوميجا
+        
+        # Show grouping success metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if not magnesium_rows.empty:
+                mag_data = magnesium_rows.iloc[0]
+                st.metric(
+                    "🧲 مغنیسیوم Group", 
+                    f"{mag_data['total_counts']:,}",
+                    f"{mag_data['variations_count']} variations"
+                )
+            else:
+                st.metric("🧲 مغنیسیوم Group", "0", "No matches")
+        
+        with col2:
+            if not collagen_rows.empty:
+                col_data = collagen_rows.iloc[0]
+                st.metric(
+                    "🦴 کولاجین Group", 
+                    f"{col_data['total_counts']:,}",
+                    f"{col_data['variations_count']} variations"
+                )
+            else:
+                st.metric("🦴 کولاجین Group", "0", "No matches")
+        
+        with col3:
+            if not vitamin_rows.empty:
+                vit_data = vitamin_rows.iloc[0]
+                st.metric(
+                    "💊 فیتامین Group", 
+                    f"{vit_data['total_counts']:,}",
+                    f"{vit_data['variations_count']} variations"
+                )
+            else:
+                st.metric("💊 فیتامین Group", "0", "No matches")
+        
+        with col4:
+            if not omega_rows.empty:
+                omega_data = omega_rows.iloc[0]
+                st.metric(
+                    "🐟 اوميجا Group", 
+                    f"{omega_data['total_counts']:,}",
+                    f"{omega_data['variations_count']} variations"
+                )
+            else:
+                st.metric("🐟 اوميجا Group", "0", "No matches")
+        
+        # Show variations for top keywords in expandable sections
+        # 🎯 DROPDOWN KEYWORD VARIATIONS EXPLORER
+        st.write("### 🔍 Keyword Variations Explorer")
 
-            # Use slider for number of keywords
-            num_keywords = st.slider(
-                "Number of health keywords to display:", 
-                min_value=10, 
-                max_value=min(300, len(kw_perf_df)), 
-                value=15, 
-                step=10,
-                key="fuzzy_keyword_count_slider"
-            )
-            top_keywords = kw_perf_df.head(num_keywords)
+        # Use slider for number of keywords
+        num_keywords = st.slider(
+            "Number of health keywords to display:", 
+            min_value=10, 
+            max_value=min(300, len(kw_perf_df)), 
+            value=15, 
+            step=10,
+            key="fuzzy_keyword_count_slider"
+        )
+        top_keywords = kw_perf_df.head(num_keywords)
 
-            # Get top 25 keywords for dropdown
-            top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
+        # Get top 25 keywords for dropdown
+        top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
 
-            # Create dropdown with emoji mapping
-            emoji_map = {
-                'مغنیسیوم': '⚡', 'اوميجا': '🐟', 'فیتامین': '💊', 'کولاجین': '✨',
-                'زنک': '🔋', 'کالسیوم': '🦴', 'حدید': '🩸', 'بروتین': '💪',
-                'میلاتونین': '😴', 'بیوتین': '💇', 'اشواغندا': '🌿', 'جنسنج': '🌱',
-                'کرکم': '🧡', 'خل التفاح': '🍎', 'منوم': '🌙', 'بربرین': '🟡',
-                'کرانبری': '🔴', 'فحم نشط': '⚫', 'عسل': '🍯', 'کیو10': '❤️',
-                'گلوتاثیون': '✨', 'ارجنین': '💊', 'سیلینیوم': '🔘', 'فولیک اسید': '🤱',
-                'تخسیس': '⚖️'
-            }
+        # Create dropdown with emoji mapping
+        emoji_map = {
+            'مغنیسیوم': '⚡',
+            'اوميجا': '🐟', 
+            'فیتامین': '💊',
+            'کولاجین': '✨',
+            'زنک': '🔋',
+            'کالسیوم': '🦴',
+            'حدید': '🩸',
+            'بروتین': '💪',
+            'میلاتونین': '😴',
+            'بیوتین': '💇',
+            'اشواغندا': '🌿',
+            'جنسنج': '🌱',
+            'کرکم': '🧡',
+            'خل التفاح': '🍎',
+            'منوم': '🌙',
+            'بربرین': '🟡',
+            'کرانبری': '🔴',
+            'فحم نشط': '⚫',
+            'عسل': '🍯',
+            'کیو10': '❤️',
+            'گلوتاثیون': '✨',
+            'ارجنین': '💊',
+            'سیلینیوم': '🔘',
+            'فولیک اسید': '🤱',
+            'تخسیس': '⚖️'
+        }
 
-            # Create dropdown options with emojis and stats
-            dropdown_options = []
-            keyword_mapping = {}
+        # Create dropdown options with emojis and stats
+        # Create dropdown options with emojis and stats
+        dropdown_options = []
+        keyword_mapping = {}  # Map display text to actual keyword
 
-            for keyword in top_25_keywords:
-                emoji = emoji_map.get(keyword, '💊')
-                keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
-                volume = format_number(keyword_data['total_counts'])
-                variations = keyword_data['variations_count']
+        for i, keyword in enumerate(top_25_keywords):
+            emoji = emoji_map.get(keyword, '💊')
+            keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
+            volume = format_number(keyword_data['total_counts'])
+            variations = keyword_data['variations_count']
+            
+            display_text = f"{emoji} {keyword} ({volume} searches, {variations} variations)"
+            dropdown_options.append(display_text)
+            keyword_mapping[display_text] = keyword  # Store the mapping
+
+        # Dropdown selection
+        selected_option = st.selectbox(
+            "Select a health keyword to view its variations:",
+            options=["Select a keyword..."] + dropdown_options,
+            key="keyword_variations_dropdown"
+        )
+
+        # Show variations when keyword is selected
+        if selected_option != "Select a keyword...":
+            # Use mapping instead of text parsing
+            selected_keyword = keyword_mapping[selected_option]
+            
+            
+            # Get keyword data
+            keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
+            
+            if not keyword_rows.empty:
+                keyword_data = keyword_rows.iloc[0]
                 
-                display_text = f"{emoji} {keyword} ({volume} searches, {variations} variations)"
-                dropdown_options.append(display_text)
-                keyword_mapping[display_text] = keyword
-
-            # Dropdown selection
-            selected_option = st.selectbox(
-                "Select a health keyword to view its variations:",
-                options=["Select a keyword..."] + dropdown_options,
-                key="keyword_variations_dropdown"
-            )
-
-            # Show variations when keyword is selected
-            if selected_option != "Select a keyword...":
-                selected_keyword = keyword_mapping[selected_option]
-                keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
+                # Show keyword header with emoji
+                emoji = emoji_map.get(selected_keyword, '💊')
+                st.write(f"## {emoji} {selected_keyword} Variations Analysis")
                 
-                if not keyword_rows.empty:
-                    keyword_data = keyword_rows.iloc[0]
-                    emoji = emoji_map.get(selected_keyword, '💊')
-                    st.write(f"## {emoji} {selected_keyword} Variations Analysis")
-                    
-                    # Show key metrics in columns
-                    col1, col2, col3, col4 = st.columns(4)
+                # Show key metrics in columns
+                col1, col2, col3, col4 = st.columns(4)
+                
+                with col1:
+                    st.metric(
+                        "Total Volume", 
+                        format_number(keyword_data['total_counts']),
+                        help="Total search volume for this keyword group"
+                    )
+                
+                with col2:
+                    st.metric(
+                        "Variations", 
+                        format_number(keyword_data['variations_count']),
+                        help="Number of different variations grouped together"
+                    )
+                
+                with col3:
+                    st.metric(
+                        "Avg CTR", 
+                        f"{keyword_data['avg_ctr']:.2f}%",
+                        help="Average Click-Through Rate"
+                    )
+                
+                with col4:
+                    st.metric(
+                        "Health CR", 
+                        f"{keyword_data['health_cr']:.2f}%",
+                        help="Health Conversion Rate"
+                    )
+                
+                # Show variations in a nice format
+                st.write("### 📝 All Variations:")
+                
+                variations_list = keyword_data['variations']
+                total_variations = len(variations_list)
+                
+                # Group variations for better display
+                if total_variations > 0:
+                    # User controls
+                    col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.metric("Total Volume", format_number(keyword_data['total_counts']))
-                    with col2:
-                        st.metric("Variations", format_number(keyword_data['variations_count']))
-                    with col3:
-                        st.metric("Avg CTR", f"{keyword_data['avg_ctr']:.2f}%")
-                    with col4:
-                        st.metric("Health CR", f"{keyword_data['health_cr']:.2f}%")
-                    
-                    # Show variations
-                    st.write("### 📝 All Variations:")
-                    variations_list = keyword_data['variations']
-                    
-                    if variations_list:
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            display_count = st.selectbox("Show variations:", [25, 50, 100, "All"], index=1)
-                        with col2:
-                            display_format = st.radio("Format:", ["Pipe separated", "Line by line"], index=0)
-                        
-                        if display_count == "All":
-                            variations_to_show = variations_list
-                        else:
-                            variations_to_show = variations_list[:min(display_count, len(variations_list))]
-                        
-                        if display_format == "Line by line":
-                            variations_text = "\n".join(variations_to_show)
-                            height = min(400, max(150, len(variations_to_show) * 25))
-                        else:
-                            variations_text = " | ".join(variations_to_show)
-                            height = 150
-                        
-                        st.text_area(
-                            f"Variations (showing {len(variations_to_show)} of {len(variations_list)}):",
-                            variations_text,
-                            height=height
+                        display_count = st.selectbox(
+                            "Show variations:",
+                            [25, 50, 100, "All"],
+                            index=1  # Default to 50
                         )
-                        
-                        # Additional insights
-                        st.write("### 📊 Additional Insights:")
-                        insight_col1, insight_col2 = st.columns(2)
-                        
-                        with insight_col1:
-                            st.write("**Performance Metrics:**")
-                            st.write(f"• Total Clicks: {format_number(keyword_data['total_clicks'])}")
-                            st.write(f"• Conversions: {format_number(keyword_data['total_conversions'])}")
-                            st.write(f"• Unique Queries: {format_number(keyword_data['unique_queries'])}")
-                        
-                        with insight_col2:
-                            st.write("**Keyword Diversity:**")
-                            avg_searches = keyword_data['total_counts'] / keyword_data['variations_count'] if keyword_data['variations_count'] > 0 else 0
-                            st.write(f"• Avg Searches per Variation: {avg_searches:.1f}")
-                            
-                            diversity_score = (keyword_data['variations_count'] / keyword_data['total_counts'] * 1000) if keyword_data['total_counts'] > 0 else 0
-                            st.write(f"• Diversity Score: {diversity_score:.2f}")
-                            
-                            market_share = (keyword_data['total_counts'] / queries['Counts'].sum() * 100)
-                            st.write(f"• Market Share: {market_share:.2f}%")
+                    
+                    with col2:
+                        display_format = st.radio(
+                            "Format:",
+                            ["Pipe separated", "Line by line"],
+                            index=0  # Default to pipe separated
+                        )
+                    
+                    # Process variations
+                    available_variations = len(variations_list)
+                    
+                    if display_count == "All":
+                        variations_to_show = variations_list
+                    else:
+                        variations_to_show = variations_list[:min(display_count, available_variations)]
+                    
+                    # Format output
+                    if display_format == "Line by line":
+                        variations_text = "\n".join(variations_to_show)
+                        height = min(400, max(150, len(variations_to_show) * 25))
+                    else:
+                        variations_text = " | ".join(variations_to_show)
+                        height = 150
+                    
+                    st.text_area(
+                        f"Variations (showing {len(variations_to_show)} of {available_variations}):",
+                        variations_text,
+                        height=height,
+                        help="Copy these variations for your keyword research"
+                    )
+                    
+                    # Show info if more variations exist
+                    if available_variations > len(variations_to_show):
+                        st.info(f"ℹ️ {available_variations - len(variations_to_show)} more variations available. Select 'All' to see them.")
 
-            # Main table display
-            st.write("---")
-            top_keywords = kw_perf_df.head(num_keywords)
-            total_all_counts = queries['Counts'].sum()
-            top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
+                    
+                    # Additional insights
+                    st.write("### 📊 Additional Insights:")
+                    
+                    insight_col1, insight_col2 = st.columns(2)
+                    
+                    with insight_col1:
+                        st.write("**Performance Metrics:**")
+                        st.write(f"• Total Clicks: {format_number(keyword_data['total_clicks'])}")
+                        st.write(f"• Conversions: {format_number(keyword_data['total_conversions'])}")
+                        st.write(f"• Unique Queries: {format_number(keyword_data['unique_queries'])}")
+                    
+                    with insight_col2:
+                        st.write("**Keyword Diversity:**")
+                        avg_searches = keyword_data['total_counts'] / keyword_data['variations_count'] if keyword_data['variations_count'] > 0 else 0
+                        st.write(f"• Avg Searches per Variation: {avg_searches:.1f}")
+                        
+                        # Calculate diversity score
+                        diversity_score = (keyword_data['variations_count'] / keyword_data['total_counts'] * 1000) if keyword_data['total_counts'] > 0 else 0
+                        st.write(f"• Diversity Score: {diversity_score:.2f}")
+                        
+                        # Market share
+                        market_share = (keyword_data['total_counts'] / queries['Counts'].sum() * 100) if 'queries' in locals() else 0
+                        st.write(f"• Market Share: {market_share:.2f}%")
+                        
+                else:
+                    st.warning("No variations found for this keyword.")
 
-            if not top_keywords.empty:
-                # Create display version with proper formatting
-                display_df = top_keywords.copy()
-                
-                display_df = display_df.rename(columns={
-                    'keyword': 'Health Keyword',
-                    'total_counts': 'Total Search Volume',
-                    'share_pct': 'Market Share %',
-                    'total_clicks': 'Total Clicks',
-                    'total_conversions': 'Conversions',
-                    'avg_ctr': 'Avg CTR',
-                    'health_cr': 'Health CR',
-                    'classic_cr': 'Classic CR',
-                    'unique_queries': 'Unique Queries',
-                    'variations_count': 'Variations'
-                })
-                
-                # Format columns
-                display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
-                display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
-                display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
-                display_df['Conversions'] = display_df['Conversions'].apply(format_number)
-                display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
-                display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
-                display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
-                display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
-                display_df['Variations'] = display_df['Variations'].apply(format_number)
-                
-                # Column order
-                column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
-                            'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
-                display_df = display_df[column_order].reset_index(drop=True)
-                
-                # Display dataframe
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
-                # Enhanced CSS styling
-                st.markdown("""
-                <style>
-                .stDataFrame th {
-                    text-align: center !important;
-                    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
-                    color: white !important;
-                    font-weight: bold !important;
+        # Add separator before main table
+        st.write("---")
+
+        top_keywords = kw_perf_df.head(num_keywords)
+
+        # Calculate market share
+        total_all_counts = queries['Counts'].sum()
+        top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
+
+        if not top_keywords.empty:
+            # Create display version with proper formatting
+            display_df = top_keywords.copy()
+            
+            display_df = display_df.rename(columns={
+                'keyword': 'Health Keyword',
+                'total_counts': 'Total Search Volume',
+                'share_pct': 'Market Share %',
+                'total_clicks': 'Total Clicks',
+                'total_conversions': 'Conversions',
+                'avg_ctr': 'Avg CTR',
+                'health_cr': 'Health CR',
+                'classic_cr': 'Classic CR',
+                'unique_queries': 'Unique Queries',
+                'variations_count': 'Variations'
+            })
+            
+            # 🚀 USE THE FORMAT_NUMBER FUNCTION
+            display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
+            display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
+            display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
+            display_df['Conversions'] = display_df['Conversions'].apply(format_number)
+            display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
+            display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
+            display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
+            display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
+            display_df['Variations'] = display_df['Variations'].apply(format_number)
+            
+            # Column order - include variations count
+            column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
+                        'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
+            display_df = display_df[column_order].reset_index(drop=True)
+            
+            # Display with enhanced styling
+            st.dataframe(
+                display_df, 
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Health Keyword": st.column_config.TextColumn(
+                        "Health Keyword",
+                        help="Fuzzy-matched Nutraceuticals & Nutrition search keyword group",
+                        width="medium"
+                    ),
+                    "Total Search Volume": st.column_config.TextColumn(
+                        "Total Search Volume",
+                        help="Total health search volume (fuzzy-grouped)",
+                        width="small"
+                    ),
+                    "Market Share %": st.column_config.TextColumn(
+                        "Market Share %",
+                        help="Percentage of total health searches",
+                        width="small"
+                    ),
+                    "Total Clicks": st.column_config.TextColumn(
+                        "Total Clicks",
+                        help="Total clicks received",
+                        width="small"
+                    ),
+                    "Conversions": st.column_config.TextColumn(
+                        "Conversions",
+                        help="Total conversions",
+                        width="small"
+                    ),
+                    "Avg CTR": st.column_config.TextColumn(
+                        "Avg CTR",
+                        help="Average Click-Through Rate",
+                        width="small"
+                    ),
+                    "Health CR": st.column_config.TextColumn(
+                        "Health CR",
+                        help="Health Conversion Rate (Conversions/Volume)",
+                        width="small"
+                    ),
+                    "Classic CR": st.column_config.TextColumn(
+                        "Classic CR",
+                        help="Classic Conversion Rate (Conversions/Clicks)",
+                        width="small"
+                    ),
+                    "Unique Queries": st.column_config.TextColumn(
+                        "Unique Queries",
+                        help="Number of unique search queries for this keyword",
+                        width="small"
+                    ),
+                    "Variations": st.column_config.TextColumn(
+                        "Variations",
+                        help="Number of keyword variations grouped together",
+                        width="small"
+                    )
                 }
-                .stDataFrame td {
-                    text-align: center !important;
-                }
-                .stDataFrame tr:nth-child(even) {
-                    background-color: #F1F8E9 !important;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-                
-                # Show example queries option
-                if st.checkbox("🔍 Show example queries and variations for top keywords", key="show_fuzzy_examples"):
-                    st.subheader("📝 Example Queries & Variations")
-                    for idx, row in top_keywords.head(5).iterrows():
-                        keyword = row['keyword']
-                        examples = row['example_queries'][:3]
-                        variations = row['variations'][:10]
-                        
-                        st.markdown(f"**🔸 {keyword}** ({format_number(row['total_counts'])} searches, {row['variations_count']} variations):")
-                        
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.markdown("**Example Queries:**")
-                            for example in examples:
-                                st.markdown(f"   • {example}")
-                        
-                        with col2:
-                            st.markdown("**Grouped Variations:**")
-                            for var in variations[:5]:
-                                st.markdown(f"   • {var}")
-                        
-                        st.markdown("---")
-                
-                # Download button
-                csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
-                                        'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
-                                        'unique_queries', 'variations_count']].copy()
-                csv_keywords = csv_data.to_csv(index=False)
-                
-                st.download_button(
-                    label="📥 Download Fuzzy-Matched Health Keywords CSV",
-                    data=csv_keywords,
-                    file_name=f"fuzzy_matched_top_{num_keywords}_health_keywords.csv",
-                    mime="text/csv",
-                    key="fuzzy_keyword_csv_download"
-                )
-                
-                # Summary insights
-                total_variations = top_keywords['variations_count'].sum()
-                avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 else 0
-                high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 else 0
+            )
+            
+            # Enhanced CSS styling
+            st.markdown("""
+            <style>
+            .stDataFrame [data-testid="stDataFrameResizeHandle"] {
+                display: none !important;
+            }
+            .stDataFrame > div {
+                text-align: center;
+            }
+            .stDataFrame th {
+                text-align: center !important;
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
+                color: white !important;
+                font-weight: bold !important;
+                border: 1px solid #1B5E20 !important;
+            }
+            .stDataFrame td {
+                text-align: center !important;
+                border: 1px solid #E8F5E8 !important;
+            }
+            .stDataFrame tr:nth-child(even) {
+                background-color: #F1F8E9 !important;
+            }
+            .stDataFrame tr:hover {
+                background-color: #E8F5E8 !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            
+            # Show example queries and variations for top keywords
+            if st.checkbox("🔍 Show example queries and variations for top keywords", key="show_fuzzy_examples"):
+                st.subheader("📝 Example Queries & Variations")
+                for idx, row in top_keywords.head(5).iterrows():
+                    keyword = row['keyword']
+                    examples = row['example_queries'][:3]  # Show top 3 examples
+                    variations = row['variations'][:10]  # Show top 10 variations
+                    
+                    st.markdown(f"""
+                    **🔸 {keyword}** ({format_number(row['total_counts'])} searches, {row['variations_count']} variations):
+                    """)
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown("**Example Queries:**")
+                        for example in examples:
+                            st.markdown(f"   • {example}")
+                    
+                    with col2:
+                        st.markdown("**Grouped Variations:**")
+                        for var in variations[:5]:  # Show top 5 variations
+                            st.markdown(f"   • {var}")
+                    
+                    st.markdown("---")
+            
+            # Download button with enhanced data including variations
+            csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
+                                    'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
+                                    'unique_queries', 'variations_count']].copy()
+            csv_keywords = csv_data.to_csv(index=False)
+            
+            st.download_button(
+                label="📥 Download Fuzzy-Matched Health Keywords CSV",
+                data=csv_keywords,
+                file_name=f"fuzzy_matched_top_{num_keywords}_health_keywords.csv",
+                mime="text/csv",
+                key="fuzzy_keyword_csv_download"
+            )
+            
+            # Enhanced summary insights
+            # Enhanced summary insights
+            total_variations = top_keywords['variations_count'].sum()
+            avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 else 0
+            high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 else 0  # FIXED: Use 'health_cr'
 
-                st.info(f"""
-                **📊 Fuzzy Keyword Analysis Summary:**
-                - **{len(kw_perf_df):,}** unique health keyword groups identified
-                - **{total_variations:,}** total keyword variations grouped together
-                - **{top_keywords['total_counts'].sum():,}** total search volume for top {num_keywords}
-                - **{top_keywords['share_pct'].sum():.1f}%** market share covered
-                - **{top_keywords['unique_queries'].sum():,}** unique search queries analyzed
-                - **Average {total_variations/len(top_keywords):.1f}** variations per keyword group
-                - **{high_perf_keywords}** keywords performing above average health CR ({avg_health_cr:.2f}%)
-                """)
+            st.info(f"""
+            **📊 Fuzzy Keyword Analysis Summary:**
+            - **{len(kw_perf_df):,}** unique health keyword groups identified
+            - **{total_variations:,}** total keyword variations grouped together
+            - **{top_keywords['total_counts'].sum():,}** total search volume for top {num_keywords}
+            - **{top_keywords['share_pct'].sum():.1f}%** market share covered
+            - **{top_keywords['unique_queries'].sum():,}** unique search queries analyzed
+            - **Average {total_variations/len(top_keywords):.1f}** variations per keyword group
+            - **{high_perf_keywords}** keywords performing above average health CR ({avg_health_cr:.2f}%)
+            """)
 
-        else:
-            st.warning("⚠️ No keyword data available for fuzzy analysis")
+    else:
+        st.warning("⚠️ No keyword data available for fuzzy analysis")
 
     st.markdown("---")
 
 
-        
+
+
+    
     # Advanced Analytics Section
     st.subheader("📈 Advanced Health Query Performance Analytics")
     
@@ -4188,8 +4477,8 @@ with tab_search:
             • Top health keyword appears in {:.1f}% of searches</p>
         </div>
         """.format(
-            metrics['long_tail_pct'],
-            metrics['avg_query_length'],
+            long_tail_pct,
+            avg_query_length,
             top_keyword_pct
         ), unsafe_allow_html=True)
 
@@ -4375,8 +4664,7 @@ with tab_search:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-
+    
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
 # ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
 with tab_brand:
