@@ -4477,8 +4477,8 @@ with tab_search:
             • Top health keyword appears in {:.1f}% of searches</p>
         </div>
         """.format(
-            long_tail_pct,
-            avg_query_length,
+            metrics['long_tail_pct'],
+            metrics['avg_query_length'],
             top_keyword_pct
         ), unsafe_allow_html=True)
 
