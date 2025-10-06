@@ -2269,18 +2269,22 @@ with tab_overview:
 
 
 st.markdown("---")
-# ----------------- Search Analysis (Enhanced Core) -----------------
+# ----------------- Search Analysis (Enhanced Core - OPTIMIZED) -----------------
 with tab_search:
     st.header("🔍 Health Search Analysis — Deep Dive into Nutraceuticals & Nutrition Queries")
     st.markdown("Analyze nutritional search patterns with advanced keyword insights, supplement performance metrics, and actionable health intelligence. 🌿")
     
-    # Hero Image for Search Tab
-    search_image_options = {
-        "Health Search Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Keyword+Performance+Hub",
-        "Wellness Data Visualization": "https://placehold.co/1200x200/2E7D32/FFFFFF?text=🧴+Supplement+Query+Intelligence",
-        "Natural Health Focus": "https://source.unsplash.com/1200x200/?health,nutrition,wellness",
-        "Nutrition Gradient": "https://placehold.co/1200x200/E8F5E8/1B5E20?text=💚+Nutraceutical+Insights",
-    }
+    # Cached Hero Image Options
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def get_search_hero_options():
+        return {
+            "Health Search Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Keyword+Performance+Hub",
+            "Wellness Data Visualization": "https://placehold.co/1200x200/2E7D32/FFFFFF?text=🧴+Supplement+Query+Intelligence",
+            "Natural Health Focus": "https://source.unsplash.com/1200x200/?health,nutrition,wellness",
+            "Nutrition Gradient": "https://placehold.co/1200x200/E8F5E8/1B5E20?text=💚+Nutraceutical+Insights",
+        }
+    
+    search_image_options = get_search_hero_options()
     selected_search_image = st.sidebar.selectbox("Choose Health Search Hero", options=list(search_image_options.keys()), index=0, key="search_hero_image_selector")
     st.image(search_image_options[selected_search_image], use_container_width=True)
     
@@ -2289,51 +2293,64 @@ with tab_search:
         st.error("❌ No health keyword data available. Please ensure your data contains properly processed Nutraceuticals & Nutrition keywords.")
         st.stop()
     
+    # Cached Quick Metrics Calculation
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def calculate_quick_search_metrics(_df):
+        """Calculate all search metrics in one optimized operation"""
+        if _df.empty:
+            return {'unique_queries': 0, 'avg_query_length': 0.0, 'high_perf_queries': 0, 'long_tail_pct': 0.0}
+        
+        metrics = {}
+        metrics['unique_queries'] = _df['normalized_query'].nunique()
+        metrics['avg_query_length'] = _df['query_length'].mean()
+        metrics['long_tail_pct'] = (_df['query_length'] >= 20).mean() * 100
+        
+        # High performance queries calculation
+        if 'Click Through Rate' in _df.columns and not _df.empty:
+            avg_ctr = _df['Click Through Rate'].mean()
+            metrics['high_perf_queries'] = len(_df[_df['Click Through Rate'] > avg_ctr])
+        else:
+            metrics['high_perf_queries'] = 0
+            
+        return metrics
+    
+    # Calculate metrics once
+    search_metrics = calculate_quick_search_metrics(queries)
+    
     # Quick Health Search Metrics Row
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     with col_m1:
-        unique_queries = queries['normalized_query'].nunique()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌿</span>
-            <div class='value'>{format_number(unique_queries)}</div>
+            <div class='value'>{format_number(search_metrics['unique_queries'])}</div>
             <div class='label'>Unique Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m2:
-        avg_query_length = queries['query_length'].mean()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>📏</span>
-            <div class='value'>{avg_query_length:.1f}</div>
+            <div class='value'>{search_metrics['avg_query_length']:.1f}</div>
             <div class='label'>Avg Query Length</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m3:
-        # Fixed: Total Keywords = Total number of rows (each search query counts as 1)
-        # Queries with above-average CTR
-        if 'Click Through Rate' in queries.columns and not queries.empty:
-            avg_ctr = queries['Click Through Rate'].mean()
-            high_perf_queries = len(queries[queries['Click Through Rate'] > avg_ctr])
-        else:
-            high_perf_queries = 0
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>⚡</span>
-            <div class='value'>{format_number(high_perf_queries)}</div>
+            <div class='value'>{format_number(search_metrics['high_perf_queries'])}</div>
             <div class='label'>High-Performance Nutraceuticals & Nutrition Queries</div>
         </div>
         """, unsafe_allow_html=True)
 
-    
     with col_m4:
-        long_tail_pct = (queries['query_length'] >= 20).mean() * 100
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌱</span>
-            <div class='value'>{long_tail_pct:.1f}%</div>
+            <div class='value'>{search_metrics['long_tail_pct']:.1f}%</div>
             <div class='label'>Long-tail Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
@@ -2347,118 +2364,151 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # First, define the functions if they haven't been defined yet
-        if 'calculate_enhanced_keyword_performance' not in locals():
-            # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
-            import re
-            from collections import defaultdict
-            from fuzzywuzzy import fuzz, process
-
-            def create_master_keyword_dictionary():
-                """
-                Define master keywords with their common variations for fuzzy matching
-                """
-                return {
-                    'مغنیسیوم': {
-                        'variations': [
-                            'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
-                            'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
-                            'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
-                            'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
-                            'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
-                            'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
-                        ],
-                        'excluded_terms': ['الصمغ'],
-                        'compounds': [
-                            'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
-                            'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
-                            'ثریونیت', 'توریت', 'فوار', '400', 'glycinate', 'citrate', 'malate'
-                        ],
-                        'threshold': 80,
-                        'min_length': 4
-                    },
-                    # Add other keywords here - I'll include just a few for brevity
-                    'اوميجا': {
-                        'variations': [
-                            'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
-                            'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
-                            'omega', 'omega3', 'omg3', 'omg', 'ome'
-                        ],
-                        'excluded_terms': [
-                            'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
-                            'زاو', 'milga', 'کرومیم', 'one', 'النوم'
-                        ],
-                        'compounds': ['3', '6', '9', '1000', '2000', 'EPA', 'DHA'],
-                        'threshold': 80,
-                        'min_length': 3
-                    },
-                    'فیتامین': {
-                        'variations': [
-                            'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
-                            'vitamin', 'vitamins', 'multivitamin'
-                        ],
-                        'excluded_terms': ['فیتنس', 'فیتر', 'فیتوری'],
-                        'compounds': ['سی', 'د', 'ب', 'c', 'd', 'b12'],
-                        'threshold': 75,
-                        'min_length': 4
-                    }
-                    # Add more keywords as needed...
+        # Cached Master Keyword Dictionary
+        @st.cache_data(ttl=7200, show_spinner=False)
+        def create_master_keyword_dictionary():
+            """Cached master keywords dictionary for better performance"""
+            return {
+                'مغنیسیوم': {
+                    'variations': [
+                        'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
+                        'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
+                        'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
+                        'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
+                        'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
+                        'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
+                    ],
+                    'excluded_terms': ['الصمغ'],
+                    'compounds': [
+                        'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
+                        'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
+                        'ثریونیت', 'توریت', 'فوار', '400', 'glycinate', 'citrate', 'malate'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                'اوميجا': {
+                    'variations': [
+                        'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
+                        'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
+                        'omega', 'omega3', 'omg3', 'omg', 'ome'
+                    ],
+                    'excluded_terms': [
+                        'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
+                        'زاو', 'milga', 'کرومیم', 'one', 'النوم'
+                    ],
+                    'compounds': ['3', '6', '9', '1000', '2000', 'EPA', 'DHA'],
+                    'threshold': 80,
+                    'min_length': 3
+                },
+                'فیتامین': {
+                    'variations': [
+                        'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
+                        'vitamin', 'vitamins', 'multivitamin'
+                    ],
+                    'excluded_terms': ['فیتنس', 'فیتر', 'فیتوری'],
+                    'compounds': ['سی', 'د', 'ب', 'c', 'd', 'b12'],
+                    'threshold': 75,
+                    'min_length': 4
                 }
+            }
 
-            def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
-                """Extract keywords and prepare for fuzzy grouping"""
-                if not isinstance(text, str):
-                    return []
-                
-                text = text.strip().lower()
-                
-                patterns = [
-                    r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}',  # Arabic words 2+ chars
-                    r'[a-zA-Z]{3,}',  # English words 3+ chars
-                    r'\d{2,}',  # Numbers 2+ digits
-                ]
-                
-                keywords = []
-                for pattern in patterns:
-                    matches = re.findall(pattern, text)
-                    keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
-                
-                return keywords
+        # Pre-compiled regex patterns for better performance
+        @st.cache_data(ttl=3600, show_spinner=False)
+        def get_compiled_patterns():
+            import re
+            return [
+                re.compile(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}'),  # Arabic
+                re.compile(r'[a-zA-Z]{3,}'),  # English
+                re.compile(r'\d{2,}')  # Numbers
+            ]
 
-            def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
-                """Conservative fuzzy matching with strict rules"""
-                grouped_keywords = defaultdict(lambda: {
-                    'total_counts': 0, 
-                    'total_clicks': 0, 
-                    'total_conversions': 0, 
-                    'queries': [],
-                    'variations': []
-                })
+        def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
+            """Optimized keyword extraction with pre-compiled patterns"""
+            if not isinstance(text, str) or len(text.strip()) < min_length:
+                return []
+            
+            text = text.strip().lower()
+            patterns = get_compiled_patterns()
+            
+            keywords = []
+            for pattern in patterns:
+                matches = pattern.findall(text)
+                keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
+            
+            return list(set(keywords))  # Remove duplicates early
+
+        # Safe import of fuzzywuzzy with fallback
+        def safe_import_fuzzywuzzy():
+            """Safely import fuzzywuzzy with fallback"""
+            try:
+                from fuzzywuzzy import fuzz
+                return fuzz, True
+            except ImportError:
+                return None, False
+
+        # Custom similarity function as fallback
+        def basic_similarity(s1, s2):
+            """Basic similarity calculation without fuzzywuzzy"""
+            s1, s2 = s1.lower().strip(), s2.lower().strip()
+            
+            if s1 == s2:
+                return 100
+            
+            if s1 in s2 or s2 in s1:
+                shorter, longer = (s1, s2) if len(s1) < len(s2) else (s2, s1)
+                return int((len(shorter) / len(longer)) * 90)
+            
+            set1, set2 = set(s1), set(s2)
+            intersection = len(set1 & set2)
+            union = len(set1 | set2)
+            
+            if union == 0:
+                return 0
+            
+            return int((intersection / union) * 80)
+
+        # Get fuzzy matching capability
+        fuzz, has_fuzzywuzzy = safe_import_fuzzywuzzy()
+
+        def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
+            """Optimized fuzzy matching with early termination and error handling"""
+            from collections import defaultdict
+            
+            grouped_keywords = defaultdict(lambda: {
+                'total_counts': 0, 
+                'total_clicks': 0, 
+                'total_conversions': 0, 
+                'queries': [],
+                'variations': []
+            })
+            
+            processed_keywords = set()
+            
+            # Sort keywords by length for better matching efficiency
+            sorted_keywords = sorted(keyword_data.items(), key=lambda x: len(x[0]), reverse=True)
+            
+            for keyword, data in sorted_keywords:
+                if keyword in processed_keywords or len(keyword.strip()) < 3:
+                    continue
+                    
+                best_match = None
+                best_score = 0
+                matched_master = None
                 
-                processed_keywords = set()
-                
-                for keyword, data in keyword_data.items():
-                    if keyword in processed_keywords or len(keyword.strip()) < 3:
+                for master_keyword, master_info in master_dict.items():
+                    if len(keyword) < master_info.get('min_length', 3):
                         continue
-                        
-                    best_match = None
-                    best_score = 0
-                    matched_master = None
-                    
-                    for master_keyword, master_info in master_dict.items():
-                        if len(keyword) < master_info.get('min_length', 3):
-                            continue
-                    
-                        # Exclusion check
-                        excluded_terms = master_info.get('excluded_terms', [])
-                        is_excluded = any(excluded_term.strip().lower() in keyword.lower() 
-                                        for excluded_term in excluded_terms if excluded_term.strip())
-                        
-                        if is_excluded:
-                            continue
+                
+                    # Quick exclusion check
+                    excluded_terms = master_info.get('excluded_terms', [])
+                    if any(excluded_term.strip().lower() in keyword.lower() 
+                           for excluded_term in excluded_terms if excluded_term.strip()):
+                        continue
 
-                        # Check variations
-                        for variation in master_info['variations']:
+                    # Check variations with error handling
+                    for variation in master_info['variations']:
+                        try:
                             if keyword.lower() == variation.lower():
                                 best_score = 100
                                 best_match = variation
@@ -2474,38 +2524,58 @@ with tab_search:
                                         best_match = variation
                                         matched_master = master_keyword
                             
-                            score = fuzz.ratio(keyword.lower(), variation.lower())
-                            if score >= master_info['threshold']:
-                                if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
-                                    if score > best_score:
+                            # Fuzzy matching with fallback
+                            if best_score < 90:
+                                try:
+                                    if has_fuzzywuzzy:
+                                        score = fuzz.ratio(keyword.lower(), variation.lower())
+                                    else:
+                                        score = basic_similarity(keyword, variation)
+                                    
+                                    if score >= master_info['threshold']:
+                                        if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
+                                            if score > best_score:
+                                                best_score = score
+                                                best_match = variation
+                                                matched_master = master_keyword
+                                except Exception:
+                                    # Fallback to basic similarity
+                                    score = basic_similarity(keyword, variation)
+                                    if score >= master_info['threshold'] and score > best_score:
                                         best_score = score
                                         best_match = variation
                                         matched_master = master_keyword
                         
-                        if best_score == 100:
-                            break
+                        except Exception:
+                            continue
                     
-                    # Group under best match
-                    if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
-                        group_key = matched_master
-                    else:
-                        group_key = keyword
-                    
-                    grouped_keywords[group_key]['variations'].append(keyword)
-                    grouped_keywords[group_key]['total_counts'] += data['total_counts']
-                    grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
-                    grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
-                    grouped_keywords[group_key]['queries'].extend(data['queries'])
-                    
-                    processed_keywords.add(keyword)
+                    if best_score == 100:
+                        break
                 
-                return dict(grouped_keywords)
+                # Group under best match
+                if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
+                    group_key = matched_master
+                else:
+                    group_key = keyword
+                
+                grouped_keywords[group_key]['variations'].append(keyword)
+                grouped_keywords[group_key]['total_counts'] += data['total_counts']
+                grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
+                grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
+                grouped_keywords[group_key]['queries'].extend(data['queries'])
+                
+                processed_keywords.add(keyword)
+            
+            return dict(grouped_keywords)
 
-            @st.cache_data(ttl=1800, show_spinner=False)
-            def calculate_enhanced_keyword_performance(_df):
-                """Enhanced keyword performance calculation with fuzzy matching"""
-                if _df.empty:
-                    return pd.DataFrame()
+        @st.cache_data(ttl=1800, show_spinner=False)
+        def calculate_enhanced_keyword_performance(_df):
+            """Enhanced keyword performance calculation with optimizations"""
+            if _df.empty:
+                return pd.DataFrame()
+            
+            try:
+                from collections import defaultdict
                 
                 keyword_data = defaultdict(lambda: {
                     'total_counts': 0, 
@@ -2514,56 +2584,91 @@ with tab_search:
                     'queries': []
                 })
                 
-                for _, row in _df.iterrows():
-                    query = str(row.get('normalized_query', ''))
-                    counts = row.get('Counts', 0)
-                    clicks = row.get('clicks', 0)
-                    conversions = row.get('conversions', 0)
+                # Process data in chunks for better memory management
+                chunk_size = 1000
+                total_rows = len(_df)
+                
+                for i in range(0, total_rows, chunk_size):
+                    chunk = _df.iloc[i:i+chunk_size]
                     
-                    keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
-                    
-                    for keyword in keywords:
-                        if len(keyword.strip()) >= 2:
-                            keyword_data[keyword]['total_counts'] += counts
-                            keyword_data[keyword]['total_clicks'] += clicks
-                            keyword_data[keyword]['total_conversions'] += conversions
-                            keyword_data[keyword]['queries'].append(query)
+                    for _, row in chunk.iterrows():
+                        try:
+                            query = str(row.get('normalized_query', ''))
+                            counts = row.get('Counts', 0)
+                            clicks = row.get('clicks', 0)
+                            conversions = row.get('conversions', 0)
+                            
+                            if not query or counts == 0:
+                                continue
+                            
+                            keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
+                            
+                            for keyword in keywords:
+                                if len(keyword.strip()) >= 2:
+                                    keyword_data[keyword]['total_counts'] += counts
+                                    keyword_data[keyword]['total_clicks'] += clicks
+                                    keyword_data[keyword]['total_conversions'] += conversions
+                                    keyword_data[keyword]['queries'].append(query)
+                        except Exception:
+                            continue
                 
                 # Apply fuzzy matching grouping
                 master_dict = create_master_keyword_dictionary()
                 grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=65)
                 
-                # Convert to DataFrame
+                # Convert to DataFrame with optimized calculations
                 kw_list = []
                 for keyword, data in grouped_data.items():
-                    if data['total_counts'] > 0:
-                        avg_ctr = (data['total_clicks'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
-                        classic_cr = (data['total_conversions'] / data['total_clicks'] * 100) if data['total_clicks'] > 0 else 0
-                        health_cr = (data['total_conversions'] / data['total_counts'] * 100) if data['total_counts'] > 0 else 0
-                        
-                        kw_list.append({
-                            'keyword': keyword,
-                            'total_counts': data['total_counts'],
-                            'total_clicks': data['total_clicks'],
-                            'total_conversions': data['total_conversions'],
-                            'avg_ctr': round(avg_ctr, 2),
-                            'classic_cr': round(classic_cr, 2),
-                            'health_cr': round(health_cr, 2),
-                            'unique_queries': len(set(data['queries'])),
-                            'variations_count': len(set(data['variations'])),
-                            'example_queries': list(set(data['queries']))[:5],
-                            'variations': list(set(data['variations']))
-                        })
+                    try:
+                        if data['total_counts'] > 0:
+                            total_counts = data['total_counts']
+                            total_clicks = data['total_clicks']
+                            total_conversions = data['total_conversions']
+                            
+                            avg_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                            classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                            health_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                            
+                            # Limit data to reduce memory usage
+                            unique_queries = list(set(data['queries']))
+                            unique_variations = list(set(data['variations']))
+                            
+                            kw_list.append({
+                                'keyword': keyword,
+                                'total_counts': total_counts,
+                                'total_clicks': total_clicks,
+                                'total_conversions': total_conversions,
+                                'avg_ctr': round(avg_ctr, 2),
+                                'classic_cr': round(classic_cr, 2),
+                                'health_cr': round(health_cr, 2),
+                                'unique_queries': len(unique_queries),
+                                'variations_count': len(unique_variations),
+                                'example_queries': unique_queries[:5],
+                                'variations': unique_variations
+                            })
+                    except Exception:
+                        continue
                 
-                return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
+                df_result = pd.DataFrame(kw_list)
+                if not df_result.empty:
+                    df_result = df_result.sort_values('total_counts', ascending=False).reset_index(drop=True)
+                
+                return df_result
+                
+            except Exception as e:
+                st.error(f"❌ Error in keyword analysis: {str(e)}")
+                return pd.DataFrame()
         
-        # Now calculate the keyword performance
-        kw_perf_df = calculate_enhanced_keyword_performance(queries)
+        # Calculate keyword performance with progress indicator
+        with st.spinner("🔄 Analyzing health keyword performance..."):
+            kw_perf_df = calculate_enhanced_keyword_performance(queries)
         
         if not kw_perf_df.empty:
-            # Use the fuzzy-matched keyword performance data directly
+            # Limit chart data for better performance
+            chart_data = kw_perf_df.head(30)
+            
             fig_kw = px.scatter(
-                kw_perf_df.head(30), 
+                chart_data, 
                 x='total_counts', 
                 y='avg_ctr',
                 size='total_clicks',
@@ -2586,7 +2691,7 @@ with tab_search:
                             'Total Clicks: %{marker.size:,.0f}<br>' +
                             'Health CR: %{marker.color:.2f}%<br>' +
                             'Variations: %{customdata}<extra></extra>',
-                customdata=kw_perf_df.head(30)['variations_count']
+                customdata=chart_data['variations_count']
             )
             
             fig_kw.update_layout(
@@ -2594,6 +2699,7 @@ with tab_search:
                 paper_bgcolor='rgba(232,245,232,0.8)',
                 font=dict(color='#1B5E20', family='Segoe UI'),
                 title_x=0,
+                height=500,  # Fixed height for consistency
                 xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
                 yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
                 annotations=[
@@ -2602,42 +2708,59 @@ with tab_search:
                         text='💡 Size = Total Clicks | Color = Health CR',
                         showarrow=False,
                         font=dict(size=11, color='#1B5E20'),
-                        align='right'
+                        align='right',
+                        bgcolor='rgba(255,255,255,0.8)',
+                        bordercolor='#2E7D32',
+                        borderwidth=1
                     )
                 ]
             )
             
-            # Display only the chart
             st.plotly_chart(fig_kw, use_container_width=True)
+            
+            # Performance summary
+            matching_method = "Advanced Fuzzy Matching" if has_fuzzywuzzy else "Basic String Matching"
+            st.success(f"✅ **Analysis Complete ({matching_method}):** {len(kw_perf_df)} keywords processed with {kw_perf_df['variations_count'].sum()} total variations grouped.")
+            
         else:
             st.warning("⚠️ No keyword performance data available to display chart.")
 
-
     with col_right:
-        # Query Length Distribution
+        # Cached Query Length Distribution
         st.subheader("📊 Health Query Length Analysis")
-        length_dist = queries.groupby('query_length').size().reset_index(name='count')
-        length_dist = length_dist.sort_values('query_length')
         
-        fig_length = px.histogram(
-            queries, 
-            x='query_length', 
-            nbins=30,
-            title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
-            labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
-            color_discrete_sequence=['#66BB6A']
-        )
+        @st.cache_data(ttl=1800, show_spinner=False)
+        def create_length_histogram(_df):
+            """Cached histogram creation for better performance"""
+            if _df.empty:
+                return None
+            
+            fig_length = px.histogram(
+                _df, 
+                x='query_length', 
+                nbins=30,
+                title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
+                labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
+                color_discrete_sequence=['#66BB6A']
+            )
+            
+            fig_length.update_layout(
+                plot_bgcolor='rgba(248,253,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                bargap=0.1,
+                height=400,  # Fixed height
+                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+            )
+            
+            return fig_length
         
-        fig_length.update_layout(
-            plot_bgcolor='rgba(248,253,248,0.95)',
-            paper_bgcolor='rgba(232,245,232,0.8)',
-            font=dict(color='#1B5E20', family='Segoe UI'),
-            bargap=0.1,
-            xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-            yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-        )
-        
-        st.plotly_chart(fig_length, use_container_width=True)
+        fig_length = create_length_histogram(queries)
+        if fig_length:
+            st.plotly_chart(fig_length, use_container_width=True)
+        else:
+            st.info("📊 Length distribution will appear here once data is processed.")
 
     # Separator
     st.markdown("---")
