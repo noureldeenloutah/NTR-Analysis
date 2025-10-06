@@ -4975,38 +4975,38 @@ with tab_brand:
     st.header("🏷 Nutraceuticals & Nutrition Brand Intelligence Hub")
     st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
     
-        # 🎨 GREEN-THEMED HERO HEADER
-        st.markdown("""
-        <div style="
-            text-align: center; 
-            padding: 3rem 2rem; 
-            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-            border-radius: 20px; 
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-            border: 1px solid rgba(76, 175, 80, 0.2);
+    # 🎨 GREEN-THEMED HERO HEADER
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
         ">
-            <h1 style="
-                color: #1B5E20; 
-                margin: 0; 
-                font-size: 3rem; 
-                text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
-                font-weight: 700;
-                letter-spacing: -1px;
-            ">
-                🌿 Brand Market Position 🌿
-            </h1>
-            <p style="
-                color: #2E7D32; 
-                margin: 1rem 0 0 0; 
-                font-size: 1.3rem;
-                font-weight: 300;
-                opacity: 0.9;
-            ">
-                Advanced Matching • Performance Analytics • Search Insights
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+            🌿 Brand Market Position 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Matching • Performance Analytics • Search Insights
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
