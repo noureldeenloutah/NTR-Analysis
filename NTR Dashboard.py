@@ -4215,31 +4215,65 @@ with tab_search:
                     # Enhanced insights with multiple sections
                     insight_col1, insight_col2 = st.columns(2)
 
+                    INSIGHT_CSS = """
+                    <style>
+                    .insight-box-green{background:linear-gradient(135deg,#E8F5E8,#F1F8E9);padding:2rem;border-radius:12px;border-left:5px solid #4CAF50;height:100%;}
+                    .insight-box-blue{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:2rem;border-radius:12px;border-left:5px solid #2196F3;height:100%;}
+                    .insight-box-green h4,.insight-box-blue h4{margin:0 0 1.5rem;color:#1B5E20;}
+                    .insight-box-blue h4{color:#0D47A1;}
+                    .insight-box-green p,.insight-box-blue p{margin:0.3rem 0;color:#2E7D32;}
+                    .insight-box-blue p{color:#1976D2;}
+                    .insight-box-green .sub-box,.insight-box-blue .sub-box{background:rgba(46,125,50,0.1);padding:1rem;border-radius:8px;margin-top:1rem;}
+                    .insight-box-blue .sub-box{background:rgba(33,150,243,0.1);}
+                    .insight-box-green .sub-box p,.insight-box-blue .sub-box p{margin:0.2rem 0;color:#2E7D32;font-size:0.9rem;}
+                    .insight-box-blue .sub-box p{color:#1565C0;}
+                    </style>
+                    """
+                    st.markdown(INSIGHT_CSS, unsafe_allow_html=True)
+
                     with insight_col1:
                         st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #4CAF50; height: 100%;">
-                            <h4 style="color: #1B5E20; margin: 0 0 1.5rem 0;">📊 Fuzzy Matching Analysis Summary</h4>
-                            
+                        <div class="insight-box-green">
+                            <h4>📊 Fuzzy Matching Analysis Summary</h4>
                             <div style="margin-bottom: 1rem;">
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Total Keyword Groups:</strong> {len(kw_perf_df):,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔗 Total Variations Grouped:</strong> {total_variations:,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {total_search_volume:,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🎯 Market Share Covered:</strong> {top_market_share:.1f}%</p>
+                                <p><strong>🔍 Total Keyword Groups:</strong> {format_number(len(kw_perf_df))}</p>
+                                <p><strong>🔗 Total Variations Grouped:</strong> {format_number(total_variations)}</p>
+                                <p><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {format_number(total_search_volume)}</p>
+                                <p><strong>🎯 Market Share Covered:</strong> {top_market_share:.1f}%</p>
                             </div>
-                            
                             <div style="margin-bottom: 1rem;">
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Search Queries:</strong> {unique_queries_sum:,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
+                                <p><strong>🔍 Unique Search Queries:</strong> {format_number(unique_queries_sum)}</p>
+                                <p><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
+                                <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
                             </div>
-                            
-                            <div style="background: rgba(46, 125, 50, 0.1); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                                <p style="margin: 0; color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
-                                <p style="margin: 0.2rem 0; color: #2E7D32; font-size: 0.9rem;">⚡ Analysis completed in {processing_time:.2f} seconds</p>
-                                <p style="margin: 0.2rem 0; color: #2E7D32; font-size: 0.9rem;">🧠 Method: {matching_method}</p>
+                            <div class="sub-box">
+                                <p style="color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
+                                <p>⚡ Analysis completed in {processing_time:.2f} seconds</p>
+                                <p>🧠 Method: {matching_method}</p>
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)  # ← ADD THIS!
+                        """, unsafe_allow_html=True)
+
+                    with insight_col2:
+                        st.markdown(f"""
+                        <div class="insight-box-blue">
+                            <h4>🎯 Performance Distribution & Recommendations</h4>
+                            <div style="margin-bottom: 1.5rem;">
+                                <h5 style="color: #1565C0;">📊 Performance Categories:</h5>
+                                <p><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keyword{'s' if excellent_keywords != 1 else ''}</p>
+                                <p><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keyword{'s' if good_keywords != 1 else ''}</p>
+                                <p><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keyword{'s' if average_keywords != 1 else ''}</p>
+                                <p><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keyword{'s' if poor_keywords != 1 else ''}</p>
+                            </div>
+                            <div class="sub-box">
+                                <h5 style="color: #0D47A1;">💡 Strategic Recommendations:</h5>
+                                <p>🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
+                                <p>📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
+                                <p>🔍 Leverage {format_number(total_variations)} variations for long-tail SEO</p>
+                                <p>⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
 
                     with insight_col2:
