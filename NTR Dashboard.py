@@ -4180,6 +4180,10 @@ with tab_search:
                     # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
                     # ================================================================================================
 
+                    # ================================================================================================
+                    # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
+                    # ================================================================================================
+
                     # Calculate advanced insights with error handling
                     total_variations = top_keywords['variations_count'].sum() if 'variations_count' in top_keywords.columns else 0
                     avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
@@ -4200,6 +4204,7 @@ with tab_search:
                     unique_queries_sum = top_keywords['unique_queries'].sum() if 'unique_queries' in top_keywords.columns else len(top_keywords)
                     total_search_volume = top_keywords['total_counts'].sum() if 'total_counts' in top_keywords.columns else top_keywords['Counts'].sum() if 'Counts' in top_keywords.columns else 0
 
+                    # Main header
                     st.markdown("""
                     <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 3rem 0;">
                         <h2 style="margin: 0 0 1rem 0; text-align: center; font-size: 2.2rem;">🎯 Advanced Analysis Insights & Recommendations</h2>
@@ -4283,6 +4288,7 @@ with tab_search:
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
+
 
 
             else:
