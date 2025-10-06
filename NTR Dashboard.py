@@ -3264,6 +3264,42 @@ with tab_search:
                 progress_bar.empty()
                 status_text.empty()
             
+            # ✅ FIXED: Calculate health-specific metrics (moved inside function)
+            if not kw_perf_df.empty:
+                summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+                
+                with summary_col1:
+                    total_keywords = len(kw_perf_df)
+                    st.metric(
+                        label="🎯 Total Keywords", 
+                        value=f"{total_keywords:,}",
+                        help="Number of unique health keyword groups identified"
+                    )
+                    
+                with summary_col2:
+                    total_volume = kw_perf_df['total_counts'].sum()
+                    st.metric(
+                        label="📊 Total Volume", 
+                        value=f"{total_volume:,}",
+                        help="Combined search volume across all health keywords"
+                    )
+                    
+                with summary_col3:
+                    avg_ctr = kw_perf_df['avg_ctr'].mean()
+                    st.metric(
+                        label="🎪 Avg CTR", 
+                        value=f"{avg_ctr:.2f}%",
+                        help="Average click-through rate for health keywords"
+                    )
+                    
+                with summary_col4:
+                    avg_health_cr = kw_perf_df['health_cr'].mean()
+                    st.metric(
+                        label="🌿 Health Score", 
+                        value=f"{avg_health_cr:.1f}%",
+                        help="Average health conversion rate"
+                    )
+            
             # Create layout
             col_left, col_right = st.columns([3, 2])
             
@@ -3385,6 +3421,8 @@ with tab_search:
                     
                 else:
                     st.warning("⚠️ No keyword performance data available to display chart.")
+
+
 
 
             with col_right:
@@ -4633,104 +4671,6 @@ with tab_search:
             </ul>
         </div>
         """, unsafe_allow_html=True)
-
-    # Add health keyword performance summary
-    st.markdown("---")
-    st.subheader("📊 Health Keyword Performance Summary")
-    
-    # Calculate health-specific metrics
-    if not kw_perf_df.empty:
-        summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
-        
-        # Top performing health keyword
-        top_health_keyword = kw_perf_df.iloc[0]['keyword'] if len(kw_perf_df) > 0 else "N/A"
-        top_keyword_volume = int(kw_perf_df.iloc[0]['total_counts']) if len(kw_perf_df) > 0 else 0
-        
-        # Average conversion rate across health keywords
-        avg_health_cr = kw_perf_df['health_cr'].mean() if len(kw_perf_df) > 0 else 0
-        
-        # High-performing keywords (above average CR)
-        high_perf_keywords = len(kw_perf_df[kw_perf_df['health_cr'] > avg_health_cr]) if len(kw_perf_df) > 0 else 0
-        
-        # Total health search volume from keywords
-        total_keyword_volume = int(kw_perf_df['total_counts'].sum()) if len(kw_perf_df) > 0 else 0
-        
-        with summary_col1:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">🏆</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_health_keyword}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Top Health Keyword</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">{format_number(top_keyword_volume)} searches</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col2:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{avg_health_cr:.2f}%</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Avg Health Conversion Rate</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Across all Nutraceuticals & Nutrition keywords</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col3:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #A5D6A7 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(56, 142, 60, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">⚡</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{high_perf_keywords}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">High-Performance Keywords</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">Above average CR</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with summary_col4:
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #C8E6C8 0%, #81C784 100%); 
-                        padding: 20px; border-radius: 12px; text-align: center; 
-                        box-shadow: 0 4px 15px rgba(129, 199, 132, 0.2); margin: 5px 0;">
-                <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
-                <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(total_keyword_volume)}</div>
-                <div style="color: #2E7D32; font-size: 0.9em;">Total Keyword Volume</div>
-                <div style="color: #388E3C; font-size: 0.8em; margin-top: 5px;">All health searches</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # Final wellness recommendations
-    st.markdown("---")
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%); 
-                padding: 30px; border-radius: 15px; color: white; margin: 20px 0;
-                box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);">
-        <h3 style="text-align: center; margin-bottom: 20px;">🌿 Nutraceuticals & Nutrition Search Strategy Recommendations</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <div>
-                <h4 style="margin-bottom: 10px;">🎯 Immediate Actions:</h4>
-                <ul style="margin: 0; padding-left: 20px;">
-                    <li>Optimize product pages for top-performing health keywords</li>
-                    <li>Create content around long-tail Nutraceuticals & Nutrition queries</li>
-                    <li>Focus on seasonal supplement trends</li>
-                </ul>
-            </div>
-            <div>
-                <h4 style="margin-bottom: 10px;">📈 Long-term Strategy:</h4>
-                <ul style="margin: 0; padding-left: 20px;">
-                    <li>Monitor emerging health trends and adapt keyword strategy</li>
-                    <li>Develop category-specific landing pages for supplements</li>
-                    <li>Track conversion patterns across different Nutraceuticals & Nutrition segments</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
 # ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
