@@ -3411,8 +3411,8 @@ with tab_search:
                     </ul>
                 </div>
                 """, unsafe_allow_html=True)
-    
-    st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
 
         
         # Create layout
