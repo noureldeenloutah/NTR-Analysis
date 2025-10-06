@@ -4275,31 +4275,6 @@ with tab_search:
                         </div>
                         """, unsafe_allow_html=True)
 
-
-                    with insight_col2:
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #2196F3; height: 100%;">
-                            <h4 style="color: #0D47A1; margin: 0 0 1.5rem 0;">🎯 Performance Distribution & Recommendations</h4>
-                            
-                            <div style="margin-bottom: 1.5rem;">
-                                <h5 style="color: #1565C0; margin: 0 0 0.8rem 0;">📊 Performance Categories:</h5>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keyword{'s' if excellent_keywords != 1 else ''}</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keyword{'s' if good_keywords != 1 else ''}</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keyword{'s' if average_keywords != 1 else ''}</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keyword{'s' if poor_keywords != 1 else ''}</p>
-                            </div>
-                            
-                            <div style="background: rgba(33, 150, 243, 0.1); padding: 1rem; border-radius: 8px;">
-                                <h5 style="color: #0D47A1; margin: 0 0 0.8rem 0;">💡 Strategic Recommendations:</h5>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">🔍 Leverage {total_variations:,} variations for long-tail SEO</p>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)  # ← ADD THIS!
-
-
                     # Add completion message
                     st.markdown("""
                     <div style="text-align: center; margin-top: 2rem;">
