@@ -4971,54 +4971,114 @@ with tab_search:
             st.error(f"Error processing top health queries: {e}")
 
 
-# ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
+# ----------------- Brand Tab (Enhanced & Optimized) -----------------
 with tab_brand:
     st.header("🏷 Nutraceuticals & Nutrition Brand Intelligence Hub")
     st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
     
-    # Hero Image for Brand Tab
-    brand_image_options = {
-        "Health Brand Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Brand+Market+Position",
-        "Wellness Competitive Analysis": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Brand+Intelligence",
-        "Abstract Health Brand": "https://source.unsplash.com/1200x200/?health,wellness,green",
-        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Brand+Insights",
-    }
-    selected_brand_image = st.sidebar.selectbox("Choose Brand Tab Hero", options=list(brand_image_options.keys()), index=0, key="brand_hero_image_selector")
-    st.image(brand_image_options[selected_brand_image], use_container_width=True)
+    # 🎨 GREEN-THEMED HERO HEADER (Replacing hero image and metrics)
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🌿 Brand Market Position 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Brand Analytics • Market Intelligence • Competitive Insights
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Custom CSS for health-focused green styling
+    # Enhanced CSS for health-focused green styling
     st.markdown("""
     <style>
-    .health-brand-metric {
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-        padding: 20px;
+    /* Enhanced Global Styling for Brand Tab */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1400px;
+    }
+    
+    /* Enhanced Brand Metrics Styling */
+    [data-testid="metric-container"] {
+        background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+        border: 2px solid #4CAF50;
         border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
-        margin: 10px 0;
-        border-left: 4px solid #4CAF50;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        transition: all 0.3s ease;
     }
     
-    .Nutraceuticals & Nutrition-insight-box {
-        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-        padding: 25px;
-        border-radius: 15px;
-        color: white;
-        margin: 15px 0;
-        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    [data-testid="metric-container"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
+        border-color: #2E7D32;
     }
     
+    /* Brand Performance Cards */
     .brand-performance-card {
         background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
         padding: 20px;
         border-radius: 12px;
         border: 2px solid #81C784;
         margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .brand-performance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(129, 199, 132, 0.3);
+    }
+    
+    /* Enhanced DataFrames */
+    .stDataFrame th {
+        text-align: center !important;
+        background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
+        color: white !important;
+        font-weight: bold !important;
+        border: 1px solid #1B5E20 !important;
+        padding: 12px 8px !important;
+    }
+    
+    .stDataFrame td {
+        text-align: center !important;
+        border: 1px solid #E8F5E8 !important;
+        padding: 10px 8px !important;
+    }
+    
+    .stDataFrame tr:nth-child(even) {
+        background-color: #F1F8E9 !important;
+    }
+    
+    .stDataFrame tr:hover {
+        background-color: #E8F5E8 !important;
+        transform: scale(1.01);
+        transition: all 0.2s ease;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Check for brand column with case sensitivity handling (no debug output)
+    # Check for brand column with case sensitivity handling
     brand_column = None
     possible_brand_columns = ['brand', 'Brand', 'BRAND', 'Brand Name', 'brand_name']
     
@@ -5046,7 +5106,7 @@ with tab_brand:
         st.error("❌ No valid Nutraceuticals & Nutrition brand data available after filtering.")
         st.stop()
     
-    # Health-focused Brand Performance Metrics Row
+    # Calculate key metrics for insights
     total_brands = brand_queries[brand_column].nunique()
     top_brand = brand_queries.groupby(brand_column)['Counts'].sum().idxmax()
     avg_brand_counts = brand_queries.groupby(brand_column)['Counts'].sum().mean()
@@ -5054,45 +5114,6 @@ with tab_brand:
     # Calculate Brand Dominance Index
     brand_counts_sum = brand_queries.groupby(brand_column)['Counts'].sum()
     brand_dominance = (brand_counts_sum.max() / brand_counts_sum.sum() * 100)
-    
-    # Health-themed metrics display
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown(f"""
-        <div class="health-brand-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{total_brands}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Total Nutraceuticals & Nutrition Brands</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(f"""
-        <div class="health-brand-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">🏆</div>
-            <div style="font-size: 1.2em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_brand}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Leading Health Brand</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="health-brand-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">📊</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{brand_dominance:.1f}%</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Market Concentration</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown(f"""
-        <div class="health-brand-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(int(avg_brand_counts))}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Avg Brand Volume</div>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -5116,8 +5137,6 @@ with tab_brand:
 
         # Rename the brand column to 'brand' for consistency
         bs_raw = bs_raw.rename(columns={brand_column: 'brand'})
-
-        # No need to filter again since brand_queries is already filtered
         bs = bs_raw.copy()
 
         # Calculate Share % based on filtered data
@@ -5220,104 +5239,13 @@ with tab_brand:
         st.download_button(
             label="📥 Download Nutraceuticals & Nutrition Brands CSV",
             data=csv_brands,
-            file_name=f"top_{num_brands}_Nutraceuticals & Nutrition_brands.csv",
+            file_name=f"top_{num_brands}_nutraceuticals_brands.csv",
             mime="text/csv",
             key="brand_csv_download"
         )
-        
-        # Brand Summary Data (calculated from queries)
-        st.subheader("📋 Nutraceuticals & Nutrition Brand Summary Data")
-        
-        # Calculate brand summary from queries
-        brand_summary_calc = []
-        
-        for brand in brand_queries[brand_column].unique():
-            brand_data = brand_queries[brand_queries[brand_column] == brand]
-            
-            # Basic metrics
-            total_counts = brand_data['Counts'].sum()
-            total_clicks = brand_data['clicks'].sum()
-            total_conversions = brand_data['conversions'].sum()
-            
-            # Calculate rates
-            ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-            cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-            classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
-            
-            # Use the keywords column that was created by your prepare_queries_df function
-            unique_keywords_set = set()
-            keyword_counts = {}
-            
-            for idx, row in brand_data.iterrows():
-                keywords_list = row['keywords']  # This comes from your prepare_queries_df function
-                query_count = row['Counts']
-                
-                if isinstance(keywords_list, list):
-                    unique_keywords_set.update(keywords_list)
-                    # Add the query count to each keyword
-                    for keyword in keywords_list:
-                        if keyword in keyword_counts:
-                            keyword_counts[keyword] += query_count
-                        else:
-                            keyword_counts[keyword] = query_count
-                elif pd.notna(keywords_list):
-                    # Fallback: use normalized_query if keywords is not a list
-                    search_term = row['normalized_query']
-                    if pd.notna(search_term):
-                        keywords = str(search_term).lower().split()
-                        unique_keywords_set.update(keywords)
-                        for keyword in keywords:
-                            if keyword in keyword_counts:
-                                keyword_counts[keyword] += query_count
-                            else:
-                                keyword_counts[keyword] = query_count
-            
-            unique_keywords_count = len(unique_keywords_set)
-            
-            # Get top 5 keywords by total counts
-            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-            top_keywords_str = ', '.join([f"{kw}({cnt:,.0f})" for kw, cnt in top_keywords])
-            
-            brand_summary_calc.append({
-                'Nutraceuticals & Nutrition Brand': brand,
-                'Search Counts': total_counts,
-                'Total Clicks': total_clicks,
-                'Conversions': total_conversions,
-                'CTR': ctr,
-                'CR': cr,
-                'Classic CR': classic_cr,
-                'Unique Keywords': unique_keywords_count,
-                'Top Health Keywords': top_keywords_str
-            })
-        
-        brand_summary_df = pd.DataFrame(brand_summary_calc)
-        
-        # Sort by Search Counts
-        brand_summary_df = brand_summary_df.sort_values('Search Counts', ascending=False)
-        
-        # Format for display
-        display_summary = brand_summary_df.copy()
-        display_summary['Search Counts'] = display_summary['Search Counts'].apply(lambda x: f"{x:,.0f}")
-        display_summary['Total Clicks'] = display_summary['Total Clicks'].apply(lambda x: f"{x:,.0f}")
-        display_summary['Conversions'] = display_summary['Conversions'].apply(lambda x: f"{x:,.0f}")
-        display_summary['CTR'] = display_summary['CTR'].apply(lambda x: f"{x:.2f}%")
-        display_summary['CR'] = display_summary['CR'].apply(lambda x: f"{x:.2f}%")
-        display_summary['Classic CR'] = display_summary['Classic CR'].apply(lambda x: f"{x:.2f}%")
-        
-        st.dataframe(display_summary, use_container_width=True, hide_index=True)
-        
-        # Download button for brand summary
-        csv_summary = brand_summary_df.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Nutraceuticals & Nutrition Brand Summary CSV",
-            data=csv_summary,
-            file_name="Nutraceuticals & Nutrition_brand_summary_calculated.csv",
-            mime="text/csv",
-            key="brand_summary_calc_csv_download"
-        )
     
     with col_right:
-        # Brand Market Share Pie Chart (without "Other")
+        # Brand Market Share Pie Chart
         st.subheader("🌱 Nutraceuticals & Nutrition Brand Market Share")
         
         top_brands_pie = bs.nlargest(10, 'Counts')
@@ -5379,14 +5307,13 @@ with tab_brand:
         
         st.plotly_chart(fig_cat, use_container_width=True)
         
-        # Enhanced Brand Trend Analysis with proper filter application
+        # Enhanced Brand Trend Analysis
         if 'Date' in queries.columns:
             st.subheader("📈 Nutraceuticals & Nutrition Brand Trend Analysis")
             
             # Get top 5 brands for trend analysis
             top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
             
-            # Use the already filtered 'queries' data instead of 'brand_queries'
             trend_data = queries[
                 (queries[brand_column].notna()) & 
                 (queries[brand_column].str.lower() != 'other') &
@@ -5396,25 +5323,16 @@ with tab_brand:
             
             if not trend_data.empty:
                 try:
-                    # Enhanced date processing
                     trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # Create proper monthly aggregation
                         trend_data['Month'] = trend_data['Date'].dt.to_period('M')
                         trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # Group by Month and brand - sum the counts for each month
                         monthly_trends = trend_data.groupby(['Month_Display', brand_column])['Counts'].sum().reset_index()
                         monthly_trends = monthly_trends.rename(columns={brand_column: 'brand'})
-                        
-                        # Convert month display back to datetime for proper plotting
                         monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
-                        
-                        # Debug: Check if we have monthly data
-                        unique_months = monthly_trends['Month_Display'].unique()
-                        st.write(f"📊 Monthly Nutraceuticals & Nutrition data available: {', '.join(sorted(unique_months))}")
                         
                         if len(monthly_trends) > 0:
                             fig_trend = px.line(
@@ -5427,7 +5345,6 @@ with tab_brand:
                                 markers=True
                             )
                             
-                            # Format x-axis to show months properly
                             fig_trend.update_layout(
                                 plot_bgcolor='rgba(248,255,248,0.95)',
                                 paper_bgcolor='rgba(232,245,232,0.8)',
@@ -5447,52 +5364,40 @@ with tab_brand:
                                 hovermode='x unified'
                             )
                             
-                            fig_trend.update_traces(
-                                hovertemplate='<b>%{fullData.name}</b><br>' +
-                                            'Month: %{x|%B %Y}<br>' +
-                                            'Searches: %{y:,.0f}<extra></extra>'
-                            )
-                            
                             st.plotly_chart(fig_trend, use_container_width=True)
                         else:
-                            st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and brands")
+                            st.info("No trend data available for the selected date range and brands")
                     else:
-                        st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
+                        st.info("No valid dates found in the filtered data")
                 except Exception as e:
-                    st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
+                    st.error(f"Error processing trend data: {str(e)}")
             else:
-                st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")
+                st.info("No brand data available for the selected date range")
 
     st.markdown("---")
     
-    # Brand-Keyword Intelligence Matrix with Interactive Filter
+    # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
     st.subheader("🔥 Nutraceuticals & Nutrition Brand-Keyword Intelligence Matrix")
 
     # Create brand filter dropdown
     if 'brand' in queries.columns and 'search' in queries.columns:
-        # Get available brands (excluding null and 'other')
         available_brands = queries[
             (queries['brand'].notna()) & 
             (queries['brand'].str.lower() != 'other') &
             (queries['brand'].str.lower() != 'others')
         ]['brand'].unique()
         
-        # Sort brands alphabetically
         available_brands = sorted(available_brands)
-        
-        # Create dropdown with "All Brands" option
         brand_options = ['All Nutraceuticals & Nutrition Brands'] + list(available_brands)
         
-        # Brand selection dropdown
         selected_brand = st.selectbox(
             "🎯 Select Nutraceuticals & Nutrition Brand to Analyze:",
             options=brand_options,
-            index=0  # Default to "All Brands"
+            index=0
         )
         
         # Filter data based on selection
         if selected_brand == 'All Nutraceuticals & Nutrition Brands':
-            # Show top 8 brands if "All Brands" is selected - EXCLUDE "Other"
             top_brands = queries[
                 (queries['brand'].str.lower() != 'other') &
                 (queries['brand'].str.lower() != 'others') &
@@ -5500,13 +5405,12 @@ with tab_brand:
             ]['brand'].value_counts().head(8).index.tolist()
             
             filtered_data = queries[queries['brand'].isin(top_brands)]
-            matrix_title = "Top Nutraceuticals & Nutrition Brands vs Health Search Terms (Sum of Counts)"
+            matrix_title = "Top Nutraceuticals & Nutrition Brands vs Health Search Terms"
         else:
-            # Filter for selected brand only
             filtered_data = queries[queries['brand'] == selected_brand]
-            matrix_title = f"{selected_brand} - Health Search Terms Analysis (Sum of Counts)"
+            matrix_title = f"{selected_brand} - Health Search Terms Analysis"
         
-        # Remove null values and 'other' categories from search terms as well
+        # Remove null values and 'other' categories
         matrix_data = filtered_data[
             (filtered_data['brand'].notna()) & 
             (filtered_data['search'].notna()) &
@@ -5518,10 +5422,17 @@ with tab_brand:
         
         if not matrix_data.empty:
             if selected_brand == 'All Nutraceuticals & Nutrition Brands':
-                # For all brands: Group by brand and search term, sum the counts
-                brand_search_matrix = matrix_data.groupby(['brand', 'search'])['Counts'].sum().reset_index()
+                # Enhanced heatmap with CTR/CR data
+                brand_search_matrix = matrix_data.groupby(['brand', 'search']).agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
                 
-                # Get top search terms across all brands (excluding "other")
+                # Calculate CTR and CR for each brand-search combination
+                brand_search_matrix['ctr'] = ((brand_search_matrix['clicks'] / brand_search_matrix['Counts']) * 100).round(2)
+                brand_search_matrix['cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['clicks']) * 100).fillna(0).round(2)
+                
                 top_searches = matrix_data[
                     (matrix_data['search'].str.lower() != 'other') &
                     (matrix_data['search'].str.lower() != 'others')
@@ -5529,28 +5440,115 @@ with tab_brand:
                 
                 brand_search_matrix = brand_search_matrix[brand_search_matrix['search'].isin(top_searches)]
                 
-                # Create pivot table
+                # Create pivot table for counts
                 heatmap_data = brand_search_matrix.pivot(
                     index='brand', 
                     columns='search', 
                     values='Counts'
                 ).fillna(0)
                 
-            else:
-                # For single brand: Show search terms vs other dimensions or just search terms
-                search_counts = matrix_data.groupby('search')['Counts'].sum().reset_index()
-                search_counts = search_counts.sort_values('Counts', ascending=False).head(15)
+                # Create pivot tables for CTR and CR
+                ctr_data = brand_search_matrix.pivot(
+                    index='brand', 
+                    columns='search', 
+                    values='ctr'
+                ).fillna(0)
                 
-                # Create a simple horizontal bar chart instead of heatmap for single brand
+                cr_data = brand_search_matrix.pivot(
+                    index='brand', 
+                    columns='search', 
+                    values='cr'
+                ).fillna(0)
+                
+                # Enhanced heatmap with custom hover template
+                fig_matrix = px.imshow(
+                    heatmap_data.values,
+                    labels=dict(x="Health Search Terms", y="Nutraceuticals & Nutrition Brands", color="Total Counts"),
+                    x=heatmap_data.columns,
+                    y=heatmap_data.index,
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
+                    aspect='auto'
+                )
+                
+                # Create custom hover data with CTR and CR
+                hover_text = []
+                for i, brand in enumerate(heatmap_data.index):
+                    hover_row = []
+                    for j, search_term in enumerate(heatmap_data.columns):
+                        counts = heatmap_data.iloc[i, j]
+                        ctr_val = ctr_data.iloc[i, j] if not pd.isna(ctr_data.iloc[i, j]) else 0
+                        cr_val = cr_data.iloc[i, j] if not pd.isna(cr_data.iloc[i, j]) else 0
+                        
+                        hover_row.append(
+                            f'<b>{brand}</b><br>' +
+                            f'Search Term: {search_term}<br>' +
+                            f'Total Searches: {counts:,.0f}<br>' +
+                            f'<b>CTR: {ctr_val:.2f}%</b><br>' +
+                            f'<b>CR: {cr_val:.2f}%</b>'
+                        )
+                    hover_text.append(hover_row)
+                
+                fig_matrix.update_traces(
+                    hovertemplate='%{customdata}<extra></extra>',
+                    customdata=hover_text
+                )
+                
+                fig_matrix.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    xaxis=dict(tickangle=45),
+                    height=500
+                )
+                
+                st.plotly_chart(fig_matrix, use_container_width=True)
+                
+                # Enhanced metrics display
+                total_matrix_counts = heatmap_data.values.sum()
+                avg_ctr = brand_search_matrix['ctr'].mean()
+                avg_cr = brand_search_matrix['cr'].mean()
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("📊 Total Searches", f"{total_matrix_counts:,.0f}")
+                with col2:
+                    st.metric("📈 Average CTR", f"{avg_ctr:.2f}%")
+                with col3:
+                    st.metric("🎯 Average CR", f"{avg_cr:.2f}%")
+                
+            else:
+                # Enhanced single brand analysis with CTR/CR
+                search_analysis = matrix_data.groupby('search').agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                search_analysis['ctr'] = ((search_analysis['clicks'] / search_analysis['Counts']) * 100).round(2)
+                search_analysis['cr'] = ((search_analysis['conversions'] / search_analysis['clicks']) * 100).fillna(0).round(2)
+                search_analysis = search_analysis.sort_values('Counts', ascending=False).head(15)
+                
+                # Enhanced horizontal bar chart with CTR/CR in hover
                 fig_single = px.bar(
-                    search_counts,
+                    search_analysis,
                     x='Counts',
                     y='search',
                     orientation='h',
-                    title=f'<b style="color:#2E7D32;">{selected_brand} - Top Health Search Terms by Count</b>',
+                    title=f'<b style="color:#2E7D32;">{selected_brand} - Top Health Search Terms Performance</b>',
                     labels={'Counts': 'Total Search Counts', 'search': 'Health Search Terms'},
-                    color='Counts',
-                    color_continuous_scale=['#E8F5E8', '#2E7D32']
+                    color='ctr',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                    hover_data={'ctr': ':.2f', 'cr': ':.2f'}
+                )
+                
+                # Enhanced hover template
+                fig_single.update_traces(
+                    hovertemplate='<b>%{y}</b><br>' +
+                                 'Search Counts: %{x:,.0f}<br>' +
+                                 '<b>CTR: %{customdata[0]:.2f}%</b><br>' +
+                                 '<b>CR: %{customdata[1]:.2f}%</b><extra></extra>',
+                    customdata=search_analysis[['ctr', 'cr']].values
                 )
                 
                 fig_single.update_layout(
@@ -5563,371 +5561,405 @@ with tab_brand:
                 
                 st.plotly_chart(fig_single, use_container_width=True)
                 
-                # Show summary
-                total_counts = search_counts['Counts'].sum()
-                st.info(f"📊 {selected_brand} has {len(search_counts)} top health search terms with {total_counts:,} total counts")
+                # Enhanced summary metrics
+                total_counts = search_analysis['Counts'].sum()
+                avg_ctr = search_analysis['ctr'].mean()
+                avg_cr = search_analysis['cr'].mean()
                 
-            # Only create heatmap for "All Brands" view
-            # Only create heatmap for "All Brands" view
-            if selected_brand == 'All Nutraceuticals & Nutrition Brands' and not heatmap_data.empty:
-                # Create the heatmap
-                fig_matrix = px.imshow(
-                    heatmap_data.values,
-                    labels=dict(x="Health Search Terms", y="Nutraceuticals & Nutrition Brands", color="Total Counts"),
-                    x=heatmap_data.columns,
-                    y=heatmap_data.index,
-                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
-                    aspect='auto'
-                )
-                
-                fig_matrix.update_layout(
-                    plot_bgcolor='rgba(248,255,248,0.95)',
-                    paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'),
-                    xaxis=dict(tickangle=45),
-                    height=500
-                )
-                
-                # Update hover template
-                fig_matrix.update_traces(
-                    hovertemplate='<b>%{y}</b><br>' +
-                                 'Health Term: %{x}<br>' +
-                                 'Total Searches: %{z:,.0f}<extra></extra>'
-                )
-                
-                st.plotly_chart(fig_matrix, use_container_width=True)
-                
-                # Show matrix summary
-                total_matrix_counts = heatmap_data.values.sum()
-                st.info(f"📊 Matrix shows {len(heatmap_data.index)} Nutraceuticals & Nutrition brands vs {len(heatmap_data.columns)} health search terms with {total_matrix_counts:,.0f} total searches")
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("📊 Total Searches", f"{total_counts:,}")
+                with col2:
+                    st.metric("🔍 Search Terms", f"{len(search_analysis)}")
+                with col3:
+                    st.metric("📈 Avg CTR", f"{avg_ctr:.2f}%")
+                with col4:
+                    st.metric("🎯 Avg CR", f"{avg_cr:.2f}%")
         else:
-            st.warning("⚠️ No Nutraceuticals & Nutrition brand-keyword data available for analysis")
+            st.warning("⚠️ No brand-keyword data available for analysis")
     else:
         st.error("❌ Required columns 'brand' and 'search' not found in the dataset")
 
-    # Health-focused Brand Insights
+    # REPLACEMENT: Strategic Brand Intelligence Dashboard (Instead of Advanced Intelligence)
     st.markdown("---")
-    col_insight1, col_insight2 = st.columns(2)
+    st.subheader("🎯 Strategic Brand Intelligence Dashboard")
     
-    with col_insight1:
-        top_brand_share = bs.iloc[0]['share_pct'] if not bs.empty else 0
-        top_brand_name = bs.iloc[0]['brand'] if not bs.empty else "N/A"
-        high_performers = len(bs[bs['ctr'] > 5]) if not bs.empty else 0
-        avg_conversion_rate = bs['cr'].mean() if not bs.empty else 0
-        brands_above_avg_cr = len(bs[bs['cr'] > avg_conversion_rate]) if not bs.empty else 0
+    # Create strategic insights tabs
+    strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs(["📊 Market Position", "🚀 Growth Opportunities", "💡 Strategic Insights"])
+    
+    with strategy_tab1:
+        st.markdown("#### 📊 Brand Market Position Analysis")
         
-        st.markdown(f"""
-        <div class='Nutraceuticals & Nutrition-insight-box'>
-            <h4>🌿 Key Nutraceuticals & Nutrition Brand Insights</h4>
-            <p>• <strong>{top_brand_name}</strong> leads health market with {top_brand_share:.1f}% share<br>
-            • {high_performers} Nutraceuticals & Nutrition brands achieve CTR > 5% (premium performance)<br>
-            • {brands_above_avg_cr} brands exceed avg CR of {avg_conversion_rate:.2f}%<br>
-            • Health market shows {"strong" if brand_dominance > 30 else "balanced" if brand_dominance > 15 else "fragmented"} brand concentration</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_insight2:
-        low_performers = len(bs[bs['ctr'] < 2]) if not bs.empty else 0
-        opportunity_brands = len(bs[(bs['Counts'] > bs['Counts'].median()) & (bs['ctr'] < 3)]) if not bs.empty else 0
-        
-        st.markdown(f"""
-        <div class='Nutraceuticals & Nutrition-insight-box'>
-            <h4>💚 Health Brand Strategy Recommendations</h4>
-            <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition brands (CTR < 2%)<br>
-            • {opportunity_brands} high-volume health brands need engagement boost<br>
-            • Focus on Nutraceuticals & Nutrition keywords for leading supplement brands<br>
-            • {"Diversify" if brand_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Health Brand Performance Categories with green styling
-    st.markdown("---")
-    st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Tiers")
-    
-    # Create performance tiers specific to health brands
-    tier_col1, tier_col2, tier_col3 = st.columns(3)
-    
-    with tier_col1:
-        premium_brands = len(bs[bs['ctr'] > 8]) if not bs.empty else 0
-        premium_brand_list = bs[bs['ctr'] > 8]['brand'].tolist() if not bs.empty else []
-        st.markdown(f"""
-        <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🏆 Premium Nutraceuticals & Nutrition</h4>
-            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{premium_brands}</div>
-            <p style="color: #388E3C; text-align: center; margin: 0;">CTR > 8% (Market Leaders)</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if premium_brand_list:
-            with st.expander("View Premium Nutraceuticals & Nutrition Brands"):
-                for brand in premium_brand_list[:5]:  # Show top 5
-                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
-                    st.write(f"🌟 **{brand}** - {brand_ctr:.2f}% CTR")
-    
-    with tier_col2:
-        growing_brands = len(bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)]) if not bs.empty else 0
-        growing_brand_list = bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)]['brand'].tolist() if not bs.empty else []
-        st.markdown(f"""
-        <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🌱 Growing Nutraceuticals & Nutrition</h4>
-            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{growing_brands}</div>
-            <p style="color: #388E3C; text-align: center; margin: 0;">CTR 3-8% (Developing)</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if growing_brand_list:
-            with st.expander("View Growing Nutraceuticals & Nutrition Brands"):
-                for brand in growing_brand_list[:5]:  # Show top 5
-                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
-                    st.write(f"🌿 **{brand}** - {brand_ctr:.2f}% CTR")
-    
-    with tier_col3:
-        emerging_brands = len(bs[bs['ctr'] < 3]) if not bs.empty else 0
-        emerging_brand_list = bs[bs['ctr'] < 3]['brand'].tolist() if not bs.empty else []
-        st.markdown(f"""
-        <div class="brand-performance-card">
-            <h4 style="color: #1B5E20; text-align: center;">🌿 Emerging Nutraceuticals & Nutrition</h4>
-            <div style="text-align: center; font-size: 2em; color: #2E7D32; font-weight: bold;">{emerging_brands}</div>
-            <p style="color: #388E3C; text-align: center; margin: 0;">CTR < 3% (Opportunity)</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if emerging_brand_list:
-            with st.expander("View Emerging Nutraceuticals & Nutrition Brands"):
-                for brand in emerging_brand_list[:5]:  # Show top 5
-                    brand_ctr = bs[bs['brand'] == brand]['ctr'].iloc[0]
-                    st.write(f"🌱 **{brand}** - {brand_ctr:.2f}% CTR")
-
-    # Advanced Brand Intelligence Section
-    st.markdown("---")
-    st.subheader("🧠 Advanced Nutraceuticals & Nutrition Brand Intelligence")
-    
-    # Create advanced metrics tabs
-    intel_tab1, intel_tab2, intel_tab3 = st.tabs(["🎯 Brand Efficiency", "📈 Growth Potential", "🔍 Competitive Analysis"])
-    
-    with intel_tab1:
-        st.markdown("#### 🎯 Nutraceuticals & Nutrition Brand Efficiency Analysis")
-        
-        # Calculate efficiency metrics
         if not bs.empty:
-            bs['efficiency_score'] = (bs['ctr'] * bs['cr']) / 100  # Combined efficiency
-            bs['cost_efficiency'] = bs['conversions'] / bs['Counts']  # Conversions per search
-            bs['engagement_ratio'] = bs['clicks'] / bs['Counts']  # Click engagement
+            # Market position quadrant analysis
+            # Market position quadrant analysis
+            bs['market_strength'] = bs['share_pct'] * bs['ctr'] / 100  # Combined market strength
+            bs['efficiency_score'] = bs['conversions'] / bs['Counts'] * 1000  # Efficiency per 1000 searches
             
-            # Create efficiency scatter plot
-            fig_efficiency = px.scatter(
-                bs.head(20),
-                x='engagement_ratio',
-                y='cost_efficiency',
+            # Define quadrants based on median values
+            median_strength = bs['market_strength'].median()
+            median_efficiency = bs['efficiency_score'].median()
+            
+            def categorize_position(row):
+                if row['market_strength'] >= median_strength and row['efficiency_score'] >= median_efficiency:
+                    return "🌟 Market Leaders"
+                elif row['market_strength'] >= median_strength and row['efficiency_score'] < median_efficiency:
+                    return "📈 Volume Players"
+                elif row['market_strength'] < median_strength and row['efficiency_score'] >= median_efficiency:
+                    return "💎 Efficiency Champions"
+                else:
+                    return "🌱 Emerging Brands"
+            
+            bs['position_category'] = bs.apply(categorize_position, axis=1)
+            
+            # Create quadrant scatter plot
+            fig_quadrant = px.scatter(
+                bs.head(30),  # Top 30 brands for clarity
+                x='market_strength',
+                y='efficiency_score',
                 size='Counts',
-                color='efficiency_score',
+                color='position_category',
                 hover_name='brand',
-                title='<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Brand Efficiency Matrix</b>',
+                title='<b style="color:#2E7D32;">🎯 Brand Market Position Quadrant Analysis</b>',
                 labels={
-                    'engagement_ratio': 'Engagement Ratio (Clicks/Searches)',
-                    'cost_efficiency': 'Conversion Efficiency (Conversions/Searches)',
-                    'efficiency_score': 'Combined Efficiency Score'
+                    'market_strength': 'Market Strength (Share × CTR)',
+                    'efficiency_score': 'Conversion Efficiency (per 1000 searches)'
                 },
-                color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32']
+                color_discrete_map={
+                    "🌟 Market Leaders": "#2E7D32",
+                    "📈 Volume Players": "#4CAF50", 
+                    "💎 Efficiency Champions": "#66BB6A",
+                    "🌱 Emerging Brands": "#A5D6A7"
+                }
             )
             
-            fig_efficiency.update_layout(
+            # Add quadrant lines
+            fig_quadrant.add_hline(y=median_efficiency, line_dash="dash", line_color="#81C784", opacity=0.7)
+            fig_quadrant.add_vline(x=median_strength, line_dash="dash", line_color="#81C784", opacity=0.7)
+            
+            fig_quadrant.update_traces(
+                hovertemplate='<b>%{hovertext}</b><br>' +
+                             'Market Strength: %{x:.2f}<br>' +
+                             'Efficiency Score: %{y:.2f}<br>' +
+                             'Total Searches: %{marker.size:,.0f}<br>' +
+                             'Category: %{marker.color}<extra></extra>'
+            )
+            
+            fig_quadrant.update_layout(
                 plot_bgcolor='rgba(248,255,248,0.95)',
                 paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI')
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                height=500,
+                xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
             )
             
-            st.plotly_chart(fig_efficiency, use_container_width=True)
+            st.plotly_chart(fig_quadrant, use_container_width=True)
             
-            # Top efficient brands
-            top_efficient = bs.nlargest(5, 'efficiency_score')[['brand', 'efficiency_score', 'ctr', 'cr']]
-            st.markdown("**🏆 Most Efficient Nutraceuticals & Nutrition Brands:**")
-            for idx, row in top_efficient.iterrows():
-                st.write(f"• **{row['brand']}** - Efficiency: {row['efficiency_score']:.3f} (CTR: {row['ctr']:.2f}%, CR: {row['cr']:.2f}%)")
+            # Position category distribution
+            position_dist = bs['position_category'].value_counts().reset_index()
+            position_dist.columns = ['Category', 'Count']
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig_dist = px.pie(
+                    position_dist,
+                    names='Category',
+                    values='Count',
+                    title='<b style="color:#2E7D32;">📊 Brand Position Distribution</b>',
+                    color_discrete_map={
+                        "🌟 Market Leaders": "#2E7D32",
+                        "📈 Volume Players": "#4CAF50", 
+                        "💎 Efficiency Champions": "#66BB6A",
+                        "🌱 Emerging Brands": "#A5D6A7"
+                    }
+                )
+                
+                fig_dist.update_layout(
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    paper_bgcolor='rgba(232,245,232,0.8)'
+                )
+                
+                st.plotly_chart(fig_dist, use_container_width=True)
+            
+            with col2:
+                # Top performers in each category
+                st.markdown("#### 🏆 Category Champions")
+                
+                for category in position_dist['Category']:
+                    category_brands = bs[bs['position_category'] == category].sort_values('Counts', ascending=False).head(3)
+                    
+                    if not category_brands.empty:
+                        st.markdown(f"**{category}**")
+                        for idx, row in category_brands.iterrows():
+                            st.markdown(f"• {row['brand']} - {row['Counts']:,.0f} searches")
+                        st.markdown("")
     
-    with intel_tab2:
-        st.markdown("#### 📈 Nutraceuticals & Nutrition Brand Growth Potential Analysis")
+    with strategy_tab2:
+        st.markdown("#### 🚀 Growth Opportunities Analysis")
         
         if not bs.empty:
-            # Calculate growth metrics
-            bs['market_opportunity'] = bs['Counts'] * (1 - bs['ctr']/100)  # Untapped potential
-            bs['conversion_opportunity'] = bs['clicks'] * (1 - bs['cr']/100)  # Conversion potential
-            bs['growth_score'] = (bs['market_opportunity'] + bs['conversion_opportunity']) / 2
-            
-            # Growth potential chart
-            growth_data = bs.nlargest(15, 'growth_score')[['brand', 'growth_score', 'market_opportunity', 'conversion_opportunity']]
-            
-            fig_growth = px.bar(
-                growth_data,
-                x='brand',
-                y='growth_score',
-                title='<b style="color:#2E7D32;">🌱 Nutraceuticals & Nutrition Brand Growth Potential</b>',
-                color='growth_score',
-                color_continuous_scale=['#E8F5E8', '#2E7D32']
+            # Opportunity scoring
+            bs['growth_potential'] = (
+                (100 - bs['share_pct']) * 0.4 +  # Market share growth potential
+                (bs['ctr'] / bs['ctr'].max() * 100) * 0.3 +  # CTR performance
+                (bs['cr'] / bs['cr'].max() * 100) * 0.3  # Conversion performance
             )
             
-            fig_growth.update_layout(
-                plot_bgcolor='rgba(248,255,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI'),
-                xaxis_tickangle=-45
-            )
+            # Identify high-opportunity brands
+            high_opportunity = bs[
+                (bs['growth_potential'] > bs['growth_potential'].quantile(0.7)) &
+                (bs['share_pct'] < 10)  # Not already dominant
+            ].sort_values('growth_potential', ascending=False).head(10)
             
-            st.plotly_chart(fig_growth, use_container_width=True)
-            
-            # Growth recommendations
-            st.markdown("**🚀 Growth Recommendations:**")
-            high_opportunity = growth_data.head(3)
-            for idx, row in high_opportunity.iterrows():
-                st.write(f"• **{row['brand']}** - Focus on improving engagement and conversion optimization")
+            if not high_opportunity.empty:
+                fig_opportunity = px.bar(
+                    high_opportunity,
+                    x='growth_potential',
+                    y='brand',
+                    orientation='h',
+                    title='<b style="color:#2E7D32;">🚀 Top Growth Opportunity Brands</b>',
+                    labels={'growth_potential': 'Growth Potential Score', 'brand': 'Brand'},
+                    color='growth_potential',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                    text='growth_potential'
+                )
+                
+                fig_opportunity.update_traces(
+                    texttemplate='%{text:.1f}',
+                    textposition='inside',
+                    hovertemplate='<b>%{y}</b><br>' +
+                                 'Growth Score: %{x:.1f}<br>' +
+                                 'Market Share: %{customdata[0]:.2f}%<br>' +
+                                 'CTR: %{customdata[1]:.2f}%<br>' +
+                                 'CR: %{customdata[2]:.2f}%<extra></extra>',
+                    customdata=high_opportunity[['share_pct', 'ctr', 'cr']].values
+                )
+                
+                fig_opportunity.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=500,
+                    yaxis={'categoryorder': 'total ascending'}
+                )
+                
+                st.plotly_chart(fig_opportunity, use_container_width=True)
+                
+                # Growth recommendations
+                st.markdown("#### 💡 Strategic Recommendations")
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("""
+                    <div class="brand-performance-card">
+                        <h4 style="color:#2E7D32;">🎯 Market Expansion</h4>
+                        <ul>
+                            <li>Target underperforming search terms</li>
+                            <li>Increase brand visibility campaigns</li>
+                            <li>Focus on high-intent keywords</li>
+                            <li>Optimize for mobile searches</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col2:
+                    st.markdown("""
+                    <div class="brand-performance-card">
+                        <h4 style="color:#2E7D32;">📈 Performance Optimization</h4>
+                        <ul>
+                            <li>Improve click-through rates</li>
+                            <li>Enhance conversion funnels</li>
+                            <li>A/B test ad creatives</li>
+                            <li>Optimize landing pages</li>
+                        </ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("No high-opportunity brands identified with current criteria")
     
-    with intel_tab3:
-        st.markdown("#### 🔍 Competitive Nutraceuticals & Nutrition Brand Analysis")
+    with strategy_tab3:
+        st.markdown("#### 💡 Strategic Brand Insights")
         
-        if not bs.empty and len(bs) >= 2:
-            # Competitive positioning
-            bs['competitive_index'] = (bs['share_pct'] * bs['ctr'] * bs['cr']) / 10000
-            bs['market_position'] = pd.cut(
-                bs['competitive_index'],
-                bins=[0, 0.001, 0.01, 0.1, float('inf')],
-                labels=['Challenger', 'Contender', 'Leader', 'Dominant']
-            )
+        if not bs.empty:
+            # Calculate key insights
+            total_market_size = bs['Counts'].sum()
+            top_performer = bs.loc[bs['Counts'].idxmax()]
+            efficiency_leader = bs.loc[bs['cr'].idxmax()] if bs['cr'].max() > 0 else None
             
-            # Competitive matrix
-            comp_summary = bs['market_position'].value_counts().reset_index()
-            comp_summary.columns = ['Market Position', 'Brand Count']
+            # Market concentration analysis
+            top_5_share = bs.nlargest(5, 'Counts')['share_pct'].sum()
+            market_concentration = "High" if top_5_share > 70 else "Medium" if top_5_share > 50 else "Low"
             
-            fig_comp = px.pie(
-                comp_summary,
-                names='Market Position',
-                values='Brand Count',
-                title='<b style="color:#2E7D32;">🏆 Nutraceuticals & Nutrition Brand Competitive Positioning</b>',
-                color_discrete_sequence=['#E8F5E8', '#A5D6A7', '#66BB6A', '#2E7D32']
-            )
+            # Performance benchmarks
+            avg_ctr = bs['ctr'].mean()
+            avg_cr = bs['cr'].mean()
             
-            fig_comp.update_layout(
-                font=dict(color='#1B5E20', family='Segoe UI'),
-                paper_bgcolor='rgba(232,245,232,0.8)'
-            )
+            # Strategic insights display
+            col1, col2 = st.columns(2)
             
-            st.plotly_chart(fig_comp, use_container_width=True)
+            with col1:
+                st.markdown(f"""
+                <div class="Nutraceuticals & Nutrition-insight-box">
+                    <h4>🎯 Market Intelligence</h4>
+                    <p><strong>Market Size:</strong> {total_market_size:,.0f} total searches</p>
+                    <p><strong>Market Leader:</strong> {top_performer['brand']} ({top_performer['share_pct']:.1f}% share)</p>
+                    <p><strong>Market Concentration:</strong> {market_concentration} (Top 5: {top_5_share:.1f}%)</p>
+                    <p><strong>Average CTR:</strong> {avg_ctr:.2f}%</p>
+                    <p><strong>Average CR:</strong> {avg_cr:.2f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
             
-            # Competitive insights
-            leaders = bs[bs['market_position'] == 'Leader']['brand'].tolist() if 'Leader' in bs['market_position'].values else []
-            challengers = bs[bs['market_position'] == 'Challenger']['brand'].tolist() if 'Challenger' in bs['market_position'].values else []
+            with col2:
+                if efficiency_leader is not None:
+                    st.markdown(f"""
+                    <div class="Nutraceuticals & Nutrition-insight-box">
+                        <h4>🏆 Performance Leaders</h4>
+                        <p><strong>Volume Leader:</strong> {top_performer['brand']}</p>
+                        <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['cr']:.2f}% CR)</p>
+                        <p><strong>Best CTR:</strong> {bs.loc[bs['ctr'].idxmax(), 'brand']} ({bs['ctr'].max():.2f}%)</p>
+                        <p><strong>Total Brands:</strong> {len(bs)} active brands</p>
+                        <p><strong>Competitive Intensity:</strong> {"High" if len(bs) > 50 else "Medium" if len(bs) > 20 else "Low"}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
             
-            col_comp1, col_comp2 = st.columns(2)
+            # Competitive landscape analysis
+            st.markdown("#### 🏁 Competitive Landscape Matrix")
             
-            with col_comp1:
-                if leaders:
-                    st.markdown("**🏆 Market Leaders:**")
-                    for leader in leaders[:3]:
-                        leader_data = bs[bs['brand'] == leader].iloc[0]
-                        st.write(f"• **{leader}** - {leader_data['share_pct']:.1f}% share, {leader_data['ctr']:.2f}% CTR")
+            # Create competitive intensity heatmap
+            if len(bs) >= 10:
+                # Group brands by performance tiers
+                bs['performance_tier'] = pd.qcut(
+                    bs['Counts'], 
+                    q=4, 
+                    labels=['Tier 4 (Emerging)', 'Tier 3 (Growing)', 'Tier 2 (Established)', 'Tier 1 (Leaders)']
+                )
+                
+                tier_analysis = bs.groupby('performance_tier').agg({
+                    'Counts': ['count', 'mean', 'sum'],
+                    'ctr': 'mean',
+                    'cr': 'mean',
+                    'share_pct': 'sum'
+                }).round(2)
+                
+                tier_analysis.columns = ['Brand Count', 'Avg Searches', 'Total Searches', 'Avg CTR', 'Avg CR', 'Total Share %']
+                
+                st.dataframe(tier_analysis, use_container_width=True)
+                
+                # Strategic recommendations based on analysis
+                st.markdown("#### 📋 Strategic Action Items")
+                
+                recommendations = []
+                
+                if market_concentration == "High":
+                    recommendations.append("🎯 **Market Consolidation**: Consider partnerships or acquisitions in fragmented segments")
+                
+                if avg_ctr < 3:
+                    recommendations.append("📈 **CTR Optimization**: Industry CTR is below benchmark - focus on ad copy and targeting")
+                
+                if avg_cr < 2:
+                    recommendations.append("🔄 **Conversion Optimization**: Low conversion rates indicate need for landing page improvements")
+                
+                if len(bs[bs['share_pct'] > 10]) < 3:
+                    recommendations.append("🚀 **Market Opportunity**: Market lacks dominant players - opportunity for aggressive growth")
+                
+                for i, rec in enumerate(recommendations, 1):
+                    st.markdown(f"{i}. {rec}")
             
-            with col_comp2:
-                if challengers:
-                    st.markdown("**🚀 Rising Challengers:**")
-                    for challenger in challengers[:3]:
-                        challenger_data = bs[bs['brand'] == challenger].iloc[0]
-                        st.write(f"• **{challenger}** - Growth opportunity brand")
+            else:
+                st.info("Need at least 10 brands for comprehensive competitive analysis")
 
-    # Final Brand Summary Dashboard
+    # Enhanced Footer with Data Export Options
     st.markdown("---")
-    st.subheader("📊 Nutraceuticals & Nutrition Brand Performance Dashboard Summary")
+    st.subheader("📥 Export & Analytics Options")
     
-    # Create final summary metrics
-    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns(4)
     
-    with summary_col1:
-        total_searches = bs['Counts'].sum() if not bs.empty else 0
-        st.metric(
-            label="🌿 Total Health Searches",
-            value=f"{total_searches:,.0f}",
-            delta=f"{len(bs)} Nutraceuticals & Nutrition brands analyzed"
-        )
-    
-    with summary_col2:
-        avg_market_ctr = bs['ctr'].mean() if not bs.empty else 0
-        top_ctr = bs['ctr'].max() if not bs.empty else 0
-        st.metric(
-            label="📈 Market Avg CTR",
-            value=f"{avg_market_ctr:.2f}%",
-            delta=f"Best: {top_ctr:.2f}%"
-        )
-    
-    with summary_col3:
-        total_conversions = bs['conversions'].sum() if not bs.empty else 0
-        avg_cr = bs['cr'].mean() if not bs.empty else 0
-        st.metric(
-            label="💚 Total Conversions",
-            value=f"{total_conversions:,.0f}",
-            delta=f"Avg CR: {avg_cr:.2f}%"
-        )
-    
-    with summary_col4:
-        market_concentration = f"{brand_dominance:.1f}%" if not bs.empty else "0%"
-        concentration_status = "High" if brand_dominance > 30 else "Medium" if brand_dominance > 15 else "Low"
-        st.metric(
-            label="🎯 Market Concentration",
-            value=market_concentration,
-            delta=f"{concentration_status} concentration"
-        )
-    
-    # Export all brand data
-    st.markdown("---")
-    st.subheader("📥 Export Nutraceuticals & Nutrition Brand Intelligence")
-    
-    export_col1, export_col2 = st.columns(2)
-    
-    with export_col1:
+    with col1:
         if not bs.empty:
-            # Comprehensive brand export
-            export_data = bs.copy()
-            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
-            
-            csv_export = export_data.to_csv(index=False)
+            full_brand_data = bs.copy()
+            full_brand_data['export_timestamp'] = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+            csv_full = full_brand_data.to_csv(index=False)
             st.download_button(
-                label="📊 Download Complete Nutraceuticals & Nutrition Brand Analysis",
-                data=csv_export,
-                file_name=f"Nutraceuticals & Nutrition_brand_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                label="📊 Full Brand Analysis",
+                data=csv_full,
+                file_name=f"complete_brand_analysis_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv",
-                key="complete_brand_export"
+                key="full_brand_export"
             )
     
-    with export_col2:
-        if not bs.empty:
-            # Summary report
-            summary_report = f"""
-            Nutraceuticals & Nutrition BRAND INTELLIGENCE REPORT
-            Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
-            
-            MARKET OVERVIEW:
-            • Total Nutraceuticals & Nutrition Brands Analyzed: {len(bs)}
-            • Total Health Searches: {bs['Counts'].sum():,.0f}
-            • Market Leader: {bs.iloc[0]['brand']} ({bs.iloc[0]['share_pct']:.1f}% share)
-            • Average CTR: {bs['ctr'].mean():.2f}%
-            • Average CR: {bs['cr'].mean():.2f}%
-            
-            PERFORMANCE TIERS:
-            • Premium Brands (CTR > 8%): {len(bs[bs['ctr'] > 8])}
-            • Growing Brands (CTR 3-8%): {len(bs[(bs['ctr'] >= 3) & (bs['ctr'] <= 8)])}
-            • Emerging Brands (CTR < 3%): {len(bs[bs['ctr'] < 3])}
-            
-            STRATEGIC INSIGHTS:
-            • Market concentration is {concentration_status.lower()}
-            • {len(bs[bs['ctr'] > 5])} brands achieve premium performance
-            • Growth opportunities exist in engagement optimization
-            """
-            
+    with col2:
+        if 'position_category' in bs.columns:
+            strategic_data = bs[['brand', 'Counts', 'share_pct', 'ctr', 'cr', 'position_category', 'growth_potential']].copy()
+            csv_strategic = strategic_data.to_csv(index=False)
             st.download_button(
-                label="📝 Download Executive Summary Report",
-                data=summary_report,
-                file_name=f"Nutraceuticals & Nutrition_brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
-                mime="text/plain",
-                key="executive_summary_export"
+                label="🎯 Strategic Insights",
+                data=csv_strategic,
+                file_name=f"brand_strategic_insights_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="strategic_export"
             )
+    
+    with col3:
+        if not matrix_data.empty:
+            matrix_export = matrix_data.groupby(['brand', 'search']).agg({
+                'Counts': 'sum',
+                'clicks': 'sum', 
+                'conversions': 'sum'
+            }).reset_index()
+            csv_matrix = matrix_export.to_csv(index=False)
+            st.download_button(
+                label="🔥 Brand-Keyword Matrix",
+                data=csv_matrix,
+                file_name=f"brand_keyword_matrix_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="matrix_export"
+            )
+    
+    with col4:
+        # Generate executive summary
+        if not bs.empty:
+            summary_data = {
+                'Metric': [
+                    'Total Brands Analyzed',
+                    'Market Leader',
+                    'Total Search Volume',
+                    'Average CTR',
+                    'Average CR',
+                    'Market Concentration',
+                    'Analysis Date'
+                ],
+                'Value': [
+                    len(bs),
+                    top_performer['brand'],
+                    f"{total_market_size:,.0f}",
+                    f"{avg_ctr:.2f}%",
+                    f"{avg_cr:.2f}%",
+                    f"{market_concentration} ({top_5_share:.1f}%)",
+                    pd.Timestamp.now().strftime('%Y-%m-%d')
+                ]
+            }
+            summary_df = pd.DataFrame(summary_data)
+            csv_summary = summary_df.to_csv(index=False)
+            st.download_button(
+                label="📋 Executive Summary",
+                data=csv_summary,
+                file_name=f"brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="summary_export"
+            )
+
+    # Performance optimization footer
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-radius: 10px; margin-top: 2rem;">
+        <p style="color: #2E7D32; margin: 0; font-size: 0.9em;">
+            🌿 <strong>Nutraceuticals & Nutrition Brand Intelligence Hub</strong> - Powered by Advanced Analytics & Market Intelligence 🌿
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 
 # ----------------- Category Tab (Enhanced & Health-Focused) -----------------
