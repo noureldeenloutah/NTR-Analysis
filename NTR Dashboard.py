@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from collections import Counter
 import re, os, logging
 from datetime import datetime
+from collections import defaultdict
 import pytz
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
@@ -2271,6 +2272,7 @@ with tab_overview:
 st.markdown("---")
 
 # ----------------- Search Analysis (Enhanced Core) -----------------
+# ----------------- Search Analysis (Enhanced Core) -----------------
 
 with tab_search:
     st.header("🔍 Health Search Analysis — Deep Dive into Nutraceuticals & Nutrition Queries")
@@ -2653,6 +2655,7 @@ with tab_search:
             st.plotly_chart(fig_kw, use_container_width=True)
         else:
             st.warning("⚠️ No keyword performance data available to display chart.")
+
 
 
     with col_right:
