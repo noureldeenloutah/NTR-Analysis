@@ -3128,7 +3128,7 @@ with tab_search:
                 font-weight: 300;
                 opacity: 0.9;
             ">
-                Advanced Fuzzy Matching • Performance Analytics • AI Insights
+                Advanced Matching • Performance Analytics • Search Insights
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -3472,7 +3472,7 @@ with tab_search:
             st.markdown("""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
                 <h3 style="margin: 0; display: flex; align-items: center;">
-                    🎯 Health Keywords Performance Matrix
+                    🎯 Nutraceuticals & Nutrition Keywords Performance Matrix
                     <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Real-time Analysis</span>
                 </h3>
             </div>
@@ -3587,7 +3587,7 @@ with tab_search:
             # Enhanced Query Length Analysis
             st.markdown("""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                <h3 style="margin: 0;">📊 Health Query Length Analysis</h3>
+                <h3 style="margin: 0;">📊 Nutraceuticals & Nutrition Query Length Analysis</h3>
             </div>
             """, unsafe_allow_html=True)
             
@@ -3624,7 +3624,7 @@ with tab_search:
         
         st.markdown("""
         <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
-            <h2 style="margin: 0; font-size: 2rem;">🏆 Top Performing Health Keywords</h2>
+            <h2 style="margin: 0; font-size: 2rem;">🏆 Top Performing Grouped Keywords</h2>
             <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"></p>
         </div>
         """, unsafe_allow_html=True)
@@ -4021,7 +4021,7 @@ with tab_search:
                 # Enhanced table header
                 st.markdown(f"""
                 <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; text-align: center;">
-                    <h2 style="margin: 0; font-size: 2rem;">📊 Top {num_keywords} Health Keywords Performance Table</h2>
+                    <h2 style="margin: 0; font-size: 2rem;">📊 Top {num_keywords} Grouped Keywords Performance Table</h2>
                     <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Comprehensive Analysis with Market Share & Performance Metrics</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -4380,7 +4380,7 @@ with tab_search:
                 with insight_col1:
                     st.markdown(f"""
                     <div class="insight-box-green">
-                        <h4>📊 Fuzzy Matching Analysis Summary</h4>
+                        <h4>📊 Matching Analysis Summary</h4>
                         <div style="margin-bottom: 1rem;">
                             <p><strong>🔍 Total Keyword Groups:</strong> {format_number(len(kw_perf_df))}</p>
                             <p><strong>🔗 Total Variations Grouped:</strong> {format_number(total_variations)}</p>
@@ -4390,7 +4390,7 @@ with tab_search:
                         <div style="margin-bottom: 1rem;">
                             <p><strong>🔍 Unique Search Queries:</strong> {format_number(unique_queries_sum)}</p>
                             <p><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
-                            <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
+                            <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% CR)</p>
                         </div>
                         <div class="sub-box">
                             <p style="color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
@@ -4421,12 +4421,6 @@ with tab_search:
                     </div>
                     """, unsafe_allow_html=True)
 
-                # Add completion message
-                st.markdown("""
-                <div style="text-align: center; margin-top: 2rem;">
-                    <h3 style="color: #4CAF50;">🚀 Analysis Complete - Ready for Action!</h3>
-                </div>
-                """, unsafe_allow_html=True)
 
                 # Final performance footer
                 st.markdown(f"""
@@ -4440,7 +4434,7 @@ with tab_search:
                     </p>
                     <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
                         <p style="color: #1B5E20; margin: 0; font-weight: bold;">
-                            💡 Pro Tip: Focus on keywords with high variations count and good Health CR for maximum ROI
+                            💡 Pro Tip: Focus on keywords with high variations count and good CR for maximum ROI
                         </p>
                     </div>
                 </div>
