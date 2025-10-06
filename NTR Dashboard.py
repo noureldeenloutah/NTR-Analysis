@@ -4010,9 +4010,6 @@ with tab_search:
             """, unsafe_allow_html=True)
 
 
-            # ================================================================================================
-            # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
-            # ================================================================================================
 
             # ================================================================================================
             # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
@@ -4045,8 +4042,8 @@ with tab_search:
                     'total_clicks': 'Total Clicks',
                     'total_conversions': 'Conversions',
                     'avg_ctr': 'Avg CTR',
-                    'health_cr': 'CR (Conversions/Count)',
-                    'classic_cr': 'Classic CR (Conversions/Clicks)',
+                    'health_cr': 'Health CR',
+                    'classic_cr': 'Classic CR',
                     'avg_cr_volume': 'AVG CR (Conv/Vol)',  # ✅ Added new column
                     'unique_queries': 'Unique Queries',
                     'variations_count': 'Variations'
@@ -4572,6 +4569,10 @@ with tab_search:
                         help="Download executive summary of the analysis"
                     )
                 
+                
+                # ================================================================================================
+                # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
+                # ================================================================================================
 
                 # ================================================================================================
                 # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
