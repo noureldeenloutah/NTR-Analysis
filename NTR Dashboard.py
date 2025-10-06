@@ -2390,1933 +2390,1933 @@ with tab_search:
  
     st.markdown("---")
     
-        st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
-        
-        # Cached Master Keyword Dictionary
-        @st.cache_data(ttl=7200, show_spinner=False)
-        def create_master_keyword_dictionary():
-            """
-            Minimized master keywords dictionary - selected best 50-60% from original values
-            """
-            return {
-                'مغنیسیوم': {
-                    'variations': [
-                        'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'مغنیس', 'مغنی', 
-                        'مغنیسی', 'مغانیسیوم', 'ماغن', 'المغنیسیوم', 'مغنیسو', 
-                        'مغنیزیوم', 'مغناسیوم', 'مغانسیوم', 'magnesium', 'مغنيسيوم'
-                    ],
-                    'excluded_terms': ['الصمغ'],
-                    'compounds': [
-                        'جلیسینات', 'جلایسینات', 'جل', 'سترات', 'مالات', 
-                        'فوار', '400', 'glycinate', 'citrate', 'malate'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
+    st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
+    
+    # Cached Master Keyword Dictionary
+    @st.cache_data(ttl=7200, show_spinner=False)
+    def create_master_keyword_dictionary():
+        """
+        Minimized master keywords dictionary - selected best 50-60% from original values
+        """
+        return {
+            'مغنیسیوم': {
+                'variations': [
+                    'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'مغنیس', 'مغنی', 
+                    'مغنیسی', 'مغانیسیوم', 'ماغن', 'المغنیسیوم', 'مغنیسو', 
+                    'مغنیزیوم', 'مغناسیوم', 'مغانسیوم', 'magnesium', 'مغنيسيوم'
+                ],
+                'excluded_terms': ['الصمغ'],
+                'compounds': [
+                    'جلیسینات', 'جلایسینات', 'جل', 'سترات', 'مالات', 
+                    'فوار', '400', 'glycinate', 'citrate', 'malate'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
 
-                'اوميجا': {
-                    'variations': [
-                        'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اوم',
-                        'اومی', 'میجا', 'اومیجا3', 'اومیغا3', 'اومیقا3',
-                        'الاومیجا', 'الاومیغا', 'اوکیقا', 'امیغا', 'کومیجا',
-                        'omega', 'omega3', 'omg3', 'omg', 'ome', 'omiga', 'mega'
-                    ],
-                    'excluded_terms': [
-                        'اومیلت', 'اومالت', 'اوملت', 'زاو', 'milga', 'کرومیم', 
-                        'one', 'النوم', 'کوی', 'ایزوبیور', 'کوم', 'میجاتو', 'کومی'
-                    ],
-                    'compounds': [
-                        '3', '6', '9', '1000', '2000', 'للاطفال', 'اطفال', 
-                        'حبوب', 'کپسول', 'EPA', 'DHA', 'nordic', 'jp', 'capsules'
-                    ],
-                    'threshold': 80,
-                    'min_length': 3
-                },
+            'اوميجا': {
+                'variations': [
+                    'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اوم',
+                    'اومی', 'میجا', 'اومیجا3', 'اومیغا3', 'اومیقا3',
+                    'الاومیجا', 'الاومیغا', 'اوکیقا', 'امیغا', 'کومیجا',
+                    'omega', 'omega3', 'omg3', 'omg', 'ome', 'omiga', 'mega'
+                ],
+                'excluded_terms': [
+                    'اومیلت', 'اومالت', 'اوملت', 'زاو', 'milga', 'کرومیم', 
+                    'one', 'النوم', 'کوی', 'ایزوبیور', 'کوم', 'میجاتو', 'کومی'
+                ],
+                'compounds': [
+                    '3', '6', '9', '1000', '2000', 'للاطفال', 'اطفال', 
+                    'حبوب', 'کپسول', 'EPA', 'DHA', 'nordic', 'jp', 'capsules'
+                ],
+                'threshold': 80,
+                'min_length': 3
+            },
 
-                'کولاجین': {
-                    'variations': [
-                        'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'کلاجین', 
-                        'کولاژن', 'کولجین', 'کول', 'کولاجی', 'مولاجین'
-                    ],
-                    'excluded_terms': [
-                        'کوین', 'کولایت', 'کوریلا', 'کولین', 'شوکولا', 'لاین'
-                    ],
-                    'compounds': [
-                        'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 
-                        'marine', 'بودره', 'فوار', 'powder'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'فیتامین': {
-                    'variations': [
-                        'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
-                        'فیتامین سی', 'فیتامین د', 'فیتامین ب', 'فیتامین د3',
-                        'مالتی فیتامین', 'ملتی فیتامین', 'فیتامین للاطفال',
-                        'فیتامین حمل', 'فیتامین شعر', 'فیتامین د 50000',
-                        'vitamin', 'vitamins', 'multivitamin', 'vitamin c', 'vitamin d'
-                    ],
-                    'excluded_terms': [
-                        'فیتنس', 'فیتر', 'فیمی', 'فیتال', 'ادفیتا', 'فینترمین', 
-                        'قلوتامین', 'vitex', 'بیتا', 'غلوتامین'
-                    ],
-                    'compounds': [
-                        'سی', 'د', 'دال', 'ب', 'بی', 'c', 'd', 'd3', 'b12',
-                        '50000', '5000', '1000', 'للاطفال', 'حمل', 'شعر',
-                        'فوار', 'حبوب', 'شراب', 'قطرات'
-                    ],
-                    'threshold': 75,
-                    'min_length': 4
-                },
-                
-                'زنک': {
-                    'variations': [
-                        'زنک', 'زینک', 'زنك', 'zinc', 'الزنک', 'الزینک'
-                    ],
-                    'excluded_terms': [
-                        'الوزن', 'زینیکا', 'زینکال', 'الارز'
-                    ],
-                    'compounds': [
-                        'پیکولینات', 'گلوکونات', 'picolinate', '50', '25', 'copper'
-                    ],
-                    'threshold': 80,
-                    'min_length': 3
-                },
-                
-                'کالسیوم': {
-                    'variations': [
-                        'کالسیوم', 'کلسیم', 'كالسيوم', 'calcium', 'الکالسیوم',
-                        'کالسیو', 'کالیسیوم'
-                    ],
-                    'compounds': [
-                        'کربنات', 'سیترات', 'citrate', 'مغنیسیو', '600', 
-                        'فوار', 'للاطفال'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'بروتین': {
-                    'variations': [
-                        'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 
-                        'پروتن', 'بروت', 'پروت'
-                    ],
-                    'excluded_terms': [
-                        'برورین', 'برافوتین', 'بروبین', 'بیروین', 'بروستا'
-                    ],
-                    'compounds': [
-                        'وی', 'whey', 'کازئین', 'casein', 'ایزو', 'بار', 
-                        'باودر', 'powder', 'ماس', 'نباتی'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'حدید': {
-                    'variations': [
-                        'حدید', 'حديد', 'الحدید', 'iron', 'ferrous', 'ferro',
-                        'فیرولایت', 'فیرو لایت', 'فیروفول', 'فیرومین', 'فیرو'
-                    ],
-                    'excluded_terms': [
-                        'حدیث', 'حدیقة', 'فیدروب', 'solaray', 'فیتو', 'بورون',
-                        'فینترمین', 'solar', 'نیرو', 'زیرو', 'فیتامین', 'solgar'
-                    ],
-                    'compounds': [
-                        'فومارات', 'fumarate', 'سولفات', 'فوار', 'شراب', 
-                        'حبوب', 'للاطفال', 'folic acid', '25mg'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
+            'کولاجین': {
+                'variations': [
+                    'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'کلاجین', 
+                    'کولاژن', 'کولجین', 'کول', 'کولاجی', 'مولاجین'
+                ],
+                'excluded_terms': [
+                    'کوین', 'کولایت', 'کوریلا', 'کولین', 'شوکولا', 'لاین'
+                ],
+                'compounds': [
+                    'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 
+                    'marine', 'بودره', 'فوار', 'powder'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'فیتامین': {
+                'variations': [
+                    'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
+                    'فیتامین سی', 'فیتامین د', 'فیتامین ب', 'فیتامین د3',
+                    'مالتی فیتامین', 'ملتی فیتامین', 'فیتامین للاطفال',
+                    'فیتامین حمل', 'فیتامین شعر', 'فیتامین د 50000',
+                    'vitamin', 'vitamins', 'multivitamin', 'vitamin c', 'vitamin d'
+                ],
+                'excluded_terms': [
+                    'فیتنس', 'فیتر', 'فیمی', 'فیتال', 'ادفیتا', 'فینترمین', 
+                    'قلوتامین', 'vitex', 'بیتا', 'غلوتامین'
+                ],
+                'compounds': [
+                    'سی', 'د', 'دال', 'ب', 'بی', 'c', 'd', 'd3', 'b12',
+                    '50000', '5000', '1000', 'للاطفال', 'حمل', 'شعر',
+                    'فوار', 'حبوب', 'شراب', 'قطرات'
+                ],
+                'threshold': 75,
+                'min_length': 4
+            },
+            
+            'زنک': {
+                'variations': [
+                    'زنک', 'زینک', 'زنك', 'zinc', 'الزنک', 'الزینک'
+                ],
+                'excluded_terms': [
+                    'الوزن', 'زینیکا', 'زینکال', 'الارز'
+                ],
+                'compounds': [
+                    'پیکولینات', 'گلوکونات', 'picolinate', '50', '25', 'copper'
+                ],
+                'threshold': 80,
+                'min_length': 3
+            },
+            
+            'کالسیوم': {
+                'variations': [
+                    'کالسیوم', 'کلسیم', 'كالسيوم', 'calcium', 'الکالسیوم',
+                    'کالسیو', 'کالیسیوم'
+                ],
+                'compounds': [
+                    'کربنات', 'سیترات', 'citrate', 'مغنیسیو', '600', 
+                    'فوار', 'للاطفال'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'بروتین': {
+                'variations': [
+                    'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 
+                    'پروتن', 'بروت', 'پروت'
+                ],
+                'excluded_terms': [
+                    'برورین', 'برافوتین', 'بروبین', 'بیروین', 'بروستا'
+                ],
+                'compounds': [
+                    'وی', 'whey', 'کازئین', 'casein', 'ایزو', 'بار', 
+                    'باودر', 'powder', 'ماس', 'نباتی'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'حدید': {
+                'variations': [
+                    'حدید', 'حديد', 'الحدید', 'iron', 'ferrous', 'ferro',
+                    'فیرولایت', 'فیرو لایت', 'فیروفول', 'فیرومین', 'فیرو'
+                ],
+                'excluded_terms': [
+                    'حدیث', 'حدیقة', 'فیدروب', 'solaray', 'فیتو', 'بورون',
+                    'فینترمین', 'solar', 'نیرو', 'زیرو', 'فیتامین', 'solgar'
+                ],
+                'compounds': [
+                    'فومارات', 'fumarate', 'سولفات', 'فوار', 'شراب', 
+                    'حبوب', 'للاطفال', 'folic acid', '25mg'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
 
-                'ensure': {
-                    'variations': [
-                        'ensure', 'ensur', 'انشور', 'انش', 'انشو', 
-                        'حلیب انشور', 'حليب انشور'
-                    ],
-                    'excluded_terms': [
-                        'انشاء', 'المنشاری', 'سانو', 'النشط', 'انوفاری'
-                    ],
-                    'compounds': [
-                        'plus', 'بلس', 'max', 'ماکس', 'protein', 'پروتین',
-                        'milk', 'حلیب', 'vanilla', 'وانیل', 'chocolate'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'بیوتین': {
-                    'variations': [
-                        'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'البیوتین'
-                    ],
-                    'excluded_terms': [
-                        'biotic', 'بیوسیستین', 'برایوین', 'بیوتیک'
-                    ],
-                    'compounds': [
-                        '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
-                    ],
-                    'threshold': 85,
-                    'min_length': 4
-                },
-                
-                'اشواغندا': {
-                    'variations': [
-                        'اشواغندا', 'اشواجندا', 'اشوقندا', 'اشواق', 'اشو',
-                        'الاشواغندا', 'ashwagandha', 'ashwa', 'ksm66'
-                    ],
-                    'excluded_terms': [
-                        'انشوز', 'الشوک', 'اوراق', 'انشو'
-                    ],
-                    'compounds': [
-                        'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
-                    ],
-                    'threshold': 75,
-                    'min_length': 4
-                },
-                
-                'جنسنج': {
-                    'variations': [
-                        'جنسنج', 'جنس', 'جینسینج', 'جنسنج کوری', 'الجنسنج',
-                        'ginseng', 'korean ginseng', 'panax ginseng'
-                    ],
-                    'compounds': [
-                        'کوری', 'korean', 'panax', 'رویال', 'royal', 'جیلی'
-                    ],
-                    'threshold': 75,
-                    'min_length': 4
-                },
-                
-                'کرکم': {
-                    'variations': [
-                        'کرکم', 'الکرکم', 'کرکمین', 'کورکومین', 'turmeric', 
-                        'curcumin', 'curcumax'
-                    ],
-                    'compounds': [
-                        'curcumin', 'extract', 'مستخلص', 'حبوب', 'کپسول'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'خل التفاح': {
-                    'variations': [
-                        'خل التفاح', 'حبوب خل التفاح', 'خل تفاح', 'خل التفا',
-                        'apple cider vinegar', 'apple cider', 'خل ا'
-                    ],
-                    'compounds': [
-                        'حبوب', 'فوار', 'gummies', 'حلوى', 'کبسولات', 'عضوی'
-                    ],
-                    'threshold': 70,
-                    'min_length': 3
-                },
-                
-                'منوم': {
-                    'variations': [
-                        'منوم', 'منو', 'حبوب منوم', 'شراب منوم', 'منوم الاطفال',
-                        'sleep', 'sleep aid'
-                    ],
-                    'compounds': [
-                        'للاطفال', 'اطفال', 'کبار', 'طبیعی', 'natural'
-                    ],
-                    'threshold': 80,
-                    'min_length': 3
-                },
-                
-                'بربرین': {
-                    'variations': [
-                        'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
-                        'berberine', 'berberin'
-                    ],
-                    'excluded_terms': [
-                        'برابورین', 'بیریورین', 'بروبین', 'برورین'
-                    ],
-                    'compounds': [
-                        '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'کرانبری': {
-                    'variations': [
-                        'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
-                        'بیری', 'cranberry'
-                    ],
-                    'excluded_terms': [
-                        'کاندری', 'کانتری', 'بحری', 'بیورین', 'بکتیری',
-                        'strawberry', 'blueberry', 'بری', 'بیری بیری'
-                    ],
-                    'compounds': [
-                        'حبوب', 'کبسولات', 'extract', 'مستخلص', 'juice', 
-                        'عصیر', 'urinary', 'بولی', 'uti', '500mg'
-                    ],
-                    'threshold': 75,
-                    'min_length': 4
-                },
-                
-                'فحم نشط': {
-                    'variations': [
-                        'فحم', 'حبوب فحم', 'الفحم', 'فحم نشط', 'الفحم النشط',
-                        'charcoal', 'activated charcoal'
-                    ],
-                    'compounds': [
-                        'نشط', 'activated', 'حبوب', 'کبسولات', 'detox'
-                    ],
-                    'threshold': 85,
-                    'min_length': 3
-                },
-                
-                'عسل': {
-                    'variations': [
-                        'عسل', 'العسل', 'honey', 'عسل المنوکا', 'عسل مانوکا',
-                        'عسل منوکا', 'مانوکا', 'manuka honey', 'عسل ملکی',
-                        'royal honey', 'عسل ابو نایف', 'عسل م'
-                    ],
-                    'excluded_terms': [
-                        'عسلی', 'عسکر', 'honey badger', 'honeymoon', 'انوفا',
-                        'الماکا', 'ماکا', 'وسلمان'
-                    ],
-                    'compounds': [
-                        'manuka', 'مانوکا', 'royal', 'ملکی', 'طبیعی', 'natural',
-                        'اطفال', 'للاطفال', 'ابو نایف'
-                    ],
-                    'threshold': 80,
-                    'min_length': 3
-                },
-                
-                'کیو10': {
-                    'variations': [
-                        'کیو 10', 'کیو10', 'کو کیو 10', 'کو کیو', 'q10', 
-                        'coq10', 'co q10', 'ubiquinol'
-                    ],
-                    'compounds': [
-                        '100', '200', 'mg', 'ubiquinol', 'کوانزیم'
-                    ],
-                    'threshold': 80,
-                    'min_length': 3
-                },
-                
-                'جلوتاثیون': {
-                    'variations': [
-                        'جلوتاثیون', 'الجلوتاثیون', 'حبوب جلوتاثیون', 'جلوتا',
-                        'جلوتاثیوم', 'glutathione', 'glutathion'
-                    ],
-                    'compounds': [
-                        '500', 'حبوب', 'کبسولات', 'tablets', 'capsules'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'ارجنین': {
-                    'variations': [
-                        'ارجنین', 'الارجنین', 'ل ارجنین', 'l arginine', 'arginine',
-                        'ارجینین', 'ارگنین'
-                    ],
-                    'compounds': [
-                        '1000', 'l', 'حبوب', 'کبسولات', 'mg'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'سیلینیوم': {
-                    'variations': [
-                        'سیلینیوم', 'سلینیوم', 'السیلینیوم', 'سیلینوم', 'selenium'
-                    ],
-                    'compounds': [
-                        '200', 'ace', 'حبوب', 'کبسولات'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                },
-                
-                'فولیک اسید': {
-                    'variations': [
-                        'فولیک', 'فولیک اسید', 'فول', 'حمض فولیک', 'الفولیک',
-                        'حمض الفولیک', 'folic acid', 'folic'
-                    ],
-                    'excluded_terms': [
-                        'الفا', 'الفا لیبویک', 'فلک', 'فولیکوم'
-                    ],
-                    'compounds': [
-                        '5mg', '400', '400mg', '1mg', 'حبوب', 'اقراص',
-                        'iron', 'حديد', 'اسید', 'acid'
-                    ],
-                    'threshold': 85,
-                    'min_length': 4
-                },
+            'ensure': {
+                'variations': [
+                    'ensure', 'ensur', 'انشور', 'انش', 'انشو', 
+                    'حلیب انشور', 'حليب انشور'
+                ],
+                'excluded_terms': [
+                    'انشاء', 'المنشاری', 'سانو', 'النشط', 'انوفاری'
+                ],
+                'compounds': [
+                    'plus', 'بلس', 'max', 'ماکس', 'protein', 'پروتین',
+                    'milk', 'حلیب', 'vanilla', 'وانیل', 'chocolate'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'بیوتین': {
+                'variations': [
+                    'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'البیوتین'
+                ],
+                'excluded_terms': [
+                    'biotic', 'بیوسیستین', 'برایوین', 'بیوتیک'
+                ],
+                'compounds': [
+                    '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
+                ],
+                'threshold': 85,
+                'min_length': 4
+            },
+            
+            'اشواغندا': {
+                'variations': [
+                    'اشواغندا', 'اشواجندا', 'اشوقندا', 'اشواق', 'اشو',
+                    'الاشواغندا', 'ashwagandha', 'ashwa', 'ksm66'
+                ],
+                'excluded_terms': [
+                    'انشوز', 'الشوک', 'اوراق', 'انشو'
+                ],
+                'compounds': [
+                    'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
+                ],
+                'threshold': 75,
+                'min_length': 4
+            },
+            
+            'جنسنج': {
+                'variations': [
+                    'جنسنج', 'جنس', 'جینسینج', 'جنسنج کوری', 'الجنسنج',
+                    'ginseng', 'korean ginseng', 'panax ginseng'
+                ],
+                'compounds': [
+                    'کوری', 'korean', 'panax', 'رویال', 'royal', 'جیلی'
+                ],
+                'threshold': 75,
+                'min_length': 4
+            },
+            
+            'کرکم': {
+                'variations': [
+                    'کرکم', 'الکرکم', 'کرکمین', 'کورکومین', 'turmeric', 
+                    'curcumin', 'curcumax'
+                ],
+                'compounds': [
+                    'curcumin', 'extract', 'مستخلص', 'حبوب', 'کپسول'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'خل التفاح': {
+                'variations': [
+                    'خل التفاح', 'حبوب خل التفاح', 'خل تفاح', 'خل التفا',
+                    'apple cider vinegar', 'apple cider', 'خل ا'
+                ],
+                'compounds': [
+                    'حبوب', 'فوار', 'gummies', 'حلوى', 'کبسولات', 'عضوی'
+                ],
+                'threshold': 70,
+                'min_length': 3
+            },
+            
+            'منوم': {
+                'variations': [
+                    'منوم', 'منو', 'حبوب منوم', 'شراب منوم', 'منوم الاطفال',
+                    'sleep', 'sleep aid'
+                ],
+                'compounds': [
+                    'للاطفال', 'اطفال', 'کبار', 'طبیعی', 'natural'
+                ],
+                'threshold': 80,
+                'min_length': 3
+            },
+            
+            'بربرین': {
+                'variations': [
+                    'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
+                    'berberine', 'berberin'
+                ],
+                'excluded_terms': [
+                    'برابورین', 'بیریورین', 'بروبین', 'برورین'
+                ],
+                'compounds': [
+                    '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'کرانبری': {
+                'variations': [
+                    'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
+                    'بیری', 'cranberry'
+                ],
+                'excluded_terms': [
+                    'کاندری', 'کانتری', 'بحری', 'بیورین', 'بکتیری',
+                    'strawberry', 'blueberry', 'بری', 'بیری بیری'
+                ],
+                'compounds': [
+                    'حبوب', 'کبسولات', 'extract', 'مستخلص', 'juice', 
+                    'عصیر', 'urinary', 'بولی', 'uti', '500mg'
+                ],
+                'threshold': 75,
+                'min_length': 4
+            },
+            
+            'فحم نشط': {
+                'variations': [
+                    'فحم', 'حبوب فحم', 'الفحم', 'فحم نشط', 'الفحم النشط',
+                    'charcoal', 'activated charcoal'
+                ],
+                'compounds': [
+                    'نشط', 'activated', 'حبوب', 'کبسولات', 'detox'
+                ],
+                'threshold': 85,
+                'min_length': 3
+            },
+            
+            'عسل': {
+                'variations': [
+                    'عسل', 'العسل', 'honey', 'عسل المنوکا', 'عسل مانوکا',
+                    'عسل منوکا', 'مانوکا', 'manuka honey', 'عسل ملکی',
+                    'royal honey', 'عسل ابو نایف', 'عسل م'
+                ],
+                'excluded_terms': [
+                    'عسلی', 'عسکر', 'honey badger', 'honeymoon', 'انوفا',
+                    'الماکا', 'ماکا', 'وسلمان'
+                ],
+                'compounds': [
+                    'manuka', 'مانوکا', 'royal', 'ملکی', 'طبیعی', 'natural',
+                    'اطفال', 'للاطفال', 'ابو نایف'
+                ],
+                'threshold': 80,
+                'min_length': 3
+            },
+            
+            'کیو10': {
+                'variations': [
+                    'کیو 10', 'کیو10', 'کو کیو 10', 'کو کیو', 'q10', 
+                    'coq10', 'co q10', 'ubiquinol'
+                ],
+                'compounds': [
+                    '100', '200', 'mg', 'ubiquinol', 'کوانزیم'
+                ],
+                'threshold': 80,
+                'min_length': 3
+            },
+            
+            'جلوتاثیون': {
+                'variations': [
+                    'جلوتاثیون', 'الجلوتاثیون', 'حبوب جلوتاثیون', 'جلوتا',
+                    'جلوتاثیوم', 'glutathione', 'glutathion'
+                ],
+                'compounds': [
+                    '500', 'حبوب', 'کبسولات', 'tablets', 'capsules'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'ارجنین': {
+                'variations': [
+                    'ارجنین', 'الارجنین', 'ل ارجنین', 'l arginine', 'arginine',
+                    'ارجینین', 'ارگنین'
+                ],
+                'compounds': [
+                    '1000', 'l', 'حبوب', 'کبسولات', 'mg'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'سیلینیوم': {
+                'variations': [
+                    'سیلینیوم', 'سلینیوم', 'السیلینیوم', 'سیلینوم', 'selenium'
+                ],
+                'compounds': [
+                    '200', 'ace', 'حبوب', 'کبسولات'
+                ],
+                'threshold': 80,
+                'min_length': 4
+            },
+            
+            'فولیک اسید': {
+                'variations': [
+                    'فولیک', 'فولیک اسید', 'فول', 'حمض فولیک', 'الفولیک',
+                    'حمض الفولیک', 'folic acid', 'folic'
+                ],
+                'excluded_terms': [
+                    'الفا', 'الفا لیبویک', 'فلک', 'فولیکوم'
+                ],
+                'compounds': [
+                    '5mg', '400', '400mg', '1mg', 'حبوب', 'اقراص',
+                    'iron', 'حديد', 'اسید', 'acid'
+                ],
+                'threshold': 85,
+                'min_length': 4
+            },
 
-                'میلاتونین': {
-                    'variations': [
-                        'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'المیلاتونین',
-                        'melatonin', 'mela', 'melat', 'ناترول', 'natrol'
-                    ],
-                    'excluded_terms': [
-                        'میلان', 'میلاد', 'تونین', 'naturals', 'جلایسین', 
-                        'nutrafol', 'nitro', 'کریاتین', 'مالتی', 'جامیسون'
-                    ],
-                    'compounds': [
-                        '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
-                        'gummy', 'gummies', 'اطفال', 'للاطفال', 'kids',
-                        'للنوم', 'sleep', 'plus'
-                    ],
-                    'threshold': 80,
-                    'min_length': 4
-                }
+            'میلاتونین': {
+                'variations': [
+                    'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'المیلاتونین',
+                    'melatonin', 'mela', 'melat', 'ناترول', 'natrol'
+                ],
+                'excluded_terms': [
+                    'میلان', 'میلاد', 'تونین', 'naturals', 'جلایسین', 
+                    'nutrafol', 'nitro', 'کریاتین', 'مالتی', 'جامیسون'
+                ],
+                'compounds': [
+                    '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
+                    'gummy', 'gummies', 'اطفال', 'للاطفال', 'kids',
+                    'للنوم', 'sleep', 'plus'
+                ],
+                'threshold': 80,
+                'min_length': 4
             }
+        }
 
-        # ================================================================================================
-        # 🚀 OPTIMIZED FUNCTION DEFINITIONS SECTION
-        # ================================================================================================
+    # ================================================================================================
+    # 🚀 OPTIMIZED FUNCTION DEFINITIONS SECTION
+    # ================================================================================================
 
-        @st.cache_data(ttl=3600, show_spinner=False)
-        def get_compiled_patterns():
-            """Pre-compiled regex patterns for better performance"""
-            import re
-            return [
-                re.compile(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}'),  # Arabic
-                re.compile(r'[a-zA-Z]{3,}'),  # English
-                re.compile(r'\d{2,}')  # Numbers
-            ]
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def get_compiled_patterns():
+        """Pre-compiled regex patterns for better performance"""
+        import re
+        return [
+            re.compile(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}'),  # Arabic
+            re.compile(r'[a-zA-Z]{3,}'),  # English
+            re.compile(r'\d{2,}')  # Numbers
+        ]
 
-        def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
-            """Optimized keyword extraction with pre-compiled patterns"""
-            if not isinstance(text, str) or len(text.strip()) < min_length:
-                return []
-            
-            text = text.strip().lower()
-            patterns = get_compiled_patterns()
-            
-            keywords = []
-            for pattern in patterns:
-                matches = pattern.findall(text)
-                keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
-            
-            return list(set(keywords))  # Remove duplicates early
+    def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
+        """Optimized keyword extraction with pre-compiled patterns"""
+        if not isinstance(text, str) or len(text.strip()) < min_length:
+            return []
+        
+        text = text.strip().lower()
+        patterns = get_compiled_patterns()
+        
+        keywords = []
+        for pattern in patterns:
+            matches = pattern.findall(text)
+            keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
+        
+        return list(set(keywords))  # Remove duplicates early
 
-        def safe_import_fuzzywuzzy():
-            """Safely import fuzzywuzzy with fallback"""
-            try:
-                from fuzzywuzzy import fuzz
-                return fuzz, True
-            except ImportError:
-                return None, False
+    def safe_import_fuzzywuzzy():
+        """Safely import fuzzywuzzy with fallback"""
+        try:
+            from fuzzywuzzy import fuzz
+            return fuzz, True
+        except ImportError:
+            return None, False
 
-        def basic_similarity(s1, s2):
-            """Basic similarity calculation without fuzzywuzzy"""
-            s1, s2 = s1.lower().strip(), s2.lower().strip()
-            
-            if s1 == s2:
-                return 100
-            
-            if s1 in s2 or s2 in s1:
-                shorter, longer = (s1, s2) if len(s1) < len(s2) else (s2, s1)
-                return int((len(shorter) / len(longer)) * 90)
-            
-            set1, set2 = set(s1), set(s2)
-            intersection = len(set1 & set2)
-            union = len(set1 | set2)
-            
-            if union == 0:
-                return 0
-            
-            return int((intersection / union) * 80)
+    def basic_similarity(s1, s2):
+        """Basic similarity calculation without fuzzywuzzy"""
+        s1, s2 = s1.lower().strip(), s2.lower().strip()
+        
+        if s1 == s2:
+            return 100
+        
+        if s1 in s2 or s2 in s1:
+            shorter, longer = (s1, s2) if len(s1) < len(s2) else (s2, s1)
+            return int((len(shorter) / len(longer)) * 90)
+        
+        set1, set2 = set(s1), set(s2)
+        intersection = len(set1 & set2)
+        union = len(set1 | set2)
+        
+        if union == 0:
+            return 0
+        
+        return int((intersection / union) * 80)
 
-        # Get fuzzy matching capability ONCE at module level
-        fuzz, has_fuzzywuzzy = safe_import_fuzzywuzzy()
+    # Get fuzzy matching capability ONCE at module level
+    fuzz, has_fuzzywuzzy = safe_import_fuzzywuzzy()
 
-        def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
-            """Optimized fuzzy matching with early termination and error handling"""
-            from collections import defaultdict
+    def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
+        """Optimized fuzzy matching with early termination and error handling"""
+        from collections import defaultdict
+        
+        grouped_keywords = defaultdict(lambda: {
+            'total_counts': 0, 
+            'total_clicks': 0, 
+            'total_conversions': 0, 
+            'queries': [],
+            'variations': []
+        })
+        
+        processed_keywords = set()
+        
+        # Sort keywords by length for better matching efficiency
+        sorted_keywords = sorted(keyword_data.items(), key=lambda x: len(x[0]), reverse=True)
+        
+        for keyword, data in sorted_keywords:
+            if keyword in processed_keywords or len(keyword.strip()) < 3:
+                continue
+                
+            best_match = None
+            best_score = 0
+            matched_master = None
             
-            grouped_keywords = defaultdict(lambda: {
-                'total_counts': 0, 
-                'total_clicks': 0, 
-                'total_conversions': 0, 
-                'queries': [],
-                'variations': []
-            })
-            
-            processed_keywords = set()
-            
-            # Sort keywords by length for better matching efficiency
-            sorted_keywords = sorted(keyword_data.items(), key=lambda x: len(x[0]), reverse=True)
-            
-            for keyword, data in sorted_keywords:
-                if keyword in processed_keywords or len(keyword.strip()) < 3:
+            for master_keyword, master_info in master_dict.items():
+                if len(keyword) < master_info.get('min_length', 3):
                     continue
-                    
-                best_match = None
-                best_score = 0
-                matched_master = None
-                
-                for master_keyword, master_info in master_dict.items():
-                    if len(keyword) < master_info.get('min_length', 3):
-                        continue
-                
-                    # Quick exclusion check
-                    excluded_terms = master_info.get('excluded_terms', [])
-                    if any(excluded_term.strip().lower() in keyword.lower() 
-                        for excluded_term in excluded_terms if excluded_term.strip()):
-                        continue
-
-                    # Check variations with error handling
-                    for variation in master_info['variations']:
-                        try:
-                            if keyword.lower() == variation.lower():
-                                best_score = 100
-                                best_match = variation
-                                matched_master = master_keyword
-                                break
-                            
-                            if (variation.lower() in keyword.lower() and 
-                                len(variation) >= 4 and len(keyword) >= 4):
-                                if len(variation) / len(keyword) >= 0.6:
-                                    score = 90
-                                    if score > best_score:
-                                        best_score = score
-                                        best_match = variation
-                                        matched_master = master_keyword
-                            
-                            # Fuzzy matching with fallback
-                            if best_score < 90:
-                                try:
-                                    if has_fuzzywuzzy:
-                                        score = fuzz.ratio(keyword.lower(), variation.lower())
-                                    else:
-                                        score = basic_similarity(keyword, variation)
-                                    
-                                    if score >= master_info['threshold']:
-                                        if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
-                                            if score > best_score:
-                                                best_score = score
-                                                best_match = variation
-                                                matched_master = master_keyword
-                                except Exception:
-                                    # Fallback to basic similarity
-                                    score = basic_similarity(keyword, variation)
-                                    if score >= master_info['threshold'] and score > best_score:
-                                        best_score = score
-                                        best_match = variation
-                                        matched_master = master_keyword
-                        
-                        except Exception:
-                            continue
-                    
-                    if best_score == 100:
-                        break
-                
-                # Group under best match
-                if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
-                    group_key = matched_master
-                else:
-                    group_key = keyword
-                
-                grouped_keywords[group_key]['variations'].append(keyword)
-                grouped_keywords[group_key]['total_counts'] += data['total_counts']
-                grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
-                grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
-                grouped_keywords[group_key]['queries'].extend(data['queries'])
-                
-                processed_keywords.add(keyword)
             
-            return dict(grouped_keywords)
+                # Quick exclusion check
+                excluded_terms = master_info.get('excluded_terms', [])
+                if any(excluded_term.strip().lower() in keyword.lower() 
+                    for excluded_term in excluded_terms if excluded_term.strip()):
+                    continue
 
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def calculate_enhanced_keyword_performance(_df):
-            """Enhanced keyword performance calculation with optimizations"""
-            if _df.empty:
-                return pd.DataFrame()
-            
-            try:
-                from collections import defaultdict
-                
-                keyword_data = defaultdict(lambda: {
-                    'total_counts': 0, 
-                    'total_clicks': 0, 
-                    'total_conversions': 0, 
-                    'queries': []
-                })
-                
-                # Process data in chunks for better memory management
-                chunk_size = 1000
-                total_rows = len(_df)
-                
-                for i in range(0, total_rows, chunk_size):
-                    chunk = _df.iloc[i:i+chunk_size]
-                    
-                    for _, row in chunk.iterrows():
-                        try:
-                            query = str(row.get('normalized_query', ''))
-                            counts = row.get('Counts', 0)
-                            clicks = row.get('clicks', 0)
-                            conversions = row.get('conversions', 0)
-                            
-                            if not query or counts == 0:
-                                continue
-                            
-                            keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
-                            
-                            for keyword in keywords:
-                                if len(keyword.strip()) >= 2:
-                                    keyword_data[keyword]['total_counts'] += counts
-                                    keyword_data[keyword]['total_clicks'] += clicks
-                                    keyword_data[keyword]['total_conversions'] += conversions
-                                    keyword_data[keyword]['queries'].append(query)
-                        except Exception:
-                            continue
-                
-                # Apply fuzzy matching grouping
-                master_dict = create_master_keyword_dictionary()
-                grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=65)
-                
-                # Convert to DataFrame with optimized calculations
-                kw_list = []
-                for keyword, data in grouped_data.items():
+                # Check variations with error handling
+                for variation in master_info['variations']:
                     try:
-                        if data['total_counts'] > 0:
-                            total_counts = data['total_counts']
-                            total_clicks = data['total_clicks']
-                            total_conversions = data['total_conversions']
-                            
-                            avg_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                            classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
-                            health_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-                            
-                            # Limit data to reduce memory usage
-                            unique_queries = list(set(data['queries']))
-                            unique_variations = list(set(data['variations']))
-                            
-                            kw_list.append({
-                                'keyword': keyword,
-                                'total_counts': total_counts,
-                                'total_clicks': total_clicks,
-                                'total_conversions': total_conversions,
-                                'avg_ctr': round(avg_ctr, 2),
-                                'classic_cr': round(classic_cr, 2),
-                                'health_cr': round(health_cr, 2),
-                                'unique_queries': len(unique_queries),
-                                'variations_count': len(unique_variations),
-                                'example_queries': unique_queries[:5],
-                                'variations': unique_variations
-                            })
+                        if keyword.lower() == variation.lower():
+                            best_score = 100
+                            best_match = variation
+                            matched_master = master_keyword
+                            break
+                        
+                        if (variation.lower() in keyword.lower() and 
+                            len(variation) >= 4 and len(keyword) >= 4):
+                            if len(variation) / len(keyword) >= 0.6:
+                                score = 90
+                                if score > best_score:
+                                    best_score = score
+                                    best_match = variation
+                                    matched_master = master_keyword
+                        
+                        # Fuzzy matching with fallback
+                        if best_score < 90:
+                            try:
+                                if has_fuzzywuzzy:
+                                    score = fuzz.ratio(keyword.lower(), variation.lower())
+                                else:
+                                    score = basic_similarity(keyword, variation)
+                                
+                                if score >= master_info['threshold']:
+                                    if len(set(keyword.lower()) & set(variation.lower())) / len(set(variation.lower())) >= 0.6:
+                                        if score > best_score:
+                                            best_score = score
+                                            best_match = variation
+                                            matched_master = master_keyword
+                            except Exception:
+                                # Fallback to basic similarity
+                                score = basic_similarity(keyword, variation)
+                                if score >= master_info['threshold'] and score > best_score:
+                                    best_score = score
+                                    best_match = variation
+                                    matched_master = master_keyword
+                    
                     except Exception:
                         continue
                 
-                df_result = pd.DataFrame(kw_list)
-                if not df_result.empty:
-                    df_result = df_result.sort_values('total_counts', ascending=False).reset_index(drop=True)
+                if best_score == 100:
+                    break
+            
+            # Group under best match
+            if matched_master and best_score >= max(min_score, master_dict[matched_master]['threshold']):
+                group_key = matched_master
+            else:
+                group_key = keyword
+            
+            grouped_keywords[group_key]['variations'].append(keyword)
+            grouped_keywords[group_key]['total_counts'] += data['total_counts']
+            grouped_keywords[group_key]['total_clicks'] += data['total_clicks']
+            grouped_keywords[group_key]['total_conversions'] += data['total_conversions']
+            grouped_keywords[group_key]['queries'].extend(data['queries'])
+            
+            processed_keywords.add(keyword)
+        
+        return dict(grouped_keywords)
+
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def calculate_enhanced_keyword_performance(_df):
+        """Enhanced keyword performance calculation with optimizations"""
+        if _df.empty:
+            return pd.DataFrame()
+        
+        try:
+            from collections import defaultdict
+            
+            keyword_data = defaultdict(lambda: {
+                'total_counts': 0, 
+                'total_clicks': 0, 
+                'total_conversions': 0, 
+                'queries': []
+            })
+            
+            # Process data in chunks for better memory management
+            chunk_size = 1000
+            total_rows = len(_df)
+            
+            for i in range(0, total_rows, chunk_size):
+                chunk = _df.iloc[i:i+chunk_size]
                 
-                return df_result
-                
-            except Exception as e:
-                st.error(f"❌ Error in keyword analysis: {str(e)}")
-                return pd.DataFrame()
-
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def create_length_histogram(_df):
-            """Cached histogram creation for better performance"""
-            if _df.empty:
-                return None
+                for _, row in chunk.iterrows():
+                    try:
+                        query = str(row.get('normalized_query', ''))
+                        counts = row.get('Counts', 0)
+                        clicks = row.get('clicks', 0)
+                        conversions = row.get('conversions', 0)
+                        
+                        if not query or counts == 0:
+                            continue
+                        
+                        keywords = extract_keywords_with_fuzzy_grouping(query, min_length=2)
+                        
+                        for keyword in keywords:
+                            if len(keyword.strip()) >= 2:
+                                keyword_data[keyword]['total_counts'] += counts
+                                keyword_data[keyword]['total_clicks'] += clicks
+                                keyword_data[keyword]['total_conversions'] += conversions
+                                keyword_data[keyword]['queries'].append(query)
+                    except Exception:
+                        continue
             
-            fig_length = px.histogram(
-                _df, 
-                x='query_length', 
-                nbins=30,
-                title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
-                labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
-                color_discrete_sequence=['#66BB6A']
-            )
+            # Apply fuzzy matching grouping
+            master_dict = create_master_keyword_dictionary()
+            grouped_data = fuzzy_match_keywords(keyword_data, master_dict, min_score=65)
             
-            fig_length.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI'),
-                bargap=0.1,
-                height=400,  # Fixed height
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-            )
+            # Convert to DataFrame with optimized calculations
+            kw_list = []
+            for keyword, data in grouped_data.items():
+                try:
+                    if data['total_counts'] > 0:
+                        total_counts = data['total_counts']
+                        total_clicks = data['total_clicks']
+                        total_conversions = data['total_conversions']
+                        
+                        avg_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                        classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                        health_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                        
+                        # Limit data to reduce memory usage
+                        unique_queries = list(set(data['queries']))
+                        unique_variations = list(set(data['variations']))
+                        
+                        kw_list.append({
+                            'keyword': keyword,
+                            'total_counts': total_counts,
+                            'total_clicks': total_clicks,
+                            'total_conversions': total_conversions,
+                            'avg_ctr': round(avg_ctr, 2),
+                            'classic_cr': round(classic_cr, 2),
+                            'health_cr': round(health_cr, 2),
+                            'unique_queries': len(unique_queries),
+                            'variations_count': len(unique_variations),
+                            'example_queries': unique_queries[:5],
+                            'variations': unique_variations
+                        })
+                except Exception:
+                    continue
             
-            return fig_length
+            df_result = pd.DataFrame(kw_list)
+            if not df_result.empty:
+                df_result = df_result.sort_values('total_counts', ascending=False).reset_index(drop=True)
+            
+            return df_result
+            
+        except Exception as e:
+            st.error(f"❌ Error in keyword analysis: {str(e)}")
+            return pd.DataFrame()
 
-        # ================================================================================================
-        # 🎨 ENHANCED UI STYLING AND CONFIGURATION
-        # ================================================================================================
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def create_length_histogram(_df):
+        """Cached histogram creation for better performance"""
+        if _df.empty:
+            return None
+        
+        fig_length = px.histogram(
+            _df, 
+            x='query_length', 
+            nbins=30,
+            title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
+            labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
+            color_discrete_sequence=['#66BB6A']
+        )
+        
+        fig_length.update_layout(
+            plot_bgcolor='rgba(248,253,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            bargap=0.1,
+            height=400,  # Fixed height
+            xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+            yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+        )
+        
+        return fig_length
 
-        def apply_enhanced_styling():
-            """Apply comprehensive CSS styling for better UI"""
-            st.markdown("""
-            <style>
-            /* 🎨 ENHANCED GLOBAL STYLING */
+    # ================================================================================================
+    # 🎨 ENHANCED UI STYLING AND CONFIGURATION
+    # ================================================================================================
+
+    def apply_enhanced_styling():
+        """Apply comprehensive CSS styling for better UI"""
+        st.markdown("""
+        <style>
+        /* 🎨 ENHANCED GLOBAL STYLING */
+        .main .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            max-width: 1400px;
+        }
+        
+        /* 📊 Enhanced Metrics Styling */
+        [data-testid="metric-container"] {
+            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        [data-testid="metric-container"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
+            border-color: #2E7D32;
+        }
+        
+        /* 🎯 Enhanced Subheader Styling */
+        .stSubheader {
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+            color: white !important;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+        
+        /* 📈 Enhanced Chart Container */
+        .js-plotly-plot {
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        /* 🔄 Enhanced Spinner */
+        .stSpinner > div {
+            border-top-color: #4CAF50 !important;
+            border-right-color: #4CAF50 !important;
+        }
+        
+        /* 📋 Enhanced DataFrame Styling */
+        .stDataFrame [data-testid="stDataFrameResizeHandle"] {
+            display: none !important;
+        }
+        
+        .stDataFrame > div {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+        
+        .stDataFrame th {
+            text-align: center !important;
+            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
+            color: white !important;
+            font-weight: bold !important;
+            border: 1px solid #1B5E20 !important;
+            padding: 12px 8px !important;
+        }
+        
+        .stDataFrame td {
+            text-align: center !important;
+            border: 1px solid #E8F5E8 !important;
+            padding: 10px 8px !important;
+        }
+        
+        .stDataFrame tr:nth-child(even) {
+            background-color: #F1F8E9 !important;
+        }
+        
+        .stDataFrame tr:hover {
+            background-color: #E8F5E8 !important;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        /* 🎛️ Enhanced Controls */
+        .stSelectbox > div > div {
+            background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%);
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+        }
+        
+        .stSlider > div > div > div {
+            background: linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%);
+        }
+        
+        /* 💡 Enhanced Info Boxes */
+        .stInfo {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            border-left: 5px solid #2196F3;
+            border-radius: 8px;
+        }
+        
+        .stWarning {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            border-left: 5px solid #FF9800;
+            border-radius: 8px;
+        }
+        
+        .stError {
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            border-left: 5px solid #F44336;
+            border-radius: 8px;
+        }
+        
+        /* 🔍 Enhanced Text Areas */
+        .stTextArea textarea {
+            background: #F8F9FA;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stTextArea textarea:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        /* 📱 Responsive Design */
+        @media (max-width: 768px) {
             .main .block-container {
-                padding-top: 2rem;
-                padding-bottom: 2rem;
-                max-width: 1400px;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             
-            /* 📊 Enhanced Metrics Styling */
             [data-testid="metric-container"] {
-                background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
-                border: 2px solid #4CAF50;
-                border-radius: 12px;
-                padding: 1rem;
-                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
-                transition: all 0.3s ease;
+                margin: 0.5rem 0;
             }
+        }
+        
+        /* 🎨 Loading Animation Enhancement */
+        @keyframes healthPulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        .stSpinner {
+            animation: healthPulse 2s infinite;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    # ================================================================================================
+    # 🚀 MAIN EXECUTION SECTION WITH ENHANCED PERFORMANCE
+    # ================================================================================================
+
+    def main_health_analysis():
+        """Main function for health keyword analysis with enhanced performance"""
+        
+        # Apply enhanced styling
+        apply_enhanced_styling()
+        
+        # Enhanced header with loading indicator
+        st.markdown("""
+        <div style="text-align: center; padding: 2rem 0; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-radius: 15px; margin-bottom: 2rem;">
+            <h1 style="color: #1B5E20; margin: 0; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                🌿 Health Keywords Performance Analysis 🌿
+            </h1>
+            <p style="color: #2E7D32; margin: 0.5rem 0 0 0; font-size: 1.2rem;">
+                Advanced Fuzzy Matching & Performance Insights
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Performance monitoring
+        start_time = datetime.now()
+        
+        # 🔧 Process data ONCE at the top
+        with st.spinner("🔄 Analyzing health keyword performance... (Est. 15-30 seconds)"):
+            # Add progress bar
+            progress_bar = st.progress(0)
+            status_text = st.empty()
             
-            [data-testid="metric-container"]:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
-                border-color: #2E7D32;
-            }
+            # Simulate progress updates
+            status_text.text("🔍 Loading data...")
+            progress_bar.progress(20)
             
-            /* 🎯 Enhanced Subheader Styling */
-            .stSubheader {
-                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
-                color: white !important;
-                padding: 0.8rem 1.5rem;
-                border-radius: 10px;
-                margin: 1rem 0;
-                font-weight: bold;
-                box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
-            }
+            # Calculate keyword performance ONCE
+            kw_perf_df = calculate_enhanced_keyword_performance(queries)
             
-            /* 📈 Enhanced Chart Container */
-            .js-plotly-plot {
-                border-radius: 12px;
-                box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-                overflow: hidden;
-                margin: 1rem 0;
-            }
+            status_text.text("🧠 Processing fuzzy matching...")
+            progress_bar.progress(60)
             
-            /* 🔄 Enhanced Spinner */
-            .stSpinner > div {
-                border-top-color: #4CAF50 !important;
-                border-right-color: #4CAF50 !important;
-            }
+            # Small delay to show progress
+            import time
+            time.sleep(0.5)
             
-            /* 📋 Enhanced DataFrame Styling */
-            .stDataFrame [data-testid="stDataFrameResizeHandle"] {
-                display: none !important;
-            }
+            status_text.text("📊 Generating visualizations...")
+            progress_bar.progress(90)
             
-            .stDataFrame > div {
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-            }
+            time.sleep(0.3)
+            progress_bar.progress(100)
+            status_text.text("✅ Analysis complete!")
             
-            .stDataFrame th {
-                text-align: center !important;
-                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
-                color: white !important;
-                font-weight: bold !important;
-                border: 1px solid #1B5E20 !important;
-                padding: 12px 8px !important;
-            }
+            # Clear progress indicators
+            time.sleep(0.5)
+            progress_bar.empty()
+            status_text.empty()
+        
+        # ✅ FIXED: Calculate health-specific metrics (moved inside function)
+        if not kw_perf_df.empty:
+            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
             
-            .stDataFrame td {
-                text-align: center !important;
-                border: 1px solid #E8F5E8 !important;
-                padding: 10px 8px !important;
-            }
-            
-            .stDataFrame tr:nth-child(even) {
-                background-color: #F1F8E9 !important;
-            }
-            
-            .stDataFrame tr:hover {
-                background-color: #E8F5E8 !important;
-                transform: scale(1.01);
-                transition: all 0.2s ease;
-            }
-            
-            /* 🎛️ Enhanced Controls */
-            .stSelectbox > div > div {
-                background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%);
-                border: 2px solid #4CAF50;
-                border-radius: 8px;
-            }
-            
-            .stSlider > div > div > div {
-                background: linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%);
-            }
-            
-            /* 💡 Enhanced Info Boxes */
-            .stInfo {
-                background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-                border-left: 5px solid #2196F3;
-                border-radius: 8px;
-            }
-            
-            .stWarning {
-                background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
-                border-left: 5px solid #FF9800;
-                border-radius: 8px;
-            }
-            
-            .stError {
-                background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-                border-left: 5px solid #F44336;
-                border-radius: 8px;
-            }
-            
-            /* 🔍 Enhanced Text Areas */
-            .stTextArea textarea {
-                background: #F8F9FA;
-                border: 2px solid #E0E0E0;
-                border-radius: 8px;
-                font-family: 'Courier New', monospace;
-            }
-            
-            .stTextArea textarea:focus {
-                border-color: #4CAF50;
-                box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-            }
-            
-            /* 📱 Responsive Design */
-            @media (max-width: 768px) {
-                .main .block-container {
-                    padding-left: 1rem;
-                    padding-right: 1rem;
-                }
+            with summary_col1:
+                total_keywords = len(kw_perf_df)
+                st.metric(
+                    label="🎯 Total Keywords", 
+                    value=f"{total_keywords:,}",
+                    help="Number of unique health keyword groups identified"
+                )
                 
-                [data-testid="metric-container"] {
-                    margin: 0.5rem 0;
-                }
-            }
-            
-            /* 🎨 Loading Animation Enhancement */
-            @keyframes healthPulse {
-                0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-                70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-            }
-            
-            .stSpinner {
-                animation: healthPulse 2s infinite;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-
-        # ================================================================================================
-        # 🚀 MAIN EXECUTION SECTION WITH ENHANCED PERFORMANCE
-        # ================================================================================================
-
-        def main_health_analysis():
-            """Main function for health keyword analysis with enhanced performance"""
-            
-            # Apply enhanced styling
-            apply_enhanced_styling()
-            
-            # Enhanced header with loading indicator
+            with summary_col2:
+                total_volume = kw_perf_df['total_counts'].sum()
+                st.metric(
+                    label="📊 Total Volume", 
+                    value=f"{total_volume:,}",
+                    help="Combined search volume across all health keywords"
+                )
+                
+            with summary_col3:
+                avg_ctr = kw_perf_df['avg_ctr'].mean()
+                st.metric(
+                    label="🎪 Avg CTR", 
+                    value=f"{avg_ctr:.2f}%",
+                    help="Average click-through rate for health keywords"
+                )
+                
+            with summary_col4:
+                avg_health_cr = kw_perf_df['health_cr'].mean()
+                st.metric(
+                    label="🌿 Health Score", 
+                    value=f"{avg_health_cr:.1f}%",
+                    help="Average health conversion rate"
+                )
+        
+        # Create layout
+        col_left, col_right = st.columns([3, 2])
+        
+        with col_left:
+            # Enhanced subheader with icon
             st.markdown("""
-            <div style="text-align: center; padding: 2rem 0; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-radius: 15px; margin-bottom: 2rem;">
-                <h1 style="color: #1B5E20; margin: 0; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-                    🌿 Health Keywords Performance Analysis 🌿
-                </h1>
-                <p style="color: #2E7D32; margin: 0.5rem 0 0 0; font-size: 1.2rem;">
-                    Advanced Fuzzy Matching & Performance Insights
+            <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                <h3 style="margin: 0; display: flex; align-items: center;">
+                    🎯 Health Keywords Performance Matrix
+                    <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Real-time Analysis</span>
+                </h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if not kw_perf_df.empty:
+                # Enhanced performance metrics
+                total_keywords = len(kw_perf_df)
+                total_volume = kw_perf_df['total_counts'].sum()
+                avg_ctr = kw_perf_df['avg_ctr'].mean()
+                
+                # Performance summary with enhanced styling
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border: 2px solid #4CAF50; margin: 1rem 0;">
+                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">📊 Analysis Summary</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_keywords:,}</div>
+                            <div style="color: #1B5E20;">Keyword Groups</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_volume:,}</div>
+                            <div style="color: #1B5E20;">Total Volume</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{avg_ctr:.2f}%</div>
+                            <div style="color: #1B5E20;">Avg CTR</div>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Limit chart data for better performance
+                chart_data = kw_perf_df.head(30)
+                
+                # Enhanced scatter plot with better performance
+                fig_kw = px.scatter(
+                    chart_data, 
+                    x='total_counts', 
+                    y='avg_ctr',
+                    size='total_clicks',
+                    color='health_cr',
+                    hover_name='keyword',
+                    title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
+                    labels={
+                        'total_counts': 'Total Search Volume', 
+                        'avg_ctr': 'Average CTR (%)', 
+                        'health_cr': 'Health CR (%)'
+                    },
+                    color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                    template='plotly_white'
+                )
+                
+                # Enhanced hover template
+                fig_kw.update_traces(
+                    hovertemplate='<b>%{hovertext}</b><br>' +
+                                'Total Volume: %{x:,.0f}<br>' +
+                                'CTR: %{y:.2f}%<br>' +
+                                'Total Clicks: %{marker.size:,.0f}<br>' +
+                                'Health CR: %{marker.color:.2f}%<br>' +
+                                'Variations: %{customdata}<extra></extra>',
+                    customdata=chart_data['variations_count']
+                )
+                
+                # Enhanced layout with better styling
+                fig_kw.update_layout(
+                    plot_bgcolor='rgba(248,253,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    title_x=0,
+                    height=500,
+                    xaxis=dict(
+                        showgrid=True, 
+                        gridcolor='#E8F5E8', 
+                        linecolor='#2E7D32', 
+                        linewidth=2,
+                        title_font=dict(size=14, color='#1B5E20')
+                    ),
+                    yaxis=dict(
+                        showgrid=True, 
+                        gridcolor='#E8F5E8', 
+                        linecolor='#2E7D32', 
+                        linewidth=2,
+                        title_font=dict(size=14, color='#1B5E20')
+                    ),
+                    annotations=[
+                        dict(
+                            x=0.95, y=0.95, xref='paper', yref='paper',
+                            text='💡 Size = Total Clicks | Color = Health CR',
+                            showarrow=False,
+                            font=dict(size=11, color='#1B5E20'),
+                            align='right',
+                            bgcolor='rgba(255,255,255,0.9)',
+                            bordercolor='#2E7D32',
+                            borderwidth=1,
+                        )
+                    ]
+                )
+                
+                st.plotly_chart(fig_kw, use_container_width=True)
+                
+                # Performance summary with matching method
+                matching_method = "Advanced Fuzzy Matching" if has_fuzzywuzzy else "Basic String Matching"
+                
+                st.info(f"""
+                🔍 **Analysis Method:** {matching_method}  
+                ⚡ **Processing Time:** {(datetime.now() - start_time).total_seconds():.2f} seconds  
+                🎯 **Chart Performance:** Showing top 30 keywords for optimal loading
+                """)
+                
+            else:
+                st.warning("⚠️ No keyword performance data available to display chart.")
+
+
+
+
+        with col_right:
+            # Enhanced Query Length Analysis
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                <h3 style="margin: 0;">📊 Health Query Length Analysis</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Create enhanced histogram
+            fig_length = create_length_histogram(queries)
+            if fig_length:
+                st.plotly_chart(fig_length, use_container_width=True)
+                
+                # Add insights about query length
+                if not queries.empty:
+                    avg_length = queries['query_length'].mean()
+                    median_length = queries['query_length'].median()
+                    max_length = queries['query_length'].max()
+                    
+                    st.markdown(f"""
+                    <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; border-left: 4px solid #4CAF50;">
+                        <h5 style="color: #1B5E20; margin: 0 0 0.5rem 0;">📏 Length Insights</h5>
+                        <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Average:</strong> {avg_length:.1f} characters</p>
+                        <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Median:</strong> {median_length:.1f} characters</p>
+                        <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Longest:</strong> {max_length} characters</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("📊 Length distribution will appear here once data is processed.")
+
+        # Enhanced separator
+        st.markdown("""
+        <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 2rem 0; border-radius: 2px;"></div>
+        """, unsafe_allow_html=True)
+
+        # ================================================================================================
+        # 🏆 ENHANCED TOP PERFORMING KEYWORDS SECTION
+        # ================================================================================================
+        
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
+            <h2 style="margin: 0; font-size: 2rem;">🏆 Top Performing Health Keywords</h2>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Advanced Fuzzy Matching Results</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Calculate enhanced keyword performance with progress tracking
+        with st.spinner("🧠 Processing advanced fuzzy matching..."):
+            kw_perf_df = calculate_enhanced_keyword_performance(queries)
+
+        if not kw_perf_df.empty:
+            # Enhanced fuzzy matching results summary
+            st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #2196F3; margin: 1rem 0;">
+                <h4 style="color: #0D47A1; margin: 0 0 0.5rem 0;">🔍 Fuzzy Matching Results</h4>
+                <p style="margin: 0; color: #1565C0; font-size: 1.1rem;">
+                    Found <strong>{len(kw_perf_df):,}</strong> keyword groups from raw keyword extraction
                 </p>
             </div>
             """, unsafe_allow_html=True)
             
-            # Performance monitoring
-            start_time = datetime.now()
+            # Enhanced keyword grouping success metrics
+            # Enhanced keyword grouping success metrics
+            magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
+            collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
+            vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
+            omega_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('اوميجا', case=False, na=False)]
             
-            # 🔧 Process data ONCE at the top
-            with st.spinner("🔄 Analyzing health keyword performance... (Est. 15-30 seconds)"):
-                # Add progress bar
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                # Simulate progress updates
-                status_text.text("🔍 Loading data...")
-                progress_bar.progress(20)
-                
-                # Calculate keyword performance ONCE
-                kw_perf_df = calculate_enhanced_keyword_performance(queries)
-                
-                status_text.text("🧠 Processing fuzzy matching...")
-                progress_bar.progress(60)
-                
-                # Small delay to show progress
-                import time
-                time.sleep(0.5)
-                
-                status_text.text("📊 Generating visualizations...")
-                progress_bar.progress(90)
-                
-                time.sleep(0.3)
-                progress_bar.progress(100)
-                status_text.text("✅ Analysis complete!")
-                
-                # Clear progress indicators
-                time.sleep(0.5)
-                progress_bar.empty()
-                status_text.empty()
+            # Enhanced metrics display with better styling
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
+                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Health Categories Performance</h4>
+            </div>
+            """, unsafe_allow_html=True)
             
-            # ✅ FIXED: Calculate health-specific metrics (moved inside function)
-            if not kw_perf_df.empty:
-                summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
-                
-                with summary_col1:
-                    total_keywords = len(kw_perf_df)
-                    st.metric(
-                        label="🎯 Total Keywords", 
-                        value=f"{total_keywords:,}",
-                        help="Number of unique health keyword groups identified"
-                    )
-                    
-                with summary_col2:
-                    total_volume = kw_perf_df['total_counts'].sum()
-                    st.metric(
-                        label="📊 Total Volume", 
-                        value=f"{total_volume:,}",
-                        help="Combined search volume across all health keywords"
-                    )
-                    
-                with summary_col3:
-                    avg_ctr = kw_perf_df['avg_ctr'].mean()
-                    st.metric(
-                        label="🎪 Avg CTR", 
-                        value=f"{avg_ctr:.2f}%",
-                        help="Average click-through rate for health keywords"
-                    )
-                    
-                with summary_col4:
-                    avg_health_cr = kw_perf_df['health_cr'].mean()
-                    st.metric(
-                        label="🌿 Health Score", 
-                        value=f"{avg_health_cr:.1f}%",
-                        help="Average health conversion rate"
-                    )
+            col1, col2, col3, col4 = st.columns(4)
             
-            # Create layout
-            col_left, col_right = st.columns([3, 2])
-            
-            with col_left:
-                # Enhanced subheader with icon
-                st.markdown("""
-                <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                    <h3 style="margin: 0; display: flex; align-items: center;">
-                        🎯 Health Keywords Performance Matrix
-                        <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Real-time Analysis</span>
-                    </h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                if not kw_perf_df.empty:
-                    # Enhanced performance metrics
-                    total_keywords = len(kw_perf_df)
-                    total_volume = kw_perf_df['total_counts'].sum()
-                    avg_ctr = kw_perf_df['avg_ctr'].mean()
-                    
-                    # Performance summary with enhanced styling
+            with col1:
+                if not magnesium_rows.empty:
+                    mag_data = magnesium_rows.iloc[0]
                     st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border: 2px solid #4CAF50; margin: 1rem 0;">
-                        <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">📊 Analysis Summary</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_keywords:,}</div>
-                                <div style="color: #1B5E20;">Keyword Groups</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_volume:,}</div>
-                                <div style="color: #1B5E20;">Total Volume</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{avg_ctr:.2f}%</div>
-                                <div style="color: #1B5E20;">Avg CTR</div>
-                            </div>
-                        </div>
+                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">مغنیسیوم Group</div>
+                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{mag_data['total_counts']:,}</div>
+                        <div style="color: #388E3C; font-size: 0.9rem;">{mag_data['variations_count']} variations</div>
                     </div>
                     """, unsafe_allow_html=True)
-                    
-                    # Limit chart data for better performance
-                    chart_data = kw_perf_df.head(30)
-                    
-                    # Enhanced scatter plot with better performance
-                    fig_kw = px.scatter(
-                        chart_data, 
-                        x='total_counts', 
-                        y='avg_ctr',
-                        size='total_clicks',
-                        color='health_cr',
-                        hover_name='keyword',
-                        title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
-                        labels={
-                            'total_counts': 'Total Search Volume', 
-                            'avg_ctr': 'Average CTR (%)', 
-                            'health_cr': 'Health CR (%)'
-                        },
-                        color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                        template='plotly_white'
-                    )
-                    
-                    # Enhanced hover template
-                    fig_kw.update_traces(
-                        hovertemplate='<b>%{hovertext}</b><br>' +
-                                    'Total Volume: %{x:,.0f}<br>' +
-                                    'CTR: %{y:.2f}%<br>' +
-                                    'Total Clicks: %{marker.size:,.0f}<br>' +
-                                    'Health CR: %{marker.color:.2f}%<br>' +
-                                    'Variations: %{customdata}<extra></extra>',
-                        customdata=chart_data['variations_count']
-                    )
-                    
-                    # Enhanced layout with better styling
-                    fig_kw.update_layout(
-                        plot_bgcolor='rgba(248,253,248,0.95)',
-                        paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'),
-                        title_x=0,
-                        height=500,
-                        xaxis=dict(
-                            showgrid=True, 
-                            gridcolor='#E8F5E8', 
-                            linecolor='#2E7D32', 
-                            linewidth=2,
-                            title_font=dict(size=14, color='#1B5E20')
-                        ),
-                        yaxis=dict(
-                            showgrid=True, 
-                            gridcolor='#E8F5E8', 
-                            linecolor='#2E7D32', 
-                            linewidth=2,
-                            title_font=dict(size=14, color='#1B5E20')
-                        ),
-                        annotations=[
-                            dict(
-                                x=0.95, y=0.95, xref='paper', yref='paper',
-                                text='💡 Size = Total Clicks | Color = Health CR',
-                                showarrow=False,
-                                font=dict(size=11, color='#1B5E20'),
-                                align='right',
-                                bgcolor='rgba(255,255,255,0.9)',
-                                bordercolor='#2E7D32',
-                                borderwidth=1,
-                            )
-                        ]
-                    )
-                    
-                    st.plotly_chart(fig_kw, use_container_width=True)
-                    
-                    # Performance summary with matching method
-                    matching_method = "Advanced Fuzzy Matching" if has_fuzzywuzzy else "Basic String Matching"
-                    
-                    st.info(f"""
-                    🔍 **Analysis Method:** {matching_method}  
-                    ⚡ **Processing Time:** {(datetime.now() - start_time).total_seconds():.2f} seconds  
-                    🎯 **Chart Performance:** Showing top 30 keywords for optimal loading
-                    """)
-                    
                 else:
-                    st.warning("⚠️ No keyword performance data available to display chart.")
-
-
-
-
-            with col_right:
-                # Enhanced Query Length Analysis
-                st.markdown("""
-                <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                    <h3 style="margin: 0;">📊 Health Query Length Analysis</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Create enhanced histogram
-                fig_length = create_length_histogram(queries)
-                if fig_length:
-                    st.plotly_chart(fig_length, use_container_width=True)
-                    
-                    # Add insights about query length
-                    if not queries.empty:
-                        avg_length = queries['query_length'].mean()
-                        median_length = queries['query_length'].median()
-                        max_length = queries['query_length'].max()
-                        
-                        st.markdown(f"""
-                        <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; border-left: 4px solid #4CAF50;">
-                            <h5 style="color: #1B5E20; margin: 0 0 0.5rem 0;">📏 Length Insights</h5>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Average:</strong> {avg_length:.1f} characters</p>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Median:</strong> {median_length:.1f} characters</p>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>Longest:</strong> {max_length} characters</p>
-                        </div>
-                        """, unsafe_allow_html=True)
+                    st.markdown("""
+                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
+                        <div style="color: #C62828; font-weight: bold;">مغنیسیوم Group</div>
+                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
+                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            with col2:
+                if not collagen_rows.empty:
+                    col_data = collagen_rows.iloc[0]
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">کولاجین Group</div>
+                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{col_data['total_counts']:,}</div>
+                        <div style="color: #388E3C; font-size: 0.9rem;">{col_data['variations_count']} variations</div>
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    st.info("📊 Length distribution will appear here once data is processed.")
-
-            # Enhanced separator
-            st.markdown("""
-            <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 2rem 0; border-radius: 2px;"></div>
-            """, unsafe_allow_html=True)
-
+                    st.markdown("""
+                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
+                        <div style="color: #C62828; font-weight: bold;">کولاجین Group</div>
+                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
+                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            with col3:
+                if not vitamin_rows.empty:
+                    vit_data = vitamin_rows.iloc[0]
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">فیتامین Group</div>
+                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{vit_data['total_counts']:,}</div>
+                        <div style="color: #388E3C; font-size: 0.9rem;">{vit_data['variations_count']} variations</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
+                        <div style="color: #C62828; font-weight: bold;">فیتامین Group</div>
+                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
+                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            with col4:
+                if not omega_rows.empty:
+                    omega_data = omega_rows.iloc[0]
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">اوميجا Group</div>
+                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{omega_data['total_counts']:,}</div>
+                        <div style="color: #388E3C; font-size: 0.9rem;">{omega_data['variations_count']} variations</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
+                        <div style="color: #C62828; font-weight: bold;">اوميجا Group</div>
+                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
+                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
             # ================================================================================================
-            # 🏆 ENHANCED TOP PERFORMING KEYWORDS SECTION
+            # 🔍 ENHANCED KEYWORD VARIATIONS EXPLORER
             # ================================================================================================
             
             st.markdown("""
-            <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
-                <h2 style="margin: 0; font-size: 2rem;">🏆 Top Performing Health Keywords</h2>
-                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Advanced Fuzzy Matching Results</p>
+            <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
+                <h3 style="margin: 0; display: flex; align-items: center;">
+                    🔍 Keyword Variations Explorer
+                    <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Interactive Analysis</span>
+                </h3>
             </div>
             """, unsafe_allow_html=True)
 
-            # Calculate enhanced keyword performance with progress tracking
-            with st.spinner("🧠 Processing advanced fuzzy matching..."):
-                kw_perf_df = calculate_enhanced_keyword_performance(queries)
+            # Enhanced slider with better styling
+            st.markdown("""
+            <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <p style="color: #1B5E20; margin: 0; font-weight: bold;">📊 Select number of keywords to analyze:</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            num_keywords = st.slider(
+                "Number of health keywords to display:", 
+                min_value=10, 
+                max_value=min(300, len(kw_perf_df)), 
+                value=15, 
+                step=10,
+                key="fuzzy_keyword_count_slider",
+                help="Adjust the number of keywords to display in the analysis table"
+            )
+            
+            top_keywords = kw_perf_df.head(num_keywords)
 
-            if not kw_perf_df.empty:
-                # Enhanced fuzzy matching results summary
+            # Enhanced dropdown with better performance
+            top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
+
+            # Enhanced emoji mapping with more categories
+            emoji_map = {
+                'مغنیسیوم': '⚡',
+                'اوميجا': '🐟', 
+                'فیتامین': '💊',
+                'کولاجین': '✨',
+                'زنک': '🔋',
+                'کالسیوم': '🦴',
+                'حدید': '🩸',
+                'بروتین': '💪',
+                'میلاتونین': '😴',
+                'بیوتین': '💇',
+                'اشواغندا': '🌿',
+                'جنسنج': '🌱',
+                'کرکم': '🧡',
+                'خل التفاح': '🍎',
+                'منوم': '🌙',
+                'بربرین': '🟡',
+                'کرانبری': '🔴',
+                'فحم نشط': '⚫',
+                'عسل': '🍯',
+                'کیو10': '❤️',
+                'گلوتاثیون': '✨',
+                'ارجنین': '💊',
+                'سیلینیوم': '🔘',
+                'فولیک اسید': '🤱',
+                'تخسیس': '⚖️',
+                'پروبیوتیک': '🦠',
+                'کرکومین': '🟠',
+                'اسپیرولینا': '🟢',
+                'چیا سید': '⚪',
+                'کینوا': '🌾'
+            }
+
+            # Enhanced dropdown options with better formatting
+            dropdown_options = []
+            keyword_mapping = {}
+
+            for i, keyword in enumerate(top_25_keywords):
+                emoji = emoji_map.get(keyword, '💊')
+                keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
+                volume = format_number(keyword_data['total_counts'])
+                variations = keyword_data['variations_count']
+                ctr = keyword_data['avg_ctr']
+                
+                display_text = f"{emoji} {keyword} ({volume} searches, {variations} variations, {ctr:.1f}% CTR)"
+                dropdown_options.append(display_text)
+                keyword_mapping[display_text] = keyword
+
+            # Enhanced dropdown with better styling
+            st.markdown("""
+            <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                <p style="color: #1B5E20; margin: 0; font-weight: bold;">🎯 Select a keyword to explore its variations:</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            selected_option = st.selectbox(
+                "Choose a health keyword:",
+                options=["🔍 Select a keyword to explore..."] + dropdown_options,
+                key="keyword_variations_dropdown",
+                help="Select any keyword to see its variations, performance metrics, and insights"
+            )
+
+            # Enhanced keyword analysis display
+            if selected_option != "🔍 Select a keyword to explore...":
+                selected_keyword = keyword_mapping[selected_option]
+                keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
+                
+                if not keyword_rows.empty:
+                    keyword_data = keyword_rows.iloc[0]
+                    emoji = emoji_map.get(selected_keyword, '💊')
+                    
+                    # Enhanced keyword header
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">{emoji}</div>
+                        <h2 style="margin: 0; font-size: 2.5rem;">{selected_keyword}</h2>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1.2rem;">Variations Analysis & Performance Insights</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Enhanced metrics with better layout
+                    col1, col2, col3, col4 = st.columns(4)
+                    
+                    with col1:
+                        st.markdown(f"""
+                        <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #2196F3;">
+                            <div style="font-size: 2.5rem; color: #0D47A1; font-weight: bold;">{format_number(keyword_data['total_counts'])}</div>
+                            <div style="color: #1565C0; font-weight: bold; margin-top: 0.5rem;">Total Volume</div>
+                            <div style="color: #1976D2; font-size: 0.9rem; margin-top: 0.3rem;">Search Impressions</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with col2:
+                        st.markdown(f"""
+                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #4CAF50;">
+                            <div style="font-size: 2.5rem; color: #1B5E20; font-weight: bold;">{format_number(keyword_data['variations_count'])}</div>
+                            <div style="color: #2E7D32; font-weight: bold; margin-top: 0.5rem;">Variations</div>
+                            <div style="color: #388E3C; font-size: 0.9rem; margin-top: 0.3rem;">Grouped Together</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with col3:
+                        st.markdown(f"""
+                        <div style="background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #FF9800;">
+                            <div style="font-size: 2.5rem; color: #E65100; font-weight: bold;">{keyword_data['avg_ctr']:.2f}%</div>
+                            <div style="color: #F57C00; font-weight: bold; margin-top: 0.5rem;">Avg CTR</div>
+                            <div style="color: #FF9800; font-size: 0.9rem; margin-top: 0.3rem;">Click-Through Rate</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with col4:
+                        st.markdown(f"""
+                        <div style="background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #9C27B0;">
+                            <div style="font-size: 2.5rem; color: #4A148C; font-weight: bold;">{keyword_data['health_cr']:.2f}%</div>
+                            <div style="color: #6A1B9A; font-weight: bold; margin-top: 0.5rem;">Health CR</div>
+                            <div style="color: #8E24AA; font-size: 0.9rem; margin-top: 0.3rem;">Conversion Rate</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    # Enhanced variations display section
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 2rem 0;">
+                        <h3 style="margin: 0;">📝 All Keyword Variations</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    variations_list = keyword_data['variations']
+                    total_variations = len(variations_list)
+                    
+                    if total_variations > 0:
+                        # Enhanced user controls
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            display_count = st.selectbox(
+                                "📊 Number of variations to show:",
+                                [25, 50, 100, "All"],
+                                index=1,
+                                help="Choose how many variations to display"
+                            )
+                        
+                        with col2:
+                            display_format = st.radio(
+                                "📋 Display format:",
+                                ["Pipe separated", "Line by line", "Numbered list"],
+                                index=0,
+                                help="Choose how to format the variations list"
+                            )
+                        
+                        # Process variations with enhanced logic
+                        available_variations = len(variations_list)
+                        
+                        if display_count == "All":
+                            variations_to_show = variations_list
+                        else:
+                            variations_to_show = variations_list[:min(display_count, available_variations)]
+                        
+                        # Enhanced formatting options
+                        if display_format == "Line by line":
+                            variations_text = "\n".join(variations_to_show)
+                            height = min(400, max(150, len(variations_to_show) * 25))
+                        elif display_format == "Numbered list":
+                            variations_text = "\n".join([f"{i+1}. {var}" for i, var in enumerate(variations_to_show)])
+                            height = min(400, max(150, len(variations_to_show) * 25))
+                        else:
+                            variations_text = " | ".join(variations_to_show)
+                            height = 150
+                        
+                        # Enhanced text area with better styling
+                        st.text_area(
+                            f"🔍 Variations (showing {len(variations_to_show):,} of {available_variations:,}):",
+                            variations_text,
+                            height=height,
+                            help="Copy these variations for your keyword research and SEO campaigns"
+                        )
+                        
+                        # Enhanced info display
+                        if available_variations > len(variations_to_show):
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1rem; border-radius: 8px; border-left: 4px solid #2196F3; margin: 1rem 0;">
+                                <p style="margin: 0; color: #0D47A1;">
+                                    ℹ️ <strong>{available_variations - len(variations_to_show):,}</strong> more variations available. 
+                                    Select 'All' to see the complete list.
+                                </p>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                        # Enhanced additional insights
+                        st.markdown("""
+                        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 2rem 0;">
+                            <h3 style="margin: 0;">📊 Advanced Performance Insights</h3>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        insight_col1, insight_col2 = st.columns(2)
+                        
+                        with insight_col1:
+                            st.markdown(f"""
+                            <div style="background: #F1F8E9; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #4CAF50;">
+                                <h5 style="color: #1B5E20; margin: 0 0 1rem 0;">💼 Performance Metrics</h5>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Total Clicks:</strong> {format_number(keyword_data['total_clicks'])}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🎯 Conversions:</strong> {format_number(keyword_data['total_conversions'])}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Queries:</strong> {format_number(keyword_data['unique_queries'])}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Classic CR:</strong> {keyword_data['classic_cr']:.2f}%</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with insight_col2:
+                            # Enhanced calculations
+                            avg_searches = keyword_data['total_counts'] / keyword_data['variations_count'] if keyword_data['variations_count'] > 0 else 0
+                            diversity_score = (keyword_data['variations_count'] / keyword_data['total_counts'] * 1000) if keyword_data['total_counts'] > 0 else 0
+                            market_share = (keyword_data['total_counts'] / queries['Counts'].sum() * 100) if 'queries' in locals() and not queries.empty else 0
+                            
+                            # Performance rating
+                            if keyword_data['health_cr'] > 5:
+                                performance_rating = "🌟 Excellent"
+                            elif keyword_data['health_cr'] > 2:
+                                performance_rating = "⭐ Good"
+                            elif keyword_data['health_cr'] > 1:
+                                performance_rating = "👍 Average"
+                            else:
+                                performance_rating = "📈 Needs Improvement"
+                            
+                            st.markdown(f"""
+                            <div style="background: #E3F2FD; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #2196F3;">
+                                <h5 style="color: #0D47A1; margin: 0 0 1rem 0;">🎯 Market Intelligence</h5>
+                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📊 Avg Searches/Variation:</strong> {avg_searches:.1f}</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>🎲 Diversity Score:</strong> {diversity_score:.2f}</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📈 Market Share:</strong> {market_share:.2f}%</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>⭐ Performance:</strong> {performance_rating}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                    else:
+                        st.warning("⚠️ No variations found for this keyword.")
+
+            # Enhanced separator before main table
+            st.markdown("""
+            <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 3rem 0; border-radius: 2px;"></div>
+            """, unsafe_allow_html=True)
+
+            # ================================================================================================
+            # 📊 ENHANCED MAIN KEYWORDS TABLE
+            # ================================================================================================
+
+            # Calculate market share for enhanced insights
+            total_all_counts = queries['Counts'].sum()
+            top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
+
+            if not top_keywords.empty:
+                # Enhanced table header
                 st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #2196F3; margin: 1rem 0;">
-                    <h4 style="color: #0D47A1; margin: 0 0 0.5rem 0;">🔍 Fuzzy Matching Results</h4>
-                    <p style="margin: 0; color: #1565C0; font-size: 1.1rem;">
-                        Found <strong>{len(kw_perf_df):,}</strong> keyword groups from raw keyword extraction
-                    </p>
+                <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; text-align: center;">
+                    <h2 style="margin: 0; font-size: 2rem;">📊 Top {num_keywords} Health Keywords Performance Table</h2>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Comprehensive Analysis with Market Share & Performance Metrics</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Enhanced keyword grouping success metrics
-                # Enhanced keyword grouping success metrics
-                magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
-                collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
-                vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
-                omega_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('اوميجا', case=False, na=False)]
+                # Create enhanced display version
+                display_df = top_keywords.copy()
                 
-                # Enhanced metrics display with better styling
-                st.markdown("""
-                <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Health Categories Performance</h4>
+                # Enhanced column renaming
+                display_df = display_df.rename(columns={
+                    'keyword': 'Health Keyword',
+                    'total_counts': 'Total Search Volume',
+                    'share_pct': 'Market Share %',
+                    'total_clicks': 'Total Clicks',
+                    'total_conversions': 'Conversions',
+                    'avg_ctr': 'Avg CTR',
+                    'health_cr': 'Health CR',
+                    'classic_cr': 'Classic CR',
+                    'unique_queries': 'Unique Queries',
+                    'variations_count': 'Variations'
+                })
+                
+                # Enhanced formatting with better number handling
+                display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
+                display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
+                display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
+                display_df['Conversions'] = display_df['Conversions'].apply(format_number)
+                display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
+                display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
+                display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
+                display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
+                display_df['Variations'] = display_df['Variations'].apply(format_number)
+                
+                # Enhanced column configuration
+                column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
+                            'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
+                display_df = display_df[column_order].reset_index(drop=True)
+                
+                # Enhanced dataframe display with better configuration
+                # Enhanced dataframe display with better configuration
+                st.dataframe(
+                    display_df, 
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Health Keyword": st.column_config.TextColumn(
+                            "Health Keyword",
+                            help="Fuzzy-matched Nutraceuticals & Nutrition search keyword group",
+                            width="large"
+                        ),
+                        "Total Search Volume": st.column_config.TextColumn(
+                            "Total Search Volume",
+                            help="Total health search volume (fuzzy-grouped)",
+                            width="medium"
+                        ),
+                        "Market Share %": st.column_config.TextColumn(
+                            "Market Share %",
+                            help="Percentage of total health searches",
+                            width="small"
+                        ),
+                        "Total Clicks": st.column_config.TextColumn(
+                            "Total Clicks",
+                            help="Total clicks received across all variations",
+                            width="medium"
+                        ),
+                        "Conversions": st.column_config.TextColumn(
+                            "Conversions",
+                            help="Total conversions achieved",
+                            width="medium"
+                        ),
+                        "Avg CTR": st.column_config.TextColumn(
+                            "Avg CTR",
+                            help="Average Click-Through Rate across all variations",
+                            width="small"
+                        ),
+                        "Health CR": st.column_config.TextColumn(
+                            "Health CR",
+                            help="Health Conversion Rate (Conversions/Volume) - Key Performance Indicator",
+                            width="small"
+                        ),
+                        "Classic CR": st.column_config.TextColumn(
+                            "Classic CR",
+                            help="Classic Conversion Rate (Conversions/Clicks)",
+                            width="small"
+                        ),
+                        "Unique Queries": st.column_config.TextColumn(
+                            "Unique Queries",
+                            help="Number of unique search queries for this keyword group",
+                            width="medium"
+                        ),
+                        "Variations": st.column_config.TextColumn(
+                            "Variations",
+                            help="Number of keyword variations grouped together through fuzzy matching",
+                            width="small"
+                        )
+                    }
+                )
+                
+                # Enhanced table performance insights
+                processing_time = (datetime.now() - start_time).total_seconds()
+                
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #4CAF50; margin: 2rem 0;">
+                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">⚡ Table Performance Metrics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Rows Displayed:</strong> {len(display_df):,}</p>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔍 Total Keywords:</strong> {len(kw_perf_df):,}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>⏱️ Processing Time:</strong> {processing_time:.2f}s</p>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Matching Method:</strong> {matching_method}</p>
+                        </div>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                col1, col2, col3, col4 = st.columns(4)
+                # ================================================================================================
+                # 🔍 ENHANCED EXAMPLE QUERIES & VARIATIONS SECTION
+                # ================================================================================================
                 
-                with col1:
-                    if not magnesium_rows.empty:
-                        mag_data = magnesium_rows.iloc[0]
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
-                            <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">مغنیسیوم Group</div>
-                            <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{mag_data['total_counts']:,}</div>
-                            <div style="color: #388E3C; font-size: 0.9rem;">{mag_data['variations_count']} variations</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown("""
-                        <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
-                            <div style="color: #C62828; font-weight: bold;">مغنیسیوم Group</div>
-                            <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                            <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                # Enhanced toggle for examples with better styling
+                show_examples = st.checkbox(
+                    "🔍 Show detailed examples and variations for top keywords", 
+                    key="show_fuzzy_examples",
+                    help="Display example queries and variations for the top 5 performing keywords"
+                )
                 
-                with col2:
-                    if not collagen_rows.empty:
-                        col_data = collagen_rows.iloc[0]
+                if show_examples:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
+                        <h3 style="margin: 0;">📝 Detailed Examples & Variations Analysis</h3>
+                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Top 5 Keywords with Real Query Examples</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    for idx, row in top_keywords.head(5).iterrows():
+                        keyword = row['keyword']
+                        examples = row['example_queries'][:3]
+                        variations = row['variations'][:15]  # Show more variations
+                        emoji = emoji_map.get(keyword, '💊')
+                        
+                        # Enhanced keyword section with better styling
                         st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
-                            <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">کولاجین Group</div>
-                            <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{col_data['total_counts']:,}</div>
-                            <div style="color: #388E3C; font-size: 0.9rem;">{col_data['variations_count']} variations</div>
+                        <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 15px; margin: 2rem 0; border: 2px solid #4CAF50;">
+                            <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                                <div style="font-size: 3rem; margin-right: 1rem;">{emoji}</div>
+                                <div>
+                                    <h3 style="color: #1B5E20; margin: 0; font-size: 1.8rem;">{keyword}</h3>
+                                    <p style="color: #2E7D32; margin: 0.3rem 0 0 0; font-size: 1.1rem;">
+                                        {format_number(row['total_counts'])} searches • {row['variations_count']} variations • {row['avg_ctr']:.2f}% CTR
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                         """, unsafe_allow_html=True)
-                    else:
+                        
+                        # Enhanced two-column layout for examples and variations
+                        col1, col2 = st.columns([1, 1])
+                        
+                        with col1:
+                            st.markdown("""
+                            <div style="background: #E3F2FD; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #2196F3; height: 100%;">
+                                <h5 style="color: #0D47A1; margin: 0 0 1rem 0;">📋 Example Search Queries</h5>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            for i, example in enumerate(examples, 1):
+                                st.markdown(f"""
+                                <div style="background: white; padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #2196F3;">
+                                    <span style="color: #1565C0; font-weight: bold;">{i}.</span> 
+                                    <span style="color: #0D47A1;">{example}</span>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("""
+                            <div style="background: #E8F5E8; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #4CAF50; height: 100%;">
+                                <h5 style="color: #1B5E20; margin: 0 0 1rem 0;">🔗 Grouped Keyword Variations</h5>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Display variations in a more organized way
+                            for i, var in enumerate(variations[:10], 1):  # Show top 10
+                                st.markdown(f"""
+                                <div style="background: white; padding: 0.6rem; margin: 0.3rem 0; border-radius: 6px; border-left: 3px solid #4CAF50;">
+                                    <span style="color: #2E7D32; font-weight: bold; font-size: 0.9rem;">{i}.</span> 
+                                    <span style="color: #1B5E20; font-size: 0.9rem;">{var}</span>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Show count of remaining variations
+                            if len(variations) > 10:
+                                st.markdown(f"""
+                                <div style="background: #FFF3E0; padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #FF9800; text-align: center;">
+                                    <span style="color: #E65100; font-weight: bold;">+ {len(variations) - 10} more variations</span>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        # Enhanced separator between keywords
                         st.markdown("""
-                        <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
-                            <div style="color: #C62828; font-weight: bold;">کولاجین Group</div>
-                            <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                            <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                with col3:
-                    if not vitamin_rows.empty:
-                        vit_data = vitamin_rows.iloc[0]
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
-                            <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">فیتامین Group</div>
-                            <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{vit_data['total_counts']:,}</div>
-                            <div style="color: #388E3C; font-size: 0.9rem;">{vit_data['variations_count']} variations</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown("""
-                        <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
-                            <div style="color: #C62828; font-weight: bold;">فیتامین Group</div>
-                            <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                            <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                with col4:
-                    if not omega_rows.empty:
-                        omega_data = omega_rows.iloc[0]
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
-                            <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">اوميجا Group</div>
-                            <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{omega_data['total_counts']:,}</div>
-                            <div style="color: #388E3C; font-size: 0.9rem;">{omega_data['variations_count']} variations</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown("""
-                        <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
-                            <div style="color: #C62828; font-weight: bold;">اوميجا Group</div>
-                            <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                            <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                        </div>
+                        <div style="height: 2px; background: linear-gradient(90deg, transparent 0%, #4CAF50 50%, transparent 100%); margin: 2rem 0;"></div>
                         """, unsafe_allow_html=True)
                 
                 # ================================================================================================
-                # 🔍 ENHANCED KEYWORD VARIATIONS EXPLORER
+                # 📥 ENHANCED DOWNLOAD SECTION
                 # ================================================================================================
                 
                 st.markdown("""
                 <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
-                    <h3 style="margin: 0; display: flex; align-items: center;">
-                        🔍 Keyword Variations Explorer
-                        <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Interactive Analysis</span>
-                    </h3>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Enhanced slider with better styling
-                st.markdown("""
-                <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                    <p style="color: #1B5E20; margin: 0; font-weight: bold;">📊 Select number of keywords to analyze:</p>
+                    <h3 style="margin: 0;">📥 Export & Download Options</h3>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Download your analysis results in multiple formats</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                num_keywords = st.slider(
-                    "Number of health keywords to display:", 
-                    min_value=10, 
-                    max_value=min(300, len(kw_perf_df)), 
-                    value=15, 
-                    step=10,
-                    key="fuzzy_keyword_count_slider",
-                    help="Adjust the number of keywords to display in the analysis table"
-                )
+                # Enhanced download options with multiple formats
+                col1, col2, col3 = st.columns(3)
                 
-                top_keywords = kw_perf_df.head(num_keywords)
-
-                # Enhanced dropdown with better performance
-                top_25_keywords = kw_perf_df.head(25)['keyword'].tolist()
-
-                # Enhanced emoji mapping with more categories
-                emoji_map = {
-                    'مغنیسیوم': '⚡',
-                    'اوميجا': '🐟', 
-                    'فیتامین': '💊',
-                    'کولاجین': '✨',
-                    'زنک': '🔋',
-                    'کالسیوم': '🦴',
-                    'حدید': '🩸',
-                    'بروتین': '💪',
-                    'میلاتونین': '😴',
-                    'بیوتین': '💇',
-                    'اشواغندا': '🌿',
-                    'جنسنج': '🌱',
-                    'کرکم': '🧡',
-                    'خل التفاح': '🍎',
-                    'منوم': '🌙',
-                    'بربرین': '🟡',
-                    'کرانبری': '🔴',
-                    'فحم نشط': '⚫',
-                    'عسل': '🍯',
-                    'کیو10': '❤️',
-                    'گلوتاثیون': '✨',
-                    'ارجنین': '💊',
-                    'سیلینیوم': '🔘',
-                    'فولیک اسید': '🤱',
-                    'تخسیس': '⚖️',
-                    'پروبیوتیک': '🦠',
-                    'کرکومین': '🟠',
-                    'اسپیرولینا': '🟢',
-                    'چیا سید': '⚪',
-                    'کینوا': '🌾'
-                }
-
-                # Enhanced dropdown options with better formatting
-                dropdown_options = []
-                keyword_mapping = {}
-
-                for i, keyword in enumerate(top_25_keywords):
-                    emoji = emoji_map.get(keyword, '💊')
-                    keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
-                    volume = format_number(keyword_data['total_counts'])
-                    variations = keyword_data['variations_count']
-                    ctr = keyword_data['avg_ctr']
+                with col1:
+                    # CSV download with enhanced data
+                    csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
+                                            'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
+                                            'unique_queries', 'variations_count']].copy()
+                    csv_keywords = csv_data.to_csv(index=False)
                     
-                    display_text = f"{emoji} {keyword} ({volume} searches, {variations} variations, {ctr:.1f}% CTR)"
-                    dropdown_options.append(display_text)
-                    keyword_mapping[display_text] = keyword
-
-                # Enhanced dropdown with better styling
-                st.markdown("""
-                <div style="background: #F1F8E9; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                    <p style="color: #1B5E20; margin: 0; font-weight: bold;">🎯 Select a keyword to explore its variations:</p>
-                </div>
-                """, unsafe_allow_html=True)
+                    st.download_button(
+                        label="📊 Download CSV Report",
+                        data=csv_keywords,
+                        file_name=f"health_keywords_analysis_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                        mime="text/csv",
+                        key="fuzzy_keyword_csv_download",
+                        help="Download complete keyword analysis as CSV file"
+                    )
                 
-                selected_option = st.selectbox(
-                    "Choose a health keyword:",
-                    options=["🔍 Select a keyword to explore..."] + dropdown_options,
-                    key="keyword_variations_dropdown",
-                    help="Select any keyword to see its variations, performance metrics, and insights"
-                )
-
-                # Enhanced keyword analysis display
-                if selected_option != "🔍 Select a keyword to explore...":
-                    selected_keyword = keyword_mapping[selected_option]
-                    keyword_rows = kw_perf_df[kw_perf_df['keyword'] == selected_keyword]
+                with col2:
+                    # Enhanced variations export
+                    variations_data = []
+                    for _, row in top_keywords.head(20).iterrows():  # Top 20 for variations export
+                        for variation in row['variations']:
+                            variations_data.append({
+                                'master_keyword': row['keyword'],
+                                'variation': variation,
+                                'master_volume': row['total_counts'],
+                                'master_ctr': row['avg_ctr'],
+                                'master_cr': row['health_cr']
+                            })
                     
-                    if not keyword_rows.empty:
-                        keyword_data = keyword_rows.iloc[0]
-                        emoji = emoji_map.get(selected_keyword, '💊')
-                        
-                        # Enhanced keyword header
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
-                            <div style="font-size: 4rem; margin-bottom: 1rem;">{emoji}</div>
-                            <h2 style="margin: 0; font-size: 2.5rem;">{selected_keyword}</h2>
-                            <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1.2rem;">Variations Analysis & Performance Insights</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Enhanced metrics with better layout
-                        col1, col2, col3, col4 = st.columns(4)
-                        
-                        with col1:
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #2196F3;">
-                                <div style="font-size: 2.5rem; color: #0D47A1; font-weight: bold;">{format_number(keyword_data['total_counts'])}</div>
-                                <div style="color: #1565C0; font-weight: bold; margin-top: 0.5rem;">Total Volume</div>
-                                <div style="color: #1976D2; font-size: 0.9rem; margin-top: 0.3rem;">Search Impressions</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with col2:
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #4CAF50;">
-                                <div style="font-size: 2.5rem; color: #1B5E20; font-weight: bold;">{format_number(keyword_data['variations_count'])}</div>
-                                <div style="color: #2E7D32; font-weight: bold; margin-top: 0.5rem;">Variations</div>
-                                <div style="color: #388E3C; font-size: 0.9rem; margin-top: 0.3rem;">Grouped Together</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with col3:
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #FF9800;">
-                                <div style="font-size: 2.5rem; color: #E65100; font-weight: bold;">{keyword_data['avg_ctr']:.2f}%</div>
-                                <div style="color: #F57C00; font-weight: bold; margin-top: 0.5rem;">Avg CTR</div>
-                                <div style="color: #FF9800; font-size: 0.9rem; margin-top: 0.3rem;">Click-Through Rate</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with col4:
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #9C27B0;">
-                                <div style="font-size: 2.5rem; color: #4A148C; font-weight: bold;">{keyword_data['health_cr']:.2f}%</div>
-                                <div style="color: #6A1B9A; font-weight: bold; margin-top: 0.5rem;">Health CR</div>
-                                <div style="color: #8E24AA; font-size: 0.9rem; margin-top: 0.3rem;">Conversion Rate</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        # Enhanced variations display section
-                        st.markdown("""
-                        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 2rem 0;">
-                            <h3 style="margin: 0;">📝 All Keyword Variations</h3>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        variations_list = keyword_data['variations']
-                        total_variations = len(variations_list)
-                        
-                        if total_variations > 0:
-                            # Enhanced user controls
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                display_count = st.selectbox(
-                                    "📊 Number of variations to show:",
-                                    [25, 50, 100, "All"],
-                                    index=1,
-                                    help="Choose how many variations to display"
-                                )
-                            
-                            with col2:
-                                display_format = st.radio(
-                                    "📋 Display format:",
-                                    ["Pipe separated", "Line by line", "Numbered list"],
-                                    index=0,
-                                    help="Choose how to format the variations list"
-                                )
-                            
-                            # Process variations with enhanced logic
-                            available_variations = len(variations_list)
-                            
-                            if display_count == "All":
-                                variations_to_show = variations_list
-                            else:
-                                variations_to_show = variations_list[:min(display_count, available_variations)]
-                            
-                            # Enhanced formatting options
-                            if display_format == "Line by line":
-                                variations_text = "\n".join(variations_to_show)
-                                height = min(400, max(150, len(variations_to_show) * 25))
-                            elif display_format == "Numbered list":
-                                variations_text = "\n".join([f"{i+1}. {var}" for i, var in enumerate(variations_to_show)])
-                                height = min(400, max(150, len(variations_to_show) * 25))
-                            else:
-                                variations_text = " | ".join(variations_to_show)
-                                height = 150
-                            
-                            # Enhanced text area with better styling
-                            st.text_area(
-                                f"🔍 Variations (showing {len(variations_to_show):,} of {available_variations:,}):",
-                                variations_text,
-                                height=height,
-                                help="Copy these variations for your keyword research and SEO campaigns"
-                            )
-                            
-                            # Enhanced info display
-                            if available_variations > len(variations_to_show):
-                                st.markdown(f"""
-                                <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1rem; border-radius: 8px; border-left: 4px solid #2196F3; margin: 1rem 0;">
-                                    <p style="margin: 0; color: #0D47A1;">
-                                        ℹ️ <strong>{available_variations - len(variations_to_show):,}</strong> more variations available. 
-                                        Select 'All' to see the complete list.
-                                    </p>
-                                </div>
-                                """, unsafe_allow_html=True)
-
-                            # Enhanced additional insights
-                            st.markdown("""
-                            <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 2rem 0;">
-                                <h3 style="margin: 0;">📊 Advanced Performance Insights</h3>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            insight_col1, insight_col2 = st.columns(2)
-                            
-                            with insight_col1:
-                                st.markdown(f"""
-                                <div style="background: #F1F8E9; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #4CAF50;">
-                                    <h5 style="color: #1B5E20; margin: 0 0 1rem 0;">💼 Performance Metrics</h5>
-                                    <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Total Clicks:</strong> {format_number(keyword_data['total_clicks'])}</p>
-                                    <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🎯 Conversions:</strong> {format_number(keyword_data['total_conversions'])}</p>
-                                    <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Queries:</strong> {format_number(keyword_data['unique_queries'])}</p>
-                                    <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Classic CR:</strong> {keyword_data['classic_cr']:.2f}%</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                            
-                            with insight_col2:
-                                # Enhanced calculations
-                                avg_searches = keyword_data['total_counts'] / keyword_data['variations_count'] if keyword_data['variations_count'] > 0 else 0
-                                diversity_score = (keyword_data['variations_count'] / keyword_data['total_counts'] * 1000) if keyword_data['total_counts'] > 0 else 0
-                                market_share = (keyword_data['total_counts'] / queries['Counts'].sum() * 100) if 'queries' in locals() and not queries.empty else 0
-                                
-                                # Performance rating
-                                if keyword_data['health_cr'] > 5:
-                                    performance_rating = "🌟 Excellent"
-                                elif keyword_data['health_cr'] > 2:
-                                    performance_rating = "⭐ Good"
-                                elif keyword_data['health_cr'] > 1:
-                                    performance_rating = "👍 Average"
-                                else:
-                                    performance_rating = "📈 Needs Improvement"
-                                
-                                st.markdown(f"""
-                                <div style="background: #E3F2FD; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #2196F3;">
-                                    <h5 style="color: #0D47A1; margin: 0 0 1rem 0;">🎯 Market Intelligence</h5>
-                                    <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📊 Avg Searches/Variation:</strong> {avg_searches:.1f}</p>
-                                    <p style="margin: 0.3rem 0; color: #1565C0;"><strong>🎲 Diversity Score:</strong> {diversity_score:.2f}</p>
-                                    <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📈 Market Share:</strong> {market_share:.2f}%</p>
-                                    <p style="margin: 0.3rem 0; color: #1565C0;"><strong>⭐ Performance:</strong> {performance_rating}</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                        else:
-                            st.warning("⚠️ No variations found for this keyword.")
-
-                # Enhanced separator before main table
-                st.markdown("""
-                <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 3rem 0; border-radius: 2px;"></div>
-                """, unsafe_allow_html=True)
-
+                    variations_df = pd.DataFrame(variations_data)
+                    variations_csv = variations_df.to_csv(index=False)
+                    
+                    st.download_button(
+                        label="🔗 Download Variations Map",
+                        data=variations_csv,
+                        file_name=f"keyword_variations_map_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                        mime="text/csv",
+                        key="variations_map_download",
+                        help="Download detailed keyword variations mapping"
+                    )
+                
+                with col3:
+                    # Performance summary report
+                    summary_data = {
+                        'metric': [
+                            'Total Keywords Analyzed',
+                            'Total Search Volume',
+                            'Total Clicks',
+                            'Total Conversions',
+                            'Average CTR',
+                            'Average Health CR',
+                            'Average Classic CR',
+                            'Total Variations',
+                            'Processing Time (seconds)',
+                            'Analysis Date'
+                        ],
+                        'value': [
+                            len(kw_perf_df),
+                            top_keywords['total_counts'].sum(),
+                            top_keywords['total_clicks'].sum(),
+                            top_keywords['total_conversions'].sum(),
+                            f"{top_keywords['avg_ctr'].mean():.2f}%",
+                            f"{top_keywords['health_cr'].mean():.2f}%",
+                            f"{top_keywords['classic_cr'].mean():.2f}%",
+                            top_keywords['variations_count'].sum(),
+                            f"{processing_time:.2f}",
+                            datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        ]
+                    }
+                    
+                    summary_df = pd.DataFrame(summary_data)
+                    summary_csv = summary_df.to_csv(index=False)
+                    
+                    st.download_button(
+                        label="📋 Download Summary Report",
+                        data=summary_csv,
+                        file_name=f"analysis_summary_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                        mime="text/csv",
+                        key="summary_report_download",
+                        help="Download executive summary of the analysis"
+                    )
+                
+                
                 # ================================================================================================
-                # 📊 ENHANCED MAIN KEYWORDS TABLE
+                # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
                 # ================================================================================================
 
-                # Calculate market share for enhanced insights
-                total_all_counts = queries['Counts'].sum()
-                top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
+                # ================================================================================================
+                # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
+                # ================================================================================================
 
-                if not top_keywords.empty:
-                    # Enhanced table header
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; text-align: center;">
-                        <h2 style="margin: 0; font-size: 2rem;">📊 Top {num_keywords} Health Keywords Performance Table</h2>
-                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Comprehensive Analysis with Market Share & Performance Metrics</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Create enhanced display version
-                    display_df = top_keywords.copy()
-                    
-                    # Enhanced column renaming
-                    display_df = display_df.rename(columns={
-                        'keyword': 'Health Keyword',
-                        'total_counts': 'Total Search Volume',
-                        'share_pct': 'Market Share %',
-                        'total_clicks': 'Total Clicks',
-                        'total_conversions': 'Conversions',
-                        'avg_ctr': 'Avg CTR',
-                        'health_cr': 'Health CR',
-                        'classic_cr': 'Classic CR',
-                        'unique_queries': 'Unique Queries',
-                        'variations_count': 'Variations'
-                    })
-                    
-                    # Enhanced formatting with better number handling
-                    display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
-                    display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
-                    display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
-                    display_df['Conversions'] = display_df['Conversions'].apply(format_number)
-                    display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
-                    display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
-                    display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
-                    display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
-                    display_df['Variations'] = display_df['Variations'].apply(format_number)
-                    
-                    # Enhanced column configuration
-                    column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
-                                'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
-                    display_df = display_df[column_order].reset_index(drop=True)
-                    
-                    # Enhanced dataframe display with better configuration
-                    # Enhanced dataframe display with better configuration
-                    st.dataframe(
-                        display_df, 
-                        use_container_width=True,
-                        hide_index=True,
-                        column_config={
-                            "Health Keyword": st.column_config.TextColumn(
-                                "Health Keyword",
-                                help="Fuzzy-matched Nutraceuticals & Nutrition search keyword group",
-                                width="large"
-                            ),
-                            "Total Search Volume": st.column_config.TextColumn(
-                                "Total Search Volume",
-                                help="Total health search volume (fuzzy-grouped)",
-                                width="medium"
-                            ),
-                            "Market Share %": st.column_config.TextColumn(
-                                "Market Share %",
-                                help="Percentage of total health searches",
-                                width="small"
-                            ),
-                            "Total Clicks": st.column_config.TextColumn(
-                                "Total Clicks",
-                                help="Total clicks received across all variations",
-                                width="medium"
-                            ),
-                            "Conversions": st.column_config.TextColumn(
-                                "Conversions",
-                                help="Total conversions achieved",
-                                width="medium"
-                            ),
-                            "Avg CTR": st.column_config.TextColumn(
-                                "Avg CTR",
-                                help="Average Click-Through Rate across all variations",
-                                width="small"
-                            ),
-                            "Health CR": st.column_config.TextColumn(
-                                "Health CR",
-                                help="Health Conversion Rate (Conversions/Volume) - Key Performance Indicator",
-                                width="small"
-                            ),
-                            "Classic CR": st.column_config.TextColumn(
-                                "Classic CR",
-                                help="Classic Conversion Rate (Conversions/Clicks)",
-                                width="small"
-                            ),
-                            "Unique Queries": st.column_config.TextColumn(
-                                "Unique Queries",
-                                help="Number of unique search queries for this keyword group",
-                                width="medium"
-                            ),
-                            "Variations": st.column_config.TextColumn(
-                                "Variations",
-                                help="Number of keyword variations grouped together through fuzzy matching",
-                                width="small"
-                            )
-                        }
-                    )
-                    
-                    # Enhanced table performance insights
-                    processing_time = (datetime.now() - start_time).total_seconds()
-                    
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #4CAF50; margin: 2rem 0;">
-                        <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">⚡ Table Performance Metrics</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Rows Displayed:</strong> {len(display_df):,}</p>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔍 Total Keywords:</strong> {len(kw_perf_df):,}</p>
-                            </div>
-                            <div>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>⏱️ Processing Time:</strong> {processing_time:.2f}s</p>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Matching Method:</strong> {matching_method}</p>
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # ================================================================================================
-                    # 🔍 ENHANCED EXAMPLE QUERIES & VARIATIONS SECTION
-                    # ================================================================================================
-                    
-                    # Enhanced toggle for examples with better styling
-                    show_examples = st.checkbox(
-                        "🔍 Show detailed examples and variations for top keywords", 
-                        key="show_fuzzy_examples",
-                        help="Display example queries and variations for the top 5 performing keywords"
-                    )
-                    
-                    if show_examples:
-                        st.markdown("""
-                        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
-                            <h3 style="margin: 0;">📝 Detailed Examples & Variations Analysis</h3>
-                            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Top 5 Keywords with Real Query Examples</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        for idx, row in top_keywords.head(5).iterrows():
-                            keyword = row['keyword']
-                            examples = row['example_queries'][:3]
-                            variations = row['variations'][:15]  # Show more variations
-                            emoji = emoji_map.get(keyword, '💊')
-                            
-                            # Enhanced keyword section with better styling
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 15px; margin: 2rem 0; border: 2px solid #4CAF50;">
-                                <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                                    <div style="font-size: 3rem; margin-right: 1rem;">{emoji}</div>
-                                    <div>
-                                        <h3 style="color: #1B5E20; margin: 0; font-size: 1.8rem;">{keyword}</h3>
-                                        <p style="color: #2E7D32; margin: 0.3rem 0 0 0; font-size: 1.1rem;">
-                                            {format_number(row['total_counts'])} searches • {row['variations_count']} variations • {row['avg_ctr']:.2f}% CTR
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            # Enhanced two-column layout for examples and variations
-                            col1, col2 = st.columns([1, 1])
-                            
-                            with col1:
-                                st.markdown("""
-                                <div style="background: #E3F2FD; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #2196F3; height: 100%;">
-                                    <h5 style="color: #0D47A1; margin: 0 0 1rem 0;">📋 Example Search Queries</h5>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                for i, example in enumerate(examples, 1):
-                                    st.markdown(f"""
-                                    <div style="background: white; padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #2196F3;">
-                                        <span style="color: #1565C0; font-weight: bold;">{i}.</span> 
-                                        <span style="color: #0D47A1;">{example}</span>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                            
-                            with col2:
-                                st.markdown("""
-                                <div style="background: #E8F5E8; padding: 1.5rem; border-radius: 10px; border-left: 4px solid #4CAF50; height: 100%;">
-                                    <h5 style="color: #1B5E20; margin: 0 0 1rem 0;">🔗 Grouped Keyword Variations</h5>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                # Display variations in a more organized way
-                                for i, var in enumerate(variations[:10], 1):  # Show top 10
-                                    st.markdown(f"""
-                                    <div style="background: white; padding: 0.6rem; margin: 0.3rem 0; border-radius: 6px; border-left: 3px solid #4CAF50;">
-                                        <span style="color: #2E7D32; font-weight: bold; font-size: 0.9rem;">{i}.</span> 
-                                        <span style="color: #1B5E20; font-size: 0.9rem;">{var}</span>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                                
-                                # Show count of remaining variations
-                                if len(variations) > 10:
-                                    st.markdown(f"""
-                                    <div style="background: #FFF3E0; padding: 0.8rem; margin: 0.5rem 0; border-radius: 8px; border-left: 3px solid #FF9800; text-align: center;">
-                                        <span style="color: #E65100; font-weight: bold;">+ {len(variations) - 10} more variations</span>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-                            
-                            # Enhanced separator between keywords
-                            st.markdown("""
-                            <div style="height: 2px; background: linear-gradient(90deg, transparent 0%, #4CAF50 50%, transparent 100%); margin: 2rem 0;"></div>
-                            """, unsafe_allow_html=True)
-                    
-                    # ================================================================================================
-                    # 📥 ENHANCED DOWNLOAD SECTION
-                    # ================================================================================================
-                    
-                    st.markdown("""
-                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
-                        <h3 style="margin: 0;">📥 Export & Download Options</h3>
-                        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Download your analysis results in multiple formats</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Enhanced download options with multiple formats
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        # CSV download with enhanced data
-                        csv_data = top_keywords[['keyword', 'total_counts', 'share_pct', 'total_clicks', 
-                                                'total_conversions', 'avg_ctr', 'health_cr', 'classic_cr', 
-                                                'unique_queries', 'variations_count']].copy()
-                        csv_keywords = csv_data.to_csv(index=False)
-                        
-                        st.download_button(
-                            label="📊 Download CSV Report",
-                            data=csv_keywords,
-                            file_name=f"health_keywords_analysis_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                            mime="text/csv",
-                            key="fuzzy_keyword_csv_download",
-                            help="Download complete keyword analysis as CSV file"
-                        )
-                    
-                    with col2:
-                        # Enhanced variations export
-                        variations_data = []
-                        for _, row in top_keywords.head(20).iterrows():  # Top 20 for variations export
-                            for variation in row['variations']:
-                                variations_data.append({
-                                    'master_keyword': row['keyword'],
-                                    'variation': variation,
-                                    'master_volume': row['total_counts'],
-                                    'master_ctr': row['avg_ctr'],
-                                    'master_cr': row['health_cr']
-                                })
-                        
-                        variations_df = pd.DataFrame(variations_data)
-                        variations_csv = variations_df.to_csv(index=False)
-                        
-                        st.download_button(
-                            label="🔗 Download Variations Map",
-                            data=variations_csv,
-                            file_name=f"keyword_variations_map_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                            mime="text/csv",
-                            key="variations_map_download",
-                            help="Download detailed keyword variations mapping"
-                        )
-                    
-                    with col3:
-                        # Performance summary report
-                        summary_data = {
-                            'metric': [
-                                'Total Keywords Analyzed',
-                                'Total Search Volume',
-                                'Total Clicks',
-                                'Total Conversions',
-                                'Average CTR',
-                                'Average Health CR',
-                                'Average Classic CR',
-                                'Total Variations',
-                                'Processing Time (seconds)',
-                                'Analysis Date'
-                            ],
-                            'value': [
-                                len(kw_perf_df),
-                                top_keywords['total_counts'].sum(),
-                                top_keywords['total_clicks'].sum(),
-                                top_keywords['total_conversions'].sum(),
-                                f"{top_keywords['avg_ctr'].mean():.2f}%",
-                                f"{top_keywords['health_cr'].mean():.2f}%",
-                                f"{top_keywords['classic_cr'].mean():.2f}%",
-                                top_keywords['variations_count'].sum(),
-                                f"{processing_time:.2f}",
-                                datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            ]
-                        }
-                        
-                        summary_df = pd.DataFrame(summary_data)
-                        summary_csv = summary_df.to_csv(index=False)
-                        
-                        st.download_button(
-                            label="📋 Download Summary Report",
-                            data=summary_csv,
-                            file_name=f"analysis_summary_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                            mime="text/csv",
-                            key="summary_report_download",
-                            help="Download executive summary of the analysis"
-                        )
-                    
-                    
-                    # ================================================================================================
-                    # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
-                    # ================================================================================================
+                # Calculate advanced insights with error handling
+                total_variations = top_keywords['variations_count'].sum() if 'variations_count' in top_keywords.columns else 0
+                avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
+                high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
+                top_market_share = top_keywords['share_pct'].sum() if 'share_pct' in top_keywords.columns else 0
 
-                    # ================================================================================================
-                    # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
-                    # ================================================================================================
+                # Performance categorization with safe column access
+                if 'health_cr' in top_keywords.columns and len(top_keywords) > 0:
+                    excellent_keywords = len(top_keywords[top_keywords['health_cr'] > 5])
+                    good_keywords = len(top_keywords[(top_keywords['health_cr'] > 2) & (top_keywords['health_cr'] <= 5)])
+                    average_keywords = len(top_keywords[(top_keywords['health_cr'] > 1) & (top_keywords['health_cr'] <= 2)])
+                    poor_keywords = len(top_keywords[top_keywords['health_cr'] <= 1])
+                else:
+                    excellent_keywords = good_keywords = average_keywords = poor_keywords = 0
 
-                    # Calculate advanced insights with error handling
-                    total_variations = top_keywords['variations_count'].sum() if 'variations_count' in top_keywords.columns else 0
-                    avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
-                    high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
-                    top_market_share = top_keywords['share_pct'].sum() if 'share_pct' in top_keywords.columns else 0
+                # Safe calculation for averages
+                avg_variations_per_group = total_variations / len(top_keywords) if len(top_keywords) > 0 and total_variations > 0 else 0
+                unique_queries_sum = top_keywords['unique_queries'].sum() if 'unique_queries' in top_keywords.columns else len(top_keywords)
+                total_search_volume = top_keywords['total_counts'].sum() if 'total_counts' in top_keywords.columns else top_keywords['Counts'].sum() if 'Counts' in top_keywords.columns else 0
 
-                    # Performance categorization with safe column access
-                    if 'health_cr' in top_keywords.columns and len(top_keywords) > 0:
-                        excellent_keywords = len(top_keywords[top_keywords['health_cr'] > 5])
-                        good_keywords = len(top_keywords[(top_keywords['health_cr'] > 2) & (top_keywords['health_cr'] <= 5)])
-                        average_keywords = len(top_keywords[(top_keywords['health_cr'] > 1) & (top_keywords['health_cr'] <= 2)])
-                        poor_keywords = len(top_keywords[top_keywords['health_cr'] <= 1])
-                    else:
-                        excellent_keywords = good_keywords = average_keywords = poor_keywords = 0
-
-                    # Safe calculation for averages
-                    avg_variations_per_group = total_variations / len(top_keywords) if len(top_keywords) > 0 and total_variations > 0 else 0
-                    unique_queries_sum = top_keywords['unique_queries'].sum() if 'unique_queries' in top_keywords.columns else len(top_keywords)
-                    total_search_volume = top_keywords['total_counts'].sum() if 'total_counts' in top_keywords.columns else top_keywords['Counts'].sum() if 'Counts' in top_keywords.columns else 0
-
-                    # Main header
-                    st.markdown("""
-                    <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 3rem 0;">
-                        <h2 style="margin: 0 0 1rem 0; text-align: center; font-size: 2.2rem;">🎯 Advanced Analysis Insights & Recommendations</h2>
-                        <p style="margin: 0; text-align: center; opacity: 0.9; font-size: 1.1rem;">Comprehensive Performance Summary & Strategic Recommendations</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    # Enhanced insights with multiple sections
-                    insight_col1, insight_col2 = st.columns(2)
-
-                    INSIGHT_CSS = """
-                    <style>
-                    .insight-box-green{background:linear-gradient(135deg,#E8F5E8,#F1F8E9);padding:2rem;border-radius:12px;border-left:5px solid #4CAF50;height:100%;}
-                    .insight-box-blue{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:2rem;border-radius:12px;border-left:5px solid #2196F3;height:100%;}
-                    .insight-box-green h4,.insight-box-blue h4{margin:0 0 1.5rem;color:#1B5E20;}
-                    .insight-box-blue h4{color:#0D47A1;}
-                    .insight-box-green p,.insight-box-blue p{margin:0.3rem 0;color:#2E7D32;}
-                    .insight-box-blue p{color:#1976D2;}
-                    .insight-box-green .sub-box,.insight-box-blue .sub-box{background:rgba(46,125,50,0.1);padding:1rem;border-radius:8px;margin-top:1rem;}
-                    .insight-box-blue .sub-box{background:rgba(33,150,243,0.1);}
-                    .insight-box-green .sub-box p,.insight-box-blue .sub-box p{margin:0.2rem 0;color:#2E7D32;font-size:0.9rem;}
-                    .insight-box-blue .sub-box p{color:#1565C0;}
-                    </style>
-                    """
-                    st.markdown(INSIGHT_CSS, unsafe_allow_html=True)
-
-                    with insight_col1:
-                        st.markdown(f"""
-                        <div class="insight-box-green">
-                            <h4>📊 Fuzzy Matching Analysis Summary</h4>
-                            <div style="margin-bottom: 1rem;">
-                                <p><strong>🔍 Total Keyword Groups:</strong> {format_number(len(kw_perf_df))}</p>
-                                <p><strong>🔗 Total Variations Grouped:</strong> {format_number(total_variations)}</p>
-                                <p><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {format_number(total_search_volume)}</p>
-                                <p><strong>🎯 Market Share Covered:</strong> {top_market_share:.1f}%</p>
-                            </div>
-                            <div style="margin-bottom: 1rem;">
-                                <p><strong>🔍 Unique Search Queries:</strong> {format_number(unique_queries_sum)}</p>
-                                <p><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
-                                <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
-                            </div>
-                            <div class="sub-box">
-                                <p style="color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
-                                <p>⚡ Analysis completed in {processing_time:.2f} seconds</p>
-                                <p>🧠 Method: {matching_method}</p>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                    with insight_col2:
-                        st.markdown(f"""
-                        <div class="insight-box-blue">
-                            <h4>🎯 Performance Distribution & Recommendations</h4>
-                            <div style="margin-bottom: 1.5rem;">
-                                <h5 style="color: #1565C0;">📊 Performance Categories:</h5>
-                                <p><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keyword{'s' if excellent_keywords != 1 else ''}</p>
-                                <p><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keyword{'s' if good_keywords != 1 else ''}</p>
-                                <p><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keyword{'s' if average_keywords != 1 else ''}</p>
-                                <p><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keyword{'s' if poor_keywords != 1 else ''}</p>
-                            </div>
-                            <div class="sub-box">
-                                <h5 style="color: #0D47A1;">💡 Strategic Recommendations:</h5>
-                                <p>🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
-                                <p>📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
-                                <p>🔍 Leverage {format_number(total_variations)} variations for long-tail SEO</p>
-                                <p>⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                    # Add completion message
-                    st.markdown("""
-                    <div style="text-align: center; margin-top: 2rem;">
-                        <h3 style="color: #4CAF50;">🚀 Analysis Complete - Ready for Action!</h3>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                    # Final performance footer
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 12px; margin: 3rem 0; text-align: center; border: 2px solid #4CAF50;">
-                        <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">🚀 Analysis Complete - Ready for Action!</h4>
-                        <p style="color: #2E7D32; margin: 0.5rem 0; font-size: 1.1rem;">
-                            ✅ Processed <strong>{len(kw_perf_df):,}</strong> keyword groups in <strong>{processing_time:.2f}</strong> seconds
-                        </p>
-                        <p style="color: #388E3C; margin: 0.5rem 0;">
-                            🎯 Use the insights above to optimize your health & nutrition marketing strategy
-                        </p>
-                        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
-                            <p style="color: #1B5E20; margin: 0; font-weight: bold;">
-                                💡 Pro Tip: Focus on keywords with high variations count and good Health CR for maximum ROI
-                            </p>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-
-
-            else:
+                # Main header
                 st.markdown("""
-                <div style="background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #F44336; margin: 2rem 0; text-align: center;">
-                    <h3 style="color: #C62828; margin: 0 0 1rem 0;">⚠️ No Keyword Data Available</h3>
-                    <p style="color: #D32F2F; margin: 0; font-size: 1.1rem;">
-                        Unable to perform fuzzy keyword analysis. Please check your data source and try again.
+                <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 3rem 0;">
+                    <h2 style="margin: 0 0 1rem 0; text-align: center; font-size: 2.2rem;">🎯 Advanced Analysis Insights & Recommendations</h2>
+                    <p style="margin: 0; text-align: center; opacity: 0.9; font-size: 1.1rem;">Comprehensive Performance Summary & Strategic Recommendations</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Enhanced insights with multiple sections
+                insight_col1, insight_col2 = st.columns(2)
+
+                INSIGHT_CSS = """
+                <style>
+                .insight-box-green{background:linear-gradient(135deg,#E8F5E8,#F1F8E9);padding:2rem;border-radius:12px;border-left:5px solid #4CAF50;height:100%;}
+                .insight-box-blue{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:2rem;border-radius:12px;border-left:5px solid #2196F3;height:100%;}
+                .insight-box-green h4,.insight-box-blue h4{margin:0 0 1.5rem;color:#1B5E20;}
+                .insight-box-blue h4{color:#0D47A1;}
+                .insight-box-green p,.insight-box-blue p{margin:0.3rem 0;color:#2E7D32;}
+                .insight-box-blue p{color:#1976D2;}
+                .insight-box-green .sub-box,.insight-box-blue .sub-box{background:rgba(46,125,50,0.1);padding:1rem;border-radius:8px;margin-top:1rem;}
+                .insight-box-blue .sub-box{background:rgba(33,150,243,0.1);}
+                .insight-box-green .sub-box p,.insight-box-blue .sub-box p{margin:0.2rem 0;color:#2E7D32;font-size:0.9rem;}
+                .insight-box-blue .sub-box p{color:#1565C0;}
+                </style>
+                """
+                st.markdown(INSIGHT_CSS, unsafe_allow_html=True)
+
+                with insight_col1:
+                    st.markdown(f"""
+                    <div class="insight-box-green">
+                        <h4>📊 Fuzzy Matching Analysis Summary</h4>
+                        <div style="margin-bottom: 1rem;">
+                            <p><strong>🔍 Total Keyword Groups:</strong> {format_number(len(kw_perf_df))}</p>
+                            <p><strong>🔗 Total Variations Grouped:</strong> {format_number(total_variations)}</p>
+                            <p><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {format_number(total_search_volume)}</p>
+                            <p><strong>🎯 Market Share Covered:</strong> {top_market_share:.1f}%</p>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <p><strong>🔍 Unique Search Queries:</strong> {format_number(unique_queries_sum)}</p>
+                            <p><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
+                            <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
+                        </div>
+                        <div class="sub-box">
+                            <p style="color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
+                            <p>⚡ Analysis completed in {processing_time:.2f} seconds</p>
+                            <p>🧠 Method: {matching_method}</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with insight_col2:
+                    st.markdown(f"""
+                    <div class="insight-box-blue">
+                        <h4>🎯 Performance Distribution & Recommendations</h4>
+                        <div style="margin-bottom: 1.5rem;">
+                            <h5 style="color: #1565C0;">📊 Performance Categories:</h5>
+                            <p><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keyword{'s' if excellent_keywords != 1 else ''}</p>
+                            <p><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keyword{'s' if good_keywords != 1 else ''}</p>
+                            <p><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keyword{'s' if average_keywords != 1 else ''}</p>
+                            <p><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keyword{'s' if poor_keywords != 1 else ''}</p>
+                        </div>
+                        <div class="sub-box">
+                            <h5 style="color: #0D47A1;">💡 Strategic Recommendations:</h5>
+                            <p>🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
+                            <p>📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
+                            <p>🔍 Leverage {format_number(total_variations)} variations for long-tail SEO</p>
+                            <p>⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # Add completion message
+                st.markdown("""
+                <div style="text-align: center; margin-top: 2rem;">
+                    <h3 style="color: #4CAF50;">🚀 Analysis Complete - Ready for Action!</h3>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Final performance footer
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 12px; margin: 3rem 0; text-align: center; border: 2px solid #4CAF50;">
+                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">🚀 Analysis Complete - Ready for Action!</h4>
+                    <p style="color: #2E7D32; margin: 0.5rem 0; font-size: 1.1rem;">
+                        ✅ Processed <strong>{len(kw_perf_df):,}</strong> keyword groups in <strong>{processing_time:.2f}</strong> seconds
                     </p>
+                    <p style="color: #388E3C; margin: 0.5rem 0;">
+                        🎯 Use the insights above to optimize your health & nutrition marketing strategy
+                    </p>
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(76, 175, 80, 0.1); border-radius: 8px;">
+                        <p style="color: #1B5E20; margin: 0; font-weight: bold;">
+                            💡 Pro Tip: Focus on keywords with high variations count and good Health CR for maximum ROI
+                        </p>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
-        # ================================================================================================
-        # 🚀 EXECUTE MAIN FUNCTION
-        # ================================================================================================
 
-        if __name__ == "__main__":
-            # Ensure all required variables are available
-            if 'queries' in locals() and not queries.empty:
-                main_health_analysis()
-            else:
-                st.error("❌ Required data 'queries' not found. Please ensure data is loaded before running this analysis.")
+
+        else:
+            st.markdown("""
+            <div style="background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #F44336; margin: 2rem 0; text-align: center;">
+                <h3 style="color: #C62828; margin: 0 0 1rem 0;">⚠️ No Keyword Data Available</h3>
+                <p style="color: #D32F2F; margin: 0; font-size: 1.1rem;">
+                    Unable to perform fuzzy keyword analysis. Please check your data source and try again.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ================================================================================================
+    # 🚀 EXECUTE MAIN FUNCTION
+    # ================================================================================================
+
+    if __name__ == "__main__":
+        # Ensure all required variables are available
+        if 'queries' in locals() and not queries.empty:
+            main_health_analysis()
+        else:
+            st.error("❌ Required data 'queries' not found. Please ensure data is loaded before running this analysis.")
 
                 
 
