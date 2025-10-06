@@ -3150,7 +3150,7 @@ with tab_search:
                     margin: 1rem 0;
                     border: 1px solid #C8E6C9;
                 ">
-                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Health Keywords Analysis</h4>
+                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Nutraceuticals & Nutrition Keywords Analysis</h4>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -3223,7 +3223,7 @@ with tab_search:
             with metric_col1:
                 total_keywords = len(kw_perf_df)
                 st.metric(
-                    label="🎯 Total Keywords", 
+                    label="🎯 Unique Keyword Groups", 
                     value=f"{total_keywords:,}",
                     help="Number of unique health keyword groups identified"
                 )
@@ -3270,7 +3270,7 @@ with tab_search:
                     margin: 0 0 1.5rem 0; 
                     font-size: 1.4rem;
                 ">
-                    🧠 AI-Powered Insights
+                    🧠 Grouped Keywords Insights
                 </h4>
             </div>
             """, unsafe_allow_html=True)
@@ -3344,7 +3344,7 @@ with tab_search:
                     box-shadow: 0 2px 10px rgba(129, 199, 132, 0.1);
                     height: 120px;
                 ">
-                    <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🌊 Volume Insights</h5>
+                    <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🌊 Search Volume Insights</h5>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
                         Peak volume: <strong>{top_volume:,}</strong>
                     </p>
@@ -3528,11 +3528,6 @@ with tab_search:
                 # Performance summary with matching method
                 matching_method = "Advanced Fuzzy Matching" if has_fuzzywuzzy else "Basic String Matching"
                 
-                st.info(f"""
-                🔍 **Analysis Method:** {matching_method}  
-                ⚡ **Processing Time:** {(datetime.now() - start_time).total_seconds():.2f} seconds  
-                🎯 **Chart Performance:** Showing top 30 keywords for optimal loading
-                """)
                 
             else:
                 st.warning("⚠️ No keyword performance data available to display chart.")
@@ -3581,7 +3576,7 @@ with tab_search:
         st.markdown("""
         <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 15px; margin: 2rem 0; text-align: center;">
             <h2 style="margin: 0; font-size: 2rem;">🏆 Top Performing Health Keywords</h2>
-            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Advanced Fuzzy Matching Results</p>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;"></p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -3589,18 +3584,6 @@ with tab_search:
         with st.spinner("🧠 Processing advanced fuzzy matching..."):
             kw_perf_df = calculate_enhanced_keyword_performance(queries)
 
-        if not kw_perf_df.empty:
-            # Enhanced fuzzy matching results summary
-            st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #2196F3; margin: 1rem 0;">
-                <h4 style="color: #0D47A1; margin: 0 0 0.5rem 0;">🔍 Fuzzy Matching Results</h4>
-                <p style="margin: 0; color: #1565C0; font-size: 1.1rem;">
-                    Found <strong>{len(kw_perf_df):,}</strong> keyword groups from raw keyword extraction
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Enhanced keyword grouping success metrics
             # Enhanced keyword grouping success metrics
             magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
             collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
