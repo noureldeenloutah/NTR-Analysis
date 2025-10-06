@@ -2278,7 +2278,7 @@ with tab_search:
     
     st.markdown("---")
     
-    st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
+    st.subheader("🌿 Nutraceuticals & Nutrition Keyword Frequency & Performance Analysis")
     
     # Cached Master Keyword Dictionary
     @st.cache_data(ttl=7200, show_spinner=False)
@@ -3119,7 +3119,7 @@ with tab_search:
                 font-weight: 700;
                 letter-spacing: -1px;
             ">
-                🌿 Health Keywords Intelligence Hub 🌿
+                🌿 Nutraceuticals & Nutrition Keywords Intelligence Hub 🌿
             </h1>
             <p style="
                 color: #2E7D32; 
@@ -3217,42 +3217,6 @@ with tab_search:
             </div>
             """, unsafe_allow_html=True)
             
-            # 📊 CLEAN 4-COLUMN METRICS
-            metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-            
-            with metric_col1:
-                total_keywords = len(kw_perf_df)
-                st.metric(
-                    label="🎯 Unique Keyword Groups", 
-                    value=f"{total_keywords:,}",
-                    help="Number of unique health keyword groups identified"
-                )
-                
-            with metric_col2:
-                total_volume = kw_perf_df['total_counts'].sum()
-                volume_millions = total_volume / 1_000_000
-                st.metric(
-                    label="📊 Total Volume", 
-                    value=f"{volume_millions:.1f}M" if volume_millions >= 1 else f"{total_volume:,}",
-                    help="Combined search volume across all health keywords"
-                )
-                
-            with metric_col3:
-                avg_ctr = kw_perf_df['avg_ctr'].mean()
-                st.metric(
-                    label="🎪 Avg CTR", 
-                    value=f"{avg_ctr:.2f}%",
-                    help="Average click-through rate for health keywords"
-                )
-                
-            with metric_col4:
-                # 🔧 CHANGED: Health Score → CR
-                avg_health_cr = kw_perf_df['health_cr'].mean()
-                st.metric(
-                    label="📈 CR", 
-                    value=f"{avg_health_cr:.1f}%",
-                    help="Average conversion rate for health keywords"
-                )
             
             # 🧠 GREEN-THEMED AI INSIGHTS
             st.markdown("---")
