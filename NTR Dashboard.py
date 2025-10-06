@@ -5075,6 +5075,39 @@ with tab_brand:
         transform: scale(1.01);
         transition: all 0.2s ease;
     }
+    
+    /* Enhanced Brand Analysis Metrics */
+    .brand-metric-card {
+        background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+        border: 2px solid #4CAF50;
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+        transition: all 0.3s ease;
+        margin: 0.5rem 0;
+    }
+    
+    .brand-metric-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        border-color: #2E7D32;
+    }
+    
+    .brand-metric-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1B5E20;
+        margin: 0;
+        text-shadow: 1px 1px 3px rgba(27, 94, 32, 0.1);
+    }
+    
+    .brand-metric-label {
+        font-size: 1rem;
+        color: #2E7D32;
+        margin: 0.5rem 0 0 0;
+        font-weight: 500;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -5124,7 +5157,7 @@ with tab_brand:
         # Enhanced Brand Performance Analysis
         st.subheader("📈 Nutraceuticals & Nutrition Brand Performance Matrix")
 
-        # Calculate comprehensive brand metrics
+        # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
         bs_raw = brand_queries.groupby(brand_column).agg({
             'Counts': 'sum',
             'clicks': 'sum', 
@@ -5143,10 +5176,10 @@ with tab_brand:
         total_counts = bs['Counts'].sum()
         bs['share_pct'] = (bs['Counts'] / total_counts * 100).round(2)
 
-        # Calculate performance metrics
+        # CORRECTED CR CALCULATIONS
         bs['ctr'] = ((bs['clicks'] / bs['Counts']) * 100).round(2)
-        bs['cr'] = ((bs['conversions'] / bs['clicks']) * 100).fillna(0).round(2)
-        bs['classic_cr'] = ((bs['conversions'] / bs['Counts']) * 100).round(2)
+        bs['cr'] = ((bs['conversions'] / bs['Counts']) * 100).round(2)  # CR = conversions/search volume
+        bs['classic_cr'] = ((bs['conversions'] / bs['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
 
         # Enhanced scatter plot for brand performance
         num_scatter_brands = st.slider(
@@ -5165,10 +5198,10 @@ with tab_brand:
             x='Counts', 
             y='ctr',
             size='clicks',
-            color='cr',
+            color='classic_cr',  # Use classic_cr for color
             hover_name='brand',
             title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Nutraceuticals & Nutrition Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
-            labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'classic_cr': 'Classic CR (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
@@ -5178,7 +5211,7 @@ with tab_brand:
                          'Search Counts: %{x:,.0f}<br>' +
                          'CTR: %{y:.2f}%<br>' +
                          'Total Clicks: %{marker.size:,.0f}<br>' +
-                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>'
+                         'Classic CR: %{marker.color:.2f}%<extra></extra>'
         )
         
         fig_brand_perf.update_layout(
@@ -5307,79 +5340,103 @@ with tab_brand:
         
         st.plotly_chart(fig_cat, use_container_width=True)
         
-        # Enhanced Brand Trend Analysis
-        if 'Date' in queries.columns:
-            st.subheader("📈 Nutraceuticals & Nutrition Brand Trend Analysis")
+        # ADDED BACK: Brand Summary Data Table
+        st.subheader("📋 Nutraceuticals & Nutrition Brand Summary Data")
+        
+        # Calculate brand summary from queries
+        brand_summary_calc = []
+        
+        for brand in brand_queries[brand_column].unique():
+            brand_data = brand_queries[brand_queries[brand_column] == brand]
             
-            # Get top 5 brands for trend analysis
-            top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
+            # Basic metrics
+            total_counts = brand_data['Counts'].sum()
+            total_clicks = brand_data['clicks'].sum()
+            total_conversions = brand_data['conversions'].sum()
             
-            trend_data = queries[
-                (queries[brand_column].notna()) & 
-                (queries[brand_column].str.lower() != 'other') &
-                (queries[brand_column].str.lower() != 'others') &
-                (queries[brand_column].isin(top_5_brands))
-            ].copy()
+            # CORRECTED Calculate rates
+            ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+            cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0  # CR = conversions/search volume
+            classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0  # Classic CR = conversions/clicks
             
-            if not trend_data.empty:
-                try:
-                    trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
-                    trend_data = trend_data.dropna(subset=['Date'])
-                    
-                    if not trend_data.empty:
-                        trend_data['Month'] = trend_data['Date'].dt.to_period('M')
-                        trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
-                        
-                        monthly_trends = trend_data.groupby(['Month_Display', brand_column])['Counts'].sum().reset_index()
-                        monthly_trends = monthly_trends.rename(columns={brand_column: 'brand'})
-                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
-                        
-                        if len(monthly_trends) > 0:
-                            fig_trend = px.line(
-                                monthly_trends, 
-                                x='Date', 
-                                y='Counts', 
-                                color='brand',
-                                title='<b style="color:#2E7D32;">🌿 Top 5 Nutraceuticals & Nutrition Brands Monthly Trend</b>',
-                                color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
-                                markers=True
-                            )
-                            
-                            fig_trend.update_layout(
-                                plot_bgcolor='rgba(248,255,248,0.95)',
-                                paper_bgcolor='rgba(232,245,232,0.8)',
-                                font=dict(color='#1B5E20', family='Segoe UI'),
-                                xaxis=dict(
-                                    showgrid=True, 
-                                    gridcolor='#C8E6C8',
-                                    title='Month',
-                                    dtick="M1",
-                                    tickformat="%b %Y"
-                                ),
-                                yaxis=dict(
-                                    showgrid=True, 
-                                    gridcolor='#C8E6C8',
-                                    title='Search Counts'
-                                ),
-                                hovermode='x unified'
-                            )
-                            
-                            st.plotly_chart(fig_trend, use_container_width=True)
+            # Use the keywords column that was created by your prepare_queries_df function
+            unique_keywords_set = set()
+            keyword_counts = {}
+            
+            for idx, row in brand_data.iterrows():
+                keywords_list = row['keywords']  # This comes from your prepare_queries_df function
+                query_count = row['Counts']
+                
+                if isinstance(keywords_list, list):
+                    unique_keywords_set.update(keywords_list)
+                    # Add the query count to each keyword
+                    for keyword in keywords_list:
+                        if keyword in keyword_counts:
+                            keyword_counts[keyword] += query_count
                         else:
-                            st.info("No trend data available for the selected date range and brands")
-                    else:
-                        st.info("No valid dates found in the filtered data")
-                except Exception as e:
-                    st.error(f"Error processing trend data: {str(e)}")
-            else:
-                st.info("No brand data available for the selected date range")
+                            keyword_counts[keyword] = query_count
+                elif pd.notna(keywords_list):
+                    # Fallback: use normalized_query if keywords is not a list
+                    search_term = row['normalized_query']
+                    if pd.notna(search_term):
+                        keywords = str(search_term).lower().split()
+                        unique_keywords_set.update(keywords)
+                        for keyword in keywords:
+                            if keyword in keyword_counts:
+                                keyword_counts[keyword] += query_count
+                            else:
+                                keyword_counts[keyword] = query_count
+            
+            unique_keywords_count = len(unique_keywords_set)
+            
+            # Get top 5 keywords by total counts
+            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_keywords_str = ', '.join([f"{kw}({cnt:,.0f})" for kw, cnt in top_keywords])
+            
+            brand_summary_calc.append({
+                'Nutraceuticals & Nutrition Brand': brand,
+                'Search Counts': total_counts,
+                'Total Clicks': total_clicks,
+                'Conversions': total_conversions,
+                'CTR': ctr,
+                'CR': cr,
+                'Classic CR': classic_cr,
+                'Unique Keywords': unique_keywords_count,
+                'Top Health Keywords': top_keywords_str
+            })
+        
+        brand_summary_df = pd.DataFrame(brand_summary_calc)
+        
+        # Sort by Search Counts and take top 10 for display
+        brand_summary_df = brand_summary_df.sort_values('Search Counts', ascending=False).head(10)
+        
+        # Format for display
+        display_summary = brand_summary_df.copy()
+        display_summary['Search Counts'] = display_summary['Search Counts'].apply(lambda x: f"{x:,.0f}")
+        display_summary['Total Clicks'] = display_summary['Total Clicks'].apply(lambda x: f"{x:,.0f}")
+        display_summary['Conversions'] = display_summary['Conversions'].apply(lambda x: f"{x:,.0f}")
+        display_summary['CTR'] = display_summary['CTR'].apply(lambda x: f"{x:.2f}%")
+        display_summary['CR'] = display_summary['CR'].apply(lambda x: f"{x:.2f}%")
+        display_summary['Classic CR'] = display_summary['Classic CR'].apply(lambda x: f"{x:.2f}%")
+        
+        st.dataframe(display_summary, use_container_width=True, hide_index=True)
+        
+        # Download button for brand summary
+        csv_summary = brand_summary_df.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Brand Summary CSV",
+            data=csv_summary,
+            file_name="nutraceuticals_brand_summary_calculated.csv",
+            mime="text/csv",
+            key="brand_summary_calc_csv_download"
+        )
 
     st.markdown("---")
     
     # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
     st.subheader("🔥 Nutraceuticals & Nutrition Brand-Keyword Intelligence Matrix")
 
-    # Create brand filter dropdown
+    # Create brand filter dropdown with enhanced UI
     if 'brand' in queries.columns and 'search' in queries.columns:
         available_brands = queries[
             (queries['brand'].notna()) & 
@@ -5390,11 +5447,94 @@ with tab_brand:
         available_brands = sorted(available_brands)
         brand_options = ['All Nutraceuticals & Nutrition Brands'] + list(available_brands)
         
-        selected_brand = st.selectbox(
-            "🎯 Select Nutraceuticals & Nutrition Brand to Analyze:",
-            options=brand_options,
-            index=0
-        )
+        # ENHANCED UI for brand selection with metrics
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+        ">
+            <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">
+                🎯 Brand Analysis Control Center
+            </h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_select, col_metrics = st.columns([2, 3])
+        
+        with col_select:
+            selected_brand = st.selectbox(
+                "🎯 Select Nutraceuticals & Nutrition Brand to Analyze:",
+                options=brand_options,
+                index=0,
+                key="brand_selector"
+            )
+        
+        with col_metrics:
+            if selected_brand != 'All Nutraceuticals & Nutrition Brands':
+                # Show metrics for selected brand
+                brand_metrics = bs[bs['brand'] == selected_brand].iloc[0] if not bs[bs['brand'] == selected_brand].empty else None
+                
+                if brand_metrics is not None:
+                    metric_col1, metric_col2, metric_col3 = st.columns(3)
+                    
+                    with metric_col1:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{brand_metrics['Counts']:,.0f}</div>
+                            <div class="brand-metric-label">📊 Total Searches</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col2:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{brand_metrics['ctr']:.2f}%</div>
+                            <div class="brand-metric-label">📈 CTR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col3:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{brand_metrics['classic_cr']:.2f}%</div>
+                            <div class="brand-metric-label">🎯 Classic CR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+            else:
+                # Show overall metrics
+                total_searches = bs['Counts'].sum()
+                avg_ctr = bs['ctr'].mean()
+                avg_classic_cr = bs['classic_cr'].mean()
+                
+                metric_col1, metric_col2, metric_col3 = st.columns(3)
+                
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{total_searches:,.0f}</div>
+                        <div class="brand-metric-label">📊 Total Market</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{avg_ctr:.2f}%</div>
+                        <div class="brand-metric-label">📈 Avg CTR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col3:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{avg_classic_cr:.2f}%</div>
+                        <div class="brand-metric-label">🎯 Avg Classic CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         # Filter data based on selection
         if selected_brand == 'All Nutraceuticals & Nutrition Brands':
@@ -5429,9 +5569,10 @@ with tab_brand:
                     'conversions': 'sum'
                 }).reset_index()
                 
-                # Calculate CTR and CR for each brand-search combination
+                # CORRECTED Calculate CTR and CR for each brand-search combination
                 brand_search_matrix['ctr'] = ((brand_search_matrix['clicks'] / brand_search_matrix['Counts']) * 100).round(2)
-                brand_search_matrix['cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['clicks']) * 100).fillna(0).round(2)
+                brand_search_matrix['cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['Counts']) * 100).round(2)  # CR = conversions/search volume
+                brand_search_matrix['classic_cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
                 
                 top_searches = matrix_data[
                     (matrix_data['search'].str.lower() != 'other') &
@@ -5454,10 +5595,10 @@ with tab_brand:
                     values='ctr'
                 ).fillna(0)
                 
-                cr_data = brand_search_matrix.pivot(
+                classic_cr_data = brand_search_matrix.pivot(
                     index='brand', 
                     columns='search', 
-                    values='cr'
+                    values='classic_cr'
                 ).fillna(0)
                 
                 # Enhanced heatmap with custom hover template
@@ -5471,21 +5612,20 @@ with tab_brand:
                     aspect='auto'
                 )
                 
-                # Create custom hover data with CTR and CR
+                # Create custom hover data with CTR and Classic CR
                 hover_text = []
                 for i, brand in enumerate(heatmap_data.index):
                     hover_row = []
-                    for j, search_term in enumerate(heatmap_data.columns):
+                    for j, search in enumerate(heatmap_data.columns):
                         counts = heatmap_data.iloc[i, j]
-                        ctr_val = ctr_data.iloc[i, j] if not pd.isna(ctr_data.iloc[i, j]) else 0
-                        cr_val = cr_data.iloc[i, j] if not pd.isna(cr_data.iloc[i, j]) else 0
-                        
+                        ctr = ctr_data.iloc[i, j]
+                        classic_cr = classic_cr_data.iloc[i, j]
                         hover_row.append(
-                            f'<b>{brand}</b><br>' +
-                            f'Search Term: {search_term}<br>' +
-                            f'Total Searches: {counts:,.0f}<br>' +
-                            f'<b>CTR: {ctr_val:.2f}%</b><br>' +
-                            f'<b>CR: {cr_val:.2f}%</b>'
+                            f"<b>{brand}</b><br>" +
+                            f"Search Term: {search}<br>" +
+                            f"Total Searches: {counts:,.0f}<br>" +
+                            f"CTR: {ctr:.2f}%<br>" +
+                            f"Classic CR: {classic_cr:.2f}%"
                         )
                     hover_text.append(hover_row)
                 
@@ -5498,100 +5638,81 @@ with tab_brand:
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
-                    xaxis=dict(tickangle=45),
-                    height=500
+                    height=600,
+                    xaxis=dict(side='bottom', tickangle=45),
+                    yaxis=dict(side='left')
                 )
                 
                 st.plotly_chart(fig_matrix, use_container_width=True)
                 
-                # Enhanced metrics display
-                total_matrix_counts = heatmap_data.values.sum()
-                avg_ctr = brand_search_matrix['ctr'].mean()
-                avg_cr = brand_search_matrix['cr'].mean()
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("📊 Total Searches", f"{total_matrix_counts:,.0f}")
-                with col2:
-                    st.metric("📈 Average CTR", f"{avg_ctr:.2f}%")
-                with col3:
-                    st.metric("🎯 Average CR", f"{avg_cr:.2f}%")
-                
             else:
-                # Enhanced single brand analysis with CTR/CR
-                search_analysis = matrix_data.groupby('search').agg({
+                # Single brand analysis with enhanced bar chart
+                brand_search_data = matrix_data.groupby('search').agg({
                     'Counts': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
                 }).reset_index()
                 
-                search_analysis['ctr'] = ((search_analysis['clicks'] / search_analysis['Counts']) * 100).round(2)
-                search_analysis['cr'] = ((search_analysis['conversions'] / search_analysis['clicks']) * 100).fillna(0).round(2)
-                search_analysis = search_analysis.sort_values('Counts', ascending=False).head(15)
+                # CORRECTED Calculate CTR and CR
+                brand_search_data['ctr'] = ((brand_search_data['clicks'] / brand_search_data['Counts']) * 100).round(2)
+                brand_search_data['cr'] = ((brand_search_data['conversions'] / brand_search_data['Counts']) * 100).round(2)  # CR = conversions/search volume
+                brand_search_data['classic_cr'] = ((brand_search_data['conversions'] / brand_search_data['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
                 
-                # Enhanced horizontal bar chart with CTR/CR in hover
-                fig_single = px.bar(
-                    search_analysis,
-                    x='Counts',
-                    y='search',
-                    orientation='h',
-                    title=f'<b style="color:#2E7D32;">{selected_brand} - Top Health Search Terms Performance</b>',
-                    labels={'Counts': 'Total Search Counts', 'search': 'Health Search Terms'},
-                    color='ctr',
-                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
-                    hover_data={'ctr': ':.2f', 'cr': ':.2f'}
+                brand_search_data = brand_search_data.sort_values('Counts', ascending=False).head(15)
+                
+                fig_brand_search = px.bar(
+                    brand_search_data,
+                    x='search',
+                    y='Counts',
+                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
+                    labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
+                    color='classic_cr',  # Color by Classic CR
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    text='Counts'
                 )
                 
-                # Enhanced hover template
-                fig_single.update_traces(
-                    hovertemplate='<b>%{y}</b><br>' +
-                                 'Search Counts: %{x:,.0f}<br>' +
-                                 '<b>CTR: %{customdata[0]:.2f}%</b><br>' +
-                                 '<b>CR: %{customdata[1]:.2f}%</b><extra></extra>',
-                    customdata=search_analysis[['ctr', 'cr']].values
+                fig_brand_search.update_traces(
+                    texttemplate='%{text:,.0f}',
+                    textposition='outside',
+                    hovertemplate='<b>%{x}</b><br>' +
+                                 'Search Volume: %{y:,.0f}<br>' +
+                                 'CTR: %{customdata[0]:.2f}%<br>' +
+                                 'Classic CR: %{marker.color:.2f}%<extra></extra>',
+                    customdata=brand_search_data[['ctr']].values
                 )
                 
-                fig_single.update_layout(
+                fig_brand_search.update_layout(
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
-                    height=600,
-                    yaxis={'categoryorder': 'total ascending'}
+                    height=500,
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
                 )
                 
-                st.plotly_chart(fig_single, use_container_width=True)
-                
-                # Enhanced summary metrics
-                total_counts = search_analysis['Counts'].sum()
-                avg_ctr = search_analysis['ctr'].mean()
-                avg_cr = search_analysis['cr'].mean()
-                
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("📊 Total Searches", f"{total_counts:,}")
-                with col2:
-                    st.metric("🔍 Search Terms", f"{len(search_analysis)}")
-                with col3:
-                    st.metric("📈 Avg CTR", f"{avg_ctr:.2f}%")
-                with col4:
-                    st.metric("🎯 Avg CR", f"{avg_cr:.2f}%")
+                st.plotly_chart(fig_brand_search, use_container_width=True)
+        
         else:
-            st.warning("⚠️ No brand-keyword data available for analysis")
-    else:
-        st.error("❌ Required columns 'brand' and 'search' not found in the dataset")
-
-    # REPLACEMENT: Strategic Brand Intelligence Dashboard (Instead of Advanced Intelligence)
-    st.markdown("---")
-    st.subheader("🎯 Strategic Brand Intelligence Dashboard")
+            st.warning("⚠️ No data available for the selected Nutraceuticals & Nutrition brand.")
     
-    # Create strategic insights tabs
-    strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs(["📊 Market Position", "🚀 Growth Opportunities", "💡 Strategic Insights"])
+    else:
+        st.error("❌ Required columns 'brand' and 'search' not found in the dataset.")
+
+    st.markdown("---")
+    
+    # Strategic Brand Intelligence Dashboard (3 Tabs)
+    st.subheader("🧠 Strategic Brand Intelligence Dashboard")
+    
+    strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs([
+        "🎯 Market Position Analysis", 
+        "🚀 Growth Opportunities", 
+        "💡 Competitive Intelligence"
+    ])
     
     with strategy_tab1:
-        st.markdown("#### 📊 Brand Market Position Analysis")
+        st.markdown("#### 🎯 Brand Market Position Quadrant Analysis")
         
         if not bs.empty:
-            # Market position quadrant analysis
             # Market position quadrant analysis
             bs['market_strength'] = bs['share_pct'] * bs['ctr'] / 100  # Combined market strength
             bs['efficiency_score'] = bs['conversions'] / bs['Counts'] * 1000  # Efficiency per 1000 searches
@@ -5704,7 +5825,7 @@ with tab_brand:
             bs['growth_potential'] = (
                 (100 - bs['share_pct']) * 0.4 +  # Market share growth potential
                 (bs['ctr'] / bs['ctr'].max() * 100) * 0.3 +  # CTR performance
-                (bs['cr'] / bs['cr'].max() * 100) * 0.3  # Conversion performance
+                (bs['classic_cr'] / bs['classic_cr'].max() * 100) * 0.3  # Classic CR performance
             )
             
             # Identify high-opportunity brands
@@ -5733,8 +5854,8 @@ with tab_brand:
                                  'Growth Score: %{x:.1f}<br>' +
                                  'Market Share: %{customdata[0]:.2f}%<br>' +
                                  'CTR: %{customdata[1]:.2f}%<br>' +
-                                 'CR: %{customdata[2]:.2f}%<extra></extra>',
-                    customdata=high_opportunity[['share_pct', 'ctr', 'cr']].values
+                                 'Classic CR: %{customdata[2]:.2f}%<extra></extra>',
+                    customdata=high_opportunity[['share_pct', 'ctr', 'classic_cr']].values
                 )
                 
                 fig_opportunity.update_layout(
@@ -5787,7 +5908,7 @@ with tab_brand:
             # Calculate key insights
             total_market_size = bs['Counts'].sum()
             top_performer = bs.loc[bs['Counts'].idxmax()]
-            efficiency_leader = bs.loc[bs['cr'].idxmax()] if bs['cr'].max() > 0 else None
+            efficiency_leader = bs.loc[bs['classic_cr'].idxmax()] if bs['classic_cr'].max() > 0 else None
             
             # Market concentration analysis
             top_5_share = bs.nlargest(5, 'Counts')['share_pct'].sum()
@@ -5795,30 +5916,30 @@ with tab_brand:
             
             # Performance benchmarks
             avg_ctr = bs['ctr'].mean()
-            avg_cr = bs['cr'].mean()
+            avg_classic_cr = bs['classic_cr'].mean()
             
             # Strategic insights display
             col1, col2 = st.columns(2)
             
             with col1:
                 st.markdown(f"""
-                <div class="Nutraceuticals & Nutrition-insight-box">
+                <div class="brand-performance-card">
                     <h4>🎯 Market Intelligence</h4>
                     <p><strong>Market Size:</strong> {total_market_size:,.0f} total searches</p>
                     <p><strong>Market Leader:</strong> {top_performer['brand']} ({top_performer['share_pct']:.1f}% share)</p>
                     <p><strong>Market Concentration:</strong> {market_concentration} (Top 5: {top_5_share:.1f}%)</p>
                     <p><strong>Average CTR:</strong> {avg_ctr:.2f}%</p>
-                    <p><strong>Average CR:</strong> {avg_cr:.2f}%</p>
+                    <p><strong>Average Classic CR:</strong> {avg_classic_cr:.2f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
             
             with col2:
                 if efficiency_leader is not None:
                     st.markdown(f"""
-                    <div class="Nutraceuticals & Nutrition-insight-box">
+                    <div class="brand-performance-card">
                         <h4>🏆 Performance Leaders</h4>
                         <p><strong>Volume Leader:</strong> {top_performer['brand']}</p>
-                        <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['cr']:.2f}% CR)</p>
+                        <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['classic_cr']:.2f}% Classic CR)</p>
                         <p><strong>Best CTR:</strong> {bs.loc[bs['ctr'].idxmax(), 'brand']} ({bs['ctr'].max():.2f}%)</p>
                         <p><strong>Total Brands:</strong> {len(bs)} active brands</p>
                         <p><strong>Competitive Intensity:</strong> {"High" if len(bs) > 50 else "Medium" if len(bs) > 20 else "Low"}</p>
@@ -5840,11 +5961,11 @@ with tab_brand:
                 tier_analysis = bs.groupby('performance_tier').agg({
                     'Counts': ['count', 'mean', 'sum'],
                     'ctr': 'mean',
-                    'cr': 'mean',
+                    'classic_cr': 'mean',
                     'share_pct': 'sum'
                 }).round(2)
                 
-                tier_analysis.columns = ['Brand Count', 'Avg Searches', 'Total Searches', 'Avg CTR', 'Avg CR', 'Total Share %']
+                tier_analysis.columns = ['Brand Count', 'Avg Searches', 'Total Searches', 'Avg CTR', 'Avg Classic CR', 'Total Share %']
                 
                 st.dataframe(tier_analysis, use_container_width=True)
                 
@@ -5859,7 +5980,7 @@ with tab_brand:
                 if avg_ctr < 3:
                     recommendations.append("📈 **CTR Optimization**: Industry CTR is below benchmark - focus on ad copy and targeting")
                 
-                if avg_cr < 2:
+                if avg_classic_cr < 2:
                     recommendations.append("🔄 **Conversion Optimization**: Low conversion rates indicate need for landing page improvements")
                 
                 if len(bs[bs['share_pct'] > 10]) < 3:
@@ -5892,7 +6013,7 @@ with tab_brand:
     
     with col2:
         if 'position_category' in bs.columns:
-            strategic_data = bs[['brand', 'Counts', 'share_pct', 'ctr', 'cr', 'position_category', 'growth_potential']].copy()
+            strategic_data = bs[['brand', 'Counts', 'share_pct', 'ctr', 'classic_cr', 'position_category', 'growth_potential']].copy()
             csv_strategic = strategic_data.to_csv(index=False)
             st.download_button(
                 label="🎯 Strategic Insights",
@@ -5927,7 +6048,7 @@ with tab_brand:
                     'Market Leader',
                     'Total Search Volume',
                     'Average CTR',
-                    'Average CR',
+                    'Average Classic CR',
                     'Market Concentration',
                     'Analysis Date'
                 ],
@@ -5936,7 +6057,7 @@ with tab_brand:
                     top_performer['brand'],
                     f"{total_market_size:,.0f}",
                     f"{avg_ctr:.2f}%",
-                    f"{avg_cr:.2f}%",
+                    f"{avg_classic_cr:.2f}%",
                     f"{market_concentration} ({top_5_share:.1f}%)",
                     pd.Timestamp.now().strftime('%Y-%m-%d')
                 ]
@@ -5959,7 +6080,6 @@ with tab_brand:
         </p>
     </div>
     """, unsafe_allow_html=True)
-
 
 
 # ----------------- Category Tab (Enhanced & Health-Focused) -----------------
