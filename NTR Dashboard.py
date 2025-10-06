@@ -4975,38 +4975,123 @@ with tab_brand:
     st.header("🏷 Nutraceuticals & Nutrition Brand Intelligence Hub")
     st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
     
-    # 🎨 GREEN-THEMED HERO HEADER
+    # Hero Image for Brand Tab
+    brand_image_options = {
+        "Health Brand Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Brand+Market+Position",
+        "Wellness Competitive Analysis": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Brand+Intelligence",
+        "Abstract Health Brand": "https://source.unsplash.com/1200x200/?health,wellness,green",
+        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Brand+Insights",
+    }
+    selected_brand_image = st.sidebar.selectbox("Choose Brand Tab Hero", options=list(brand_image_options.keys()), index=0, key="brand_hero_image_selector")
+    st.image(brand_image_options[selected_brand_image], use_container_width=True)
+    
+    # Custom CSS for health-focused green styling
     st.markdown("""
-    <div style="
-        text-align: center; 
-        padding: 3rem 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-        border-radius: 20px; 
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(76, 175, 80, 0.2);
-    ">
-        <h1 style="
-            color: #1B5E20; 
-            margin: 0; 
-            font-size: 3rem; 
-            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
-            font-weight: 700;
-            letter-spacing: -1px;
-        ">
-            🌿 Brand Market Position 🌿
-        </h1>
-        <p style="
-            color: #2E7D32; 
-            margin: 1rem 0 0 0; 
-            font-size: 1.3rem;
-            font-weight: 300;
-            opacity: 0.9;
-        ">
-            Advanced Matching • Performance Analytics • Search Insights
-        </p>
-    </div>
+    <style>
+    .health-brand-metric {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 10px 0;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .Nutraceuticals & Nutrition-insight-box {
+        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+        margin: 15px 0;
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+    
+    .brand-performance-card {
+        background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #81C784;
+        margin: 10px 0;
+    }
+    </style>
     """, unsafe_allow_html=True)
+    
+    # Check for brand column with case sensitivity handling (no debug output)
+    brand_column = None
+    possible_brand_columns = ['brand', 'Brand', 'BRAND', 'Brand Name', 'brand_name']
+    
+    for col in possible_brand_columns:
+        if col in queries.columns:
+            brand_column = col
+            break
+    
+    # Check if brand data is available
+    has_brand_data = (brand_column is not None and 
+                     queries[brand_column].notna().any())
+    
+    if not has_brand_data:
+        st.error(f"❌ No Nutraceuticals & Nutrition brand data available. Available columns: {list(queries.columns)}")
+        st.info("💡 Please ensure your dataset contains a brand column (brand, Brand, or Brand Name)")
+        st.stop()
+    
+    # Filter out "Other" brand from all analysis (CASE-INSENSITIVE)
+    brand_queries = queries[
+        (queries[brand_column].notna()) & 
+        (~queries[brand_column].str.lower().isin(['other', 'others']))
+    ]
+
+    if brand_queries.empty:
+        st.error("❌ No valid Nutraceuticals & Nutrition brand data available after filtering.")
+        st.stop()
+    
+    # Health-focused Brand Performance Metrics Row
+    total_brands = brand_queries[brand_column].nunique()
+    top_brand = brand_queries.groupby(brand_column)['Counts'].sum().idxmax()
+    avg_brand_counts = brand_queries.groupby(brand_column)['Counts'].sum().mean()
+    
+    # Calculate Brand Dominance Index
+    brand_counts_sum = brand_queries.groupby(brand_column)['Counts'].sum()
+    brand_dominance = (brand_counts_sum.max() / brand_counts_sum.sum() * 100)
+    
+    # Health-themed metrics display
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{total_brands}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Total Nutraceuticals & Nutrition Brands</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">🏆</div>
+            <div style="font-size: 1.2em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_brand}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Leading Health Brand</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">📊</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{brand_dominance:.1f}%</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Market Concentration</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="health-brand-metric">
+            <div style="font-size: 2em; margin-bottom: 8px;">💚</div>
+            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(int(avg_brand_counts))}</div>
+            <div style="color: #2E7D32; font-size: 0.9em;">Avg Brand Volume</div>
+        </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
