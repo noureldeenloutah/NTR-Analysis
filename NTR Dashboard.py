@@ -3100,157 +3100,357 @@ with tab_search:
         # Apply enhanced styling
         apply_enhanced_styling()
         
-        # Enhanced header with loading indicator
+        # 🎨 ENHANCED HERO HEADER with animated gradient
         st.markdown("""
-        <div style="text-align: center; padding: 2rem 0; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-radius: 15px; margin-bottom: 2rem;">
-            <h1 style="color: #1B5E20; margin: 0; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
-                🌿 Health Keywords Performance Analysis 🌿
-            </h1>
-            <p style="color: #2E7D32; margin: 0.5rem 0 0 0; font-size: 1.2rem;">
-                Advanced Fuzzy Matching & Performance Insights
-            </p>
+        <div style="
+            text-align: center; 
+            padding: 3rem 2rem; 
+            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+            border-radius: 20px; 
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        ">
+            <div style="
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                animation: pulse 4s ease-in-out infinite;
+            "></div>
+            <div style="position: relative; z-index: 1;">
+                <h1 style="
+                    color: #1B5E20; 
+                    margin: 0; 
+                    font-size: 3rem; 
+                    text-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+                    font-weight: 700;
+                    letter-spacing: -1px;
+                ">
+                    🌿 Health Keywords Intelligence Hub 🌿
+                </h1>
+                <p style="
+                    color: #2E7D32; 
+                    margin: 1rem 0 0 0; 
+                    font-size: 1.3rem;
+                    font-weight: 300;
+                    opacity: 0.9;
+                ">
+                    Advanced Fuzzy Matching • Performance Analytics • AI Insights
+                </p>
+                <div style="
+                    margin-top: 1rem;
+                    padding: 0.5rem 1rem;
+                    background: rgba(255,255,255,0.3);
+                    border-radius: 25px;
+                    display: inline-block;
+                    backdrop-filter: blur(10px);
+                ">
+                    <span style="color: #1B5E20; font-weight: 500;">🔬 Real-time Analysis Engine</span>
+                </div>
+            </div>
         </div>
+        
+        <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.1; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 0.2; }
+        }
+        </style>
         """, unsafe_allow_html=True)
         
-        # Performance monitoring with better UX
+        # Performance monitoring
         start_time = datetime.now()
         
-        # 🔧 Process data ONCE at the top
-        with st.spinner("🔄 Analyzing health keyword performance..."):
-            # Enhanced progress tracking
-            progress_container = st.container()
-            with progress_container:
-                progress_bar = st.progress(0)
-                status_text = st.empty()
+        # 🔧 ENHANCED LOADING EXPERIENCE
+        with st.spinner(""):  # Remove default spinner text
+            # Custom loading container
+            loading_container = st.container()
+            with loading_container:
+                st.markdown("""
+                <div style="
+                    background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+                    padding: 2rem;
+                    border-radius: 15px;
+                    text-align: center;
+                    margin: 1rem 0;
+                    border: 1px solid #E0E0E0;
+                ">
+                    <h4 style="color: #495057; margin-bottom: 1rem;">🔄 Processing Health Keywords Analysis</h4>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                # Step 1: Data Loading
-                status_text.text("🔍 Loading and validating data...")
-                progress_bar.progress(15)
+                # Enhanced progress tracking
+                progress_col1, progress_col2, progress_col3 = st.columns([1, 2, 1])
+                with progress_col2:
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                    time_estimate = st.empty()
                 
-                # Add data validation here
-                if queries.empty or 'keywords' not in queries.columns:
-                    st.error("❌ No health keyword data available. Please ensure your data contains properly processed keywords.")
-                    st.stop()
+                # Step-by-step progress with better UX
+                steps = [
+                    ("🔍 Loading & validating data...", 15, "Checking data integrity"),
+                    ("🧠 Processing keyword performance...", 35, "Analyzing search patterns"),
+                    ("🔗 Applying fuzzy matching algorithms...", 60, "Grouping similar keywords"),
+                    ("📊 Calculating advanced metrics...", 80, "Computing performance indicators"),
+                    ("🎨 Generating visualizations...", 95, "Creating interactive charts"),
+                    ("✅ Analysis complete!", 100, "Ready to explore insights")
+                ]
                 
-                # Step 2: Keyword Processing
-                status_text.text("🧠 Processing keyword performance...")
-                progress_bar.progress(40)
+                for step_text, progress, detail in steps:
+                    status_text.markdown(f"**{step_text}**")
+                    time_estimate.text(f"💡 {detail}")
+                    progress_bar.progress(progress)
+                    
+                    if progress < 100:
+                        import time
+                        time.sleep(0.4)  # Realistic processing time
+                
+                # Calculate keyword performance ONCE
                 kw_perf_df = calculate_enhanced_keyword_performance(queries)
                 
-                # Step 3: Fuzzy Matching
-                status_text.text("🔗 Applying fuzzy matching algorithms...")
-                progress_bar.progress(70)
-                time.sleep(0.3)  # Realistic processing time
-                
-                # Step 4: Final Analysis
-                status_text.text("📊 Generating insights and visualizations...")
-                progress_bar.progress(95)
-                time.sleep(0.2)
-                
-                # Complete
-                progress_bar.progress(100)
-                status_text.text("✅ Analysis complete!")
+                # Clean up loading UI
                 time.sleep(0.5)
-                
-                # Clean up progress indicators
-                progress_bar.empty()
-                status_text.empty()
+                loading_container.empty()
         
-        # 📊 ENHANCED METRICS SECTION (Single source of truth)
+        # Calculate processing time
+        processing_time = (datetime.now() - start_time).total_seconds()
+        
+        # ✅ ENHANCED METRICS DASHBOARD
         if not kw_perf_df.empty:
-            # Add performance timing
-            processing_time = (datetime.now() - start_time).total_seconds()
-            
+            # Performance header
             st.markdown(f"""
-            <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="color: #1B5E20; margin: 0;">📊 Performance Overview</h3>
-                    <span style="color: #2E7D32; font-size: 0.9rem;">⚡ Processed in {processing_time:.1f}s</span>
+            <div style="
+                background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+                padding: 1.5rem;
+                border-radius: 15px;
+                margin: 2rem 0 1rem 0;
+                border-left: 5px solid #7B1FA2;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: #4A148C; margin: 0; font-size: 1.5rem;">
+                        📊 Performance Intelligence Dashboard
+                    </h3>
+                    <div style="text-align: right;">
+                        <span style="
+                            background: rgba(255,255,255,0.8);
+                            padding: 0.3rem 0.8rem;
+                            border-radius: 20px;
+                            color: #4A148C;
+                            font-size: 0.85rem;
+                            font-weight: 500;
+                        ">⚡ Processed in {processing_time:.1f}s</span>
+                    </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # Enhanced 4-column metrics
-            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+            # 📊 PRIMARY METRICS ROW (Enhanced 4-column)
+            metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
             
-            with summary_col1:
+            with metric_col1:
                 total_keywords = len(kw_perf_df)
+                delta_keywords = f"+{total_keywords-2500}" if total_keywords > 2500 else None
                 st.metric(
                     label="🎯 Total Keywords", 
                     value=f"{total_keywords:,}",
-                    help="Number of unique health keyword groups identified",
-                    delta=f"+{total_keywords-2500}" if total_keywords > 2500 else None
+                    delta=delta_keywords,
+                    help="Number of unique health keyword groups identified through fuzzy matching"
                 )
                 
-            with summary_col2:
+            with metric_col2:
                 total_volume = kw_perf_df['total_counts'].sum()
+                volume_millions = total_volume / 1_000_000
                 st.metric(
                     label="📊 Total Volume", 
-                    value=f"{total_volume:,}",
-                    help="Combined search volume across all health keywords",
-                    delta=f"+{(total_volume/1000000):.1f}M" if total_volume > 5000000 else None
+                    value=f"{volume_millions:.1f}M" if volume_millions >= 1 else f"{total_volume:,}",
+                    delta=f"+{(volume_millions-5):.1f}M" if volume_millions > 5 else None,
+                    help="Combined search volume across all health keywords"
                 )
                 
-            with summary_col3:
+            with metric_col3:
                 avg_ctr = kw_perf_df['avg_ctr'].mean()
                 st.metric(
                     label="🎪 Avg CTR", 
                     value=f"{avg_ctr:.2f}%",
-                    help="Average click-through rate for health keywords",
-                    delta=f"+{avg_ctr-15:.1f}%" if avg_ctr > 15 else None
+                    delta=f"+{avg_ctr-15:.1f}%" if avg_ctr > 15 else f"{avg_ctr-15:.1f}%",
+                    help="Average click-through rate for health keywords"
                 )
                 
-            with summary_col4:
+            with metric_col4:
                 avg_health_cr = kw_perf_df['health_cr'].mean()
                 st.metric(
                     label="🌿 Health Score", 
                     value=f"{avg_health_cr:.1f}%",
-                    help="Average health conversion rate",
-                    delta=f"+{avg_health_cr-5:.1f}%" if avg_health_cr > 5 else None
+                    delta=f"+{avg_health_cr-5:.1f}%" if avg_health_cr > 5 else f"{avg_health_cr-5:.1f}%",
+                    help="Average health conversion rate across all keywords"
                 )
             
-            # 🧠 INTELLIGENT INSIGHTS (Enhanced)
+            # 📈 SECONDARY METRICS ROW (New advanced metrics)
+            st.markdown("---")
+            
+            adv_col1, adv_col2, adv_col3, adv_col4, adv_col5 = st.columns(5)
+            
+            with adv_col1:
+                # Long-tail percentage
+                long_tail_count = len(kw_perf_df[kw_perf_df['keyword_length'] >= 3])
+                long_tail_pct = (long_tail_count / total_keywords) * 100
+                st.metric(
+                    label="🎯 Long-tail %",
+                    value=f"{long_tail_pct:.1f}%",
+                    help="Percentage of keywords with 3+ words (long-tail queries)"
+                )
+            
+            with adv_col2:
+                # High performers
+                high_perf_count = len(kw_perf_df[kw_perf_df['avg_ctr'] > avg_ctr])
+                high_perf_pct = (high_perf_count / total_keywords) * 100
+                st.metric(
+                    label="🚀 High Performers",
+                    value=f"{high_perf_pct:.1f}%",
+                    help="Keywords performing above average CTR"
+                )
+            
+            with adv_col3:
+                # Average keyword length
+                avg_length = kw_perf_df['keyword_length'].mean()
+                st.metric(
+                    label="📝 Avg Length",
+                    value=f"{avg_length:.1f} words",
+                    help="Average number of words per keyword"
+                )
+            
+            with adv_col4:
+                # Top volume keyword
+                top_volume = kw_perf_df['total_counts'].max()
+                st.metric(
+                    label="🔥 Peak Volume",
+                    value=f"{top_volume:,}",
+                    help="Highest search volume for a single keyword group"
+                )
+            
+            with adv_col5:
+                # Keyword diversity score
+                diversity_score = len(kw_perf_df['representative_keyword'].unique()) / total_keywords * 100
+                st.metric(
+                    label="🌈 Diversity",
+                    value=f"{diversity_score:.1f}%",
+                    help="Keyword diversity index (uniqueness score)"
+                )
+            
+            # 🧠 ENHANCED AI INSIGHTS SECTION
             st.markdown("""
-            <div style="background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0; border-left: 5px solid #7B1FA2;">
-                <h4 style="color: #4A148C; margin: 0 0 1rem 0; display: flex; align-items: center;">
+            <div style="
+                background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+                padding: 2rem;
+                border-radius: 15px;
+                margin: 2rem 0;
+                border-left: 5px solid #1976D2;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            ">
+                <h4 style="
+                    color: #0D47A1; 
+                    margin: 0 0 1.5rem 0; 
+                    display: flex; 
+                    align-items: center;
+                    font-size: 1.4rem;
+                ">
                     🧠 AI-Powered Health Search Intelligence
-                    <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.7;">Live Analysis</span>
+                    <span style="
+                        margin-left: auto; 
+                        font-size: 0.8rem; 
+                        background: rgba(255,255,255,0.8);
+                        padding: 0.2rem 0.6rem;
+                        border-radius: 15px;
+                        color: #0D47A1;
+                    ">Live Analysis</span>
                 </h4>
             </div>
             """, unsafe_allow_html=True)
             
-            # Add dynamic insights based on actual data
-            insights_col1, insights_col2 = st.columns(2)
+            # Enhanced insights with data-driven recommendations
+            insight_col1, insight_col2, insight_col3 = st.columns(3)
             
-            with insights_col1:
-                # Calculate dynamic insights
-                long_tail_pct = 100.0  # From your data
-                avg_query_length = 8.9  # From your data
-                
+            with insight_col1:
                 st.markdown(f"""
-                <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #4CAF50;">
-                    <h5 style="color: #2E7D32; margin: 0 0 0.5rem 0;">🎯 Query Complexity</h5>
-                    <p style="margin: 0; color: #555;"><strong>{long_tail_pct:.1f}%</strong> are long-tail queries (3+ words)</p>
-                    <p style="margin: 0; color: #555;">Average <strong>{avg_query_length:.1f} words</strong> per query</p>
+                <div style="
+                    background: white; 
+                    padding: 1.5rem; 
+                    border-radius: 12px; 
+                    border-left: 4px solid #4CAF50;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    height: 140px;
+                ">
+                    <h5 style="color: #2E7D32; margin: 0 0 1rem 0; font-size: 1.1rem;">🎯 Query Complexity</h5>
+                    <p style="margin: 0 0 0.5rem 0; color: #555; font-size: 1rem;">
+                        <strong>{long_tail_pct:.1f}%</strong> are long-tail queries
+                    </p>
+                    <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                        Average <strong>{avg_length:.1f} words</strong> per query
+                    </p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
+                        {"🔥 High complexity" if long_tail_pct > 70 else "📊 Moderate complexity"}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
             
-            with insights_col2:
-                high_ctr_pct = 45.0  # From your data
-                top_performing_pct = 17.6  # From your data
-                
+            with insight_col2:
                 st.markdown(f"""
-                <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid #FF9800;">
-                    <h5 style="color: #E65100; margin: 0 0 0.5rem 0;">🚀 Performance Highlights</h5>
-                    <p style="margin: 0; color: #555;"><strong>{high_ctr_pct:.1f}%</strong> have high CTR</p>
-                    <p style="margin: 0; color: #555;"><strong>{top_performing_pct:.1f}%</strong> are top performers</p>
+                <div style="
+                    background: white; 
+                    padding: 1.5rem; 
+                    border-radius: 12px; 
+                    border-left: 4px solid #FF9800;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    height: 140px;
+                ">
+                    <h5 style="color: #E65100; margin: 0 0 1rem 0; font-size: 1.1rem;">🚀 Performance</h5>
+                    <p style="margin: 0 0 0.5rem 0; color: #555; font-size: 1rem;">
+                        <strong>{high_perf_pct:.1f}%</strong> above-average CTR
+                    </p>
+                    <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                        Peak volume: <strong>{top_volume:,}</strong>
+                    </p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #FF9800;">
+                        {"🎯 Excellent performance" if high_perf_pct > 40 else "📈 Room for improvement"}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with insight_col3:
+                st.markdown(f"""
+                <div style="
+                    background: white; 
+                    padding: 1.5rem; 
+                    border-radius: 12px; 
+                    border-left: 4px solid #9C27B0;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    height: 140px;
+                ">
+                    <h5 style="color: #6A1B9A; margin: 0 0 1rem 0; font-size: 1.1rem;">🌈 Diversity</h5>
+                    <p style="margin: 0 0 0.5rem 0; color: #555; font-size: 1rem;">
+                        <strong>{diversity_score:.1f}%</strong> uniqueness score
+                    </p>
+                    <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                        Health score: <strong>{avg_health_cr:.1f}%</strong>
+                    </p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #9C27B0;">
+                        {"🎨 High diversity" if diversity_score > 80 else "🔄 Moderate diversity"}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
         
-        # Continue with the rest of your analysis...
-        # Create layout for detailed analysis
-        col_left, col_right = st.columns([3, 2])
+        # Add spacing before next sections
+        st.markdown("<br>", unsafe_allow_html=True)
 
+        
+        # Create layout
+        col_left, col_right = st.columns([3, 2])
         
         with col_left:
             # Enhanced subheader with icon
