@@ -2304,13 +2304,19 @@ with tab_search:
         # Calculate average query length
         avg_query_length = queries['query_length'].mean() if 'query_length' in queries.columns else 0
         
-        # Calculate top keyword percentage (top 10% of keywords by impressions)
-        if 'Impressions' in queries.columns:
-            top_10_threshold = queries['Impressions'].quantile(0.9)
-            top_keywords = queries[queries['Impressions'] >= top_10_threshold]
+        # Calculate top keyword percentage (above average impressions/counts)
+        if 'Counts' in queries.columns:
+            avg_impressions = queries['Counts'].mean()
+            top_keywords = queries[queries['Counts'] > avg_impressions]
+            top_keyword_pct = (len(top_keywords) / len(queries)) * 100 if len(queries) > 0 else 0
+        elif 'clicks' in queries.columns:
+            # Fallback to clicks if counts not available
+            avg_clicks = queries['clicks'].mean()
+            top_keywords = queries[queries['clicks'] > avg_clicks]
             top_keyword_pct = (len(top_keywords) / len(queries)) * 100 if len(queries) > 0 else 0
         else:
             top_keyword_pct = 0
+
             
     except Exception as e:
         st.warning(f"⚠️ Error calculating search metrics: {str(e)}")
@@ -2372,7 +2378,7 @@ with tab_search:
             <h4>🧠 Health Search Intelligence Summary</h4>
             <p><strong>{:.1f}%</strong> of health queries are long-tail (3+ words), indicating specific nutritional needs and supplement research.</p>
             <p>Average query length is <strong>{:.1f} words</strong>, suggesting detailed health information seeking behavior.</p>
-            <p><strong>{:.1f}%</strong> of keywords are top performers, representing high-value nutraceutical opportunities.</p>
+            <p><strong>{:.1f}%</strong> of keywords have above-average visibility, representing high-value nutraceutical opportunities.</p>
         </div>
         """.format(
             long_tail_pct,
