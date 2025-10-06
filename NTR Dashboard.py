@@ -4239,7 +4239,8 @@ with tab_search:
                                 <p style="margin: 0.2rem 0; color: #2E7D32; font-size: 0.9rem;">🧠 Method: {matching_method}</p>
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)  # ← ADD THIS!
+
 
                     with insight_col2:
                         st.markdown(f"""
@@ -4262,7 +4263,8 @@ with tab_search:
                                 <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
                             </div>
                         </div>
-                        """, unsafe_allow_html=True)
+                        """, unsafe_allow_html=True)  # ← ADD THIS!
+
 
                     # Add completion message
                     st.markdown("""
