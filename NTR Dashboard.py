@@ -3232,7 +3232,39 @@ with tab_search:
             # Performance monitoring
             start_time = datetime.now()
             
-            # Create enhanced layout with progress tracking
+            # 🔧 Process data ONCE at the top
+            with st.spinner("🔄 Analyzing health keyword performance... (Est. 15-30 seconds)"):
+                # Add progress bar
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                # Simulate progress updates
+                status_text.text("🔍 Loading data...")
+                progress_bar.progress(20)
+                
+                # Calculate keyword performance ONCE
+                kw_perf_df = calculate_enhanced_keyword_performance(queries)
+                
+                status_text.text("🧠 Processing fuzzy matching...")
+                progress_bar.progress(60)
+                
+                # Small delay to show progress
+                import time
+                time.sleep(0.5)
+                
+                status_text.text("📊 Generating visualizations...")
+                progress_bar.progress(90)
+                
+                time.sleep(0.3)
+                progress_bar.progress(100)
+                status_text.text("✅ Analysis complete!")
+                
+                # Clear progress indicators
+                time.sleep(0.5)
+                progress_bar.empty()
+                status_text.empty()
+            
+            # Create layout
             col_left, col_right = st.columns([3, 2])
             
             with col_left:
@@ -3245,40 +3277,6 @@ with tab_search:
                     </h3>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                # Enhanced progress indicator with estimated time
-                progress_container = st.container()
-                with progress_container:
-                    with st.spinner("🔄 Analyzing health keyword performance... (Est. 15-30 seconds)"):
-                        # Add progress bar
-                        progress_bar = st.progress(0)
-                        status_text = st.empty()
-                        
-                        # Simulate progress updates
-                        status_text.text("🔍 Loading data...")
-                        progress_bar.progress(20)
-                        
-                        # Calculate keyword performance
-                        kw_perf_df = calculate_enhanced_keyword_performance(queries)
-                        
-                        status_text.text("🧠 Processing fuzzy matching...")
-                        progress_bar.progress(60)
-                        
-                        # Small delay to show progress
-                        import time
-                        time.sleep(0.5)
-                        
-                        status_text.text("📊 Generating visualizations...")
-                        progress_bar.progress(90)
-                        
-                        time.sleep(0.3)
-                        progress_bar.progress(100)
-                        status_text.text("✅ Analysis complete!")
-                        
-                        # Clear progress indicators
-                        time.sleep(0.5)
-                        progress_bar.empty()
-                        status_text.empty()
                 
                 if not kw_perf_df.empty:
                     # Enhanced performance metrics
@@ -3387,6 +3385,7 @@ with tab_search:
                     
                 else:
                     st.warning("⚠️ No keyword performance data available to display chart.")
+
 
             with col_right:
                 # Enhanced Query Length Analysis
