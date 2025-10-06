@@ -4175,32 +4175,41 @@ with tab_search:
                             help="Download executive summary of the analysis"
                         )
                     
+                    
                     # ================================================================================================
                     # 📊 ENHANCED FINAL INSIGHTS & RECOMMENDATIONS
                     # ================================================================================================
-                    
-                    # Calculate advanced insights
-                    total_variations = top_keywords['variations_count'].sum()
-                    avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 else 0
-                    high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 else 0
-                    top_market_share = top_keywords['share_pct'].sum()
-                    
-                    # Performance categorization
-                    excellent_keywords = len(top_keywords[top_keywords['health_cr'] > 5])
-                    good_keywords = len(top_keywords[(top_keywords['health_cr'] > 2) & (top_keywords['health_cr'] <= 5)])
-                    average_keywords = len(top_keywords[(top_keywords['health_cr'] > 1) & (top_keywords['health_cr'] <= 2)])
-                    poor_keywords = len(top_keywords[top_keywords['health_cr'] <= 1])
-                    
+
+                    # Calculate advanced insights with error handling
+                    total_variations = top_keywords['variations_count'].sum() if 'variations_count' in top_keywords.columns else 0
+                    avg_health_cr = top_keywords['health_cr'].mean() if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
+                    high_perf_keywords = len(top_keywords[top_keywords['health_cr'] > avg_health_cr]) if len(top_keywords) > 0 and 'health_cr' in top_keywords.columns else 0
+                    top_market_share = top_keywords['share_pct'].sum() if 'share_pct' in top_keywords.columns else 0
+
+                    # Performance categorization with safe column access
+                    if 'health_cr' in top_keywords.columns and len(top_keywords) > 0:
+                        excellent_keywords = len(top_keywords[top_keywords['health_cr'] > 5])
+                        good_keywords = len(top_keywords[(top_keywords['health_cr'] > 2) & (top_keywords['health_cr'] <= 5)])
+                        average_keywords = len(top_keywords[(top_keywords['health_cr'] > 1) & (top_keywords['health_cr'] <= 2)])
+                        poor_keywords = len(top_keywords[top_keywords['health_cr'] <= 1])
+                    else:
+                        excellent_keywords = good_keywords = average_keywords = poor_keywords = 0
+
+                    # Safe calculation for averages
+                    avg_variations_per_group = total_variations / len(top_keywords) if len(top_keywords) > 0 and total_variations > 0 else 0
+                    unique_queries_sum = top_keywords['unique_queries'].sum() if 'unique_queries' in top_keywords.columns else len(top_keywords)
+                    total_search_volume = top_keywords['total_counts'].sum() if 'total_counts' in top_keywords.columns else top_keywords['Counts'].sum() if 'Counts' in top_keywords.columns else 0
+
                     st.markdown("""
                     <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 2rem; border-radius: 15px; margin: 3rem 0;">
                         <h2 style="margin: 0 0 1rem 0; text-align: center; font-size: 2.2rem;">🎯 Advanced Analysis Insights & Recommendations</h2>
                         <p style="margin: 0; text-align: center; opacity: 0.9; font-size: 1.1rem;">Comprehensive Performance Summary & Strategic Recommendations</p>
                     </div>
                     """, unsafe_allow_html=True)
-                    
+
                     # Enhanced insights with multiple sections
                     insight_col1, insight_col2 = st.columns(2)
-                    
+
                     with insight_col1:
                         st.markdown(f"""
                         <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #4CAF50; height: 100%;">
@@ -4209,13 +4218,13 @@ with tab_search:
                             <div style="margin-bottom: 1rem;">
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Total Keyword Groups:</strong> {len(kw_perf_df):,}</p>
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔗 Total Variations Grouped:</strong> {total_variations:,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {top_keywords['total_counts'].sum():,}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Total Search Volume (Top {num_keywords}):</strong> {total_search_volume:,}</p>
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🎯 Market Share Covered:</strong> {top_market_share:.1f}%</p>
                             </div>
                             
                             <div style="margin-bottom: 1rem;">
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Search Queries:</strong> {top_keywords['unique_queries'].sum():,}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Avg Variations per Group:</strong> {total_variations/len(top_keywords):.1f}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Search Queries:</strong> {unique_queries_sum:,}</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% Health CR)</p>
                             </div>
                             
@@ -4226,7 +4235,7 @@ with tab_search:
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-                    
+
                     with insight_col2:
                         st.markdown(f"""
                         <div style="background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #2196F3; height: 100%;">
@@ -4234,21 +4243,29 @@ with tab_search:
                             
                             <div style="margin-bottom: 1.5rem;">
                                 <h5 style="color: #1565C0; margin: 0 0 0.8rem 0;">📊 Performance Categories:</h5>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keywords</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keywords</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keywords</p>
-                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keywords</p>
+                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>🌟 Excellent (>5% Health CR):</strong> {excellent_keywords} keyword{'s' if excellent_keywords != 1 else ''}</p>
+                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>⭐ Good (2-5% Health CR):</strong> {good_keywords} keyword{'s' if good_keywords != 1 else ''}</p>
+                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>👍 Average (1-2% Health CR):</strong> {average_keywords} keyword{'s' if average_keywords != 1 else ''}</p>
+                                <p style="margin: 0.3rem 0; color: #1976D2;"><strong>📈 Needs Improvement (<1% Health CR):</strong> {poor_keywords} keyword{'s' if poor_keywords != 1 else ''}</p>
                             </div>
                             
                             <div style="background: rgba(33, 150, 243, 0.1); padding: 1rem; border-radius: 8px;">
                                 <h5 style="color: #0D47A1; margin: 0 0 0.8rem 0;">💡 Strategic Recommendations:</h5>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">🎯 Focus on top {excellent_keywords + good_keywords} performing keywords</p>
-                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">📈 Optimize content for {poor_keywords} underperforming keywords</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
                                 <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">🔍 Leverage {total_variations:,} variations for long-tail SEO</p>
                                 <p style="margin: 0.3rem 0; color: #1565C0; font-size: 0.9rem;">⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
+
+                    # Add completion message
+                    st.markdown("""
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <h3 style="color: #4CAF50;">🚀 Analysis Complete - Ready for Action!</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+
                     
                     # Final performance footer
                     st.markdown(f"""
