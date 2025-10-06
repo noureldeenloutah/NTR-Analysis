@@ -4682,42 +4682,87 @@ with tab_search:
     
     # Key Insights Box
     st.markdown("---")
+
+    # 🔧 SAFE CALCULATION OF ALL METRICS
+    def safe_calculate_metrics():
+        """Safely calculate all required metrics with fallbacks"""
+        
+        metrics = {
+            'top_keyword_pct': 0,
+            'long_tail_pct': 0,
+            'avg_query_length': 0
+        }
+        
+        try:
+            # Top keyword percentage
+            if 'kw_counts' in locals() or 'kw_counts' in globals():
+                if not kw_counts.empty and 'queries' in locals() and len(queries) > 0:
+                    metrics['top_keyword_pct'] = kw_counts.iloc[0]['frequency'] / len(queries) * 100
+            
+            # Long-tail percentage  
+            if 'queries' in locals() or 'queries' in globals():
+                if len(queries) > 0:
+                    long_tail_count = sum(1 for query in queries if len(str(query).split()) >= 3)
+                    metrics['long_tail_pct'] = (long_tail_count / len(queries)) * 100
+            
+            # Average query length
+            if 'queries' in locals() or 'queries' in globals():
+                if len(queries) > 0:
+                    metrics['avg_query_length'] = sum(len(str(query)) for query in queries) / len(queries)
+                    
+        except Exception as e:
+            # Log error but continue with default values
+            st.write(f"Debug: Metrics calculation issue - using defaults")
+        
+        return metrics
+
+    # Calculate metrics safely
+    metrics = safe_calculate_metrics()
+    top_keyword_pct = metrics['top_keyword_pct']
+    long_tail_pct = metrics['long_tail_pct'] 
+    avg_query_length = metrics['avg_query_length']
+
+    # 📊 INSIGHTS DISPLAY
     col_insight1, col_insight2 = st.columns(2)
-    
-    # Calculate the percentage safely before the format string
-    try:
-        if not kw_counts.empty and len(queries) > 0:
-            top_keyword_pct = kw_counts.iloc[0]['frequency'] / len(queries) * 100
-        else:
-            top_keyword_pct = 0
-    except (NameError, IndexError, AttributeError):
-        top_keyword_pct = 0
-    
+
     with col_insight1:
-        st.markdown("""
-        <div class='insight-box' style='background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-left: 4px solid #2E7D32;'>
-            <h4 style='color: #1B5E20;'>🌿 Health Search Insights</h4>
-            <p style='color: #2E7D32;'>• Long-tail health queries represent {:.1f}% of total Nutraceuticals & Nutrition traffic<br>
-            • Average health query length is {:.1f} characters<br>
-            • Top health keyword appears in {:.1f}% of searches</p>
+        st.markdown(f"""
+        <div style='
+            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
+            border-left: 4px solid #2E7D32;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(46, 125, 50, 0.1);
+        '>
+            <h4 style='color: #1B5E20; margin: 0 0 1rem 0;'>🌿 Health Search Insights</h4>
+            <p style='color: #2E7D32; margin: 0; line-height: 1.6;'>
+                • Long-tail health queries represent <strong>{long_tail_pct:.1f}%</strong> of total Nutraceuticals & Nutrition traffic<br>
+                • Average health query length is <strong>{avg_query_length:.1f}</strong> characters<br>
+                • Top health keyword appears in <strong>{top_keyword_pct:.1f}%</strong> of searches
+            </p>
         </div>
-        """.format(
-            long_tail_pct,
-            avg_query_length,
-            top_keyword_pct
-        ), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     with col_insight2:
         st.markdown("""
-        <div class='insight-box' style='background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); border-left: 4px solid #4CAF50;'>
-            <h4 style='color: #1B5E20;'>💚 Nutraceuticals & Nutrition Recommendations</h4>
-            <p style='color: #2E7D32;'>
+        <div style='
+            background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%); 
+            border-left: 4px solid #4CAF50;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.1);
+        '>
+            <h4 style='color: #1B5E20; margin: 0 0 1rem 0;'>💚 Nutraceuticals & Nutrition Recommendations</h4>
+            <p style='color: #2E7D32; margin: 0; line-height: 1.6;'>
                 • Focus on high-performing health keywords for content optimization<br>
                 • Analyze long-tail Nutraceuticals & Nutrition queries for niche supplement opportunities<br>
                 • Monitor health search intent patterns for nutrition strategy alignment
             </p>
         </div>
         """, unsafe_allow_html=True)
+
 
 
     # Add wellness-specific insights section
