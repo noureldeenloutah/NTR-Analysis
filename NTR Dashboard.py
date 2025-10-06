@@ -4399,16 +4399,6 @@ with tab_search:
 
 
 
-        else:
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); padding: 2rem; border-radius: 12px; border-left: 5px solid #F44336; margin: 2rem 0; text-align: center;">
-                <h3 style="color: #C62828; margin: 0 0 1rem 0;">⚠️ No Keyword Data Available</h3>
-                <p style="color: #D32F2F; margin: 0; font-size: 1.1rem;">
-                    Unable to perform fuzzy keyword analysis. Please check your data source and try again.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
     # ================================================================================================
     # 🚀 EXECUTE MAIN FUNCTION
     # ================================================================================================
