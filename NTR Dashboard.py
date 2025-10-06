@@ -2390,11 +2390,6 @@ with tab_search:
  
     st.markdown("---")
     
-    # Two-column layout for main analysis
-    col_left, col_right = st.columns([3, 2])
-
-    with col_left:
-        # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
         # Cached Master Keyword Dictionary
