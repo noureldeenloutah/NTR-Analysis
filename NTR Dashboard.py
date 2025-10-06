@@ -3370,7 +3370,6 @@ with tab_search:
                                 bgcolor='rgba(255,255,255,0.9)',
                                 bordercolor='#2E7D32',
                                 borderwidth=1,
-                                borderradius=5
                             )
                         ]
                     )
