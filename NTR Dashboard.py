@@ -3268,11 +3268,91 @@ with tab_search:
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
+            # 🔧 CALCULATE ALL VARIABLES FIRST (before any columns or insights)    
+            def safe_calculate_health_metrics(kw_perf_df):
+                """Safely calculate all health analysis metrics"""
+                
+                # Default values
+                metrics = {
+                    'total_keywords': 0,
+                    'total_volume': 0,
+                    'avg_ctr': 0.0,
+                    'avg_health_cr': 0.0,
+                    'high_perf_count': 0,
+                    'high_perf_pct': 0.0,
+                    'long_tail_pct': 0.0,
+                    'avg_query_length': 0.0,
+                    'top_keyword_pct': 0.0,
+                    'avg_words': 0.0,
+                    'top_volume': 0  # ✅ Added this
+                }
+                
+                try:
+                    if not kw_perf_df.empty:
+                        
+                        # Ensure keyword_length column exists
+                        if 'keyword_length' not in kw_perf_df.columns:
+                            if 'representative_keyword' in kw_perf_df.columns:
+                                kw_perf_df['keyword_length'] = kw_perf_df['representative_keyword'].str.split().str.len()
+                            elif 'keywords' in kw_perf_df.columns:
+                                kw_perf_df['keyword_length'] = kw_perf_df['keywords'].astype(str).str.split().str.len()
+                            else:
+                                kw_perf_df['keyword_length'] = 2
+                        
+                        # Calculate metrics
+                        metrics['total_keywords'] = len(kw_perf_df)
+                        metrics['total_volume'] = kw_perf_df['total_counts'].sum() if 'total_counts' in kw_perf_df.columns else 0
+                        metrics['avg_ctr'] = kw_perf_df['avg_ctr'].mean() if 'avg_ctr' in kw_perf_df.columns else 0.0
+                        metrics['avg_health_cr'] = kw_perf_df['health_cr'].mean() if 'health_cr' in kw_perf_df.columns else 0.0
+                        
+                        # ✅ Top volume calculation
+                        metrics['top_volume'] = kw_perf_df['total_counts'].max() if 'total_counts' in kw_perf_df.columns else 0
+                        
+                        # High performance calculations
+                        if 'avg_ctr' in kw_perf_df.columns and metrics['avg_ctr'] > 0:
+                            metrics['high_perf_count'] = len(kw_perf_df[kw_perf_df['avg_ctr'] > metrics['avg_ctr']])
+                            metrics['high_perf_pct'] = (metrics['high_perf_count'] / metrics['total_keywords']) * 100 if metrics['total_keywords'] > 0 else 0
+                        
+                        # Long-tail calculations
+                        if metrics['total_keywords'] > 0:
+                            long_tail_count = len(kw_perf_df[kw_perf_df['keyword_length'] >= 3])
+                            metrics['long_tail_pct'] = (long_tail_count / metrics['total_keywords']) * 100
+                        
+                        # Average query length
+                        if 'representative_keyword' in kw_perf_df.columns:
+                            metrics['avg_query_length'] = kw_perf_df['representative_keyword'].str.len().mean()
+                        elif 'keywords' in kw_perf_df.columns:
+                            metrics['avg_query_length'] = kw_perf_df['keywords'].astype(str).str.len().mean()
+                        
+                        # Top keyword percentage
+                        if metrics['total_volume'] > 0 and 'total_counts' in kw_perf_df.columns:
+                            metrics['top_keyword_pct'] = (metrics['top_volume'] / metrics['total_volume']) * 100
+                        
+                        # Average words per query
+                        metrics['avg_words'] = kw_perf_df['keyword_length'].mean()
+                        
+                except Exception as e:
+                    st.error(f"Error calculating metrics: {str(e)}")
+                
+                return metrics
+
+            # 🔧 USE THE SAFE CALCULATION FUNCTION
+            health_metrics = safe_calculate_health_metrics(kw_perf_df)
+
+            # Extract variables for easy use
+            total_keywords = health_metrics['total_keywords']
+            avg_ctr = health_metrics['avg_ctr']
+            high_perf_count = health_metrics['high_perf_count']
+            high_perf_pct = health_metrics['high_perf_pct']
+            long_tail_pct = health_metrics['long_tail_pct']
+            avg_words = health_metrics['avg_words']
+            top_keyword_pct = health_metrics['top_keyword_pct']
+            top_volume = health_metrics['top_volume']  # ✅ Added this
+
+            # 🎨 NOW USE THE PRE-CALCULATED VARIABLES (NO MORE DUPLICATE CALCULATIONS)
             with insight_col2:
-                # Performance analysis
-                high_perf_count = len(kw_perf_df[kw_perf_df['avg_ctr'] > avg_ctr])
-                high_perf_pct = (high_perf_count / total_keywords) * 100 if total_keywords > 0 else 0
+                # ✅ REMOVED duplicate calculations - use pre-calculated values
                 performance_status = "🎯 Strong performance" if high_perf_pct > 40 else "📈 Growth potential"
                 
                 st.markdown(f"""
@@ -3282,21 +3362,23 @@ with tab_search:
                     border-radius: 12px; 
                     border-left: 4px solid #66BB6A;
                     box-shadow: 0 2px 10px rgba(102, 187, 106, 0.1);
-                    height: 120px;
+                    height: 140px;
                 ">
                     <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🚀 Performance</h5>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
                         <strong>{high_perf_pct:.1f}%</strong> above-average CTR
+                    </p>
+                    <p style="margin: 0 0 0.5rem 0; color: #555;">
+                        <strong>{avg_ctr:.2f}%</strong> average CTR
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #66BB6A;">
                         {performance_status}
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with insight_col3:
-                # Volume analysis
-                top_volume = kw_perf_df['total_counts'].max()
+                # ✅ Use pre-calculated top_volume
                 volume_status = "🔥 High volume" if top_volume > 10000 else "📊 Moderate volume"
                 
                 st.markdown(f"""
@@ -3306,17 +3388,21 @@ with tab_search:
                     border-radius: 12px; 
                     border-left: 4px solid #81C784;
                     box-shadow: 0 2px 10px rgba(129, 199, 132, 0.1);
-                    height: 120px;
+                    height: 140px;
                 ">
                     <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🌊 Search Volume Insights</h5>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
                         Peak volume: <strong>{top_volume:,}</strong>
+                    </p>
+                    <p style="margin: 0 0 0.5rem 0; color: #555;">
+                        Total keywords: <strong>{total_keywords:,}</strong>
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #81C784;">
                         {volume_status}
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+
             
             # 📊 GREEN-THEMED RECOMMENDATIONS
             st.markdown("---")
