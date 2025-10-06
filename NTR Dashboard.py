@@ -7,6 +7,8 @@ from collections import Counter
 import re, os, logging
 from datetime import datetime
 import pytz
+from collections import defaultdict
+from fuzzywuzzy import fuzz
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
@@ -3775,9 +3777,6 @@ with tab_search:
         st.warning("⚠️ No keyword data available for fuzzy analysis")
 
     st.markdown("---")
-
-
-
 
     
     # Advanced Analytics Section
