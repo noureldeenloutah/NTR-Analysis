@@ -2398,52 +2398,377 @@ with tab_search:
         # Cached Master Keyword Dictionary
         @st.cache_data(ttl=7200, show_spinner=False)
         def create_master_keyword_dictionary():
-            """Cached master keywords dictionary for better performance"""
+            """
+            Minimized master keywords dictionary - selected best 50-60% from original values
+            """
             return {
                 'مغنیسیوم': {
                     'variations': [
-                        'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
-                        'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
-                        'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
-                        'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
-                        'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
-                        'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
+                        'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'مغنیس', 'مغنی', 
+                        'مغنیسی', 'مغانیسیوم', 'ماغن', 'المغنیسیوم', 'مغنیسو', 
+                        'مغنیزیوم', 'مغناسیوم', 'مغانسیوم', 'magnesium', 'مغنيسيوم'
                     ],
                     'excluded_terms': ['الصمغ'],
                     'compounds': [
-                        'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
-                        'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
-                        'ثریونیت', 'توریت', 'فوار', '400', 'glycinate', 'citrate', 'malate'
+                        'جلیسینات', 'جلایسینات', 'جل', 'سترات', 'مالات', 
+                        'فوار', '400', 'glycinate', 'citrate', 'malate'
                     ],
                     'threshold': 80,
                     'min_length': 4
                 },
+
                 'اوميجا': {
                     'variations': [
-                        'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
-                        'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
-                        'omega', 'omega3', 'omg3', 'omg', 'ome'
+                        'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اوم',
+                        'اومی', 'میجا', 'اومیجا3', 'اومیغا3', 'اومیقا3',
+                        'الاومیجا', 'الاومیغا', 'اوکیقا', 'امیغا', 'کومیجا',
+                        'omega', 'omega3', 'omg3', 'omg', 'ome', 'omiga', 'mega'
                     ],
                     'excluded_terms': [
-                        'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
-                        'زاو', 'milga', 'کرومیم', 'one', 'النوم'
+                        'اومیلت', 'اومالت', 'اوملت', 'زاو', 'milga', 'کرومیم', 
+                        'one', 'النوم', 'کوی', 'ایزوبیور', 'کوم', 'میجاتو', 'کومی'
                     ],
-                    'compounds': ['3', '6', '9', '1000', '2000', 'EPA', 'DHA'],
+                    'compounds': [
+                        '3', '6', '9', '1000', '2000', 'للاطفال', 'اطفال', 
+                        'حبوب', 'کپسول', 'EPA', 'DHA', 'nordic', 'jp', 'capsules'
+                    ],
                     'threshold': 80,
                     'min_length': 3
                 },
+
+                'کولاجین': {
+                    'variations': [
+                        'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'کلاجین', 
+                        'کولاژن', 'کولجین', 'کول', 'کولاجی', 'مولاجین'
+                    ],
+                    'excluded_terms': [
+                        'کوین', 'کولایت', 'کوریلا', 'کولین', 'شوکولا', 'لاین'
+                    ],
+                    'compounds': [
+                        'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 
+                        'marine', 'بودره', 'فوار', 'powder'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
                 'فیتامین': {
                     'variations': [
                         'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات',
-                        'vitamin', 'vitamins', 'multivitamin'
+                        'فیتامین سی', 'فیتامین د', 'فیتامین ب', 'فیتامین د3',
+                        'مالتی فیتامین', 'ملتی فیتامین', 'فیتامین للاطفال',
+                        'فیتامین حمل', 'فیتامین شعر', 'فیتامین د 50000',
+                        'vitamin', 'vitamins', 'multivitamin', 'vitamin c', 'vitamin d'
                     ],
-                    'excluded_terms': ['فیتنس', 'فیتر', 'فیتوری'],
-                    'compounds': ['سی', 'د', 'ب', 'c', 'd', 'b12'],
+                    'excluded_terms': [
+                        'فیتنس', 'فیتر', 'فیمی', 'فیتال', 'ادفیتا', 'فینترمین', 
+                        'قلوتامین', 'vitex', 'بیتا', 'غلوتامین'
+                    ],
+                    'compounds': [
+                        'سی', 'د', 'دال', 'ب', 'بی', 'c', 'd', 'd3', 'b12',
+                        '50000', '5000', '1000', 'للاطفال', 'حمل', 'شعر',
+                        'فوار', 'حبوب', 'شراب', 'قطرات'
+                    ],
                     'threshold': 75,
+                    'min_length': 4
+                },
+                
+                'زنک': {
+                    'variations': [
+                        'زنک', 'زینک', 'زنك', 'zinc', 'الزنک', 'الزینک'
+                    ],
+                    'excluded_terms': [
+                        'الوزن', 'زینیکا', 'زینکال', 'الارز'
+                    ],
+                    'compounds': [
+                        'پیکولینات', 'گلوکونات', 'picolinate', '50', '25', 'copper'
+                    ],
+                    'threshold': 80,
+                    'min_length': 3
+                },
+                
+                'کالسیوم': {
+                    'variations': [
+                        'کالسیوم', 'کلسیم', 'كالسيوم', 'calcium', 'الکالسیوم',
+                        'کالسیو', 'کالیسیوم'
+                    ],
+                    'compounds': [
+                        'کربنات', 'سیترات', 'citrate', 'مغنیسیو', '600', 
+                        'فوار', 'للاطفال'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'بروتین': {
+                    'variations': [
+                        'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 
+                        'پروتن', 'بروت', 'پروت'
+                    ],
+                    'excluded_terms': [
+                        'برورین', 'برافوتین', 'بروبین', 'بیروین', 'بروستا'
+                    ],
+                    'compounds': [
+                        'وی', 'whey', 'کازئین', 'casein', 'ایزو', 'بار', 
+                        'باودر', 'powder', 'ماس', 'نباتی'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'حدید': {
+                    'variations': [
+                        'حدید', 'حديد', 'الحدید', 'iron', 'ferrous', 'ferro',
+                        'فیرولایت', 'فیرو لایت', 'فیروفول', 'فیرومین', 'فیرو'
+                    ],
+                    'excluded_terms': [
+                        'حدیث', 'حدیقة', 'فیدروب', 'solaray', 'فیتو', 'بورون',
+                        'فینترمین', 'solar', 'نیرو', 'زیرو', 'فیتامین', 'solgar'
+                    ],
+                    'compounds': [
+                        'فومارات', 'fumarate', 'سولفات', 'فوار', 'شراب', 
+                        'حبوب', 'للاطفال', 'folic acid', '25mg'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+
+                'ensure': {
+                    'variations': [
+                        'ensure', 'ensur', 'انشور', 'انش', 'انشو', 
+                        'حلیب انشور', 'حليب انشور'
+                    ],
+                    'excluded_terms': [
+                        'انشاء', 'المنشاری', 'سانو', 'النشط', 'انوفاری'
+                    ],
+                    'compounds': [
+                        'plus', 'بلس', 'max', 'ماکس', 'protein', 'پروتین',
+                        'milk', 'حلیب', 'vanilla', 'وانیل', 'chocolate'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'بیوتین': {
+                    'variations': [
+                        'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'البیوتین'
+                    ],
+                    'excluded_terms': [
+                        'biotic', 'بیوسیستین', 'برایوین', 'بیوتیک'
+                    ],
+                    'compounds': [
+                        '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
+                    ],
+                    'threshold': 85,
+                    'min_length': 4
+                },
+                
+                'اشواغندا': {
+                    'variations': [
+                        'اشواغندا', 'اشواجندا', 'اشوقندا', 'اشواق', 'اشو',
+                        'الاشواغندا', 'ashwagandha', 'ashwa', 'ksm66'
+                    ],
+                    'excluded_terms': [
+                        'انشوز', 'الشوک', 'اوراق', 'انشو'
+                    ],
+                    'compounds': [
+                        'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
+                    ],
+                    'threshold': 75,
+                    'min_length': 4
+                },
+                
+                'جنسنج': {
+                    'variations': [
+                        'جنسنج', 'جنس', 'جینسینج', 'جنسنج کوری', 'الجنسنج',
+                        'ginseng', 'korean ginseng', 'panax ginseng'
+                    ],
+                    'compounds': [
+                        'کوری', 'korean', 'panax', 'رویال', 'royal', 'جیلی'
+                    ],
+                    'threshold': 75,
+                    'min_length': 4
+                },
+                
+                'کرکم': {
+                    'variations': [
+                        'کرکم', 'الکرکم', 'کرکمین', 'کورکومین', 'turmeric', 
+                        'curcumin', 'curcumax'
+                    ],
+                    'compounds': [
+                        'curcumin', 'extract', 'مستخلص', 'حبوب', 'کپسول'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'خل التفاح': {
+                    'variations': [
+                        'خل التفاح', 'حبوب خل التفاح', 'خل تفاح', 'خل التفا',
+                        'apple cider vinegar', 'apple cider', 'خل ا'
+                    ],
+                    'compounds': [
+                        'حبوب', 'فوار', 'gummies', 'حلوى', 'کبسولات', 'عضوی'
+                    ],
+                    'threshold': 70,
+                    'min_length': 3
+                },
+                
+                'منوم': {
+                    'variations': [
+                        'منوم', 'منو', 'حبوب منوم', 'شراب منوم', 'منوم الاطفال',
+                        'sleep', 'sleep aid'
+                    ],
+                    'compounds': [
+                        'للاطفال', 'اطفال', 'کبار', 'طبیعی', 'natural'
+                    ],
+                    'threshold': 80,
+                    'min_length': 3
+                },
+                
+                'بربرین': {
+                    'variations': [
+                        'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
+                        'berberine', 'berberin'
+                    ],
+                    'excluded_terms': [
+                        'برابورین', 'بیریورین', 'بروبین', 'برورین'
+                    ],
+                    'compounds': [
+                        '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'کرانبری': {
+                    'variations': [
+                        'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
+                        'بیری', 'cranberry'
+                    ],
+                    'excluded_terms': [
+                        'کاندری', 'کانتری', 'بحری', 'بیورین', 'بکتیری',
+                        'strawberry', 'blueberry', 'بری', 'بیری بیری'
+                    ],
+                    'compounds': [
+                        'حبوب', 'کبسولات', 'extract', 'مستخلص', 'juice', 
+                        'عصیر', 'urinary', 'بولی', 'uti', '500mg'
+                    ],
+                    'threshold': 75,
+                    'min_length': 4
+                },
+                
+                'فحم نشط': {
+                    'variations': [
+                        'فحم', 'حبوب فحم', 'الفحم', 'فحم نشط', 'الفحم النشط',
+                        'charcoal', 'activated charcoal'
+                    ],
+                    'compounds': [
+                        'نشط', 'activated', 'حبوب', 'کبسولات', 'detox'
+                    ],
+                    'threshold': 85,
+                    'min_length': 3
+                },
+                
+                'عسل': {
+                    'variations': [
+                        'عسل', 'العسل', 'honey', 'عسل المنوکا', 'عسل مانوکا',
+                        'عسل منوکا', 'مانوکا', 'manuka honey', 'عسل ملکی',
+                        'royal honey', 'عسل ابو نایف', 'عسل م'
+                    ],
+                    'excluded_terms': [
+                        'عسلی', 'عسکر', 'honey badger', 'honeymoon', 'انوفا',
+                        'الماکا', 'ماکا', 'وسلمان'
+                    ],
+                    'compounds': [
+                        'manuka', 'مانوکا', 'royal', 'ملکی', 'طبیعی', 'natural',
+                        'اطفال', 'للاطفال', 'ابو نایف'
+                    ],
+                    'threshold': 80,
+                    'min_length': 3
+                },
+                
+                'کیو10': {
+                    'variations': [
+                        'کیو 10', 'کیو10', 'کو کیو 10', 'کو کیو', 'q10', 
+                        'coq10', 'co q10', 'ubiquinol'
+                    ],
+                    'compounds': [
+                        '100', '200', 'mg', 'ubiquinol', 'کوانزیم'
+                    ],
+                    'threshold': 80,
+                    'min_length': 3
+                },
+                
+                'جلوتاثیون': {
+                    'variations': [
+                        'جلوتاثیون', 'الجلوتاثیون', 'حبوب جلوتاثیون', 'جلوتا',
+                        'جلوتاثیوم', 'glutathione', 'glutathion'
+                    ],
+                    'compounds': [
+                        '500', 'حبوب', 'کبسولات', 'tablets', 'capsules'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'ارجنین': {
+                    'variations': [
+                        'ارجنین', 'الارجنین', 'ل ارجنین', 'l arginine', 'arginine',
+                        'ارجینین', 'ارگنین'
+                    ],
+                    'compounds': [
+                        '1000', 'l', 'حبوب', 'کبسولات', 'mg'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'سیلینیوم': {
+                    'variations': [
+                        'سیلینیوم', 'سلینیوم', 'السیلینیوم', 'سیلینوم', 'selenium'
+                    ],
+                    'compounds': [
+                        '200', 'ace', 'حبوب', 'کبسولات'
+                    ],
+                    'threshold': 80,
+                    'min_length': 4
+                },
+                
+                'فولیک اسید': {
+                    'variations': [
+                        'فولیک', 'فولیک اسید', 'فول', 'حمض فولیک', 'الفولیک',
+                        'حمض الفولیک', 'folic acid', 'folic'
+                    ],
+                    'excluded_terms': [
+                        'الفا', 'الفا لیبویک', 'فلک', 'فولیکوم'
+                    ],
+                    'compounds': [
+                        '5mg', '400', '400mg', '1mg', 'حبوب', 'اقراص',
+                        'iron', 'حديد', 'اسید', 'acid'
+                    ],
+                    'threshold': 85,
+                    'min_length': 4
+                },
+
+                'میلاتونین': {
+                    'variations': [
+                        'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'المیلاتونین',
+                        'melatonin', 'mela', 'melat', 'ناترول', 'natrol'
+                    ],
+                    'excluded_terms': [
+                        'میلان', 'میلاد', 'تونین', 'naturals', 'جلایسین', 
+                        'nutrafol', 'nitro', 'کریاتین', 'مالتی', 'جامیسون'
+                    ],
+                    'compounds': [
+                        '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
+                        'gummy', 'gummies', 'اطفال', 'للاطفال', 'kids',
+                        'للنوم', 'sleep', 'plus'
+                    ],
+                    'threshold': 80,
                     'min_length': 4
                 }
             }
-
         # Pre-compiled regex patterns for better performance
         @st.cache_data(ttl=3600, show_spinner=False)
         def get_compiled_patterns():
@@ -2751,7 +3076,6 @@ with tab_search:
             
             # Performance summary
             matching_method = "Advanced Fuzzy Matching" if has_fuzzywuzzy else "Basic String Matching"
-            st.success(f"✅ **Analysis Complete ({matching_method}):** {len(kw_perf_df)} keywords processed with {kw_perf_df['variations_count'].sum()} total variations grouped.")
             
         else:
             st.warning("⚠️ No keyword performance data available to display chart.")
@@ -2798,774 +3122,8 @@ with tab_search:
 
     # Second row: Full width for Top Performing Keywords
     # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
-    import re
-    from collections import defaultdict
-    from fuzzywuzzy import fuzz, process
 
-    def create_master_keyword_dictionary():
-        """
-        Define master keywords with their common variations for fuzzy matching
-        """
-        return {
-            'مغنیسیوم': {
-                'variations': [
-                    'مغنیسیوم', 'مغنسیوم', 'ماغنیسیوم', 'ماغنسیوم', 'مغنیس', 'مغنی', 
-                    'مغنیسی', 'مغنیسیو', 'مغنیی', 'مغنسی', 'مغانیسیوم', 'ماغن', 
-                    'ماغنیس', 'مغنس', 'المغنیسیوم', 'المغنسیوم', 'مغنیسو', 'مغنسیو', 
-                    'مغنیزیوم', 'مغنزیوم', 'معنیسیوم', 'مغناسیوم', 'مغانسیوم', 
-                    'مغانیسوم', 'مغیسیوم', 'مغنیسیم', 'معنسیوم', 'المغنیسوم', 
-                    'المغن', 'magnesium', 'مغنيسيوم', 'ماغنیسوم', 'مغنیسویم'
-                ],
 
-                'excluded_terms': [ 'الصمغ'
-
-                ],
-                'compounds': [
-                    'جلیسینات', 'جلایسینات', 'جلا', 'جل', 'جلی', 'جلیس', 'جلایس',
-                    'سترات', 'سیترات', 'ستریت', 'مالات', 'مالیت', 'ثریونات', 
-                    'ثریونیت', 'توریت', 'فوار', '400', 'glycinate', 'citrate', 'malate'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-
-            'اوميجا': {
-                'variations': [
-                    # Core Arabic variations
-                    'اومیجا', 'اومیغا', 'اومیقا', 'اومجا', 'اومقا', 'اومغا', 'اوم',
-                    'اومی', 'اومیج', 'اومیق', 'اومیغ', 'اومج', 'اومق', 'میجا', 'میج', 'میغا',
-                    
-                    # With Arabic numerals
-                    'اومیجا3', 'اومیغا3', 'اومیقا3', 'اومجا3', 'اومقا3', 'اومغا3',
-                    
-                    # With Persian/Arabic numerals  
-                    'اومیجا٣', 'اومیغا٣', 'اومیقا٣', 'اومجا٣', 'اومقا٣', 'اومغا٣',
-                    
-                    # With definite article
-                    'الاومیجا', 'الاومیغا', 'الاومیقا', 'الاومجا', 'الاومقا',
-                    
-                    # Common misspellings
-                    'اوکیقا', 'اوکیغا', 'اوکیجا', 'امیغا', 'امیقا', 'اویجا', 'اویغا',
-                    'کومیجا', 'کومی', 'اونیغا', 'ارمیغا', 'اومیجانا', 'اومیجور',
-                    'اومبیور', 'اومیبیور', 'اومیف', 'اومیقت',
-                    
-                    # English variations
-                    'omega', 'omega3', 'omg3', 'omg', 'ome', 'omiga', 'omga3', 'omeg',
-                    'omga', 'comega', 'stromega', 'mega', 'omiga3', 'meg', 'ovega',
-                    'onega', 'oma', 'omacor', 'omaga'
-                ],
-                
-                'excluded_terms': [
-                    'اومیلت', 'اومالت', 'اوملت', 'اومله', 'اومالیت', 'اومیلیت',
-                    'زاو', 'milga', 'کرومیم', 'one', 'النوم', 'milga', 'میاه', 'الاوریغانو', 'کرومیم','کوی', 'milga ','ایزوبیور', 'کوم', 'اومیف', 'کوم ','کوی','میجاتو ','کومی ','کرومی'
-                ],
-                
-                'compounds': [
-                    # Numbers
-                    '3', '6', '9', '٣', '٦', '٩', 'ثری', 'سیکس', 'نه', 'نین', 'تری', 'سه', 'شش', 'نو',
-                    
-                    # Dosages
-                    '1000', '2000', '1000mg', '2000mg', '1000 mg', '2000 mg',
-                    
-                    # Target groups
-                    'للاطفال', 'اطفال', 'جونیور', 'kids', 'junior', 'children',
-                    
-                    # Product types
-                    'حبوب', 'کپسول', 'شربت', 'نرم', 'ژل', 'لایت', 'capsules', 'syrup', 'soft', 'gel', 'light',
-                    
-                    # Fatty acids
-                    'EPA', 'DHA', 'ALA', 'ای پی ای', 'دی اچ ای', 'ای ال ای',
-                    
-                    # Brands/Types
-                    'nordic', 'jp', 'now', 'ultimate', 'triple', 'strength', 'sports', 'research',
-                    'advancis', 'mega q'
-                ],
-                
-                'threshold': 80,
-                'min_length': 3  # Reduced to 3 to catch short forms like 'اوم', 'omg'
-            },
-
-            'کولاجین': {
-                'variations': [
-                    'کولاجین', 'کولاجن', 'collagen', 'كولاجين', 'كولاچين',
-                    'کلاجین', 'کولاژن', 'کولاجن', 'كولاجن', 'کولجین', 'کول',
-                    'کولاجی', 'کولاج', 'کولا', 'مولاجین', 'کولاحین', 'کوباجین',
-                    'کولتجین', 'حولاجین', 'کولاجبن', 'کلاوجین'
-                ],
-
-                'excluded_terms': [ 'کوین', 'کولایت ','کولایت','کوریلا' ,'کولین ','شوکولا', 'کوین' ,'لاین','کوبالین'
-
-                ],
-                'compounds': [
-                    'پپتید', 'هیدرولیز', 'مارین', 'بقری', 'peptides', 'marine', 'bovine',
-                    'بحری', 'بودرة', 'بودره', 'فوار', 'حبوب', 'سایل', 'powder'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'فیتامین': {
-                'variations': [
-                    # Core accurate variations
-                    'فیتامین', 'فيتامين', 'ویتامین', 'فیتامن', 'فیتامینات', 'فیتامیات',
-                    'فیتامن', 'فتامین', 'فایتامین', 'فیتا', 'فیت', 'فیتم', 'فیتام',
-                    'فیتمین', 'فیامین', 'فیتامینا', 'فیتامیا', 'فیتامنات',
-                    
-                    # Specific vitamin compounds - Arabic
-                    'فیتامین سی', 'فیتامین د', 'فیتامین دال', 'فیتامین ب', 'فیتامین بی',
-                    'فیتامین بی12', 'فیتامین ب12', 'فیتامین د3', 'فیتامین k2', 'فیتامین ای',
-                    'فیتامین کی', 'فیتامین ا', 'فیتامین ه', 'فیتامین ج', 'فیتامین س',
-                    'فیتامینسی', 'فیتامیند', 'فیتامینd', 'فیتامینb12', 'فیتامینc',
-                    
-                    # Multi vitamins
-                    'مالتی فیتامین', 'ملتی فیتامین', 'مولتی فیتامین', 'ملتی فیتامینات',
-                    'مالتی فیتامینات', 'فیتامینات متعددة', 'فیتامینات متعدده',
-                    
-                    # Target groups
-                    'فیتامین للاطفال', 'فیتامین اطفال', 'فیتامینات اطفال', 'فیتامینات للاطفال',
-                    'فیتامین للرجال', 'فیتامینات للرجال', 'فیتامین للنساء', 'فیتامینات للنساء',
-                    'فیتامین حمل', 'فیتامین الحمل', 'فیتامینات حمل', 'فیتامینات الحمل',
-                    'فیتامین للحامل', 'فیتامینات للحامل', 'فیتامین حوامل', 'فیتامینات حوامل',
-                    'فیتامین شعر', 'فیتامین للشعر', 'فیتامینات شعر', 'فیتامینات للشعر',
-                    
-                    # Forms and dosages
-                    'فیتامین د 50000', 'فیتامین د 5000', 'فیتامین د 10000', 'فیتامین د50000',
-                    'فیتامین دال 50000', 'فیتامین دال50000', 'فیتامین سی فوار', 'شراب فیتامین',
-                    'حبوب فیتامین', 'قطرات فیتامین', 'فیتامین شراب', 'فیتامین حبوب',
-                    'فیتامین قطرات', 'فیتامین نقط', 'فیتامین مضغ', 'فیتامین جلی',
-                    
-                    # Brand combinations
-                    'فیتامین سنتروم', 'سنتروم فیتامین', 'فیتامینات سنتروم', 'فیتامین رویال',
-                    'فیتامین ویل', 'فیتامین رایت', 'فیتامین rite', 'فیتامین alive',
-                    
-                    # English core variations
-                    'vitamin', 'vitamins', 'vitamine', 'vitam', 'vitami', 'vit',
-                    'multivitamin', 'multivitamins', 'multi vitamin', 'multi vitamins',
-                    'vitamin c', 'vitamin d', 'vitamin d3', 'vitamin b', 'vitamin b12',
-                    'vitamin e', 'vitamin k', 'vitamin k2', 'vitamin a', 'prenatal vitamin',
-                    'prenatal vitamins', 'hair vitamin', 'hair vitamins', 'kids vitamin',
-                    'kids vitamins', 'vitamin drops', 'vitamin tablets', 'vitamin gummies'
-                ],
-                'excluded_terms': [
-                    # Clear non-vitamin terms
-                    'سویتش', 'فیمی', 'فیفا', 'فیرومین', 'وایت', 'فاتمین', 'مین',
-                    'فیتال', 'فیتکس', 'فیرتا', 'تین', 'ادفیتا', 'فیتانین', 'فیتاجلوبین',
-                    'فایتمن', 'فینامینات', 'فایتمین', 'فیتلمین', 'فیتالا',
-                    # Additional exclusions
-                    'فیتنس', 'فیتر', 'فیتوری', 'فیتو', 'فیش', 'فیل', 'قلوتامین', 'فیتالا', 'ادفیتا', 'evit ' , 'فیمی ' , 'vital', ' فیمی', 'فیتالا','فیتان ', 'فیتو ', 'فینترمین', 'قلوتامین','ادفیتا',
-                    'غلوتامین ','فیفامیون ','فیرت ','vitex','بیتا'
-                ],
-                'compounds': [
-                    # Vitamin types
-                    'سی', 'د', 'دال', 'ب', 'بی', 'ای', 'کی', 'ا', 'ه', 'ج', 'س',
-                    'c', 'd', 'd3', 'b', 'b12', 'b6', 'b1', 'e', 'k', 'k2', 'a',
-                    # Dosages
-                    '50000', '5000', '10000', '1000', '500', '2000', '400', '200',
-                    # Target groups
-                    'للاطفال', 'اطفال', 'للرجال', 'للنساء', 'حمل', 'حوامل', 'شعر',
-                    'للشعر', 'للحامل', 'للرضع', 'رضع', 'کبار', 'للکبار',
-                    # Forms
-                    'فوار', 'حبوب', 'شراب', 'قطرات', 'نقط', 'مضغ', 'جلی', 'کبسولات',
-                    'اقراص', 'زیت', 'کریم', 'حقن'
-                ],
-                'threshold': 75,  # Increased for better accuracy
-                'min_length': 4   # Increased to avoid very short false matches
-            },
-            
-            'زنک': {
-                'variations': [
-                    'زنک', 'زینک', 'زنك', 'zinc', 'زینگ', 'زينك', 'الزنک', 'الزینک',
-                    'الز', 'الزن', 'ذنک', 'زنج'
-                ],
-                'excluded_terms': [
-                    'الوزن', 'الز','زینیکا','زینکال','الارز','زیکو','العن','الهن','الکرز'
-                ],
-                'compounds': [
-                    'پیکولینات', 'گلوکونات', 'picolinate', 'gluconate', 'citrate',
-                    '50', '25', '30', 'سترات', 'ونحاس', 'نحاس', 'copper'
-                ],
-                'threshold': 80,
-                'min_length': 3
-            },
-            
-            'کالسیوم': {
-                'variations': [
-                    'کالسیوم', 'کلسیم', 'كالسيوم', 'calcium', 'کلسم', 'الکالسیوم',
-                    'کالسیو', 'کالیسیوم', 'کالوجین', 'کالیسوم', 'کالس'
-                ],
-                'compounds': [
-                    'کربنات', 'سیترات', 'citrate', 'carbonate', 'مغنیسیو', 'magnesium',
-                    '600', 'فوار', 'حبوب', 'للاطفال', 'اطفال'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'بروتین': {
-                'variations': [
-                    'بروتین', 'پروتین', 'پروتئین', 'بروتين', 'protein', 'پروتن',
-                    'بروت', 'بروتی', 'پروت', 'پروتی'
-                ],
-
-                'excluded_terms': [ 'برورین', 'برافوتین ', 'بروبین', 'بروبتیک' , 'بیروین','pravotin','بروستا','برین'
-
-                ],
-
-                'compounds': [
-                    'وی', 'وای', 'whey', 'کازئین', 'casein', 'ایزو', 'iso', 'بار', 'bar',
-                    'باودر', 'بودرة', 'powder', 'ماس', 'mass', 'beef', 'نباتی'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'حدید': {
-                'variations': [
-                    # Arabic/Persian variations
-                    'حدید', 'حديد', 'حدی', 'الحدید',
-                    
-                    # English variations
-                    'iron', 'ferrous', 'ferro', 'ferr', 'ferritin', 'lactoferrin',
-                    
-                    # Brand/Product names
-                    'فیرولایت', 'فیرو لایت', 'ferrolight', 'فیروبیوترون', 'فیرو',
-                    'فیروفول', 'ferrofol', 'فیرومین', 'فیرومن', 'فیرو فول',
-                    'فیروسومال', 'ferrosomal', 'بروفیرون', 'فیروغلوبین',
-                    'فرافیرو', 'فیرو 28', 'ferrose', 'solgar'
-                ],
-                
-                'excluded_terms': [
-                    # Original exclusions
-                    'حدیث', 'حدیقة', 'حدود', 'حدس', 'حدة', 'حدق', 'حدر',
-                    'فیرون', 'فیرس', 'فیر', 'فرو', 'فرر',
-                    
-                    # New exclusions from your list
-                    'فیدروب', 'solaray', 'فیدر', 'فیتالایت', 'فیتو', 'فیدرو',
-                    'دید', 'فیتوسوم', 'sola', 'بورون', 'بیروین', 'هیدرلایت',
-                    'فیجر', 'فینترمین', 'solar', 'هیرو', 'هیدرولایت', 'فیمروز', 'solgar', 'نیرو', 'زیرو', 'فیتمین', 'هایدرولایت',
-                    'بروفاریو', 'solary',
-                    
-                    # Additional supplement/brand exclusions
-                    'solaray vitamin', 'solgar vitamin', 'فیتامین',
-                    'phytosome', 'فیتوسوم', 'boron', 'بورون',
-                    'phentermine', 'فینترمین', 'diet pill',
-                    'hydrolyte', 'electrolyte', 'الکترولیت',
-                    'zero', 'hero', 'nitro', 'نیترو',
-                    'fedex', 'فدکس', 'federal', 'فدرال',
-                    
-                    # Non-iron minerals/supplements
-                    'calcium', 'کلسیم', 'magnesium', 'منیزیم',
-                    'zinc', 'روی', 'copper', 'مس',
-                    'selenium', 'سلنیوم', 'chromium', 'کروم',
-                    
-                    # Vitamin exclusions
-                    'vitamin d', 'ویتامین د', 'vitamin c', 'ویتامین س',
-                    'vitamin b', 'ویتامین ب', 'multivitamin', 'مولتی ویتامین',
-                    
-                    # Brand name exclusions (non-iron)
-                    'solaray d3', 'solgar b12', 'solaray calcium',
-                    'phyto soya', 'فیتو سویا', 'phyto collagen'
-                    
-
-                ],
-                
-                'compounds': [
-                    # Chemical forms
-                    'فومارات', 'fumarate', 'سولفات', 'sulfate', 'sulphate',
-                    'bisglycinate', 'بیسگلایسینات', 'liposomal', 'لیپوزومال',
-                    
-                    # Product forms
-                    'فوار', 'شراب', 'حبوب', 'امبولات', 'انبولات', 'ابر', 'ابرة',
-                    'اقراص', 'کبسولات', 'tablet', 'tablets', 'drops', 'syrup',
-                    'gummies', 'supplement', 'supplements',
-                    
-                    # Descriptive terms
-                    'gentle', 'مکمل', 'مکملات', 'مکمل غذایی', 'فیتامین', 'فتامین',
-                    'فیتامینات', 'vitamin', 'vitamins',
-                    
-                    # Target audience
-                    'للاطفال', 'اطفال', 'kids', 'children',
-                    
-                    # Combinations
-                    'folic acid', 'فولیک اسید', 'and folic', 'فولیک',
-                    
-                    # Dosage
-                    '25 mg', '25mg', '28', 'mg',
-                    
-                    # Brand specific
-                    'solgar gentle iron', 'solgar iron', 'gentle iron'
-                ],
-                
-                'threshold': 80,  # Lowered from 85 to catch more variations
-                'min_length': 4
-            },
-
-            'ensure': {
-                'variations': [
-                    # English variations
-                    'ensure', 'ensur', 'ensu', 'ensue',
-                    
-                    # Arabic/Persian variations
-                    'انشور', 'انش', 'انشو', 'انشوز', 'انشوو', 'انشر', 'انشار',
-                    'انشوور', 'انشوار', 'انشوری', 'انشوره', 'انشوری',
-                    
-                    # With milk context
-                    'حلیب انشور', 'حلیب انش', 'حلیب انشو', 'حليب انشور',
-                    'حليب انش', 'حليب انشو'
-                ],
-                
-                'excluded_terms': [
-                        'انشاء','المنشاری', 'نوز', 'سانو', 'انسر', 'sens', 'اشو', 
-                        'النشط', 'انوفاری', 'fenu', 'اینو', 'انتر', 
-                        'الانتشار', 'انز', 'انوفار', 'نور'
-                ],
-                
-                'compounds': [
-                    # Product variants
-                    'plus', 'بلس', 'بلص', 'پلس',
-                    'max', 'ماکس', 'maximum', 'ماکسیمم',
-                    'complete', 'کومبلیت', 'کامل', 'کمپلیت',
-                    'protein', 'پروتین', 'پروتئین', 'بروتین',
-                    'milk', 'حلیب', 'حليب', 'شیر',
-                    
-                    # Combined variants
-                    'ensure plus', 'انشور بلس', 'انشور بلص', 'انشور پلس',
-                    'ensure max', 'انشور ماکس', 'انشور max',
-                    'ensure max protein', 'انشور ماکس پروتین', 'انشور max protein',
-                    'ensure complete', 'انشور کومبلیت', 'انشور کامل',
-                    'ensure milk', 'انشور حلیب', 'انشور شیر',
-                    'حلیب انشور بلس', 'حلیب انشور ماکس', 'حلیب انشور کومبلیت',                    
-                    
-                    # Flavors
-                    'vanilla', 'وانیل', 'وانیلا', 'فانیل', 'فانیلا',
-                    'chocolate', 'چاکلیت', 'شاکولاتة', 'شکلاته'           
-                ],
-                
-                'threshold': 80,
-                'min_length': 40
-            },
-            
-            'بیوتین': {
-                'variations': [
-                    'بیوتین', 'بایوتین', 'biotin', 'بیوتی', 'بیوت', 'بیوتن',
-                    'البیوتین', 'بیوت', 'کیوتن', 'بایوتی'
-                ],
-                'excluded_terms': [
-                    'biotic', 'biocystin','بیوسیستین', 'برایوین','بیتس', 'برایورین','بیوتیک','کیوتن','بایورین','بیوتیس','بیوتک'
-                ],
-                'compounds': [
-                    '10000', '5000', '1000', 'للشعر', 'شعر', 'hair', 'forte'
-                ],
-                'threshold': 85,
-                'min_length': 4
-            },
-            
-            'اشواغندا': {
-                'variations': [
-                    'اشواغندا', 'اشواجندا', 'اشوقندا', 'اشواجاندا', 'اشواغاندا',
-                    'اشواقندا', 'اشواق', 'اشوغندا', 'اشو', 'اشوجندا', 'اشوا',
-                    'الاشواجاندا', 'الاشواجندا', 'الاشواغندا', 'الاشوغندا',
-                    'ashwagandha', 'ashwaganda', 'ashwa', 'ksm66'
-                ],
-
-                'excluded_terms': [
-                    'انشوز', 'الشوک ','اوراق','انشوو','اوفا','انشو',''
-                ],
-
-                'compounds': [
-                    'ksm', 'ksm66', '600', 'gummies', 'حبوب', 'extract'
-                ],
-                'threshold': 75,
-                'min_length': 4
-            },
-            
-            'جنسنج': {
-                'variations': [
-                    'جنسنج', 'جنس', 'جینسینج', 'جنسنج کوری', 'جینسنج', 'الجنسنج',
-                    'جنسینج', 'جنسنغ', 'الجنسنج الکوری', 'جنسن', 'جینسنغ',
-                    'ginseng', 'korean ginseng', 'panax ginseng'
-                ],
-                'compounds': [
-                    'کوری', 'korean', 'panax', 'رویال', 'royal', 'جیلی', 'jelly'
-                ],
-                'threshold': 75,
-                'min_length': 4
-            },
-            
-            'کرکم': {
-                'variations': [
-                    'کرکم', 'الکرکم', 'الکرکمین', 'کرکمین', 'کورکومین', 'کورکمین',
-                    'کورک', 'turmeric', 'curcumin', 'curcumax'
-                ],
-                'compounds': [
-                    'curcumin', 'extract', 'مستخلص', 'حبوب', 'کپسول'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'خل التفاح': {
-                'variations': [
-                    'خل التفاح', 'حبوب خل التفاح', 'خل تفاح', 'خل التفا', 'خل ال',
-                    'خل التف', 'خل الت', 'apple cider vinegar', 'apple cider',
-                    'خلا', 'خل تفا', 'هل التفاح', 'خل ا', 'خل تف'
-                ],
-                'compounds': [
-                    'حبوب', 'فوار', 'gummies', 'حلوى', 'علکة', 'کبسولات', 'عضوی'
-                ],
-                'threshold': 70,
-                'min_length': 3
-            },
-            
-            'منوم': {
-                'variations': [
-                    'منوم', 'منو', 'حبوب منومه', 'حبوب منوم', 'حبوب منومة',
-                    'شراب منوم', 'منوم الاطفال', 'منومه', 'sleep', 'sleep aid'
-                ],
-                'compounds': [
-                    'للاطفال', 'اطفال', 'للکبار', 'کبار', 'طبیعی', 'natural'
-                ],
-                'threshold': 80,
-                'min_length': 3
-            },
-            
-            'بربرین': {
-                'variations': [
-                    'بربرین', 'البربرین', 'حبوب البربرین', 'برب', 'بیربرین',
-                    'بربرین حبوب', 'البربری', 'بربر', 'berberine', 'berberin'
-                ],
-
-                'excluded_terms': [
-                    'برابورین', 'بیریورین','بروبین','برورین','الربی'
-                ],
-
-                'compounds': [
-                    '500', 'phytosome', 'فیتوسوم', 'حبوب', 'کبسولات'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'کرانبری': {
-                'variations': [
-                    # Main cranberry variations
-                    'کرانبیری', 'کران', 'کران بیری', 'کرانبری', 'کرنبیری',
-                    'الکران بیری', 'بیری', 'کرانبی', 'کرانبیر', 'cranberry',
-                    'کرانبری', 'کرانسید'
-                ],
-                
-                'excluded_terms': [
-                    # Geographic/location terms
-                    'کاندری', 'کانتری', 'بحری', 'کارن',
-                    
-                    # Food/drink terms
-                    'بیرف', 'بریف', 'بیرفی', 'بیرفیک', 'بیرل', 'بیرلی', 'بییر',
-                    
-                    # Medical/scientific terms
-                    'بیورین', 'بکتیری', 'بیور', 'بیروین',
-                    
-                    # General terms
-                    'کاند', 'بیبی', 'بیلی', 'بریج', 'بقری', 'کریا',
-                    
-                    # Non-cranberry berry terms
-                    'strawberry', 'blueberry', 'raspberry', 'blackberry',
-                    'توت', 'فراولة', 'توت الأزرق',
-                    
-                    # Common false matches
-                    'بری', 'کری', 'بیر',
-                    'بیری بیری', 'کرانی', 'برانی', 'کرانه',
-                    
-                    # Technology/brand terms
-                    'blackberry phone', 'بلک بیری',
-                    
-                ],
-                
-                'compounds': [
-                    # Product forms
-                    'حبوب', 'کبسولات', 'اقراص', 'tablets', 'capsules', 'pills',
-                    'sachets', 'اکیاس', 'پاکت',
-                    'extract', 'مستخلص', 'عصاره',
-                    'powder', 'پودر', 'مسحوق',
-                    'juice', 'عصیر', 'آب',
-                    'syrup', 'شراب', 'سیروپ',
-                    
-                    # Health benefits context
-                    'urinary', 'بولی', 'مسالک بولیة',
-                    'uti', 'التهاب', 'عفونت',
-                    'bladder', 'مثانة', 'مثانه',
-                    'kidney', 'کلیة', 'کلیه',
-                    'infection', 'عدوی', 'عفونت',
-                    
-                    # Antioxidant context
-                    'antioxidant', 'مضاد اکسدة', 'آنتی اکسیدان',
-                    'vitamin', 'ویتامین', 'فیتامین',
-                    
-                    # Brand/quality terms
-                    'organic', 'عضوی', 'طبیعی',
-                    'pure', 'خالص', 'صافی',
-                    'concentrated', 'مرکز', 'غلیظ',
-                    
-                    # Dosage/strength
-                    '500mg', '1000mg', 'میلی گرام',
-                    'high strength', 'قوی', 'مرکز',
-                    
-                    # Combined terms
-                    'cranberry extract', 'کرانبری عصاره',
-                    'cranberry tablets', 'کرانبری اقراص',
-                    'cranberry capsules', 'کرانبری کبسولات',
-                    'cranberry juice', 'کرانبری عصیر'
-                ],
-                
-                'threshold': 75,
-                'min_length': 4
-            },
-            
-            'فحم نشط': {
-                'variations': [
-                    'فحم', 'حبوب فحم', 'الفحم', 'فحم نشط', 'الفحم النشط',
-                    'کبسولات الفحم', 'charcoal', 'activated charcoal'
-                ],
-                'compounds': [
-                    'نشط', 'activated', 'حبوب', 'کبسولات', 'detox'
-                ],
-                'threshold': 85,
-                'min_length': 3
-            },
-            
-            'عسل': {
-                'variations': [
-                    # Basic honey terms
-                    'عسل', 'العسل', 'honey',
-                    
-                    # Manuka variations
-                    'عسل المنوکا', 'عسل مانوکا', 'عسل المانوکا', 'عسل المونکا',
-                    'عسل مونکا', 'عسل مونیکا', 'عسل المونیکا', 'عسل مونوکا',
-                    'عسل منوکا', 'عسل مانوک', 'عسل المانوک', 'عسل مان',
-                    'عسل مانو', 'عسل الما', 'مانوکا عسل', 'مانوکا', 'المانوکا',
-                    'منوکا', 'مانوک', 'مان', 'manuka honey', 'manuka', 'honey manuka',
-                    
-                    # Royal honey variations
-                    'العسل الملکی', 'عسل ملکی', 'عسل الملکی', 'royal honey',
-                    
-                    # Other honey types
-                    'عسل سدر', 'عسل السدر', 'عسل ابیض', 'عسل مالیزی',
-                    'العسل الحیوی', 'عسل حیوی', 'vital honey', 'true honey',
-                    
-                    # Brand names
-                    'عسل ابو نایف', 'عسل ابو', 'عسل ابونایف',
-                    
-                    # Partial matches (common search patterns)
-                    'عسل ال', 'عسل م', 'عسل ما', 'عسل الم', 'عسل ا'
-                ],
-                
-                'excluded_terms': [
-                    'عسلی', 'عسکر', 'عسر', 'عصل', 'عصر', 'عضل', 'عزل',
-                    'honey badger', 'honey moon', 'honeymoon', 'honey pot','انوفا','رمان','الرمان','المونک','میلان','one','مانکورا','ولمان','horny','الماکا','ماکا','وسلمان'
-                ],
-                
-                'compounds': [
-                    # Basic terms
-                    'عسل', 'honey',                
-
-                    # Quality descriptors
-                    'raw', 'خام', 'طبیعی', 'natural', 'organic', 'عضوی',
-                    'pure', 'خالص', 'صافی', 'نقی',
-                    'original', 'اصلی', 
-                    
-                    # Honey types
-                    'manuka', 'مانوکا', 'منوکا', 'مانوک',
-                    'royal', 'ملکی', 'الملکی',
-                    'سدر', 'السدر', 'sidr',
-                    'ابیض', 'white',
-                    'مالیزی', 'malaysian',
-                    'حیوی', 'vital', 'bio',
-                    
-                    # Target audience/usage
-                    'اطفال', 'للاطفال', 'kids', 'children',
-                    'جنسی', 'للجنس', 'sexual', 'للرجال', 'for men',
-                    
-                    # Brand specific
-                    'ابو نایف', 'ابونایف', 'ابو',
-                    'الوانه', 'وانه'                    
-                ],
-                
-                'threshold': 80,  # Lowered to catch more variations
-                'min_length': 3   # Reduced to catch shorter terms like 'عسل م'
-            },
-            
-            'کیو10': {
-                'variations': [
-                    'کیو 10', 'کیو10', 'کو کیو 10', 'کو کیو', 'کیت', 'کیو١٠',
-                    'q10', 'coq10', 'co q10', 'coenzyme q10', 'ubiquinol'
-                ],
-                'compounds': [
-                    '100', '200', 'mg', 'ubiquinol', 'کوانزیم'
-                ],
-                'threshold': 80,
-                'min_length': 3
-            },
-            
-            'جلوتاثیون': {
-                'variations': [
-                    'جلوتاثیون', 'الجلوتاثیون', 'حبوب جلوتاثیون', 'جلوتا',
-                    'جلوتاثیوم', 'ثیو', 'جلوتاثین', 'جلوت', 'جلوتاثیو',
-                    'glutathione', 'glutathion'
-                ],
-                'compounds': [
-                    '500', 'حبوب', 'کبسولات', 'tablets', 'capsules'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'ارجنین': {
-                'variations': [
-                    'ارجنین', 'الارجنین', 'ل ارجنین', 'l arginine', 'arginine',
-                    'ارجینین', 'ارگنین', 'arg'
-                ],
-                'compounds': [
-                    '1000', 'l', 'حبوب', 'کبسولات', 'mg'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'سیلینیوم': {
-                'variations': [
-                    'سیلینیوم', 'سلینیوم', 'السیلینیوم', 'سیلینوم', 'سیلنیوم',
-                    'سیلین', 'السلینیوم', 'selenium'
-                ],
-                'compounds': [
-                    '200', 'ace', 'حبوب', 'کبسولات'
-                ],
-                'threshold': 80,
-                'min_length': 4
-            },
-            
-            'فولیک اسید': {
-                'variations': [
-                    # Arabic variations
-                    'فولیک', 'فولیک اسید', 'فولیک اسد', 'فول', 'حمض فولیک',
-                    'الفولیک', 'فولک اسد', 'فولیکو', 'فولی', 'حامض فولیک',
-                    'حمض الفولیک', 'حامض الفولیک', 'حمض الفولی', 'حمض الفول',
-                    'حمض الفو', 'الفلولیک', 'حمض الفلولیک',
-                    
-                    # English variations  
-                    'folic acid', 'folic', 'foliko', 'foli'
-                ],
-                
-                'excluded_terms': [
-                    # Generic acid terms without folic context
-                    'الفا', 'الفا لیبویک', ' البوریک',
-                     'فلک', 'فولیکوم', 'جولی', 'فولیت'
-                ],
-                
-                'compounds': [
-                    # Dosages
-                    '5mg', '5 mg', '400', '400mg', '400 mg', '1mg', '1 mg',
-                    '٥', '5', '1',
-                    
-                    # Forms
-                    'حبوب', 'أقراص', 'كبسولات', 'tablets', 'capsules', 'pills',
-                    'حبوب حمض الفولیک', 'أقراص حمض الفولیک',
-                    
-                    # Combined products
-                    'iron and folic acid', 'حديد وحمض الفولیک', 'آهن و فولیک اسید',
-                    'iron', 'حديد', 'آهن', 'فرروس',
-                    
-                    # Medical terms
-                    'اسید', 'acid', 'حمض', 'حامض',
-                    'vitamin', 'ویتامین', 'فیتامین',
-                    'supplement', 'مکمل', 'مكمل'
-                ],
-                
-                'threshold': 85,
-                'min_length': 4
-            },
-
-            'میلاتونین': {
-                'variations': [
-                    # Arabic/Persian variations
-                    'میلاتونین', 'میلاتو', 'میلات', 'میلاتون', 'میلاتی', 'میلاتین',
-                    'میلاتونی', 'میلاتوبید', 'میلاتونین', 'میلاتیون', 'میلاتینون',
-                    'میلاتنین', 'میلاتونیین', 'میلاتونورم', 'میلاتنون', 'میلاتولین',
-                    'المیلاتونین', 'میلاتونین', 'میلاتونین',
-                    
-                    # English variations
-                    'melatonin', 'melatonine', 'mela', 'melat', 'melato', 'melaton',
-                    'melatobed', 'melatoni',
-                    
-                    # Brand-specific terms
-                    'هولیستا', 'holista', 'ناترول', 'natrol', 'جامیسون', 'jamieson',
-                    'میلاتو سلیب', 'میلاتونین ستار', 'جی بی میلاتونین', 'jp melatonin',
-                    'jp mela', 'jp melat'
-                ],
-                
-                'excluded_terms': [
-                    # Original exclusions
-                    'ملاط', 'ملات', 'میلان', 'میلاد', 'میلی', 'تونین', 'تونی',
-                    'میلا', 'میل', 'لات', 'لاتون', 'میت', 'تون','هولیست','میجاتاین',
-                    
-                    # New exclusions from your list
-                    'naturals', 'جلایسین', 'nutrafol', 'entro', 'holis', 'natr',
-                    'هولیستا', 'اورلیستات', 'ناترول', 'nitro', 'نترو', 'لاین',
-                    'الکریاتین', 'megatine', 'سیترولین', 'ملتی', 'holista',
-                    'کریاتین', 'سنترو', 'malate', 'جامیزنج', 'مالتی', 'هولستا',
-                    'میجاتو', 'انترو', 'jameson', 'natural', 'لاکتوفیرین',
-                    'یوراتین', 'میجاتین', 'ملین', 'chelated', 'جامسیون',
-                    'jamison', 'جامیس', 'جلافولین', 'orlistat', 'jamies',
-                    'ناتشورال', 'ملکات',
-                    
-                    # Additional related exclusions
-                    'glycine', 'creatine', 'citrulline', 'lactoferrin',
-                    'multi', 'multivitamin', 'centrum', 'mega',
-                    'nitric', 'oxide', 'chelate', 'malates',
-                    'jamieson', 'jamiesons', 'natrol', 'holistic',
-                    'orlistat', 'xenical', 'alli',
-                    
-                    # Brand name exclusions
-                    'nutrafol hair', 'entro vitality', 'mega creatine',
-                    'nitro tech', 'centrum multi', 'jamieson vitamin',
-                    
-                    # Supplement category exclusions
-                    'protein', 'پروتین', 'amino', 'امینو',
-                    'vitamin', 'ویتامین', 'mineral', 'معدنی',
-                    'omega', 'اومگا', 'fish oil', 'روغن ماهی'
-                ],
-                
-                'compounds': [
-                    # Dosage variations
-                    '1', '3', '5', '10', '1mg', '3mg', '5mg', '10mg',
-                    'میلاتونین 1', 'میلاتونین 3', 'میلاتونین 5', 'میلاتونین 10',
-                    'میلاتونین5', 'میلاتونین10', 'میلاتونین ١٠',
-                    'melatonin 1', 'melatonin 3', 'melatonin 5', 'melatonin 10',
-                    'melatonin 1 mg', 'melatonin 3 mg', 'melatonin 5 mg', 'melatonin 10 mg',
-                    'melatonin 1mg', 'melatonin 3mg', 'melatonin 5mg', 'melatonin 10mg',
-                    
-                    # Form variations
-                    'gummy', 'gummies', 'حبوب', 'نقط', 'شراب', 'شرایح', 'حلوى',
-                    'melatonin gummy', 'melatonin gummies',
-                    
-                    # Target audience
-                    'اطفال', 'للاطفال', 'الاطفال', 'کیدز', 'kids', 'children',
-                    'میلاتونین اطفال', 'میلاتونین للاطفال', 'میلاتونین الاطفال',
-                    'میلاتونین کیدز', 'میلاتونینللاطفال', 'میلاتون اطفال',
-                    'میلاتون للاطفال', 'ناترول میلاتونین للاطفال',
-                    'melatonin for kids', 'melatonin kids', 'kids melatonin',
-                    
-                    # Usage context
-                    'للنوم', 'sleep', 'سلیب', 'نوم',
-                    
-                    # Additional compounds
-                    'plus', 'بلس', 'میلاتونین بلس', 'melatonin plus',
-                    'extract', 'عصاره'
-                ],
-                
-                'threshold': 80,
-                'min_length': 4
-            }
-
-        }
 
 
 
