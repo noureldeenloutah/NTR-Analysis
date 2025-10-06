@@ -3217,7 +3217,6 @@ with tab_search:
             </div>
             """, unsafe_allow_html=True)
             
-            
             # 🧠 GREEN-THEMED AI INSIGHTS
             st.markdown("---")
             st.markdown("""
@@ -3239,37 +3238,7 @@ with tab_search:
             </div>
             """, unsafe_allow_html=True)
             
-            # Simple 3-column green insights
-            insight_col1, insight_col2, insight_col3 = st.columns(3)
-            
-            with insight_col1:
-                # Calculate keyword complexity
-                if 'representative_keyword' in kw_perf_df.columns:
-                    avg_words = kw_perf_df['representative_keyword'].str.split().str.len().mean()
-                else:
-                    avg_words = 2.5  # Default
-                    
-                complexity_status = "🔥 Complex queries" if avg_words > 3 else "📊 Simple queries"
-                st.markdown(f"""
-                <div style="
-                    background: white; 
-                    padding: 1.5rem; 
-                    border-radius: 12px; 
-                    border-left: 4px solid #4CAF50;
-                    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.1);
-                    height: 120px;
-                ">
-                    <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🎯 Query Analysis</h5>
-                    <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        Average <strong>{avg_words:.1f} words</strong> per query
-                    </p>
-                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
-                        {complexity_status}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # 🔧 CALCULATE ALL VARIABLES FIRST (before any columns or insights)    
+            # 🔧 CALCULATE ALL VARIABLES FIRST (MOVED OUTSIDE COLUMNS)
             def safe_calculate_health_metrics(kw_perf_df):
                 """Safely calculate all health analysis metrics"""
                 
@@ -3285,7 +3254,7 @@ with tab_search:
                     'avg_query_length': 0.0,
                     'top_keyword_pct': 0.0,
                     'avg_words': 0.0,
-                    'top_volume': 0  # ✅ Added this
+                    'top_volume': 0
                 }
                 
                 try:
@@ -3306,7 +3275,7 @@ with tab_search:
                         metrics['avg_ctr'] = kw_perf_df['avg_ctr'].mean() if 'avg_ctr' in kw_perf_df.columns else 0.0
                         metrics['avg_health_cr'] = kw_perf_df['health_cr'].mean() if 'health_cr' in kw_perf_df.columns else 0.0
                         
-                        # ✅ Top volume calculation
+                        # Top volume calculation
                         metrics['top_volume'] = kw_perf_df['total_counts'].max() if 'total_counts' in kw_perf_df.columns else 0
                         
                         # High performance calculations
@@ -3348,11 +3317,38 @@ with tab_search:
             long_tail_pct = health_metrics['long_tail_pct']
             avg_words = health_metrics['avg_words']
             top_keyword_pct = health_metrics['top_keyword_pct']
-            top_volume = health_metrics['top_volume']  # ✅ Added this
+            top_volume = health_metrics['top_volume']
+            
+            # ✅ NOW CREATE THE INSIGHTS COLUMNS
+            insight_col1, insight_col2, insight_col3 = st.columns(3)
+            
+            with insight_col1:
+                # Use pre-calculated avg_words
+                complexity_status = "🔥 Complex queries" if avg_words > 3 else "📊 Simple queries"
+                st.markdown(f"""
+                <div style="
+                    background: white; 
+                    padding: 1.5rem; 
+                    border-radius: 12px; 
+                    border-left: 4px solid #4CAF50;
+                    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.1);
+                    height: 140px;
+                ">
+                    <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🎯 Query Analysis</h5>
+                    <p style="margin: 0 0 0.5rem 0; color: #555;">
+                        Average <strong>{avg_words:.1f} words</strong> per query
+                    </p>
+                    <p style="margin: 0 0 0.5rem 0; color: #555;">
+                        <strong>{long_tail_pct:.1f}%</strong> long-tail queries
+                    </p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
+                        {complexity_status}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
-            # 🎨 NOW USE THE PRE-CALCULATED VARIABLES (NO MORE DUPLICATE CALCULATIONS)
             with insight_col2:
-                # ✅ REMOVED duplicate calculations - use pre-calculated values
+                # Use pre-calculated values
                 performance_status = "🎯 Strong performance" if high_perf_pct > 40 else "📈 Growth potential"
                 
                 st.markdown(f"""
@@ -3378,7 +3374,7 @@ with tab_search:
                 """, unsafe_allow_html=True)
 
             with insight_col3:
-                # ✅ Use pre-calculated top_volume
+                # Use pre-calculated top_volume
                 volume_status = "🔥 High volume" if top_volume > 10000 else "📊 Moderate volume"
                 
                 st.markdown(f"""
@@ -3403,6 +3399,7 @@ with tab_search:
                 </div>
                 """, unsafe_allow_html=True)
 
+            # Rest of your code continues here...
             
             # 📊 GREEN-THEMED RECOMMENDATIONS
             st.markdown("---")
@@ -3463,6 +3460,8 @@ with tab_search:
                 """, unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
+
+
 
         
         # Create layout
