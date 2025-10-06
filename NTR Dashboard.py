@@ -4009,8 +4009,9 @@ with tab_search:
             <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 3rem 0; border-radius: 2px;"></div>
             """, unsafe_allow_html=True)
 
+
             # ================================================================================================
-            # 📊 ENHANCED MAIN KEYWORDS TABLE
+            # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
             # ================================================================================================
 
             # ================================================================================================
@@ -4020,6 +4021,9 @@ with tab_search:
             # Calculate market share for enhanced insights
             total_all_counts = queries['Counts'].sum()
             top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
+
+            # ✅ ADD AVG CR CALCULATION (Conversions / Search Volume)
+            top_keywords['avg_cr_volume'] = ((top_keywords['total_conversions'] / top_keywords['total_counts']) * 100).fillna(0).round(4)
 
             if not top_keywords.empty:
                 # Enhanced table header
@@ -4043,6 +4047,7 @@ with tab_search:
                     'avg_ctr': 'Avg CTR',
                     'health_cr': 'Health CR',
                     'classic_cr': 'Classic CR',
+                    'avg_cr_volume': 'AVG CR (Conv/Vol)',  # ✅ Added new column
                     'unique_queries': 'Unique Queries',
                     'variations_count': 'Variations'
                 })
@@ -4055,12 +4060,13 @@ with tab_search:
                 display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
                 display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
                 display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
+                display_df['AVG CR (Conv/Vol)'] = display_df['AVG CR (Conv/Vol)'].apply(lambda x: f"{x:.4f}%")  # ✅ Format new column
                 display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
                 display_df['Variations'] = display_df['Variations'].apply(format_number)
                 
-                # Enhanced column configuration
+                # Enhanced column configuration - ✅ UPDATED ORDER
                 column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
-                            'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
+                            'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'AVG CR (Conv/Vol)', 'Unique Queries', 'Variations']
                 display_df = display_df[column_order].reset_index(drop=True)
                 
                 # Enhanced dataframe display with better configuration
@@ -4109,6 +4115,11 @@ with tab_search:
                             help="Classic Conversion Rate (Conversions/Clicks)",
                             width="small"
                         ),
+                        "AVG CR (Conv/Vol)": st.column_config.TextColumn(  # ✅ Added new column config
+                            "AVG CR (Conv/Vol)",
+                            help="Average Conversion Rate: Conversions divided by Search Volume - Direct conversion efficiency metric",
+                            width="small"
+                        ),
                         "Unique Queries": st.column_config.TextColumn(
                             "Unique Queries",
                             help="Number of unique search queries for this keyword group",
@@ -4123,7 +4134,7 @@ with tab_search:
                 )
                 
                 # ================================================================================================
-                # 📊 INTERACTIVE BAR CHART SECTION
+                # 📊 INTERACTIVE BAR CHART SECTION WITH AVG CR
                 # ================================================================================================
                 
                 st.markdown("---")
@@ -4147,14 +4158,15 @@ with tab_search:
                     )
                 
                 with chart_col2:
-                    # Metric selection
+                    # Metric selection - ✅ ADDED AVG CR OPTION
                     chart_metric = st.selectbox(
                         "📈 Primary Metric",
                         options=[
                             "Total Search Volume",
                             "Total Clicks", 
                             "Conversions",
-                            "Market Share %"
+                            "Market Share %",
+                            "AVG CR (Conv/Vol)"  # ✅ Added new metric option
                         ],
                         index=0,
                         help="Choose the primary metric to display"
@@ -4174,12 +4186,13 @@ with tab_search:
                     # Filter data for selected keywords
                     chart_data = top_keywords[top_keywords['keyword'].isin(selected_keywords)].copy()
                     
-                    # Map display names to actual column names
+                    # Map display names to actual column names - ✅ ADDED AVG CR MAPPING
                     metric_mapping = {
                         "Total Search Volume": "total_counts",
                         "Total Clicks": "total_clicks",
                         "Conversions": "total_conversions", 
-                        "Market Share %": "share_pct"
+                        "Market Share %": "share_pct",
+                        "AVG CR (Conv/Vol)": "avg_cr_volume"  # ✅ Added new mapping
                     }
                     
                     metric_column = metric_mapping[chart_metric]
@@ -4187,29 +4200,38 @@ with tab_search:
                     # Sort data by selected metric
                     chart_data = chart_data.sort_values(metric_column, ascending=False)
                     
+                    # ✅ ENHANCED COLOR MAPPING BASED ON METRIC TYPE
+                    if chart_metric == "AVG CR (Conv/Vol)":
+                        color_column = 'avg_cr_volume'
+                        color_label = 'AVG CR (%)'
+                    else:
+                        color_column = 'avg_ctr'
+                        color_label = 'Avg CTR (%)'
+                    
                     # Create the chart based on type
                     if chart_type == "Bar Chart":
                         fig_bar = px.bar(
                             chart_data,
                             x='keyword',
                             y=metric_column,
-                            color='avg_ctr',
+                            color=color_column,  # ✅ Dynamic color based on metric
                             title=f'<b style="color:#2E7D32; font-size:18px;">🌿 {chart_metric} by Selected Keywords</b>',
                             labels={
                                 'keyword': 'Health Keywords',
                                 metric_column: chart_metric,
-                                'avg_ctr': 'Avg CTR (%)'
+                                color_column: color_label
                             },
                             color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                             template='plotly_white'
                         )
                         
-                        # Enhanced hover template
+                        # ✅ ENHANCED HOVER TEMPLATE WITH AVG CR INFO
+                        hover_template = '<b>%{x}</b><br>' + f'{chart_metric}: %{{y:,.4f}}<br>' if chart_metric == "AVG CR (Conv/Vol)" else '<b>%{x}</b><br>' + f'{chart_metric}: %{{y:,.0f}}<br>'
+                        hover_template += f'{color_label}: %{{marker.color:.4f}}%<br>' if chart_metric == "AVG CR (Conv/Vol)" else f'{color_label}: %{{marker.color:.2f}}%<br>'
+                        hover_template += 'Variations: %{customdata}<extra></extra>'
+                        
                         fig_bar.update_traces(
-                            hovertemplate='<b>%{x}</b><br>' +
-                                        f'{chart_metric}: %{{y:,.0f}}<br>' +
-                                        'Avg CTR: %{marker.color:.2f}%<br>' +
-                                        'Variations: %{customdata}<extra></extra>',
+                            hovertemplate=hover_template,
                             customdata=chart_data['variations_count']
                         )
                         
@@ -4218,7 +4240,7 @@ with tab_search:
                             chart_data,
                             y='keyword',
                             x=metric_column,
-                            color='health_cr',
+                            color='health_cr',  # Keep health_cr for horizontal bars
                             orientation='h',
                             title=f'<b style="color:#2E7D32; font-size:18px;">🌿 {chart_metric} by Selected Keywords</b>',
                             labels={
@@ -4230,11 +4252,12 @@ with tab_search:
                             template='plotly_white'
                         )
                         
+                        # ✅ ENHANCED HOVER FOR HORIZONTAL BARS
+                        hover_template = '<b>%{y}</b><br>' + f'{chart_metric}: %{{x:,.4f}}<br>' if chart_metric == "AVG CR (Conv/Vol)" else '<b>%{y}</b><br>' + f'{chart_metric}: %{{x:,.0f}}<br>'
+                        hover_template += 'Health CR: %{marker.color:.2f}%<br>Variations: %{customdata}<extra></extra>'
+                        
                         fig_bar.update_traces(
-                            hovertemplate='<b>%{y}</b><br>' +
-                                        f'{chart_metric}: %{{x:,.0f}}<br>' +
-                                        'Health CR: %{marker.color:.2f}%<br>' +
-                                        'Variations: %{customdata}<extra></extra>',
+                            hovertemplate=hover_template,
                             customdata=chart_data['variations_count']
                         )
                         
@@ -4252,10 +4275,12 @@ with tab_search:
                             template='plotly_white'
                         )
                         
+                        # ✅ ENHANCED HOVER FOR AREA CHART
+                        hover_template = '<b>%{x}</b><br>' + f'{chart_metric}: %{{y:,.4f}}<extra></extra>' if chart_metric == "AVG CR (Conv/Vol)" else '<b>%{x}</b><br>' + f'{chart_metric}: %{{y:,.0f}}<extra></extra>'
+                        
                         fig_bar.update_traces(
                             fill='tonexty',
-                            hovertemplate='<b>%{x}</b><br>' +
-                                        f'{chart_metric}: %{{y:,.0f}}<extra></extra>'
+                            hovertemplate=hover_template
                         )
                     
                     # Enhanced layout styling
@@ -4283,15 +4308,25 @@ with tab_search:
                         showlegend=False
                     )
                     
-                    # Add annotation with insights
+                    # ✅ ENHANCED ANNOTATION WITH AVG CR INSIGHTS
                     total_selected_volume = chart_data[metric_column].sum()
                     avg_selected_ctr = chart_data['avg_ctr'].mean()
+                    avg_selected_cr = chart_data['avg_cr_volume'].mean()  # ✅ Added AVG CR calculation
+                    
+                    # Dynamic annotation based on selected metric
+                    if chart_metric == "AVG CR (Conv/Vol)":
+                        annotation_text = f'📊 Selected: {len(selected_keywords)} keywords<br>' + \
+                                        f'🎯 Avg {chart_metric}: {total_selected_volume/len(selected_keywords):.4f}%<br>' + \
+                                        f'📈 Best CR: {chart_data[metric_column].max():.4f}%'
+                    else:
+                        annotation_text = f'📊 Selected: {len(selected_keywords)} keywords<br>' + \
+                                        f'🎯 Total {chart_metric}: {total_selected_volume:,.0f}<br>' + \
+                                        f'📈 Avg CTR: {avg_selected_ctr:.2f}%<br>' + \
+                                        f'🔄 Avg CR: {avg_selected_cr:.4f}%'  # ✅ Always show AVG CR
                     
                     fig_bar.add_annotation(
                         x=0.95, y=0.95, xref='paper', yref='paper',
-                        text=f'📊 Selected: {len(selected_keywords)} keywords<br>' +
-                            f'🎯 Total {chart_metric}: {total_selected_volume:,.0f}<br>' +
-                            f'📈 Avg CTR: {avg_selected_ctr:.2f}%',
+                        text=annotation_text,
                         showarrow=False,
                         font=dict(size=11, color='#1B5E20'),
                         align='right',
@@ -4303,18 +4338,22 @@ with tab_search:
                     # Display the chart
                     st.plotly_chart(fig_bar, use_container_width=True)
                     
-                    # ✅ PERFORMANCE INSIGHTS FOR SELECTED KEYWORDS
+                    # ✅ ENHANCED PERFORMANCE INSIGHTS WITH AVG CR
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #66BB6A; margin: 1rem 0;">
                         <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">🎯 Selected Keywords Insights</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
                             <div>
                                 <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Keywords Selected:</strong> {len(selected_keywords)}</p>
                                 <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔥 Top Performer:</strong> {chart_data.iloc[0]['keyword']}</p>
                             </div>
                             <div>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📈 Combined {chart_metric}:</strong> {total_selected_volume:,.0f}</p>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📈 Combined {chart_metric}:</strong> {total_selected_volume:,.4f}{'%' if chart_metric == 'AVG CR (Conv/Vol)' else ''}</p>
                                 <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Average CTR:</strong> {avg_selected_ctr:.2f}%</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔄 Average CR (Conv/Vol):</strong> {avg_selected_cr:.4f}%</p>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>⭐ Best CR:</strong> {chart_data['avg_cr_volume'].max():.4f}%</p>
                             </div>
                         </div>
                     </div>
@@ -4349,25 +4388,6 @@ with tab_search:
                 """, unsafe_allow_html=True)
     
 
-                
-                # Enhanced table performance insights
-                processing_time = (datetime.now() - start_time).total_seconds()
-                
-                st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #4CAF50; margin: 2rem 0;">
-                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">⚡ Table Performance Metrics</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Rows Displayed:</strong> {len(display_df):,}</p>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔍 Total Keywords:</strong> {len(kw_perf_df):,}</p>
-                        </div>
-                        <div>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>⏱️ Processing Time:</strong> {processing_time:.2f}s</p>
-                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Matching Method:</strong> {matching_method}</p>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
                 
                 # ================================================================================================
                 # 🔍 ENHANCED EXAMPLE QUERIES & VARIATIONS SECTION
