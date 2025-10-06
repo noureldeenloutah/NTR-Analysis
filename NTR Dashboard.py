@@ -4266,7 +4266,6 @@ with tab_search:
                     </div>
                     """, unsafe_allow_html=True)
 
-                    
                     # Final performance footer
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 12px; margin: 3rem 0; text-align: center; border: 2px solid #4CAF50;">
@@ -4284,6 +4283,7 @@ with tab_search:
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
+
 
             else:
                 st.markdown("""
