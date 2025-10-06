@@ -3472,7 +3472,7 @@ with tab_search:
             st.markdown("""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
                 <h3 style="margin: 0; display: flex; align-items: center;">
-                    🎯 Nutraceuticals & Nutrition Keywords Performance Matrix
+                    🎯 Grouped Keywords Performance Matrix
                     <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">Real-time Analysis</span>
                 </h3>
             </div>
@@ -3587,7 +3587,7 @@ with tab_search:
             # Enhanced Query Length Analysis
             st.markdown("""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                <h3 style="margin: 0;">📊 Nutraceuticals & Nutrition Query Length Analysis</h3>
+                <h3 style="margin: 0;">📊 Query Length Analysis</h3>
             </div>
             """, unsafe_allow_html=True)
             
@@ -4013,6 +4013,10 @@ with tab_search:
             # 📊 ENHANCED MAIN KEYWORDS TABLE
             # ================================================================================================
 
+            # ================================================================================================
+            # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
+            # ================================================================================================
+
             # Calculate market share for enhanced insights
             total_all_counts = queries['Counts'].sum()
             top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
@@ -4059,7 +4063,6 @@ with tab_search:
                             'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'Unique Queries', 'Variations']
                 display_df = display_df[column_order].reset_index(drop=True)
                 
-                # Enhanced dataframe display with better configuration
                 # Enhanced dataframe display with better configuration
                 st.dataframe(
                     display_df, 
@@ -4118,6 +4121,234 @@ with tab_search:
                         )
                     }
                 )
+                
+                # ================================================================================================
+                # 📊 INTERACTIVE BAR CHART SECTION
+                # ================================================================================================
+                
+                st.markdown("---")
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%); padding: 1.5rem; border-radius: 15px; margin: 2rem 0; border-left: 5px solid #4CAF50;">
+                    <h3 style="color: #1B5E20; margin: 0; font-size: 1.5rem;">📊 Interactive Keywords Performance Visualization</h3>
+                    <p style="color: #2E7D32; margin: 0.5rem 0 0 0;">Select keywords and metrics to explore performance patterns</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Chart controls in columns
+                chart_col1, chart_col2, chart_col3 = st.columns([2, 1, 1])
+                
+                with chart_col1:
+                    # Multi-select for keywords
+                    selected_keywords = st.multiselect(
+                        "🎯 Select Keywords to Display",
+                        options=top_keywords['keyword'].tolist(),
+                        default=top_keywords['keyword'].head(10).tolist(),  # Default to top 10
+                        help="Choose which keywords to display in the chart"
+                    )
+                
+                with chart_col2:
+                    # Metric selection
+                    chart_metric = st.selectbox(
+                        "📈 Primary Metric",
+                        options=[
+                            "Total Search Volume",
+                            "Total Clicks", 
+                            "Conversions",
+                            "Market Share %"
+                        ],
+                        index=0,
+                        help="Choose the primary metric to display"
+                    )
+                
+                with chart_col3:
+                    # Chart type selection
+                    chart_type = st.selectbox(
+                        "📊 Chart Type",
+                        options=["Bar Chart", "Horizontal Bar", "Area Chart"],
+                        index=0,
+                        help="Choose visualization type"
+                    )
+                
+                # Create chart data based on selections
+                if selected_keywords:
+                    # Filter data for selected keywords
+                    chart_data = top_keywords[top_keywords['keyword'].isin(selected_keywords)].copy()
+                    
+                    # Map display names to actual column names
+                    metric_mapping = {
+                        "Total Search Volume": "total_counts",
+                        "Total Clicks": "total_clicks",
+                        "Conversions": "total_conversions", 
+                        "Market Share %": "share_pct"
+                    }
+                    
+                    metric_column = metric_mapping[chart_metric]
+                    
+                    # Sort data by selected metric
+                    chart_data = chart_data.sort_values(metric_column, ascending=False)
+                    
+                    # Create the chart based on type
+                    if chart_type == "Bar Chart":
+                        fig_bar = px.bar(
+                            chart_data,
+                            x='keyword',
+                            y=metric_column,
+                            color='avg_ctr',
+                            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 {chart_metric} by Selected Keywords</b>',
+                            labels={
+                                'keyword': 'Health Keywords',
+                                metric_column: chart_metric,
+                                'avg_ctr': 'Avg CTR (%)'
+                            },
+                            color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                            template='plotly_white'
+                        )
+                        
+                        # Enhanced hover template
+                        fig_bar.update_traces(
+                            hovertemplate='<b>%{x}</b><br>' +
+                                        f'{chart_metric}: %{{y:,.0f}}<br>' +
+                                        'Avg CTR: %{marker.color:.2f}%<br>' +
+                                        'Variations: %{customdata}<extra></extra>',
+                            customdata=chart_data['variations_count']
+                        )
+                        
+                    elif chart_type == "Horizontal Bar":
+                        fig_bar = px.bar(
+                            chart_data,
+                            y='keyword',
+                            x=metric_column,
+                            color='health_cr',
+                            orientation='h',
+                            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 {chart_metric} by Selected Keywords</b>',
+                            labels={
+                                'keyword': 'Health Keywords',
+                                metric_column: chart_metric,
+                                'health_cr': 'Health CR (%)'
+                            },
+                            color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                            template='plotly_white'
+                        )
+                        
+                        fig_bar.update_traces(
+                            hovertemplate='<b>%{y}</b><br>' +
+                                        f'{chart_metric}: %{{x:,.0f}}<br>' +
+                                        'Health CR: %{marker.color:.2f}%<br>' +
+                                        'Variations: %{customdata}<extra></extra>',
+                            customdata=chart_data['variations_count']
+                        )
+                        
+                    else:  # Area Chart
+                        fig_bar = px.area(
+                            chart_data,
+                            x='keyword',
+                            y=metric_column,
+                            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 {chart_metric} Distribution</b>',
+                            labels={
+                                'keyword': 'Health Keywords',
+                                metric_column: chart_metric
+                            },
+                            color_discrete_sequence=['#4CAF50'],
+                            template='plotly_white'
+                        )
+                        
+                        fig_bar.update_traces(
+                            fill='tonexty',
+                            hovertemplate='<b>%{x}</b><br>' +
+                                        f'{chart_metric}: %{{y:,.0f}}<extra></extra>'
+                        )
+                    
+                    # Enhanced layout styling
+                    fig_bar.update_layout(
+                        plot_bgcolor='rgba(248,253,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
+                        title_x=0,
+                        height=500,
+                        xaxis=dict(
+                            showgrid=True, 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
+                            linewidth=2,
+                            title_font=dict(size=14, color='#1B5E20'),
+                            tickangle=-45 if chart_type == "Bar Chart" else 0
+                        ),
+                        yaxis=dict(
+                            showgrid=True, 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
+                            linewidth=2,
+                            title_font=dict(size=14, color='#1B5E20')
+                        ),
+                        showlegend=False
+                    )
+                    
+                    # Add annotation with insights
+                    total_selected_volume = chart_data[metric_column].sum()
+                    avg_selected_ctr = chart_data['avg_ctr'].mean()
+                    
+                    fig_bar.add_annotation(
+                        x=0.95, y=0.95, xref='paper', yref='paper',
+                        text=f'📊 Selected: {len(selected_keywords)} keywords<br>' +
+                            f'🎯 Total {chart_metric}: {total_selected_volume:,.0f}<br>' +
+                            f'📈 Avg CTR: {avg_selected_ctr:.2f}%',
+                        showarrow=False,
+                        font=dict(size=11, color='#1B5E20'),
+                        align='right',
+                        bgcolor='rgba(255,255,255,0.9)',
+                        bordercolor='#2E7D32',
+                        borderwidth=1,
+                    )
+                    
+                    # Display the chart
+                    st.plotly_chart(fig_bar, use_container_width=True)
+                    
+                    # ✅ PERFORMANCE INSIGHTS FOR SELECTED KEYWORDS
+                    st.markdown(f"""
+                    <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #66BB6A; margin: 1rem 0;">
+                        <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">🎯 Selected Keywords Insights</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Keywords Selected:</strong> {len(selected_keywords)}</p>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔥 Top Performer:</strong> {chart_data.iloc[0]['keyword']}</p>
+                            </div>
+                            <div>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📈 Combined {chart_metric}:</strong> {total_selected_volume:,.0f}</p>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Average CTR:</strong> {avg_selected_ctr:.2f}%</p>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                else:
+                    # Show message when no keywords selected
+                    st.markdown("""
+                    <div style="background: #FFF3E0; padding: 2rem; border-radius: 12px; border-left: 5px solid #FF9800; text-align: center; margin: 1rem 0;">
+                        <h4 style="color: #E65100; margin: 0;">⚠️ No Keywords Selected</h4>
+                        <p style="color: #F57C00; margin: 0.5rem 0 0 0;">Please select at least one keyword to display the chart</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Enhanced table performance insights
+                processing_time = (datetime.now() - start_time).total_seconds()
+                
+                st.markdown(f"""
+                <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #4CAF50; margin: 2rem 0;">
+                    <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">⚡ Table Performance Metrics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📊 Rows Displayed:</strong> {len(display_df):,}</p>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔍 Total Keywords:</strong> {len(kw_perf_df):,}</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>⏱️ Processing Time:</strong> {processing_time:.2f}s</p>
+                            <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Matching Method:</strong> {matching_method}</p>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+    
+
                 
                 # Enhanced table performance insights
                 processing_time = (datetime.now() - start_time).total_seconds()
