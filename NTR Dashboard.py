@@ -2269,41 +2269,9 @@ with tab_overview:
 
 
 st.markdown("---")
-# ----------------- Search Analysis (Enhanced Core) -----------------
-# =================== CACHED FUNCTION (PUT AT TOP OF FILE) ===================
-@st.cache_data(ttl=1800, show_spinner=False)
-def calculate_search_metrics(queries_hash, queries_data):
-    """Calculate all search metrics with caching"""
-    try:
-        # Convert back from cached data
-        queries = pd.DataFrame(queries_data)
-        
-        # Calculate all metrics in one pass (vectorized)
-        metrics = {
-            'unique_queries': queries['normalized_query'].nunique(),
-            'avg_query_length': queries['query_length'].mean(),
-            'long_tail_pct': (queries['query_length'] >= 20).mean() * 100,
-            'high_perf_queries': 0
-        }
-        
-        # CTR calculation (if available)
-        if 'Click Through Rate' in queries.columns and not queries.empty:
-            avg_ctr = queries['Click Through Rate'].mean()
-            metrics['high_perf_queries'] = len(queries[queries['Click Through Rate'] > avg_ctr])
-        
-        # ✅ ADD TOP KEYWORD PERCENTAGE
-        if 'keywords' in queries.columns and not queries.empty:
-            top_keyword_count = queries['keywords'].value_counts().iloc[0] if len(queries) > 0 else 0
-            metrics['top_keyword_pct'] = (top_keyword_count / len(queries)) * 100
-        else:
-            metrics['top_keyword_pct'] = 0.0
-        
-        return metrics
-    except Exception as e:
-        st.error(f"Error calculating metrics: {str(e)}")
-        return None
 
-# =================== MAIN TAB CODE ===================
+# ----------------- Search Analysis (Enhanced Core) -----------------
+
 with tab_search:
     st.header("🔍 Health Search Analysis — Deep Dive into Nutraceuticals & Nutrition Queries")
     st.markdown("Analyze nutritional search patterns with advanced keyword insights, supplement performance metrics, and actionable health intelligence. 🌿")
@@ -2318,58 +2286,60 @@ with tab_search:
     selected_search_image = st.sidebar.selectbox("Choose Health Search Hero", options=list(search_image_options.keys()), index=0, key="search_hero_image_selector")
     st.image(search_image_options[selected_search_image], use_container_width=True)
     
-    # Data validation
+    # Add error handling and data validation
     if queries.empty or 'keywords' not in queries.columns:
         st.error("❌ No health keyword data available. Please ensure your data contains properly processed Nutraceuticals & Nutrition keywords.")
         st.stop()
     
-    # Calculate metrics with caching
-    queries_hash = hash(str(queries.shape) + str(queries.columns.tolist()))
-    metrics = calculate_search_metrics(queries_hash, queries.to_dict('records'))
-    
-    if metrics is None:
-        st.stop()
-    
-    # Quick Health Search Metrics Row (using cached metrics)
+    # Quick Health Search Metrics Row
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-    
     with col_m1:
+        unique_queries = queries['normalized_query'].nunique()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌿</span>
-            <div class='value'>{format_number(metrics['unique_queries'])}</div>
+            <div class='value'>{format_number(unique_queries)}</div>
             <div class='label'>Unique Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m2:
+        avg_query_length = queries['query_length'].mean()
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>📏</span>
-            <div class='value'>{metrics['avg_query_length']:.1f}</div>
+            <div class='value'>{avg_query_length:.1f}</div>
             <div class='label'>Avg Query Length</div>
         </div>
         """, unsafe_allow_html=True)
     
     with col_m3:
+        # Fixed: Total Keywords = Total number of rows (each search query counts as 1)
+        # Queries with above-average CTR
+        if 'Click Through Rate' in queries.columns and not queries.empty:
+            avg_ctr = queries['Click Through Rate'].mean()
+            high_perf_queries = len(queries[queries['Click Through Rate'] > avg_ctr])
+        else:
+            high_perf_queries = 0
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>⚡</span>
-            <div class='value'>{format_number(metrics['high_perf_queries'])}</div>
-            <div class='label'>High-Performance Queries</div>
+            <div class='value'>{format_number(high_perf_queries)}</div>
+            <div class='label'>High-Performance Nutraceuticals & Nutrition Queries</div>
         </div>
         """, unsafe_allow_html=True)
+
     
     with col_m4:
+        long_tail_pct = (queries['query_length'] >= 20).mean() * 100
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌱</span>
-            <div class='value'>{metrics['long_tail_pct']:.1f}%</div>
+            <div class='value'>{long_tail_pct:.1f}%</div>
             <div class='label'>Long-tail Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
     
-
     st.markdown("---")
     
     # Two-column layout for main analysis
@@ -2379,17 +2349,12 @@ with tab_search:
         # Enhanced Keyword Analysis
         st.subheader("🧴 Health Keyword Frequency & Performance Analysis")
         
-        # ✅ ENHANCED: Check if functions exist using session state for better performance
-        if 'calculate_enhanced_keyword_performance' not in st.session_state:
+        # First, define the functions if they haven't been defined yet
+        if 'calculate_enhanced_keyword_performance' not in locals():
             # 🚀 ENHANCED FUZZY KEYWORD EXTRACTION AND GROUPING
             import re
             from collections import defaultdict
-            try:
-                from fuzzywuzzy import fuzz, process
-            except ImportError:
-                st.error("⚠️ fuzzywuzzy library not found. Please install it:")
-                st.code("pip install fuzzywuzzy python-levenshtein")
-                st.stop()
+            from fuzzywuzzy import fuzz, process
 
             def create_master_keyword_dictionary():
                 """
@@ -2444,8 +2409,7 @@ with tab_search:
 
             def extract_keywords_with_fuzzy_grouping(text: str, min_length=2):
                 """Extract keywords and prepare for fuzzy grouping"""
-                # ✅ ENHANCED: Better validation for empty or invalid text
-                if not isinstance(text, str) or not text.strip():
+                if not isinstance(text, str):
                     return []
                 
                 text = text.strip().lower()
@@ -2461,8 +2425,7 @@ with tab_search:
                     matches = re.findall(pattern, text)
                     keywords.extend([match.strip() for match in matches if len(match.strip()) >= min_length])
                 
-                # ✅ ENHANCED: Remove duplicates for better performance
-                return list(set(keywords))
+                return keywords
 
             def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
                 """Conservative fuzzy matching with strict rules"""
@@ -2595,182 +2558,61 @@ with tab_search:
                         })
                 
                 return pd.DataFrame(kw_list).sort_values('total_counts', ascending=False).reset_index(drop=True)
-            
-            # ✅ ENHANCED: Mark functions as loaded in session state for better performance
-            st.session_state['calculate_enhanced_keyword_performance'] = calculate_enhanced_keyword_performance
-            st.session_state['create_master_keyword_dictionary'] = create_master_keyword_dictionary
-            st.session_state['extract_keywords_with_fuzzy_grouping'] = extract_keywords_with_fuzzy_grouping
-            st.session_state['fuzzy_match_keywords'] = fuzzy_match_keywords
         
-        # ✅ ENHANCED: Add loading spinner for better user experience
-        with st.spinner("🔍 Analyzing health keywords with advanced fuzzy matching..."):
-            # Now calculate the keyword performance
-            kw_perf_df = calculate_enhanced_keyword_performance(queries)
+        # Now calculate the keyword performance
+        kw_perf_df = calculate_enhanced_keyword_performance(queries)
         
-        # ✅ WORKING: Simple health keywords analysis
-        if not queries.empty:
-            # Group by query and calculate basic metrics
-            keyword_stats = queries.groupby('query').agg({
-                'clicks': 'sum',
-                'impressions': 'sum',
-                'ctr': 'mean',
-                'position': 'mean'
-            }).reset_index()
+        if not kw_perf_df.empty:
+            # Use the fuzzy-matched keyword performance data directly
+            fig_kw = px.scatter(
+                kw_perf_df.head(30), 
+                x='total_counts', 
+                y='avg_ctr',
+                size='total_clicks',
+                color='health_cr',
+                hover_name='keyword',
+                title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
+                labels={
+                    'total_counts': 'Total Search Volume', 
+                    'avg_ctr': 'Average CTR (%)', 
+                    'health_cr': 'Health CR (%)'
+                },
+                color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                template='plotly_white'
+            )
             
-            # Calculate total counts and filter for health-related keywords
-            keyword_stats['total_counts'] = keyword_stats['clicks'] + keyword_stats['impressions']
-            keyword_stats['avg_ctr'] = keyword_stats['ctr'] * 100  # Convert to percentage
+            fig_kw.update_traces(
+                hovertemplate='<b>%{hovertext}</b><br>' +
+                            'Total Volume: %{x:,.0f}<br>' +
+                            'CTR: %{y:.2f}%<br>' +
+                            'Total Clicks: %{marker.size:,.0f}<br>' +
+                            'Health CR: %{marker.color:.2f}%<br>' +
+                            'Variations: %{customdata}<extra></extra>',
+                customdata=kw_perf_df.head(30)['variations_count']
+            )
             
-            # Health keyword filter (English + Arabic terms)
-            health_terms = [
-                'health', 'medical', 'doctor', 'treatment', 'symptoms', 'disease', 
-                'medicine', 'therapy', 'vitamin', 'supplement', 'protein', 'omega',
-                'فیتامین', 'مغنیسیوم', 'اوميجا', 'کولاجین', 'زنک', 'کالسیوم',
-                'بروتین', 'حدید', 'میلاتونین', 'بیوتین'
-            ]
-            
-            health_keywords = keyword_stats[
-                keyword_stats['query'].str.lower().str.contains('|'.join(health_terms), na=False)
-            ]
-            
-            if not health_keywords.empty:
-                # Create the same style scatter plot
-                fig_kw = px.scatter(
-                    health_keywords.head(30), 
-                    x='total_counts', 
-                    y='avg_ctr',
-                    size='clicks',
-                    color='position',
-                    hover_name='query',
-                    title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
-                    labels={
-                        'total_counts': 'Total Search Volume', 
-                        'avg_ctr': 'Average CTR (%)', 
-                        'position': 'Avg Position'
-                    },
-                    color_continuous_scale=['#2E7D32', '#66BB6A', '#E8F5E8'],
-                    template='plotly_white'
-                )
-                
-                fig_kw.update_traces(
-                    hovertemplate='<b>%{hovertext}</b><br>' +
-                                'Total Volume: %{x:,.0f}<br>' +
-                                'CTR: %{y:.2f}%<br>' +
-                                'Total Clicks: %{marker.size:,.0f}<br>' +
-                                'Avg Position: %{marker.color:.1f}<br><extra></extra>'
-                )
-                
-                fig_kw.update_layout(
-                    plot_bgcolor='rgba(248,253,248,0.95)',
-                    paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'),
-                    title_x=0,
-                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
-                    annotations=[
-                        dict(
-                            x=0.95, y=0.95, xref='paper', yref='paper',
-                            text='💡 Size = Total Clicks | Color = Position',
-                            showarrow=False,
-                            font=dict(size=11, color='#1B5E20'),
-                            align='right'
-                        )
-                    ]
-                )
-                
-                # Display the chart
-                st.plotly_chart(fig_kw, use_container_width=True)
-                
-                # Add metrics summary
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("Health Keywords", f"{len(health_keywords):,}")
-                with col2:
-                    st.metric("Total Clicks", f"{health_keywords['clicks'].sum():,}")
-                with col3:
-                    st.metric("Total Impressions", f"{health_keywords['impressions'].sum():,}")
-                with col4:
-                    st.metric("Avg CTR", f"{health_keywords['avg_ctr'].mean():.2f}%")
-                    
-            else:
-                st.info("No health-related keywords found in your data.")
-        else:
-            st.error("No query data available.")
-
-            
-            # ✅ ENHANCED: Add performance insights section
-            with st.expander("📊 **Keyword Performance Insights**", expanded=False):
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    total_keywords = len(kw_perf_df)
-                    st.metric("🔤 Total Keywords", f"{total_keywords:,}")
-                
-                with col2:
-                    avg_ctr = kw_perf_df['avg_ctr'].mean()
-                    st.metric("📈 Average CTR", f"{avg_ctr:.2f}%")
-                
-                with col3:
-                    top_keyword = kw_perf_df.iloc[0]['keyword'] if not kw_perf_df.empty else "N/A"
-                    st.metric("🏆 Top Keyword", top_keyword)
-                
-                # ✅ ENHANCED: Show top performing keywords table
-                st.markdown("### 🎯 **Top 10 Health Keywords Performance**")
-                top_keywords = kw_perf_df.head(10)[['keyword', 'total_counts', 'avg_ctr', 'health_cr', 'variations_count']]
-                st.dataframe(
-                    top_keywords,
-                    use_container_width=True,
-                    column_config={
-                        "keyword": st.column_config.TextColumn("🧴 Health Keyword", width="medium"),
-                        "total_counts": st.column_config.NumberColumn("📊 Volume", format="%d"),
-                        "avg_ctr": st.column_config.NumberColumn("📈 CTR %", format="%.2f%%"),
-                        "health_cr": st.column_config.NumberColumn("💚 Health CR %", format="%.2f%%"),
-                        "variations_count": st.column_config.NumberColumn("🔄 Variations", format="%d")
-                    },
-                    hide_index=True
-                )
-                
-                # ✅ ENHANCED: Show keyword variations for top performers
-                if not kw_perf_df.empty:
-                    st.markdown("### 🔍 **Keyword Variations Analysis**")
-                    selected_keyword = st.selectbox(
-                        "Select a keyword to see its variations:",
-                        options=kw_perf_df.head(10)['keyword'].tolist(),
-                        key="keyword_variations_selector"
+            fig_kw.update_layout(
+                plot_bgcolor='rgba(248,253,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                title_x=0,
+                xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                annotations=[
+                    dict(
+                        x=0.95, y=0.95, xref='paper', yref='paper',
+                        text='💡 Size = Total Clicks | Color = Health CR',
+                        showarrow=False,
+                        font=dict(size=11, color='#1B5E20'),
+                        align='right'
                     )
-                    
-                    if selected_keyword:
-                        selected_row = kw_perf_df[kw_perf_df['keyword'] == selected_keyword].iloc[0]
-                        variations = selected_row['variations']
-                        example_queries = selected_row['example_queries']
-                        
-                        col_var1, col_var2 = st.columns(2)
-                        
-                        with col_var1:
-                            st.markdown(f"**🔤 Variations for '{selected_keyword}':**")
-                            for i, var in enumerate(variations[:10], 1):
-                                st.write(f"{i}. {var}")
-                        
-                        with col_var2:
-                            st.markdown(f"**📝 Example Queries:**")
-                            for i, query in enumerate(example_queries[:5], 1):
-                                st.write(f"{i}. {query}")
+                ]
+            )
+            
+            # Display only the chart
+            st.plotly_chart(fig_kw, use_container_width=True)
         else:
             st.warning("⚠️ No keyword performance data available to display chart.")
-            
-            # ✅ ENHANCED: Show helpful message when no data
-            st.info("""
-            **💡 Possible reasons for no data:**
-            - No queries in the dataset
-            - All queries filtered out during processing
-            - Missing required columns (normalized_query, Counts, clicks, conversions)
-            
-            **🔧 Try:**
-            - Check your data source
-            - Verify column names match expected format
-            - Ensure data contains health-related keywords
-            """)
-
 
 
     with col_right:
@@ -4224,6 +4066,9 @@ with tab_search:
 
     st.markdown("---")
 
+
+
+
     
     # Advanced Analytics Section
     st.subheader("📈 Advanced Health Query Performance Analytics")
@@ -4515,8 +4360,8 @@ with tab_search:
             • Top health keyword appears in {:.1f}% of searches</p>
         </div>
         """.format(
-            metrics['long_tail_pct'],
-            metrics['avg_query_length'],
+            long_tail_pct,
+            avg_query_length,
             top_keyword_pct
         ), unsafe_allow_html=True)
 
@@ -4702,7 +4547,8 @@ with tab_search:
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
+
+
 # ----------------- Brand Tab (Enhanced & Fixed) -----------------
 # ----------------- Brand Tab (Enhanced & Fixed with Health Styling) -----------------
 with tab_brand:
