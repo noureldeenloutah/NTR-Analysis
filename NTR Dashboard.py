@@ -5276,70 +5276,7 @@ with tab_brand:
             mime="text/csv",
             key="brand_csv_download"
         )
-    
-    with col_right:
-        # Brand Market Share Pie Chart
-        st.subheader("🌱 Nutraceuticals & Nutrition Brand Market Share")
-        
-        top_brands_pie = bs.nlargest(10, 'Counts')
-        
-        # Health-focused color palette
-        health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
-                        '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
-        
-        fig_pie = px.pie(
-            top_brands_pie, 
-            names='brand', 
-            values='Counts',
-            title='<b style="color:#2E7D32;">🌿 Health Market Distribution</b>',
-            color_discrete_sequence=health_colors
-        )
-        
-        fig_pie.update_layout(
-            font=dict(color='#1B5E20', family='Segoe UI'),
-            paper_bgcolor='rgba(232,245,232,0.8)'
-        )
-        
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-        # Brand Performance Categories
-        st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Categories")
-        
-        # Categorize brands based on performance
-        bs['performance_category'] = pd.cut(
-            bs['ctr'], 
-            bins=[0, 2, 5, 10, float('inf')], 
-            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
-        )
-        
-        category_counts = bs['performance_category'].value_counts().reset_index()
-        category_counts.columns = ['Performance Category', 'Count']
-        
-        fig_cat = px.bar(
-            category_counts, 
-            x='Performance Category', 
-            y='Count',
-            title='<b style="color:#2E7D32;">🌿 CTR Performance Distribution</b>',
-            color='Count',
-            color_continuous_scale=['#E8F5E8', '#2E7D32'],
-            text='Count'
-        )
-        
-        fig_cat.update_traces(
-            texttemplate='%{text}',
-            textposition='outside'
-        )
-        
-        fig_cat.update_layout(
-            plot_bgcolor='rgba(248,255,248,0.95)',
-            paper_bgcolor='rgba(232,245,232,0.8)',
-            font=dict(color='#1B5E20', family='Segoe UI'),
-            xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
-        )
-        
-        st.plotly_chart(fig_cat, use_container_width=True)
-        
+
         # ADDED BACK: Brand Summary Data Table
         st.subheader("📋 Nutraceuticals & Nutrition Brand Summary Data")
         
@@ -5430,6 +5367,153 @@ with tab_brand:
             mime="text/csv",
             key="brand_summary_calc_csv_download"
         )
+    
+    with col_right:
+        # Brand Market Share Pie Chart
+        st.subheader("🌱 Nutraceuticals & Nutrition Brand Market Share")
+        
+        top_brands_pie = bs.nlargest(10, 'Counts')
+        
+        # Health-focused color palette
+        health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
+                        '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
+        
+        fig_pie = px.pie(
+            top_brands_pie, 
+            names='brand', 
+            values='Counts',
+            title='<b style="color:#2E7D32;">🌿 Health Market Distribution</b>',
+            color_discrete_sequence=health_colors
+        )
+        
+        fig_pie.update_layout(
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            paper_bgcolor='rgba(232,245,232,0.8)'
+        )
+        
+        st.plotly_chart(fig_pie, use_container_width=True)
+        
+        # Brand Performance Categories
+        st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Categories")
+        
+        # Categorize brands based on performance
+        bs['performance_category'] = pd.cut(
+            bs['ctr'], 
+            bins=[0, 2, 5, 10, float('inf')], 
+            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
+        )
+        
+        category_counts = bs['performance_category'].value_counts().reset_index()
+        category_counts.columns = ['Performance Category', 'Count']
+        
+        fig_cat = px.bar(
+            category_counts, 
+            x='Performance Category', 
+            y='Count',
+            title='<b style="color:#2E7D32;">🌿 CTR Performance Distribution</b>',
+            color='Count',
+            color_continuous_scale=['#E8F5E8', '#2E7D32'],
+            text='Count'
+        )
+        
+        fig_cat.update_traces(
+            texttemplate='%{text}',
+            textposition='outside'
+        )
+        
+        fig_cat.update_layout(
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+        )
+        
+        st.plotly_chart(fig_cat, use_container_width=True)
+        # Enhanced Brand Trend Analysis with proper filter application
+        if 'Date' in queries.columns:
+            st.subheader("📈 Nutraceuticals & Nutrition Brand Trend Analysis")
+            
+            # Get top 5 brands for trend analysis
+            top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
+            
+            # Use the already filtered 'queries' data instead of 'brand_queries'
+            trend_data = queries[
+                (queries[brand_column].notna()) & 
+                (queries[brand_column].str.lower() != 'other') &
+                (queries[brand_column].str.lower() != 'others') &
+                (queries[brand_column].isin(top_5_brands))
+            ].copy()
+            
+            if not trend_data.empty:
+                try:
+                    # Enhanced date processing
+                    trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
+                    trend_data = trend_data.dropna(subset=['Date'])
+                    
+                    if not trend_data.empty:
+                        # Create proper monthly aggregation
+                        trend_data['Month'] = trend_data['Date'].dt.to_period('M')
+                        trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
+                        
+                        # Group by Month and brand - sum the counts for each month
+                        monthly_trends = trend_data.groupby(['Month_Display', brand_column])['Counts'].sum().reset_index()
+                        monthly_trends = monthly_trends.rename(columns={brand_column: 'brand'})
+                        
+                        # Convert month display back to datetime for proper plotting
+                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
+                        
+                        # Debug: Check if we have monthly data
+                        unique_months = monthly_trends['Month_Display'].unique()
+                        st.write(f"📊 Monthly Nutraceuticals & Nutrition data available: {', '.join(sorted(unique_months))}")
+                        
+                        if len(monthly_trends) > 0:
+                            fig_trend = px.line(
+                                monthly_trends, 
+                                x='Date', 
+                                y='Counts', 
+                                color='brand',
+                                title='<b style="color:#2E7D32;">🌿 Top 5 Nutraceuticals & Nutrition Brands Monthly Trend</b>',
+                                color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
+                                markers=True
+                            )
+                            
+                            # Format x-axis to show months properly
+                            fig_trend.update_layout(
+                                plot_bgcolor='rgba(248,255,248,0.95)',
+                                paper_bgcolor='rgba(232,245,232,0.8)',
+                                font=dict(color='#1B5E20', family='Segoe UI'),
+                                xaxis=dict(
+                                    showgrid=True, 
+                                    gridcolor='#C8E6C8',
+                                    title='Month',
+                                    dtick="M1",
+                                    tickformat="%b %Y"
+                                ),
+                                yaxis=dict(
+                                    showgrid=True, 
+                                    gridcolor='#C8E6C8',
+                                    title='Search Counts'
+                                ),
+                                hovermode='x unified'
+                            )
+                            
+                            fig_trend.update_traces(
+                                hovertemplate='<b>%{fullData.name}</b><br>' +
+                                            'Month: %{x|%B %Y}<br>' +
+                                            'Searches: %{y:,.0f}<extra></extra>'
+                            )
+                            
+                            st.plotly_chart(fig_trend, use_container_width=True)
+                        else:
+                            st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and brands")
+                    else:
+                        st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
+                except Exception as e:
+                    st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
+            else:
+                st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")        
+
 
     st.markdown("---")
     
