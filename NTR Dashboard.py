@@ -5252,10 +5252,10 @@ with tab_brand:
         })
         
         # Format numbers
-        display_brands['Search Counts'] = display_brands['Search Counts'].apply(lambda x: f"{x:,.0f}")
+        display_brands['Search Counts'] = display_brands['Search Counts'].apply(format_number)
         display_brands['Market Share %'] = display_brands['Market Share %'].apply(lambda x: f"{x:.2f}%")
-        display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(lambda x: f"{x:,.0f}")
-        display_brands['Conversions'] = display_brands['Conversions'].apply(lambda x: f"{x:,.0f}")
+        display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(format_number)
+        display_brands['Conversions'] = display_brands['Conversions'].apply(format_number)
         display_brands['CTR'] = display_brands['CTR'].apply(lambda x: f"{x:.2f}%")
         display_brands['CR'] = display_brands['CR'].apply(lambda x: f"{x:.2f}%")
         display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
@@ -5327,7 +5327,7 @@ with tab_brand:
             
             # Get top 5 keywords by total counts
             top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-            top_keywords_str = ', '.join([f"{kw}({cnt:,.0f})" for kw, cnt in top_keywords])
+            top_keywords_str = ', '.join([f"{kw}({format_number(cnt)})" for kw, cnt in top_keywords])
             
             brand_summary_calc.append({
                 'Nutraceuticals & Nutrition Brand': brand,
@@ -5348,9 +5348,9 @@ with tab_brand:
         
         # Format for display
         display_summary = brand_summary_df.copy()
-        display_summary['Search Counts'] = display_summary['Search Counts'].apply(lambda x: f"{x:,.0f}")
-        display_summary['Total Clicks'] = display_summary['Total Clicks'].apply(lambda x: f"{x:,.0f}")
-        display_summary['Conversions'] = display_summary['Conversions'].apply(lambda x: f"{x:,.0f}")
+        display_summary['Search Counts'] = display_summary['Search Counts'].apply(format_number)
+        display_summary['Total Clicks'] = display_summary['Total Clicks'].apply(format_number)
+        display_summary['Conversions'] = display_summary['Conversions'].apply(format_number)
         display_summary['CTR'] = display_summary['CTR'].apply(lambda x: f"{x:.2f}%")
         display_summary['CR'] = display_summary['CR'].apply(lambda x: f"{x:.2f}%")
         display_summary['Classic CR'] = display_summary['Classic CR'].apply(lambda x: f"{x:.2f}%")
