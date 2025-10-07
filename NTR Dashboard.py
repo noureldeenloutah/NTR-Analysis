@@ -11452,26 +11452,35 @@ with tab_time:
             """, unsafe_allow_html=True)
         
         with col3:
-            performance_class = "high-time-performance" if summary_metrics['avg_ctr'] > 5 else "medium-time-performance" if summary_metrics['avg_ctr'] > 2 else "low-time-performance"
+            # Calculate both metrics for comparison
+            monthly_avg_ctr = monthly['ctr'].mean()
+            overall_ctr = (monthly['clicks'].sum() / monthly['Counts'].sum() * 100) if monthly['Counts'].sum() > 0 else 0
+            
+            performance_class = "high-time-performance" if monthly_avg_ctr > 5 else "medium-time-performance" if monthly_avg_ctr > 2 else "low-time-performance"
             st.markdown(f"""
             <div class='time-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{summary_metrics['avg_ctr']:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if summary_metrics['avg_ctr'] > 5 else "Medium" if summary_metrics['avg_ctr'] > 2 else "Low"}</span></div>
-                <div class='label'>Average Health CTR</div>
-                <div class='sub-label'>Monthly average</div>
+                <div class='value'>{monthly_avg_ctr:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_ctr > 5 else "Medium" if monthly_avg_ctr > 2 else "Low"}</span></div>
+                <div class='label'>Average Monthly CTR</div>
+                <div class='sub-label'>Overall: {overall_ctr:.2f}% | Monthly Avg: {monthly_avg_ctr:.2f}%</div>
             </div>
             """, unsafe_allow_html=True)
-        
+
         with col4:
-            performance_class = "high-time-performance" if summary_metrics['avg_cr'] > 3 else "medium-time-performance" if summary_metrics['avg_cr'] > 1 else "low-time-performance"
+            # Calculate both metrics for comparison
+            monthly_avg_cr = monthly['conversion_rate'].mean()
+            overall_cr = (monthly['conversions'].sum() / monthly['Counts'].sum() * 100) if monthly['Counts'].sum() > 0 else 0
+            
+            performance_class = "high-time-performance" if monthly_avg_cr > 3 else "medium-time-performance" if monthly_avg_cr > 1 else "low-time-performance"
             st.markdown(f"""
             <div class='time-metric-card'>
                 <span class='icon'>💚</span>
-                <div class='value'>{summary_metrics['avg_cr']:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if summary_metrics['avg_cr'] > 3 else "Medium" if summary_metrics['avg_cr'] > 1 else "Low"}</span></div>
-                <div class='label'>Avg Nutraceuticals & Nutrition CR</div>
-                <div class='sub-label'>Monthly average</div>
+                <div class='value'>{monthly_avg_cr:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_cr > 3 else "Medium" if monthly_avg_cr > 1 else "Low"}</span></div>
+                <div class='label'>Average Monthly CR</div>
+                <div class='sub-label'>Overall: {overall_cr:.2f}% | Monthly Avg: {monthly_avg_cr:.2f}%</div>
             </div>
             """, unsafe_allow_html=True)
+
         
         # Interactive Analysis Section
         st.markdown("---")
@@ -11731,63 +11740,6 @@ with tab_time:
                 </div>
                 """, unsafe_allow_html=True)
         
-        # 🚀 OPTIMIZED: Pre-calculated insights
-        st.markdown("---")
-        col_insight1, col_insight2 = st.columns(2)
-        
-        # 🚀 OPTIMIZED: Cached insight calculations
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_insights(monthly_df, summary_stats, cache_key):
-            """🚀 OPTIMIZED: Pre-calculated insights"""
-            if monthly_df.empty:
-                return {}, {}
-            
-            top_month_share = monthly_df.iloc[0]['click_share']
-            top_month_name = monthly_df.iloc[0]['month']
-            high_performers = len(monthly_df[monthly_df['ctr'] > 5])
-            avg_conversion_rate = summary_stats['avg_cr']
-            months_above_avg_cr = len(monthly_df[monthly_df['conversion_rate'] > avg_conversion_rate])
-            low_performers = len(monthly_df[monthly_df['ctr'] < 2])
-            opportunity_months = len(monthly_df[(monthly_df['Counts'] > monthly_df['Counts'].median()) & (monthly_df['ctr'] < 3)])
-            
-            key_insights = {
-                'top_month_name': top_month_name,
-                'top_month_share': top_month_share,
-                'high_performers': high_performers,
-                'months_above_avg_cr': months_above_avg_cr,
-                'avg_conversion_rate': avg_conversion_rate
-            }
-            
-            strategy_insights = {
-                'low_performers': low_performers,
-                'opportunity_months': opportunity_months
-            }
-            
-            return key_insights, strategy_insights
-        
-        key_insights, strategy_insights = compute_insights(monthly, summary_metrics, time_cache_key)
-        
-        with col_insight1:
-            st.markdown(f"""
-            <div class='time-insight-card'>
-                <h4>🌿 Key Temporal Health Insights</h4>
-                <p>• <strong>{key_insights['top_month_name']}</strong> leads Nutraceuticals & Nutrition period with {key_insights['top_month_share']:.1f}% click share<br>
-                • {key_insights['high_performers']} months achieve CTR > 5% (premium performance)<br>
-                • {key_insights['months_above_avg_cr']} months exceed avg CR of {key_insights['avg_conversion_rate']:.2f}%<br>
-                • Health trends show seasonal distribution</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col_insight2:
-            st.markdown(f"""
-            <div class='time-insight-card'>
-                <h4>💚 Temporal Strategy Recommendations</h4>
-                <p>• Optimize {strategy_insights['low_performers']} underperforming months (CTR < 2%)<br>
-                • {strategy_insights['opportunity_months']} high-volume periods need engagement boost<br>
-                • Plan seasonal campaigns for peak Nutraceuticals & Nutrition months<br>
-                • Strengthen year-round health strategy</p>
-            </div>
-            """, unsafe_allow_html=True)
 
         # Advanced Filtering Section
         st.markdown("---")
