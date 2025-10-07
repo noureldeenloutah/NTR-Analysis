@@ -10077,6 +10077,12 @@ with tab_generic:
         
         st.markdown("---")
         
+import streamlit as st
+import pandas as pd
+from uuid import uuid4
+import hashlib
+
+
         # ✅ NEW: Top Generic Terms Performance Table
         st.markdown("---")
         st.subheader("🏆 Generic Terms Performance")
@@ -10198,8 +10204,8 @@ with tab_generic:
                         month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                         
                         row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
-                        row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
                     else:
                         row[f'{month_display} Vol'] = 0
                         row[f'{month_display} CTR'] = 0
@@ -10414,7 +10420,6 @@ with tab_generic:
                     key="generic_terms_monthly_download"
                 )
             st.markdown("---")
-
 
 
         # Interactive generic type analysis
