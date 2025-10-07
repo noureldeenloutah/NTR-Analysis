@@ -10077,18 +10077,18 @@ with tab_generic:
         
         st.markdown("---")
         
-            # ✅ NEW: Top Generic Terms Performance Table
-            st.subheader("🏆 Generic Terms Performance")
-            
-            num_generic_terms = st.slider(
-                "Number of generic terms to display:", 
-                min_value=10, 
-                max_value=50, 
-                value=20, 
-                step=5,
-                key="generic_terms_count_slider"
-            )
+        # ✅ NEW: Top Generic Terms Performance Table
+        st.subheader("🏆 Generic Terms Performance")
         
+        num_generic_terms = st.slider(
+            "Number of generic terms to display:", 
+            min_value=10, 
+            max_value=50, 
+            value=20, 
+            step=5,
+            key="generic_terms_count_slider"
+        )
+    
         # 🚀 LAZY CSS LOADING - Only load once per session for generic terms
         if 'generic_terms_health_css_loaded' not in st.session_state:
             st.markdown("""
@@ -10346,6 +10346,7 @@ with tab_generic:
                     key="generic_terms_download"
                 )
             st.markdown("---")
+
 
 
 
