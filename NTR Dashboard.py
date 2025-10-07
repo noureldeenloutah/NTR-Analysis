@@ -10135,21 +10135,30 @@ with tab_generic:
 
         @st.cache_data(ttl=1800, show_spinner=False)
         def compute_generic_health_performance_monthly(_df, _gt, month_names_dict, cache_key):
-            """🔄 FIXED: Proper monthly CTR/CR calculations for health generic terms"""
+            """🔄 FIXED: Create month column from start_date and compute monthly metrics"""
             if _df.empty or _gt.empty:
                 return pd.DataFrame(), []
+            
+            # ✅ CREATE MONTH COLUMN from start_date
+            df_with_month = _df.copy()
+            
+            # Convert start_date to datetime if it's not already
+            if 'start_date' in df_with_month.columns:
+                df_with_month['start_date'] = pd.to_datetime(df_with_month['start_date'])
+                # Extract year-month format (e.g., '2025-08')
+                df_with_month['month'] = df_with_month['start_date'].dt.strftime('%Y-%m')
+            else:
+                # Fallback: if no start_date, create a dummy month
+                df_with_month['month'] = '2025-08'
             
             # Get top generic terms by total counts
             top_generics_list = _gt.nlargest(50, 'count')['search'].tolist()
             
             # Filter original data for top generic terms
-            top_data = _df[_df['search'].isin(top_generics_list)].copy()
+            top_data = df_with_month[df_with_month['search'].isin(top_generics_list)].copy()
             
             # Get unique months from the data
-            if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].unique())
-            else:
-                unique_months = []
+            unique_months = sorted(top_data['month'].unique()) if not top_data.empty else []
             
             # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
             result_data = []
@@ -10174,7 +10183,7 @@ with tab_generic:
                 overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                 
                 # Calculate share percentage
-                share_pct = (total_counts / _df['count'].sum()) * 100 if _df['count'].sum() > 0 else 0
+                share_pct = (total_counts / df_with_month['count'].sum()) * 100 if df_with_month['count'].sum() > 0 else 0
                 
                 row = {
                     'Generic Health Term': generic_term,
@@ -10212,10 +10221,10 @@ with tab_generic:
                 result_data.append(row)
             
             result_df = pd.DataFrame(result_data)
-            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            
-            # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
-            result_df = result_df[result_df['Total Volume'] > 0]
+            if not result_df.empty:
+                result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+                # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
+                result_df = result_df[result_df['Total Volume'] > 0]
             
             return result_df, unique_months
 
@@ -10294,34 +10303,40 @@ with tab_generic:
                         # CTR comparison with threshold
                         if current_ctr_col in df.columns and prev_ctr_col in df.columns:
                             for idx in df.index:
-                                current_ctr = df.loc[idx, current_ctr_col]
-                                prev_ctr = df.loc[idx, prev_ctr_col]
-                                
-                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:  # 10% improvement
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                                try:
+                                    current_ctr = float(df.loc[idx, current_ctr_col])
+                                    prev_ctr = float(df.loc[idx, prev_ctr_col])
+                                    
+                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                                except (ValueError, TypeError):
+                                    pass
                         
                         # CR comparison with threshold
                         if current_cr_col in df.columns and prev_cr_col in df.columns:
                             for idx in df.index:
-                                current_cr = df.loc[idx, current_cr_col]
-                                prev_cr = df.loc[idx, prev_cr_col]
-                                
-                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:  # 10% improvement
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                                try:
+                                    current_cr = float(df.loc[idx, current_cr_col])
+                                    prev_cr = float(df.loc[idx, prev_cr_col])
+                                    
+                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                                except (ValueError, TypeError):
+                                    pass
                     
                     # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
                     for col in volume_columns:
