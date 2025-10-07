@@ -5155,7 +5155,7 @@ with tab_brand:
     
     with col_left:
         # Enhanced Brand Performance Analysis
-        st.subheader("📈 Nutraceuticals & Nutrition Brand Performance Matrix")
+        st.subheader("📈 Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
         bs_raw = brand_queries.groupby(brand_column).agg({
@@ -5226,7 +5226,7 @@ with tab_brand:
         st.plotly_chart(fig_brand_perf, use_container_width=True)
         
         # Top Brands Performance Table
-        st.subheader("🏆 Top Nutraceuticals & Nutrition Brand Performance")
+        st.subheader("🏆 Top Brands Performance")
         
         num_brands = st.slider(
             "Number of Nutraceuticals & Nutrition brands to display:", 
@@ -5278,7 +5278,7 @@ with tab_brand:
         )
 
         # ADDED BACK: Brand Summary Data Table
-        st.subheader("📋 Nutraceuticals & Nutrition Brand Summary Data")
+        st.subheader("📋 Brand Summary Data")
         
         # Calculate brand summary from queries
         brand_summary_calc = []
@@ -5370,7 +5370,7 @@ with tab_brand:
     
     with col_right:
         # Brand Market Share Pie Chart
-        st.subheader("🌱 Nutraceuticals & Nutrition Brand Market Share")
+        st.subheader("🌱 Brand Market Share")
         
         top_brands_pie = bs.nlargest(10, 'Counts')
         
@@ -5394,7 +5394,7 @@ with tab_brand:
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Brand Performance Categories
-        st.subheader("🎯 Nutraceuticals & Nutrition Brand Performance Categories")
+        st.subheader("🎯 Brand Performance Categories")
         
         # Categorize brands based on performance
         bs['performance_category'] = pd.cut(
@@ -5432,7 +5432,7 @@ with tab_brand:
         st.plotly_chart(fig_cat, use_container_width=True)
         # Enhanced Brand Trend Analysis with proper filter application
         if 'Date' in queries.columns:
-            st.subheader("📈 Nutraceuticals & Nutrition Brand Trend Analysis")
+            st.subheader("📈 Brand Trend Analysis")
             
             # Get top 5 brands for trend analysis
             top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
@@ -5518,7 +5518,7 @@ with tab_brand:
     st.markdown("---")
     
     # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
-    st.subheader("🔥 Nutraceuticals & Nutrition Brand-Keyword Intelligence Matrix")
+    st.subheader("🔥 Brand-Keyword Intelligence Matrix")
 
     # Create brand filter dropdown with enhanced UI
     if 'brand' in queries.columns and 'search' in queries.columns:
