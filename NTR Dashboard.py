@@ -6937,37 +6937,61 @@ with tab_category:
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # ✅ FIXED: Create proper monthly aggregation using the same logic as the table
-                        trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
+                        # ✅ FIXED: Use the SAME calculation logic as your table
+                        # Create month column if it doesn't exist
+                        if 'month' not in trend_data.columns:
+                            trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # ✅ CORRECT CALCULATION: Group by month and category, sum all metrics
-                        monthly_trends = trend_data.groupby(['month', category_column]).agg({
-                            'Counts': 'sum',
-                            'clicks': 'sum',
-                            'conversions': 'sum'
-                        }).reset_index()
-                        monthly_trends = monthly_trends.rename(columns={category_column: 'category'})
+                        # ✅ CRITICAL: Use EXACT same logic as the table function
+                        monthly_trends_list = []
                         
-                        # ✅ FIXED: Calculate CTR and CR properly for each month-category combination
-                        monthly_trends['CTR'] = monthly_trends.apply(
-                            lambda row: (row['clicks'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, 
-                            axis=1
-                        ).round(2)
+                        for category in top_5_categories:
+                            category_data = trend_data[trend_data[category_column] == category]
+                            
+                            if category_data.empty:
+                                continue
+                            
+                            # Get unique months for this category
+                            unique_months = sorted(category_data['month'].unique())
+                            
+                            for month in unique_months:
+                                month_data = category_data[category_data['month'] == month]
+                                
+                                if not month_data.empty:
+                                    # ✅ EXACT SAME CALCULATION as your table
+                                    month_counts = int(month_data['Counts'].sum())
+                                    month_clicks = int(month_data['clicks'].sum())
+                                    month_conversions = int(month_data['conversions'].sum())
+                                    
+                                    # ✅ FIXED: Month-specific CTR and CR calculations (SAME as table)
+                                    month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                                    month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                                    
+                                    monthly_trends_list.append({
+                                        'month': month,
+                                        'category': category,
+                                        'Counts': month_counts,
+                                        'clicks': month_clicks,
+                                        'conversions': month_conversions,
+                                        'CTR': round(month_ctr, 2),
+                                        'CR': round(month_cr, 2)
+                                    })
                         
-                        monthly_trends['CR'] = monthly_trends.apply(
-                            lambda row: (row['conversions'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, 
-                            axis=1
-                        ).round(2)
+                        # Convert to DataFrame
+                        monthly_trends = pd.DataFrame(monthly_trends_list)
                         
-                        # ✅ ENHANCED: Convert month to proper datetime for plotting
-                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
-                        monthly_trends = monthly_trends.sort_values(['Date', 'category'])
-                        
-                        # ✅ FILTER: Only show categories with meaningful data
-                        monthly_trends = monthly_trends[monthly_trends['Counts'] > 0]
-                        
-                        if len(monthly_trends) > 0:
-                            # ✅ ENHANCED: Better metric selector with icons
+                        if not monthly_trends.empty:
+                            # ✅ ENHANCED: Convert month to proper datetime for plotting
+                            monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
+                            monthly_trends = monthly_trends.sort_values(['Date', 'category'])
+                            
+                            # ✅ DEBUG: Show the actual data to verify calculations match table
+                            with st.expander("🔍 Debug - Monthly Trends Data (Click to verify calculations)", expanded=False):
+                                debug_df = monthly_trends[['month', 'category', 'Counts', 'clicks', 'conversions', 'CTR', 'CR']].copy()
+                                st.dataframe(debug_df, use_container_width=True)
+                            
+                            # ✅ ENHANCED: Better metric selector
+                            st.markdown("### 📊 Select Metric to Analyze:")
                             col1, col2, col3 = st.columns(3)
                             
                             with col1:
@@ -6989,18 +7013,15 @@ with tab_category:
                             if not charts_to_show:
                                 st.warning("Please select at least one metric to display.")
                             else:
-                                # ✅ MONTH NAMES: Create month display mapping
+                                # ✅ MONTH NAMES: Create month display mapping (same as table)
                                 month_names_display = {
                                     '2025-06': 'June 2025',
                                     '2025-07': 'July 2025', 
                                     '2025-08': 'August 2025'
                                 }
                                 
-                                # Add month display names
-                                monthly_trends['Month_Display'] = monthly_trends['month'].map(month_names_display).fillna(monthly_trends['month'])
-                                
                                 for metric_name, y_column, chart_title in charts_to_show:
-                                    # ✅ ENHANCED: Create trend chart with better styling
+                                    # ✅ CREATE: Trend chart
                                     fig_trend = px.line(
                                         monthly_trends, 
                                         x='Date', 
@@ -7009,15 +7030,15 @@ with tab_category:
                                         title=f'<b style="color:#2E7D32;">{chart_title}</b>',
                                         color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                         markers=True,
-                                        line_shape='spline'  # Smoother lines
+                                        line_shape='spline'
                                     )
                                     
-                                    # ✅ ENHANCED: Better layout and styling
+                                    # ✅ ENHANCED: Better layout
                                     fig_trend.update_layout(
                                         plot_bgcolor='rgba(248,255,248,0.95)',
                                         paper_bgcolor='rgba(232,245,232,0.8)',
                                         font=dict(color='#1B5E20', family='Segoe UI', size=12),
-                                        height=450,
+                                        height=500,
                                         xaxis=dict(
                                             showgrid=True, 
                                             gridcolor='#C8E6C8',
@@ -7032,7 +7053,7 @@ with tab_category:
                                             title=f'<b>{metric_name}</b>',
                                             tickformat='.0f' if y_column == 'Counts' else '.2f'
                                         ),
-                                        hovermode='x unified',
+                                        hovermode='closest',
                                         legend=dict(
                                             orientation="h",
                                             yanchor="bottom",
@@ -7045,39 +7066,40 @@ with tab_category:
                                         )
                                     )
                                     
-                                    # ✅ ENHANCED: Better hover information with all metrics
-                                    hover_data = []
-                                    for _, row in monthly_trends.iterrows():
-                                        if y_column == 'Counts':
-                                            hover_data.append([
-                                                format_number(int(row['Counts'])),
-                                                f"{row['CTR']:.2f}%",
-                                                f"{row['CR']:.2f}%",
-                                                format_number(int(row['clicks'])),
-                                                format_number(int(row['conversions']))
-                                            ])
-                                        else:
-                                            hover_data.append([
-                                                format_number(int(row['Counts'])),
-                                                f"{row['CTR']:.2f}%",
-                                                f"{row['CR']:.2f}%",
-                                                format_number(int(row['clicks'])),
-                                                format_number(int(row['conversions']))
-                                            ])
-                                    
-                                    # ✅ COMPREHENSIVE: Show all metrics in hover regardless of chart type
+                                    # ✅ FIXED: Create hover data that matches each data point exactly
                                     fig_trend.update_traces(
                                         hovertemplate='<b>%{fullData.name}</b><br>' +
-                                                    '<b>Month:</b> %{x|%B %Y}<br>' +
-                                                    '<b>Search Volume:</b> %{customdata[0]}<br>' +
-                                                    '<b>CTR:</b> %{customdata[1]}<br>' +
-                                                    '<b>CR:</b> %{customdata[2]}<br>' +
-                                                    '<b>Total Clicks:</b> %{customdata[3]}<br>' +
-                                                    '<b>Total Conversions:</b> %{customdata[4]}<extra></extra>',
-                                        customdata=hover_data,
-                                        line=dict(width=3),
-                                        marker=dict(size=8, line=dict(width=2, color='white'))
+                                                    'Month: %{x|%B %Y}<br>' +
+                                                    'Search Volume: %{customdata[0]}<br>' +
+                                                    'CTR: %{customdata[1]}%<br>' +
+                                                    'CR: %{customdata[2]}%<br>' +
+                                                    'Total Clicks: %{customdata[3]}<br>' +
+                                                    'Total Conversions: %{customdata[4]}<extra></extra>'
                                     )
+                                    
+                                    # ✅ CRITICAL FIX: Add custom data for each trace individually
+                                    for i, trace in enumerate(fig_trend.data):
+                                        category_name = trace.name
+                                        category_data = monthly_trends[monthly_trends['category'] == category_name].sort_values('Date')
+                                        
+                                        # Create customdata for this specific category with EXACT values
+                                        customdata = []
+                                        for _, row in category_data.iterrows():
+                                            customdata.append([
+                                                format_number(int(row['Counts'])),      # Search Volume
+                                                f"{row['CTR']:.2f}",                   # CTR (exact from calculation)
+                                                f"{row['CR']:.2f}",                    # CR (exact from calculation)
+                                                format_number(int(row['clicks'])),     # Total Clicks
+                                                format_number(int(row['conversions'])) # Total Conversions
+                                            ])
+                                        
+                                        fig_trend.data[i].customdata = customdata
+                                        
+                                        # ✅ ENHANCED: Better line styling
+                                        fig_trend.data[i].line.width = 3
+                                        fig_trend.data[i].marker.size = 8
+                                        fig_trend.data[i].marker.line.width = 2
+                                        fig_trend.data[i].marker.line.color = 'white'
                                     
                                     st.plotly_chart(fig_trend, use_container_width=True)
                                     
@@ -7085,7 +7107,8 @@ with tab_category:
                                     if len(monthly_trends['Date'].unique()) >= 2:
                                         # Calculate month-over-month changes
                                         latest_month = monthly_trends['Date'].max()
-                                        prev_month = monthly_trends['Date'].unique()[-2] if len(monthly_trends['Date'].unique()) >= 2 else None
+                                        prev_month_dates = sorted(monthly_trends['Date'].unique())
+                                        prev_month = prev_month_dates[-2] if len(prev_month_dates) >= 2 else None
                                         
                                         if prev_month is not None:
                                             latest_data = monthly_trends[monthly_trends['Date'] == latest_month]
@@ -7117,9 +7140,12 @@ with tab_category:
                                     
                                     st.markdown("<br>", unsafe_allow_html=True)
                                 
-                                # ✅ SUMMARY: Overall trend summary
+                                # ✅ SUMMARY: Overall trend summary with actual calculated values
                                 total_categories = len(monthly_trends['category'].unique())
                                 total_months = len(monthly_trends['Date'].unique())
+                                avg_ctr = monthly_trends['CTR'].mean()
+                                avg_cr = monthly_trends['CR'].mean()
+                                total_volume = monthly_trends['Counts'].sum()
                                 
                                 st.markdown(f"""
                                 <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); padding: 15px; border-radius: 10px; color: white; text-align: center; margin: 20px 0;">
@@ -7127,12 +7153,16 @@ with tab_category:
                                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
                                         <div><strong>{total_categories}</strong><br>Categories Analyzed</div>
                                         <div><strong>{total_months}</strong><br>Months Tracked</div>
-                                        <div><strong>{format_number(int(monthly_trends['Counts'].sum()))}</strong><br>Total Search Volume</div>
-                                        <div><strong>{monthly_trends['CTR'].mean():.2f}%</strong><br>Average CTR</div>
-                                        <div><strong>{monthly_trends['CR'].mean():.2f}%</strong><br>Average CR</div>
+                                        <div><strong>{format_number(int(total_volume))}</strong><br>Total Search Volume</div>
+                                        <div><strong>{avg_ctr:.2f}%</strong><br>Average CTR</div>
+                                        <div><strong>{avg_cr:.2f}%</strong><br>Average CR</div>
                                     </div>
                                 </div>
                                 """, unsafe_allow_html=True)
+                                
+                                # ✅ VERIFICATION: Show comparison with table values
+                                st.markdown("### 🔍 Verification: Chart vs Table Data")
+                                st.info("💡 **Tip**: Expand the debug section above to verify that chart calculations match your table exactly!")
                                 
                         else:
                             st.info("No valid trend data available for the top 5 health categories")
@@ -7145,6 +7175,7 @@ with tab_category:
                 st.info("No health category data available for trend analysis")
 
         st.markdown("---")
+
 
 
 
