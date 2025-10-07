@@ -1162,19 +1162,40 @@ with tab_overview:
     if st.button("🔄 Refresh Health Data & Filters"):
         st.rerun()
 
-    # Image Selection in Sidebar
+    # 🎨 GREEN-THEMED HERO HEADER
     st.sidebar.header("🌿 Customize Nutraceuticals & Nutrition Theme")
-    image_options = {
-        "Natural Green Gradient": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Nutraceuticals+%26+Nutrition+Analytics",
-        "Wellness & Supplements": "https://picsum.photos/1200/250?random=wellness_supplements",
-        "Organic Health Theme": "https://source.unsplash.com/1200x250/?health,nutrition,supplements",
-        "Custom Health Banner": "https://placehold.co/1200x250/F1F8E9/1B5E20?text=💚+Health+%26+Wellness+Insights",
-        "Natural Ingredients": "https://picsum.photos/1200/250?random=natural_health"
-    }
-    selected_image = st.sidebar.selectbox("Choose Wellness Image", options=list(image_options.keys()), index=0)
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🌿 Nutraceuticals & Nutrition Analytics 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Performance Analytics • Search Insights • Health Data Intelligence
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Hero Image (Creative UI) with selected option
-    st.image(image_options[selected_image], use_container_width=True)
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
     st.markdown("## 🌱 Monthly Nutraceuticals & Nutrition Analysis Overview")
