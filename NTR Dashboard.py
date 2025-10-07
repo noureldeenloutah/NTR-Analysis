@@ -9076,9 +9076,6 @@ with tab_subcat:
                     else:
                         st.info("Health subcategory intelligence data not available.")
 
-                else:
-                    st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Subcategory")
-                    st.info("Health keyword data not available for subcategory analysis.")
         
         st.markdown("---")
         
