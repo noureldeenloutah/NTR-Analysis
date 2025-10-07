@@ -6235,18 +6235,38 @@ with tab_brand:
 
 # ----------------- Category Tab (Enhanced & Health-Focused) -----------------
 with tab_category:
-    st.header("🌿 Nutraceuticals & Nutrition Category Intelligence Hub")
-    st.markdown("Comprehensive health category performance analysis with strategic insights and competitive intelligence. 💚")
-    
-    # Hero Image for Category Tab
-    category_image_options = {
-        "Health Category Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Category+Performance+Analysis",
-        "Wellness Categories": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Category+Intelligence+Dashboard",
-        "Abstract Health Categories": "https://source.unsplash.com/1200x200/?health,wellness,categories",
-        "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Health+Category+Insights",
-    }
-    selected_category_image = st.sidebar.selectbox("Choose Category Tab Hero", options=list(category_image_options.keys()), index=0, key="category_hero_image_selector")
-    st.image(category_image_options[selected_category_image], use_container_width=True)
+    # 🎨 GREEN-THEMED HERO HEADER
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🌿 Category Performance Analysis 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Matching • Performance Analytics • Search Insights
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Custom CSS for health-focused green styling
     st.markdown("""
@@ -6261,7 +6281,7 @@ with tab_category:
         border-left: 4px solid #4CAF50;
     }
     
-    .Nutraceuticals & Nutrition-category-insight {
+    .category-insight {
         background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
         padding: 25px;
         border-radius: 15px;
@@ -6314,6 +6334,29 @@ with tab_category:
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
+    
+    .brand-metric-card {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 5px;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .brand-metric-value {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #1B5E20;
+        margin-bottom: 5px;
+    }
+    
+    .brand-metric-label {
+        color: #2E7D32;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -6344,52 +6387,6 @@ with tab_category:
     if category_queries.empty:
         st.error("❌ No valid Nutraceuticals & Nutrition category data available after filtering.")
         st.stop()
-    
-    # Health Category Performance Metrics Row
-    total_categories = category_queries[category_column].nunique()
-    top_category = category_queries.groupby(category_column)['Counts'].sum().idxmax()
-    avg_category_counts = category_queries.groupby(category_column)['Counts'].sum().mean()
-    
-    # Calculate Category Dominance Index
-    category_counts_sum = category_queries.groupby(category_column)['Counts'].sum()
-    category_dominance = (category_counts_sum.max() / category_counts_sum.sum() * 100)
-    
-    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-    with col_m1:
-        st.markdown(f"""
-        <div class="health-category-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">🌿</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(total_categories)}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Total Health Categories</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_m2:
-        st.markdown(f"""
-        <div class="health-category-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">👑</div>
-            <div style="font-size: 1.2em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{top_category[:15]}...</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Leading Health Category</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_m3:
-        st.markdown(f"""
-        <div class="health-category-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">⚡</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{category_dominance:.1f}%</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Category Concentration</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_m4:
-        st.markdown(f"""
-        <div class="health-category-metric">
-            <div style="font-size: 2em; margin-bottom: 8px;">📊</div>
-            <div style="font-size: 1.4em; font-weight: bold; color: #1B5E20; margin-bottom: 5px;">{format_number(avg_category_counts)}</div>
-            <div style="color: #2E7D32; font-size: 0.9em;">Avg Health Searches</div>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown("---")
     
@@ -6437,12 +6434,15 @@ with tab_category:
             template='plotly_white'
         )
         
+        # 🚀 UPDATED: Format hover with format_number
         fig_category_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
-                         'Health Searches: %{x:,.0f}<br>' +
+                         'Health Searches: %{customdata[0]}<br>' +
                          'CTR: %{y:.2f}%<br>' +
-                         'Total Clicks: %{marker.size:,.0f}<br>' +
-                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>'
+                         'Total Clicks: %{customdata[1]}<br>' +
+                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>',
+            customdata=[[format_number(row['Counts']), format_number(row['clicks'])] 
+                       for _, row in cs.head(30).iterrows()]
         )
         
         fig_category_perf.update_layout(
@@ -6471,9 +6471,11 @@ with tab_category:
                 text='Counts'
             )
             
+            # 🚀 UPDATED: Format bar labels with format_number
             fig_counts.update_traces(
-                texttemplate='%{text:,.0f}',
-                textposition='outside'
+                texttemplate='%{text}',
+                textposition='outside',
+                text=[format_number(x) for x in cs.sort_values('Counts', ascending=False).head(15)['Counts']]
             )
             
             fig_counts.update_layout(
@@ -6542,11 +6544,11 @@ with tab_category:
             'classic_cr': 'Classic CR'
         })
         
-        # Format numbers
-        display_categories['Search Counts'] = display_categories['Search Counts'].apply(lambda x: f"{x:,.0f}")
+        # 🚀 UPDATED: Format numbers using format_number
+        display_categories['Search Counts'] = display_categories['Search Counts'].apply(format_number)
         display_categories['Market Share %'] = display_categories['Market Share %'].apply(lambda x: f"{x:.2f}%")
-        display_categories['Total Clicks'] = display_categories['Total Clicks'].apply(lambda x: f"{x:,.0f}")
-        display_categories['Conversions'] = display_categories['Conversions'].apply(lambda x: f"{x:,.0f}")
+        display_categories['Total Clicks'] = display_categories['Total Clicks'].apply(format_number)
+        display_categories['Conversions'] = display_categories['Conversions'].apply(format_number)
         display_categories['CTR'] = display_categories['CTR'].apply(lambda x: f"{x:.2f}%")
         display_categories['CR'] = display_categories['CR'].apply(lambda x: f"{x:.2f}%")
         display_categories['Classic CR'] = display_categories['Classic CR'].apply(lambda x: f"{x:.2f}%")
@@ -6562,7 +6564,7 @@ with tab_category:
         st.download_button(
             label="📥 Download Nutraceuticals & Nutrition Categories CSV",
             data=csv_categories,
-            file_name=f"top_{num_categories}_Nutraceuticals & Nutrition_categories.csv",
+            file_name=f"top_{num_categories}_nutraceuticals_categories.csv",
             mime="text/csv",
             key="category_csv_download"
         )
@@ -6690,10 +6692,12 @@ with tab_category:
                                 hovermode='x unified'
                             )
                             
+                            # 🚀 UPDATED: Format hover with format_number
                             fig_trend.update_traces(
                                 hovertemplate='<b>%{fullData.name}</b><br>' +
                                             'Month: %{x|%B %Y}<br>' +
-                                            'Health Searches: %{y:,.0f}<extra></extra>'
+                                            'Health Searches: %{customdata}<extra></extra>',
+                                customdata=[format_number(x) for x in monthly_trends['Counts']]
                             )
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
@@ -6722,23 +6726,132 @@ with tab_category:
         # Create dropdown with "All Categories" option
         category_options = ['All Health Categories'] + list(available_categories)
         
-        # Category selection dropdown
-        selected_category = st.selectbox(
-            "🎯 Select Health Category to Analyze:",
-            options=category_options,
-            index=0  # Default to "All Categories"
-        )
+        # ENHANCED UI for category selection with metrics
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+        ">
+            <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">
+                🎯 Category Analysis Control Center
+            </h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_select, col_metrics = st.columns([2, 3])
+        
+        with col_select:
+            selected_category = st.selectbox(
+                "🎯 Select Health Category to Analyze:",
+                options=category_options,
+                index=0,
+                key="category_selector"
+            )
+        
+        with col_metrics:
+            if selected_category != 'All Health Categories':
+                # Show metrics for selected category
+                category_metrics = cs[cs['category'] == selected_category].iloc[0] if not cs[cs['category'] == selected_category].empty else None
+                
+                if category_metrics is not None:
+                    # UPDATED: Now showing 5 metrics including both CR types with format_number
+                    metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+                    
+                    with metric_col1:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{format_number(category_metrics['Counts'])}</div>
+                            <div class="brand-metric-label">📊 Total Searches</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col2:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{category_metrics['ctr']:.2f}%</div>
+                            <div class="brand-metric-label">📈 CTR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col3:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{category_metrics['cr']:.2f}%</div>
+                            <div class="brand-metric-label">🎯 CR (Search)</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col4:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{category_metrics['classic_cr']:.2f}%</div>
+                            <div class="brand-metric-label">🔄 Classic CR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col5:
+                        st.markdown(f"""
+                        <div class="brand-metric-card">
+                            <div class="brand-metric-value">{category_metrics['share_pct']:.1f}%</div>
+                            <div class="brand-metric-label">📈 Market Share</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+            else:
+                # Show overall metrics
+                total_searches = cs['Counts'].sum()
+                avg_ctr = cs['ctr'].mean()
+                avg_cr = cs['cr'].mean()
+                avg_classic_cr = cs['classic_cr'].mean()
+                
+                # UPDATED: Now showing 4 metrics including both CR types with format_number
+                metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+                
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{format_number(total_searches)}</div>
+                        <div class="brand-metric-label">📊 Total Market</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{avg_ctr:.2f}%</div>
+                        <div class="brand-metric-label">📈 Avg CTR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col3:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{avg_cr:.2f}%</div>
+                        <div class="brand-metric-label">🎯 Avg CR (Search)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col4:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{avg_classic_cr:.2f}%</div>
+                        <div class="brand-metric-label">🔄 Avg Classic CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         # Filter data based on selection
         if selected_category == 'All Health Categories':
             # Show top 8 categories if "All Categories" is selected
             top_categories_matrix = cs.nlargest(8, 'Counts')['category'].tolist()
             filtered_data = category_queries[category_queries[category_column].isin(top_categories_matrix)]
-            matrix_title = "Top Health Categories vs Nutraceuticals & Nutrition Search Terms (Sum of Counts)"
+            matrix_title = "Top Health Categories vs Nutraceuticals & Nutrition Search Terms"
         else:
             # Filter for selected category only
             filtered_data = category_queries[category_queries[category_column] == selected_category]
-            matrix_title = f"{selected_category} - Nutraceuticals & Nutrition Search Terms Analysis (Sum of Counts)"
+            matrix_title = f"{selected_category} - Nutraceuticals & Nutrition Search Terms Analysis"
         
         # Remove null values from search terms
         matrix_data = filtered_data[
@@ -6749,19 +6862,48 @@ with tab_category:
         
         if not matrix_data.empty:
             if selected_category == 'All Health Categories':
-                # For all categories: Group by category and search term, sum the counts
-                category_search_matrix = matrix_data.groupby([category_column, 'search'])['Counts'].sum().reset_index()
+                # Enhanced heatmap with CTR/CR data
+                category_search_matrix = matrix_data.groupby([category_column, 'search']).agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
                 category_search_matrix = category_search_matrix.rename(columns={category_column: 'category'})
+                
+                # Calculate CTR and CR for each category-search combination
+                category_search_matrix['ctr'] = ((category_search_matrix['clicks'] / category_search_matrix['Counts']) * 100).round(2)
+                category_search_matrix['cr'] = ((category_search_matrix['conversions'] / category_search_matrix['Counts']) * 100).round(2)
+                category_search_matrix['classic_cr'] = ((category_search_matrix['conversions'] / category_search_matrix['clicks']) * 100).fillna(0).round(2)
                 
                 # Get top search terms across all categories
                 top_searches = matrix_data['search'].value_counts().head(12).index.tolist()
                 category_search_matrix = category_search_matrix[category_search_matrix['search'].isin(top_searches)]
                 
-                # Create pivot table
+                # Create pivot tables
                 heatmap_data = category_search_matrix.pivot(
                     index='category', 
                     columns='search', 
                     values='Counts'
+                ).fillna(0)
+                
+                # Create pivot tables for CTR, CR, and Classic CR
+                ctr_data = category_search_matrix.pivot(
+                    index='category', 
+                    columns='search', 
+                    values='ctr'
+                ).fillna(0)
+                
+                cr_data = category_search_matrix.pivot(
+                    index='category', 
+                    columns='search', 
+                    values='cr'
+                ).fillna(0)
+                
+                classic_cr_data = category_search_matrix.pivot(
+                    index='category', 
+                    columns='search', 
+                    values='classic_cr'
                 ).fillna(0)
                 
                 if not heatmap_data.empty:
@@ -6776,6 +6918,30 @@ with tab_category:
                         aspect='auto'
                     )
                     
+                    # UPDATED: Create custom hover data with CTR, CR, and Classic CR using format_number
+                    hover_text = []
+                    for i, category in enumerate(heatmap_data.index):
+                        hover_row = []
+                        for j, search in enumerate(heatmap_data.columns):
+                            counts = heatmap_data.iloc[i, j]
+                            ctr = ctr_data.iloc[i, j]
+                            cr = cr_data.iloc[i, j]
+                            classic_cr = classic_cr_data.iloc[i, j]
+                            hover_row.append(
+                                f"<b>{category}</b><br>" +
+                                f"Search Term: {search}<br>" +
+                                f"Total Searches: {format_number(counts)}<br>" +
+                                f"CTR: {ctr:.2f}%<br>" +
+                                f"CR (Search): {cr:.2f}%<br>" +
+                                f"Classic CR: {classic_cr:.2f}%"
+                            )
+                        hover_text.append(hover_row)
+                    
+                    fig_matrix.update_traces(
+                        hovertemplate='%{customdata}<extra></extra>',
+                        customdata=hover_text
+                    )
+                    
                     fig_matrix.update_layout(
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
@@ -6784,48 +6950,97 @@ with tab_category:
                         height=500
                     )
                     
-                    # Update hover template
-                    fig_matrix.update_traces(
-                        hovertemplate='<b>Health Category:</b> %{y}<br>' +
-                                    '<b>Nutraceuticals & Nutrition Term:</b> %{x}<br>' +
-                                    '<b>Total Searches:</b> %{z:,.0f}<extra></extra>'
-                    )
-                    
                     st.plotly_chart(fig_matrix, use_container_width=True)
                     
                     # Show summary statistics
                     total_interactions = category_search_matrix['Counts'].sum()
-                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {total_interactions:,} total searches")
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {format_number(total_interactions)} total searches")
             else:
-                # For single category: Show search terms analysis
-                search_counts = matrix_data.groupby('search')['Counts'].sum().reset_index()
-                search_counts = search_counts.sort_values('Counts', ascending=False).head(15)
+                # Single category analysis with enhanced bar chart
+                category_search_data = matrix_data.groupby('search').agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
                 
-                # Create a horizontal bar chart for single category
-                fig_single = px.bar(
-                    search_counts,
-                    x='Counts',
-                    y='search',
-                    orientation='h',
-                    title=f'<b style="color:#2E7D32;">{selected_category} - Top Nutraceuticals & Nutrition Search Terms by Count</b>',
-                    labels={'Counts': 'Total Health Searches', 'search': 'Nutraceuticals & Nutrition Search Terms'},
-                    color='Counts',
-                    color_continuous_scale=['#E8F5E8', '#2E7D32']
+                # Calculate CTR and CR
+                category_search_data['ctr'] = ((category_search_data['clicks'] / category_search_data['Counts']) * 100).round(2)
+                category_search_data['cr'] = ((category_search_data['conversions'] / category_search_data['Counts']) * 100).round(2)
+                category_search_data['classic_cr'] = ((category_search_data['conversions'] / category_search_data['clicks']) * 100).fillna(0).round(2)
+                
+                category_search_data = category_search_data.sort_values('Counts', ascending=False).head(15)
+                
+                # Add CR selection for chart coloring
+                st.markdown("#### 📊 Chart Display Options")
+                cr_option = st.radio(
+                    "Color bars by:",
+                    options=['Classic CR (Conversions/Clicks)', 'CR Search-based (Conversions/Searches)'],
+                    index=0,
+                    horizontal=True,
+                    key="category_cr_option_radio"
                 )
                 
-                fig_single.update_layout(
+                # Determine which CR to use for coloring
+                color_column = 'classic_cr' if cr_option == 'Classic CR (Conversions/Clicks)' else 'cr'
+                color_label = 'Classic CR (%)' if cr_option == 'Classic CR (Conversions/Clicks)' else 'CR Search-based (%)'
+                
+                fig_category_search = px.bar(
+                    category_search_data,
+                    x='search',
+                    y='Counts',
+                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
+                    labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
+                    color=color_column,
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    text='Counts'
+                )
+                
+                # UPDATED: Enhanced hover template with both CR types using format_number
+                fig_category_search.update_traces(
+                    texttemplate='%{text}',
+                    textposition='outside',
+                    hovertemplate='<b>%{x}</b><br>' +
+                                'Search Volume: %{customdata[3]}<br>' +
+                                'CTR: %{customdata[0]:.2f}%<br>' +
+                                'CR (Search): %{customdata[1]:.2f}%<br>' +
+                                'Classic CR: %{customdata[2]:.2f}%<br>' +
+                                f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
+                    customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
+                               for _, row in category_search_data.iterrows()],
+                    text=[format_number(x) for x in category_search_data['Counts']]
+                )
+                
+                fig_category_search.update_layout(
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
-                    height=600,
-                    yaxis={'categoryorder': 'total ascending'}
+                    height=500,
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    coloraxis_colorbar=dict(title=color_label)
                 )
                 
-                st.plotly_chart(fig_single, use_container_width=True)
+                st.plotly_chart(fig_category_search, use_container_width=True)
                 
-                # Show summary
-                total_counts = search_counts['Counts'].sum()
-                st.info(f"📊 {selected_category} has {len(search_counts)} top Nutraceuticals & Nutrition search terms with {total_counts:,} total searches")
+                # ADDED: Display both CR metrics in a comparison table
+                st.markdown("#### 📋 Search Terms Performance Comparison")
+                
+                display_comparison = category_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
+                display_comparison = display_comparison.rename(columns={
+                    'search': 'Health Search Term',
+                    'Counts': 'Search Volume',
+                    'ctr': 'CTR (%)',
+                    'cr': 'CR Search-based (%)',
+                    'classic_cr': 'Classic CR (%)'
+                })
+                
+                # Format the display using format_number
+                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
+                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
+                
+                st.dataframe(display_comparison, use_container_width=True, hide_index=True)
         else:
             st.warning("⚠️ No Nutraceuticals & Nutrition category data available for the selected filter")
     
@@ -6833,6 +7048,14 @@ with tab_category:
     
     # Enhanced Top Keywords per Category Analysis
     st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Category Analysis")
+    
+    # 🚀 ADDED: Number of keywords selection option - MOVED TO TOP
+    num_keywords = st.selectbox(
+        "🔥 Select number of top health keywords to analyze:",
+        options=[10, 15, 20, 25, 30, 50],
+        index=0,
+        key="num_keywords_selector"
+    )
     
     try:
         # Calculate keywords per category using the enhanced approach
@@ -6863,8 +7086,8 @@ with tab_category:
                             else:
                                 keyword_counts[keyword] = query_count
             
-            # Get top 8 keywords for this category
-            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+            # 🚀 UPDATED: Get top N keywords for this category based on selection
+            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:num_keywords]
             
             for keyword, count in top_keywords:
                 rows.append({'category': cat, 'keyword': keyword, 'count': count})
@@ -6878,19 +7101,11 @@ with tab_category:
             # Display options
             display_option = st.radio(
                 "Choose Nutraceuticals & Nutrition keyword display format:",
-                ["Interactive Table", "Heatmap Visualization", "Top Health Keywords Summary"],
+                ["Top Health Keywords Summary", "Heatmap Visualization"],  # 🚀 REMOVED: "Interactive Table"
                 horizontal=True
             )
             
-            if display_option == "Interactive Table":
-                if AGGRID_OK:
-                    gb = GridOptionsBuilder.from_dataframe(pivot_ckw.reset_index())
-                    gb.configure_grid_options(enableRangeSelection=True, pagination=True)
-                    AgGrid(pivot_ckw.reset_index(), gridOptions=gb.build(), height=400)
-                else:
-                    st.dataframe(pivot_ckw, use_container_width=True, hide_index=True)
-            
-            elif display_option == "Heatmap Visualization":
+            if display_option == "Heatmap Visualization":
                 # Create heatmap for keyword-category matrix
                 fig_keyword_heatmap = px.imshow(
                     pivot_ckw.values,
@@ -6898,7 +7113,7 @@ with tab_category:
                     x=pivot_ckw.columns,
                     y=pivot_ckw.index,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    title='<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Category-Health Keyword Frequency Heatmap</b>',
+                    title=f'<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Category-Health Keyword Frequency Heatmap (Top {num_keywords})</b>',
                     aspect='auto'
                 )
                 
@@ -6914,7 +7129,7 @@ with tab_category:
             
             else:  # Top Keywords Summary
                 # Show top keywords summary by category with enhanced accuracy
-                st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Category")
+                st.subheader(f"🔥 Top {num_keywords} Health Keywords by Nutraceuticals & Nutrition Category")
                 
                 top_keywords_summary = []
                 category_stats = {}
@@ -6925,53 +7140,50 @@ with tab_category:
                 for cat in df_ckw['category'].unique():
                     cat_data = df_ckw[df_ckw['category'] == cat].sort_values('count', ascending=False)
                     
-                    # Get top 10 keywords for this category
-                    top_10_keywords = cat_data.head(10)
+                    # Get top N keywords for this category
+                    top_n_keywords = cat_data.head(num_keywords)
                     
-                    # Create formatted keyword string with counts
+                    # Create formatted keyword string with counts using format_number
                     keywords_list = []
-                    for _, row in top_10_keywords.iterrows():
-                        keywords_list.append(f"{row['keyword']} ({row['count']:,})")
+                    for _, row in top_n_keywords.iterrows():
+                        keywords_list.append(f"{row['keyword']} ({format_number(row['count'])})")
                     
                     keywords_str = ' | '.join(keywords_list)
                     
-                    # Calculate category statistics - CORRECTED CALCULATION
-                    # Get the actual total from the original category summary data
+                    # Calculate category statistics
                     actual_category_total = cs[cs['category'] == cat]['Counts'].iloc[0] if len(cs[cs['category'] == cat]) > 0 else cat_data['count'].sum()
-                    
-                    # Calculate correct share percentage based on total volume
                     share_percentage = (actual_category_total / total_volume_all_categories * 100)
                     
                     total_keyword_count = cat_data['count'].sum()
                     unique_keywords = len(cat_data)
                     avg_keyword_count = cat_data['count'].mean()
-                    top_keyword_dominance = (top_10_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_10_keywords) > 0 else 0
+                    top_keyword_dominance = (top_n_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_n_keywords) > 0 else 0
                     
                     # Store category stats for additional insights
                     category_stats[cat] = {
                         'total_keywords': unique_keywords,
-                        'total_count': actual_category_total,  # Use actual category total
-                        'keyword_total_count': total_keyword_count,  # Keep keyword-specific total
+                        'total_count': actual_category_total,
+                        'keyword_total_count': total_keyword_count,
                         'avg_count': avg_keyword_count,
-                        'top_keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
+                        'top_keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'dominance': top_keyword_dominance,
-                        'share_percentage': share_percentage  # Add correct share percentage
+                        'share_percentage': share_percentage
                     }
                     
                     top_keywords_summary.append({
                         'Nutraceuticals & Nutrition Category': cat,
-                        'Top 10 Health Keywords (with counts)': keywords_str,
+                        f'Top {num_keywords} Health Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
-                        'Category Total Volume': f"{actual_category_total:,}",  # Use actual category total
-                        'Market Share %': f"{share_percentage:.2f}%",  # Add share percentage column
-                        'Keyword Analysis Volume': f"{total_keyword_count:,}",  # Show keyword-specific total
+                        'Category Total Volume': format_number(actual_category_total),  # 🚀 UPDATED: format_number
+                        'Market Share %': f"{share_percentage:.2f}%",
+                        'Keyword Analysis Volume': format_number(total_keyword_count),  # 🚀 UPDATED: format_number
                         'Avg Keyword Count': f"{avg_keyword_count:.1f}",
-                        'Top Health Keyword': top_10_keywords.iloc[0]['keyword'] if len(top_10_keywords) > 0 else 'N/A',
+                        'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
                 
                 # Sort by actual category total volume (descending)
-                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: int(x['Category Total Volume'].replace(',', '')), reverse=True)
+                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: float(x['Category Total Volume'].replace('K', '000').replace('M', '000000').replace('B', '000000000')), reverse=True)
                 summary_df = pd.DataFrame(top_keywords_summary)
                 
                 # Display the enhanced summary table
@@ -7005,7 +7217,7 @@ with tab_category:
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
                         <div class='label'>Highest Volume Nutraceuticals & Nutrition Category</div>
-                        <div class='sub-label'>{highest_volume_cat[1]['total_count']:,} total health searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
+                        <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total health searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -7043,9 +7255,11 @@ with tab_category:
                     text='count'
                 )
                 
+                # 🚀 UPDATED: Format bar labels with format_number
                 fig_global_keywords.update_traces(
-                    texttemplate='%{text:,}',
-                    textposition='outside'
+                    texttemplate='%{text}',
+                    textposition='outside',
+                    text=[format_number(x) for x in global_keywords['count']]
                 )
                 
                 fig_global_keywords.update_layout(
@@ -7071,7 +7285,7 @@ with tab_category:
                     distribution_data.append({
                         'Nutraceuticals & Nutrition Category': cat,
                         'Unique Health Keywords': stats['total_keywords'],
-                        'Total Health Volume': stats['total_count'],  # Use actual category total
+                        'Total Health Volume': stats['total_count'],
                         'Average Keyword Count': stats['avg_count']
                     })
                 
@@ -7102,11 +7316,13 @@ with tab_category:
                     yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
                 )
                 
+                # 🚀 UPDATED: Format hover with format_number
                 fig_distribution.update_traces(
                     hovertemplate='<b>%{hovertext}</b><br>' +
                                  'Unique Health Keywords: %{x}<br>' +
-                                 'Total Health Volume: %{y:,}<br>' +
-                                 'Avg Keyword Count: %{marker.size:.1f}<extra></extra>'
+                                 'Total Health Volume: %{customdata}<br>' +
+                                 'Avg Keyword Count: %{marker.size:.1f}<extra></extra>',
+                    customdata=[format_number(x) for x in dist_df['Total Health Volume']]
                 )
                 
                 st.plotly_chart(fig_distribution, use_container_width=True)
@@ -7116,7 +7332,7 @@ with tab_category:
             st.download_button(
                 label="📥 Download Nutraceuticals & Nutrition Category Health Keywords CSV",
                 data=csv_keywords,
-                file_name="Nutraceuticals & Nutrition_category_health_keywords_analysis.csv",
+                file_name=f"nutraceuticals_category_health_keywords_top_{num_keywords}.csv",
                 mime="text/csv",
                 key="category_keywords_csv_download"
             )
@@ -7139,12 +7355,12 @@ with tab_category:
         categories_above_avg_cr = len(cs[cs['cr'] > avg_conversion_rate]) if not cs.empty else 0
         
         st.markdown(f"""
-        <div class='Nutraceuticals & Nutrition-category-insight'>
+        <div class='category-insight'>
             <h4>🌿 Key Nutraceuticals & Nutrition Category Insights</h4>
             <p>• <strong>{top_category_name}</strong> leads health market with {top_category_share:.1f}% share<br>
             • {high_performers} Nutraceuticals & Nutrition categories achieve CTR > 5% (premium performance)<br>
             • {categories_above_avg_cr} categories exceed avg CR of {avg_conversion_rate:.2f}%<br>
-            • Health market shows {"strong" if category_dominance > 30 else "balanced" if category_dominance > 15 else "fragmented"} category concentration</p>
+            • Health market shows {"strong" if cs['share_pct'].iloc[0] > 30 else "balanced" if cs['share_pct'].iloc[0] > 15 else "fragmented"} category concentration</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -7153,12 +7369,12 @@ with tab_category:
         opportunity_categories = len(cs[(cs['Counts'] > cs['Counts'].median()) & (cs['ctr'] < 3)]) if not cs.empty else 0
         
         st.markdown(f"""
-        <div class='Nutraceuticals & Nutrition-category-insight'>
+        <div class='category-insight'>
             <h4>💚 Health Category Strategy Recommendations</h4>
             <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition categories (CTR < 2%)<br>
             • {opportunity_categories} high-volume health categories need engagement boost<br>
             • Focus on Nutraceuticals & Nutrition keywords for leading health categories<br>
-            • {"Diversify" if category_dominance > 40 else "Strengthen"} health product portfolio strategy</p>
+            • {"Diversify" if cs['share_pct'].iloc[0] > 40 else "Strengthen"} health product portfolio strategy</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -7173,7 +7389,7 @@ with tab_category:
         total_searches = cs['Counts'].sum() if not cs.empty else 0
         st.metric(
             label="🌿 Total Health Searches",
-            value=f"{total_searches:,.0f}",
+            value=format_number(total_searches),  # 🚀 UPDATED: format_number
             delta=f"{len(cs)} Nutraceuticals & Nutrition categories analyzed"
         )
     
@@ -7191,13 +7407,13 @@ with tab_category:
         avg_cr = cs['cr'].mean() if not cs.empty else 0
         st.metric(
             label="💚 Total Conversions",
-            value=f"{total_conversions:,.0f}",
+            value=format_number(total_conversions),  # 🚀 UPDATED: format_number
             delta=f"Avg CR: {avg_cr:.2f}%"
         )
     
     with summary_col4:
-        market_concentration = f"{category_dominance:.1f}%" if not cs.empty else "0%"
-        concentration_status = "High" if category_dominance > 30 else "Medium" if category_dominance > 15 else "Low"
+        market_concentration = f"{cs['share_pct'].iloc[0]:.1f}%" if not cs.empty else "0%"
+        concentration_status = "High" if cs['share_pct'].iloc[0] > 30 else "Medium" if cs['share_pct'].iloc[0] > 15 else "Low"
         st.metric(
             label="🎯 Market Concentration",
             value=market_concentration,
@@ -7220,26 +7436,27 @@ with tab_category:
             st.download_button(
                 label="📊 Download Complete Nutraceuticals & Nutrition Category Analysis",
                 data=csv_export,
-                file_name=f"wNutraceuticals & Nutrition_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                file_name=f"nutraceuticals_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv",
                 key="complete_category_export"
             )
     
     with export_col2:
         if not cs.empty:
-            # Summary report
+            # Summary report with format_number
+            # Summary report with format_number
             summary_report = f"""
-            Nutraceuticals & Nutrition CATEGORY INTELLIGENCE REPORT
+            NUTRACEUTICALS & NUTRITION CATEGORY INTELLIGENCE REPORT
             Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
             
             HEALTH MARKET OVERVIEW:
             • Total Nutraceuticals & Nutrition Categories Analyzed: {len(cs)}
-            • Total Health Searches: {cs['Counts'].sum():,.0f}
+            • Total Health Searches: {format_number(cs['Counts'].sum())}
             • Market Leader: {cs.iloc[0]['category']} ({cs.iloc[0]['share_pct']:.1f}% share)
             • Average CTR: {cs['ctr'].mean():.2f}%
             • Average CR: {cs['cr'].mean():.2f}%
             
-            Nutraceuticals & Nutrition PERFORMANCE TIERS:
+            NUTRACEUTICALS & NUTRITION PERFORMANCE TIERS:
             • Premium Categories (CTR > 10%): {len(cs[cs['ctr'] > 10])}
             • Strong Categories (CTR 5-10%): {len(cs[(cs['ctr'] >= 5) & (cs['ctr'] <= 10)])}
             • Growing Categories (CTR 2-5%): {len(cs[(cs['ctr'] >= 2) & (cs['ctr'] < 5)])}
@@ -7254,10 +7471,12 @@ with tab_category:
             st.download_button(
                 label="📝 Download Nutraceuticals & Nutrition Executive Summary Report",
                 data=summary_report,
-                file_name=f"Nutraceuticals & Nutrition_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                file_name=f"nutraceuticals_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 key="category_executive_summary_export"
             )
+
+
 
 
 # ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
