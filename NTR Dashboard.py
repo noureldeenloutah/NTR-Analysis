@@ -1984,6 +1984,7 @@ with tab_overview:
                                 """, unsafe_allow_html=True)
                         
                         # ✅ ADDED: Top declining queries section
+                        # ✅ BEST GENERIC: Queries Needing Attention (Filter-Compatible)
                         st.markdown("---")
                         st.markdown("#### ⚠️ Queries Needing Attention")
                         
@@ -1991,29 +1992,106 @@ with tab_overview:
                         
                         with col1:
                             st.markdown("##### 📉 CTR Decliners")
-                            ctr_decliners = sorted(ctr_improvements, key=lambda x: x['improvement'])[:3]
                             
-                            for item in ctr_decliners:
-                                if item['improvement'] < 0:
+                            # Get CTR decliners with minimum threshold
+                            ctr_decliners = []
+                            if ctr_improvements:
+                                ctr_decliners = [
+                                    item for item in ctr_improvements 
+                                    if item['improvement'] < -2  # At least 2% decline
+                                ]
+                                ctr_decliners = sorted(ctr_decliners, key=lambda x: x['improvement'])[:5]
+                            
+                            if ctr_decliners:
+                                for item in ctr_decliners:
+                                    decline_severity = "🔴" if item['improvement'] < -10 else "🟡"
                                     st.markdown(f"""
-                                    <div class="health-decliner-item">
-                                        <strong>{item['query'][:30]}...</strong><br>
+                                    <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
+                                        {decline_severity} <strong>{item['query'][:40]}...</strong><br>
                                         <small>CTR: {item['latest_ctr']:.2f}% ({item['improvement']:.1f}%)</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                            else:
+                                # Show lowest CTR as alternative
+                                if ctr_improvements:
+                                    lowest_ctr = sorted(ctr_improvements, key=lambda x: x['latest_ctr'])[:3]
+                                    low_performers = [item for item in lowest_ctr if item['latest_ctr'] < 1.5]
+                                    
+                                    if low_performers:
+                                        st.markdown("**⚠️ Low CTR Performance:**")
+                                        for item in low_performers:
+                                            st.markdown(f"""
+                                            <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
+                                                ⚠️ <strong>{item['query'][:40]}...</strong><br>
+                                                <small>CTR: {item['latest_ctr']:.2f}% (Below average)</small>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                    else:
+                                        st.markdown("""
+                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
+                                            <strong>✅ CTR Performance Healthy</strong><br>
+                                            <small>No significant declines or low performers</small>
+                                        </div>
+                                        """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown("""
+                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
+                                        <strong>📊 Insufficient Data</strong><br>
+                                        <small>Need 2+ months for trend analysis</small>
                                     </div>
                                     """, unsafe_allow_html=True)
                         
                         with col2:
                             st.markdown("##### 📉 CR Decliners")
-                            cr_decliners = sorted(cr_improvements, key=lambda x: x['improvement'])[:3]
                             
-                            for item in cr_decliners:
-                                if item['improvement'] < 0:
+                            # Get CR decliners with minimum threshold
+                            cr_decliners = []
+                            if cr_improvements:
+                                cr_decliners = [
+                                    item for item in cr_improvements 
+                                    if item['improvement'] < -2  # At least 2% decline
+                                ]
+                                cr_decliners = sorted(cr_decliners, key=lambda x: x['improvement'])[:5]
+                            
+                            if cr_decliners:
+                                for item in cr_decliners:
+                                    decline_severity = "🔴" if item['improvement'] < -10 else "🟡"
                                     st.markdown(f"""
-                                    <div class="health-decliner-item">
-                                        <strong>{item['query'][:30]}...</strong><br>
+                                    <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
+                                        {decline_severity} <strong>{item['query'][:40]}...</strong><br>
                                         <small>CR: {item['latest_cr']:.2f}% ({item['improvement']:.1f}%)</small>
                                     </div>
                                     """, unsafe_allow_html=True)
+                            else:
+                                # Show lowest CR as alternative
+                                if cr_improvements:
+                                    lowest_cr = sorted(cr_improvements, key=lambda x: x['latest_cr'])[:3]
+                                    low_performers = [item for item in lowest_cr if item['latest_cr'] < 0.8]
+                                    
+                                    if low_performers:
+                                        st.markdown("**⚠️ Low CR Performance:**")
+                                        for item in low_performers:
+                                            st.markdown(f"""
+                                            <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
+                                                ⚠️ <strong>{item['query'][:40]}...</strong><br>
+                                                <small>CR: {item['latest_cr']:.2f}% (Below average)</small>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                    else:
+                                        st.markdown("""
+                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
+                                            <strong>✅ CR Performance Healthy</strong><br>
+                                            <small>No significant declines or low performers</small>
+                                        </div>
+                                        """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown("""
+                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
+                                        <strong>📊 Insufficient Data</strong><br>
+                                        <small>Need 2+ months for trend analysis</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+
                         
                         # ✅ ADDED: Key insights summary
                         st.markdown("---")
