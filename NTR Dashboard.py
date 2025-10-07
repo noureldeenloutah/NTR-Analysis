@@ -7298,50 +7298,6 @@ with tab_category:
                     </div>
                     """, unsafe_allow_html=True)
         
-        # Rest of your code remains the same...
-
-            else:
-                # Show overall metrics
-                total_searches = cs['Counts'].sum()
-                avg_ctr = cs['ctr'].mean()
-                avg_cr = cs['cr'].mean()
-                avg_classic_cr = cs['classic_cr'].mean()
-                
-                # UPDATED: Now showing 4 metrics including both CR types with format_number
-                metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-                
-                with metric_col1:
-                    st.markdown(f"""
-                    <div class="brand-metric-card">
-                        <div class="brand-metric-value">{format_number(total_searches)}</div>
-                        <div class="brand-metric-label">📊 Total Market</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with metric_col2:
-                    st.markdown(f"""
-                    <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_ctr:.2f}%</div>
-                        <div class="brand-metric-label">📈 Avg CTR</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with metric_col3:
-                    st.markdown(f"""
-                    <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_cr:.2f}%</div>
-                        <div class="brand-metric-label">🎯 Avg CR (Search)</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with metric_col4:
-                    st.markdown(f"""
-                    <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_classic_cr:.2f}%</div>
-                        <div class="brand-metric-label">🔄 Avg Classic CR</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-        
         # Filter data based on selection
         if selected_category == 'All Health Categories':
             # Show top 8 categories if "All Categories" is selected
@@ -7506,7 +7462,7 @@ with tab_category:
                                 'Classic CR: %{customdata[2]:.2f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
                     customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
-                               for _, row in category_search_data.iterrows()],
+                            for _, row in category_search_data.iterrows()],
                     text=[format_number(x) for x in category_search_data['Counts']]
                 )
                 
@@ -7543,8 +7499,9 @@ with tab_category:
                 st.dataframe(display_comparison, use_container_width=True, hide_index=True)
         else:
             st.warning("⚠️ No Nutraceuticals & Nutrition category data available for the selected filter")
-    
+
     st.markdown("---")
+
     
     # Enhanced Top Keywords per Category Analysis
     st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Category Analysis")
