@@ -6639,10 +6639,9 @@ with tab_category:
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
             
-            # Use the original queries data filtered by categories (not pre-aggregated data)
-            trend_data = queries[
-                (queries[category_column].isin(top_5_categories)) &
-                (queries[category_column].notna())
+            # Use the already filtered category data
+            trend_data = category_queries[
+                category_queries[category_column].isin(top_5_categories)
             ].copy()
             
             if not trend_data.empty:
@@ -6652,11 +6651,11 @@ with tab_category:
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # Create proper monthly aggregation from individual query records
+                        # Create proper monthly aggregation
                         trend_data['Month'] = trend_data['Date'].dt.to_period('M')
                         trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # Group by Month and category - sum ALL metrics for each month from individual records
+                        # Group by Month and category - sum all metrics for each month
                         monthly_trends = trend_data.groupby(['Month_Display', category_column]).agg({
                             'Counts': 'sum',
                             'clicks': 'sum',
@@ -6672,8 +6671,7 @@ with tab_category:
                         monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
                         
                         if len(monthly_trends) > 0:
-                            # Create trend analysis with multiple chart options
-                            st.markdown("#### 📊 Trend Chart Options")
+                            # Create trend chart selector
                             trend_metric = st.radio(
                                 "Select metric to analyze:",
                                 options=['Search Volume', 'CTR (%)', 'CR (%)'],
@@ -6682,19 +6680,19 @@ with tab_category:
                                 key="trend_metric_selector"
                             )
                             
-                            # Determine which column to plot
+                            # Determine chart configuration based on selected metric
                             if trend_metric == 'Search Volume':
                                 y_column = 'Counts'
                                 y_title = 'Search Volume'
-                                chart_title = '🌿 Top 5 Categories Monthly Search Volume Trend'
+                                chart_title = '🌿 Top 5 Health Categories Monthly Search Volume Trend'
                             elif trend_metric == 'CTR (%)':
                                 y_column = 'ctr'
                                 y_title = 'CTR (%)'
-                                chart_title = '📈 Top 5 Categories Monthly CTR Trend'
+                                chart_title = '📈 Top 5 Health Categories Monthly CTR Trend'
                             else:  # CR (%)
                                 y_column = 'cr'
                                 y_title = 'CR (%)'
-                                chart_title = '🎯 Top 5 Categories Monthly CR Trend'
+                                chart_title = '🎯 Top 5 Health Categories Monthly CR Trend'
                             
                             fig_trend = px.line(
                                 monthly_trends, 
@@ -6725,7 +6723,7 @@ with tab_category:
                                 hovermode='x unified'
                             )
                             
-                            # Enhanced hover template with all metrics
+                            # Enhanced hover template with proper formatting and all metrics
                             hover_customdata = []
                             for _, row in monthly_trends.iterrows():
                                 hover_customdata.append([
