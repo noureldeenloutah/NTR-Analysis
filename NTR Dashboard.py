@@ -6639,9 +6639,10 @@ with tab_category:
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
             
-            # Use the already filtered category data
-            trend_data = category_queries[
-                category_queries[category_column].isin(top_5_categories)
+            # Use the original queries data instead of pre-aggregated category_queries
+            trend_data = queries[
+                (queries[category_column].isin(top_5_categories)) &
+                (queries[category_column].notna())
             ].copy()
             
             if not trend_data.empty:
@@ -6655,7 +6656,7 @@ with tab_category:
                         trend_data['Month'] = trend_data['Date'].dt.to_period('M')
                         trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # Group by Month and category - sum all metrics for each month
+                        # Group by Month and category - sum all metrics for each month-category combination
                         monthly_trends = trend_data.groupby(['Month_Display', category_column]).agg({
                             'Counts': 'sum',
                             'clicks': 'sum',
@@ -6664,11 +6665,27 @@ with tab_category:
                         monthly_trends = monthly_trends.rename(columns={category_column: 'category'})
                         
                         # Calculate CTR and CR for each month-category combination
-                        monthly_trends['ctr'] = ((monthly_trends['clicks'] / monthly_trends['Counts']) * 100).round(2)
-                        monthly_trends['cr'] = ((monthly_trends['conversions'] / monthly_trends['Counts']) * 100).round(2)
+                        # Add safety check to avoid division by zero
+                        monthly_trends['ctr'] = monthly_trends.apply(
+                            lambda row: (row['clicks'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, axis=1
+                        ).round(2)
+                        monthly_trends['cr'] = monthly_trends.apply(
+                            lambda row: (row['conversions'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, axis=1
+                        ).round(2)
                         
                         # Convert month display back to datetime for proper plotting
                         monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
+                        
+                        # Debug: Show data summary
+                        st.write("**Data Summary by Category:**")
+                        debug_summary = monthly_trends.groupby('category').agg({
+                            'Counts': 'sum',
+                            'clicks': 'sum', 
+                            'conversions': 'sum',
+                            'ctr': 'mean',
+                            'cr': 'mean'
+                        }).round(2)
+                        st.dataframe(debug_summary)
                         
                         if len(monthly_trends) > 0:
                             # Create trend chart selector
