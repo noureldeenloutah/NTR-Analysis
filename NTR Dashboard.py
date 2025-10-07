@@ -6917,13 +6917,14 @@ with tab_category:
         st.plotly_chart(fig_cat_perf, use_container_width=True)
         
         # Enhanced Category Trend Analysis
+        # 📈 Nutraceuticals & Nutrition Category Trend Analysis
         if 'Date' in queries.columns:
             st.subheader("📈 Nutraceuticals & Nutrition Category Trend Analysis")
             
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
             
-            # Use the original queries data instead of pre-aggregated category_queries
+            # Filter data for top 5 categories
             trend_data = queries[
                 (queries[category_column].isin(top_5_categories)) &
                 (queries[category_column].notna())
@@ -6931,128 +6932,220 @@ with tab_category:
             
             if not trend_data.empty:
                 try:
-                    # Enhanced date processing
+                    # ✅ ENHANCED: Better date processing
                     trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # Create proper monthly aggregation
-                        trend_data['Month'] = trend_data['Date'].dt.to_period('M')
-                        trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
+                        # ✅ FIXED: Create proper monthly aggregation using the same logic as the table
+                        trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # Group by Month and category - sum all metrics for each month-category combination
-                        monthly_trends = trend_data.groupby(['Month_Display', category_column]).agg({
+                        # ✅ CORRECT CALCULATION: Group by month and category, sum all metrics
+                        monthly_trends = trend_data.groupby(['month', category_column]).agg({
                             'Counts': 'sum',
                             'clicks': 'sum',
                             'conversions': 'sum'
                         }).reset_index()
                         monthly_trends = monthly_trends.rename(columns={category_column: 'category'})
                         
-                        # Calculate CTR and CR for each month-category combination
-                        # Add safety check to avoid division by zero
-                        monthly_trends['ctr'] = monthly_trends.apply(
-                            lambda row: (row['clicks'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, axis=1
-                        ).round(2)
-                        monthly_trends['cr'] = monthly_trends.apply(
-                            lambda row: (row['conversions'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, axis=1
+                        # ✅ FIXED: Calculate CTR and CR properly for each month-category combination
+                        monthly_trends['CTR'] = monthly_trends.apply(
+                            lambda row: (row['clicks'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, 
+                            axis=1
                         ).round(2)
                         
-                        # Convert month display back to datetime for proper plotting
-                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
+                        monthly_trends['CR'] = monthly_trends.apply(
+                            lambda row: (row['conversions'] / row['Counts'] * 100) if row['Counts'] > 0 else 0, 
+                            axis=1
+                        ).round(2)
                         
-                        # Debug: Show data summary
-                        st.write("**Data Summary by Category:**")
-                        debug_summary = monthly_trends.groupby('category').agg({
-                            'Counts': 'sum',
-                            'clicks': 'sum', 
-                            'conversions': 'sum',
-                            'ctr': 'mean',
-                            'cr': 'mean'
-                        }).round(2)
-                        st.dataframe(debug_summary)
+                        # ✅ ENHANCED: Convert month to proper datetime for plotting
+                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
+                        monthly_trends = monthly_trends.sort_values(['Date', 'category'])
+                        
+                        # ✅ FILTER: Only show categories with meaningful data
+                        monthly_trends = monthly_trends[monthly_trends['Counts'] > 0]
                         
                         if len(monthly_trends) > 0:
-                            # Create trend chart selector
-                            trend_metric = st.radio(
-                                "Select metric to analyze:",
-                                options=['Search Volume', 'CTR (%)', 'CR (%)'],
-                                index=0,
-                                horizontal=True,
-                                key="trend_metric_selector"
-                            )
+                            # ✅ ENHANCED: Better metric selector with icons
+                            col1, col2, col3 = st.columns(3)
                             
-                            # Determine chart configuration based on selected metric
-                            if trend_metric == 'Search Volume':
-                                y_column = 'Counts'
-                                y_title = 'Search Volume'
-                                chart_title = '🌿 Top 5 Health Categories Monthly Search Volume Trend'
-                            elif trend_metric == 'CTR (%)':
-                                y_column = 'ctr'
-                                y_title = 'CTR (%)'
-                                chart_title = '📈 Top 5 Health Categories Monthly CTR Trend'
-                            else:  # CR (%)
-                                y_column = 'cr'
-                                y_title = 'CR (%)'
-                                chart_title = '🎯 Top 5 Health Categories Monthly CR Trend'
+                            with col1:
+                                show_volume = st.checkbox("🌿 Search Volume", value=True, key="show_volume_trend")
+                            with col2:
+                                show_ctr = st.checkbox("📈 CTR (%)", value=False, key="show_ctr_trend")
+                            with col3:
+                                show_cr = st.checkbox("🎯 CR (%)", value=False, key="show_cr_trend")
                             
-                            fig_trend = px.line(
-                                monthly_trends, 
-                                x='Date', 
-                                y=y_column, 
-                                color='category',
-                                title=f'<b style="color:#2E7D32;">{chart_title}</b>',
-                                color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
-                                markers=True
-                            )
+                            # ✅ DYNAMIC CHARTS: Create charts based on selection
+                            charts_to_show = []
+                            if show_volume:
+                                charts_to_show.append(('Search Volume', 'Counts', '🌿 Top 5 Health Categories - Monthly Search Volume Trend'))
+                            if show_ctr:
+                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Health Categories - Monthly CTR Trend'))
+                            if show_cr:
+                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Health Categories - Monthly CR Trend'))
                             
-                            fig_trend.update_layout(
-                                plot_bgcolor='rgba(248,255,248,0.95)',
-                                paper_bgcolor='rgba(232,245,232,0.8)',
-                                font=dict(color='#1B5E20', family='Segoe UI'),
-                                xaxis=dict(
-                                    showgrid=True, 
-                                    gridcolor='#C8E6C8',
-                                    title='Month',
-                                    dtick="M1",
-                                    tickformat="%b %Y"
-                                ),
-                                yaxis=dict(
-                                    showgrid=True, 
-                                    gridcolor='#C8E6C8',
-                                    title=y_title
-                                ),
-                                hovermode='x unified'
-                            )
-                            
-                            # Enhanced hover template with proper formatting and all metrics
-                            hover_customdata = []
-                            for _, row in monthly_trends.iterrows():
-                                hover_customdata.append([
-                                    format_number(row['Counts']),
-                                    f"{row['ctr']:.2f}%",
-                                    f"{row['cr']:.2f}%"
-                                ])
-                            
-                            fig_trend.update_traces(
-                                hovertemplate='<b>%{fullData.name}</b><br>' +
-                                            'Month: %{x|%B %Y}<br>' +
-                                            'Search Volume: %{customdata[0]}<br>' +
-                                            'CTR: %{customdata[1]}<br>' +
-                                            'CR: %{customdata[2]}<extra></extra>',
-                                customdata=hover_customdata
-                            )
-                            
-                            st.plotly_chart(fig_trend, use_container_width=True)
+                            if not charts_to_show:
+                                st.warning("Please select at least one metric to display.")
+                            else:
+                                # ✅ MONTH NAMES: Create month display mapping
+                                month_names_display = {
+                                    '2025-06': 'June 2025',
+                                    '2025-07': 'July 2025', 
+                                    '2025-08': 'August 2025'
+                                }
+                                
+                                # Add month display names
+                                monthly_trends['Month_Display'] = monthly_trends['month'].map(month_names_display).fillna(monthly_trends['month'])
+                                
+                                for metric_name, y_column, chart_title in charts_to_show:
+                                    # ✅ ENHANCED: Create trend chart with better styling
+                                    fig_trend = px.line(
+                                        monthly_trends, 
+                                        x='Date', 
+                                        y=y_column, 
+                                        color='category',
+                                        title=f'<b style="color:#2E7D32;">{chart_title}</b>',
+                                        color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
+                                        markers=True,
+                                        line_shape='spline'  # Smoother lines
+                                    )
+                                    
+                                    # ✅ ENHANCED: Better layout and styling
+                                    fig_trend.update_layout(
+                                        plot_bgcolor='rgba(248,255,248,0.95)',
+                                        paper_bgcolor='rgba(232,245,232,0.8)',
+                                        font=dict(color='#1B5E20', family='Segoe UI', size=12),
+                                        height=450,
+                                        xaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#C8E6C8',
+                                            title='<b>Month</b>',
+                                            dtick="M1",
+                                            tickformat="%b %Y",
+                                            tickangle=0
+                                        ),
+                                        yaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#C8E6C8',
+                                            title=f'<b>{metric_name}</b>',
+                                            tickformat='.0f' if y_column == 'Counts' else '.2f'
+                                        ),
+                                        hovermode='x unified',
+                                        legend=dict(
+                                            orientation="h",
+                                            yanchor="bottom",
+                                            y=1.02,
+                                            xanchor="right",
+                                            x=1,
+                                            bgcolor='rgba(255,255,255,0.8)',
+                                            bordercolor='#2E7D32',
+                                            borderwidth=1
+                                        )
+                                    )
+                                    
+                                    # ✅ ENHANCED: Better hover information with all metrics
+                                    hover_data = []
+                                    for _, row in monthly_trends.iterrows():
+                                        if y_column == 'Counts':
+                                            hover_data.append([
+                                                format_number(int(row['Counts'])),
+                                                f"{row['CTR']:.2f}%",
+                                                f"{row['CR']:.2f}%",
+                                                format_number(int(row['clicks'])),
+                                                format_number(int(row['conversions']))
+                                            ])
+                                        else:
+                                            hover_data.append([
+                                                format_number(int(row['Counts'])),
+                                                f"{row['CTR']:.2f}%",
+                                                f"{row['CR']:.2f}%",
+                                                format_number(int(row['clicks'])),
+                                                format_number(int(row['conversions']))
+                                            ])
+                                    
+                                    # ✅ COMPREHENSIVE: Show all metrics in hover regardless of chart type
+                                    fig_trend.update_traces(
+                                        hovertemplate='<b>%{fullData.name}</b><br>' +
+                                                    '<b>Month:</b> %{x|%B %Y}<br>' +
+                                                    '<b>Search Volume:</b> %{customdata[0]}<br>' +
+                                                    '<b>CTR:</b> %{customdata[1]}<br>' +
+                                                    '<b>CR:</b> %{customdata[2]}<br>' +
+                                                    '<b>Total Clicks:</b> %{customdata[3]}<br>' +
+                                                    '<b>Total Conversions:</b> %{customdata[4]}<extra></extra>',
+                                        customdata=hover_data,
+                                        line=dict(width=3),
+                                        marker=dict(size=8, line=dict(width=2, color='white'))
+                                    )
+                                    
+                                    st.plotly_chart(fig_trend, use_container_width=True)
+                                    
+                                    # ✅ INSIGHTS: Add trend insights below each chart
+                                    if len(monthly_trends['Date'].unique()) >= 2:
+                                        # Calculate month-over-month changes
+                                        latest_month = monthly_trends['Date'].max()
+                                        prev_month = monthly_trends['Date'].unique()[-2] if len(monthly_trends['Date'].unique()) >= 2 else None
+                                        
+                                        if prev_month is not None:
+                                            latest_data = monthly_trends[monthly_trends['Date'] == latest_month]
+                                            prev_data = monthly_trends[monthly_trends['Date'] == prev_month]
+                                            
+                                            insights = []
+                                            for category in top_5_categories:
+                                                latest_cat = latest_data[latest_data['category'] == category]
+                                                prev_cat = prev_data[prev_data['category'] == category]
+                                                
+                                                if not latest_cat.empty and not prev_cat.empty:
+                                                    latest_val = latest_cat[y_column].iloc[0]
+                                                    prev_val = prev_cat[y_column].iloc[0]
+                                                    
+                                                    if prev_val > 0:
+                                                        change_pct = ((latest_val - prev_val) / prev_val) * 100
+                                                        trend_icon = "📈" if change_pct > 0 else "📉" if change_pct < 0 else "➡️"
+                                                        insights.append(f"{trend_icon} **{category}**: {change_pct:+.1f}%")
+                                            
+                                            if insights:
+                                                st.markdown(f"""
+                                                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                                                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">📊 Month-over-Month {metric_name} Changes:</h4>
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                                                        {''.join([f'<div>{insight}</div>' for insight in insights])}
+                                                    </div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                    
+                                    st.markdown("<br>", unsafe_allow_html=True)
+                                
+                                # ✅ SUMMARY: Overall trend summary
+                                total_categories = len(monthly_trends['category'].unique())
+                                total_months = len(monthly_trends['Date'].unique())
+                                
+                                st.markdown(f"""
+                                <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); padding: 15px; border-radius: 10px; color: white; text-align: center; margin: 20px 0;">
+                                    <h3 style="margin: 0 0 10px 0;">🌿 Health Categories Trend Summary</h3>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                                        <div><strong>{total_categories}</strong><br>Categories Analyzed</div>
+                                        <div><strong>{total_months}</strong><br>Months Tracked</div>
+                                        <div><strong>{format_number(int(monthly_trends['Counts'].sum()))}</strong><br>Total Search Volume</div>
+                                        <div><strong>{monthly_trends['CTR'].mean():.2f}%</strong><br>Average CTR</div>
+                                        <div><strong>{monthly_trends['CR'].mean():.2f}%</strong><br>Average CR</div>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
+                                
                         else:
-                            st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and categories")
+                            st.info("No valid trend data available for the top 5 health categories")
                     else:
-                        st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
+                        st.info("No valid dates found in the health category data")
                 except Exception as e:
-                    st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
+                    st.error(f"Error processing health category trend data: {str(e)}")
+                    st.write("Debug info:", str(e))
             else:
-                st.info("No Nutraceuticals & Nutrition category data available for the selected date range")
-    
-    st.markdown("---")
+                st.info("No health category data available for trend analysis")
+
+        st.markdown("---")
+
 
 
     
