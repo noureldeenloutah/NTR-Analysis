@@ -8457,7 +8457,7 @@ with tab_subcat:
                 herfindahl_index = 1
         
         # ✅ ENHANCED: Key Metrics Section with better performance indicators
-        st.subheader("🌿 Health Subcategory Performance Overview")
+        st.subheader("🌿 Subcategories Performance Overview")
         
         # Calculate key metrics with proper data type handling
         total_searches = int(sc['Counts'].sum())
@@ -8679,7 +8679,7 @@ with tab_subcat:
                 )
                 
                 if not summary_df.empty:
-                    st.subheader("🔥 Top 10 Keywords by Subcategory")
+                    st.subheader("🔥 Top 10 Keywords by Subcategories")
                     
                     # Display table with proper height
                     table_height = min(max(len(summary_df) * 35 + 50, 200), 500)
@@ -9824,141 +9824,6 @@ with tab_subcat:
                     st.plotly_chart(fig_lorenz, use_container_width=True)
                 else:
                     st.info("Need at least 2 subcategories to generate Lorenz curve.")
-
-        # ✅ ENHANCED: Export section with better file naming
-        st.markdown("---")
-        st.subheader("📥 Export Health Subcategory Intelligence")
-        
-        export_col1, export_col2 = st.columns(2)
-        
-        with export_col1:
-            if not sc.empty:
-                export_data = sc.copy()
-                export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
-                export_data['analysis_time'] = pd.Timestamp.now().strftime('%H:%M:%S')
-                
-                csv_export = export_data.to_csv(index=False)
-                timestamp = pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')
-                st.download_button(
-                    label="📊 Download Complete Subcategories Analysis",
-                    data=csv_export,
-                    file_name=f"health_subcategory_intelligence_{timestamp}.csv",
-                    mime="text/csv",
-                    key="complete_health_subcategory_export"
-                )
-        
-        with export_col2:
-            if not sc.empty:
-                # ✅ ENHANCED: Better executive summary with more insights
-                timestamp_readable = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')
-                
-                # Calculate additional insights
-                premium_subcats = len(sc[sc['ctr'] > 10])
-                strong_subcats = len(sc[(sc['ctr'] >= 5) & (sc['ctr'] <= 10)])
-                growing_subcats = len(sc[(sc['ctr'] >= 2) & (sc['ctr'] < 5)])
-                emerging_subcats = len(sc[sc['ctr'] < 2])
-                
-                # Top performers for summary
-                top_performers = []
-                for _, row in sc.head(5).iterrows():
-                    top_performers.append(f"• {row['sub_category']}: {format_number(int(row['Counts']))} searches, {float(row['ctr']):.2f}% CTR, {float(row['conversion_rate']):.2f}% CR")
-                
-                # Optimization opportunities
-                low_ctr_subcats = sc[sc['ctr'] < 2]['sub_category'].head(3).tolist()
-                optimization_focus = ', '.join(low_ctr_subcats) if low_ctr_subcats else 'All subcategories performing well'
-                
-                summary_report = f"""
-HEALTH SUBCATEGORY INTELLIGENCE REPORT
-Generated: {timestamp_readable}
-
-NUTRACEUTICALS & NUTRITION MARKET OVERVIEW:
-• Total Health Subcategories Analyzed: {len(sc)}
-• Total Health Searches: {format_number(total_searches)}
-• Market Leader: {sc.iloc[0]['sub_category']} ({float(sc.iloc[0]['click_share']):.1f}% click share)
-• Average Health CTR: {avg_ctr:.2f}%
-• Average Nutraceuticals & Nutrition CR: {avg_cr:.2f}%
-
-HEALTH PERFORMANCE TIERS:
-• Premium Subcategories (CTR > 10%): {premium_subcats}
-• Strong Subcategories (CTR 5-10%): {strong_subcats}
-• Growing Subcategories (CTR 2-5%): {growing_subcats}
-• Emerging Subcategories (CTR < 2%): {emerging_subcats}
-
-MARKET CONCENTRATION ANALYSIS:
-• Top 5 Health Subcategories: {top_5_concentration:.1f}% market share
-• Top 10 Health Subcategories: {top_10_concentration:.1f}% market share
-• Gini Coefficient: {gini_coefficient:.3f}
-• Herfindahl Index: {herfindahl_index:.4f}
-• Market Concentration Level: {concentration_status}
-
-STRATEGIC HEALTH INSIGHTS:
-• Market concentration is {concentration_status.lower()}
-• {len(sc[sc['ctr'] > 5])} subcategories achieve premium performance
-• Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
-• {subcats_above_avg_cr} subcategories exceed average conversion rate
-
-TOP PERFORMING HEALTH SUBCATEGORIES:
-{chr(10).join(top_performers)}
-
-OPTIMIZATION OPPORTUNITIES:
-• High-volume, low-CTR subcategories need attention
-• Conversion rate optimization potential across {len(sc[sc['conversion_rate'] < avg_conversion_rate])} subcategories
-• Keyword expansion opportunities in top-performing health segments
-• Focus areas: {optimization_focus}
-• Cross-subcategory Nutraceuticals & Nutrition strategy development recommended
-
-MARKET RECOMMENDATIONS:
-• {"Diversify portfolio focus" if concentration_status == "High" else "Strengthen market leaders"}
-• Invest in underperforming high-volume segments
-• Develop targeted health keyword strategies
-• Monitor competitive positioning in key subcategories
-                """
-                
-                timestamp_file = pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')
-                st.download_button(
-                    label="📝 Download Health Executive Summary Report",
-                    data=summary_report,
-                    file_name=f"health_subcategory_executive_summary_{timestamp_file}.txt",
-                    mime="text/plain",
-                    key="health_subcategory_executive_summary_export"
-                )
-                
-    except Exception as e:
-        st.error(f"❌ An error occurred in the Subcategories analysis: {str(e)}")
-        
-        # ✅ ENHANCED: Better error handling with debugging info
-        with st.expander("🔧 Debug Information"):
-            st.write("**Available columns:**", list(queries.columns))
-            st.write("**Data shape:**", queries.shape)
-            st.write("**Error details:**", str(e))
-            st.write("**Error type:**", type(e).__name__)
-            
-            # Show sample data for debugging
-            if not queries.empty:
-                st.write("**Sample data (first 5 rows):**")
-                st.dataframe(queries.head())
-                
-                # Check data types
-                st.write("**Column data types:**")
-                st.write(queries.dtypes)
-            
-        st.info("""
-        💡 **Troubleshooting Tips:**
-        - Ensure your dataset contains a subcategory column ('sub_category', 'subcategory', etc.)
-        - Check that numeric columns ('Counts', 'clicks', 'conversions') contain valid numbers
-        - Verify there are no completely empty rows or columns
-        - Make sure subcategory values are not all null or empty
-        - Ensure numeric columns don't contain text values that can't be converted to numbers
-        """)
-        
-        st.markdown("""
-        **Expected data format:**
-        - Column 'sub_category' (or similar) with health subcategory names
-        - Column 'Counts' with search volume data (numeric)
-        - Column 'clicks' with click data (numeric)
-        - Column 'conversions' with conversion data (numeric)
-        - Optional: Column 'keyword' for keyword analysis
-        """)
 
                     
 
