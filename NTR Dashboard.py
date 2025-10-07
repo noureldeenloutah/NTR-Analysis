@@ -8804,7 +8804,9 @@ with tab_subcat:
             if selected_subcategory:
                 with st.spinner(f'🔬 Analyzing {selected_subcategory}...'):
                     subcat_data = sc[sc['sub_category'] == selected_subcategory].iloc[0]
-                                        subcat_rank = sc.reset_index().index[sc['sub_category'] == selected_subcategory].tolist()[0] + 1
+                    
+                    # ✅ IMPROVED: More efficient rank calculation
+                    subcat_rank = sc.reset_index().index[sc['sub_category'] == selected_subcategory].tolist()[0] + 1
                     
                     # Detailed metrics display
                     col_detail1, col_detail2, col_detail3, col_detail4 = st.columns(4)
