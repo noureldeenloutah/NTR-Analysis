@@ -4833,7 +4833,6 @@ with tab_search:
     else:
         try:
             # Group by 'search' and aggregate
-            # Group by 'search' and aggregate
             top_queries = queries.groupby('search').agg({
                 'Counts': 'sum',
                 'clicks': 'sum',
@@ -4871,11 +4870,10 @@ with tab_search:
                 'conversions': 'Conversions'
             })
 
-            # No need to round again since we already did it above
-
-            
-            # Format Search Counts with commas
-            top_queries['Search Volume'] = top_queries['Search Volume'].apply(lambda x: f"{x:,.0f}")
+            # 🚀 UPDATED: Apply format_number function to numeric columns
+            top_queries['Search Volume'] = top_queries['Search Volume'].apply(format_number)
+            top_queries['Clicks'] = top_queries['Clicks'].apply(format_number)
+            top_queries['Conversions'] = top_queries['Conversions'].apply(format_number)
             top_queries['Share %'] = top_queries['Share %'].apply(lambda x: f"{x:.2f}%")
             top_queries['Conversion Rate'] = top_queries['Conversion Rate'].apply(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else str(x))
             top_queries['Query Length'] = top_queries['Query Length'].apply(lambda x: f"{x}")
@@ -4969,6 +4967,7 @@ with tab_search:
             st.error(f"Column error: {e}. Check column names in your health data (e.g., 'search', 'Counts', 'clicks', 'conversions', 'Conversion Rate').")
         except Exception as e:
             st.error(f"Error processing top health queries: {e}")
+
 
 
 # ----------------- Brand Tab (Enhanced & Optimized) -----------------
@@ -6229,15 +6228,6 @@ with tab_brand:
                 mime="text/csv",
                 key="summary_export"
             )
-
-    # Performance optimization footer
-    st.markdown("""
-    <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); border-radius: 10px; margin-top: 2rem;">
-        <p style="color: #2E7D32; margin: 0; font-size: 0.9em;">
-            🌿 <strong>Nutraceuticals & Nutrition Brand Intelligence Hub</strong> - Powered by Advanced Analytics & Market Intelligence 🌿
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
 
 
 # ----------------- Category Tab (Enhanced & Health-Focused) -----------------
