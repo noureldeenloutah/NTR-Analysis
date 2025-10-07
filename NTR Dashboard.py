@@ -9839,18 +9839,38 @@ with tab_generic:
     st.markdown("Deep dive into generic term performance and nutraceutical search trends. 💚")
 
     # Optimized Hero Image with caching
-    @st.cache_data
-    def get_generic_image_options():
-        return {
-            "Generic Type Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Generic+Type+Performance+Analysis",
-            "Nutraceutical Generics": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Nutraceutical+Generic+Intelligence+Dashboard",
-            "Abstract Generic Types": "https://source.unsplash.com/1200x200/?nutrition,supplements,generic",
-            "Health Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Generic+Type+Insights",
-        }
-    
-    generic_image_options = get_generic_image_options()
-    selected_generic_image = st.sidebar.selectbox("Choose Generic Tab Hero", options=list(generic_image_options.keys()), index=0, key="generic_hero_image_selector")
-    st.image(generic_image_options[selected_generic_image], use_container_width=True)
+    # 🎨 GREEN-THEMED HERO HEADER (replacing image selection)
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🌿 Generic Type Performance Analysis 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Deep dive into Nutraceuticals & Nutrition subcategory performance and health search trends
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     try:
         # Optimized data validation
@@ -10082,7 +10102,6 @@ with tab_generic:
 
 
         # ✅ NEW: Top Generic Terms Performance Table
-        st.markdown("---")
         st.subheader("🏆 Generic Terms Performance")
 
         num_generic_terms = st.slider(
