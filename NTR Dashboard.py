@@ -9,6 +9,7 @@ from datetime import datetime
 import pytz
 from collections import defaultdict
 from fuzzywuzzy import fuzz
+from plotly.subplots import make_subplots
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
@@ -9075,7 +9076,6 @@ with tab_subcat:
                             """, unsafe_allow_html=True)
                     else:
                         st.info("Health subcategory intelligence data not available.")
-
         
         st.markdown("---")
         
@@ -9097,7 +9097,100 @@ with tab_subcat:
                 display_count = min(20, len(sc))
                 top_sc = sc.head(display_count).copy()
                 
+                # ✅ NEW: Combined Volume, CTR & CR Analysis Chart
+                st.subheader("🚀 Health Volume vs Performance Matrix")
+                
+                # Calculate conversion rate as conversions/search volume for better representation
+                top_sc['conversion_rate_volume'] = (top_sc['conversions'] / top_sc['Counts'] * 100).round(2)
+                
+                # Create subplot with secondary y-axis
+                fig_combined = make_subplots(
+                    specs=[[{"secondary_y": True}]],
+                    subplot_titles=("",)
+                )
+                
+                # Add search volume bars (primary y-axis)
+                fig_combined.add_trace(
+                    go.Bar(
+                        name='Search Volume',
+                        x=top_sc['sub_category'],
+                        y=top_sc['Counts'],
+                        marker_color='rgba(46, 125, 50, 0.7)',
+                        text=[format_number(int(x)) for x in top_sc['Counts']],
+                        textposition='outside',
+                        yaxis='y',
+                        offsetgroup=1
+                    ),
+                    secondary_y=False,
+                )
+                
+                # Add CTR line (secondary y-axis)
+                fig_combined.add_trace(
+                    go.Scatter(
+                        name='CTR %',
+                        x=top_sc['sub_category'],
+                        y=top_sc['ctr'],
+                        mode='lines+markers',
+                        line=dict(color='#FF6B35', width=3),
+                        marker=dict(size=8, color='#FF6B35'),
+                        yaxis='y2'
+                    ),
+                    secondary_y=True,
+                )
+                
+                # Add Conversion Rate line (secondary y-axis)
+                fig_combined.add_trace(
+                    go.Scatter(
+                        name='Conversion Rate %',
+                        x=top_sc['sub_category'],
+                        y=top_sc['conversion_rate_volume'],
+                        mode='lines+markers',
+                        line=dict(color='#9C27B0', width=3, dash='dash'),
+                        marker=dict(size=8, color='#9C27B0'),
+                        yaxis='y2'
+                    ),
+                    secondary_y=True,
+                )
+                
+                # Update layout
+                fig_combined.update_layout(
+                    title='<b style="color:#2E7D32;">🌿 Health Search Volume vs CTR & Conversion Performance</b>',
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=600,
+                    xaxis=dict(
+                        tickangle=45, 
+                        showgrid=True, 
+                        gridcolor='#C8E6C8',
+                        title='Health Subcategories'
+                    ),
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="right",
+                        x=1
+                    )
+                )
+                
+                # Set y-axes titles
+                fig_combined.update_yaxes(
+                    title_text="<b>Search Volume</b>", 
+                    secondary_y=False,
+                    showgrid=True, 
+                    gridcolor='#C8E6C8'
+                )
+                fig_combined.update_yaxes(
+                    title_text="<b>Performance Rate (%)</b>", 
+                    secondary_y=True,
+                    showgrid=False
+                )
+                
+                st.plotly_chart(fig_combined, use_container_width=True)
+                
                 # Enhanced bar chart
+                st.subheader("📊 Health Search Volume Distribution")
                 fig_top_subcats = px.bar(
                     top_sc,
                     x='sub_category',
@@ -9120,7 +9213,7 @@ with tab_subcat:
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
-                    height=600,
+                    height=500,
                     xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
                     yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
                     showlegend=False
@@ -9137,14 +9230,18 @@ with tab_subcat:
                     name='Health CTR %',
                     x=top_sc['sub_category'],
                     y=top_sc['ctr'],
-                    marker_color='#4CAF50'
+                    marker_color='#4CAF50',
+                    text=[f'{x:.1f}%' for x in top_sc['ctr']],
+                    textposition='outside'
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
                     name='Nutraceuticals & Nutrition Conversion Rate %',
                     x=top_sc['sub_category'],
                     y=top_sc['conversion_rate'],
-                    marker_color='#81C784'
+                    marker_color='#81C784',
+                    text=[f'{x:.1f}%' for x in top_sc['conversion_rate']],
+                    textposition='outside'
                 ))
                 
                 fig_metrics_comparison.update_layout(
@@ -9159,6 +9256,7 @@ with tab_subcat:
                 )
                 
                 st.plotly_chart(fig_metrics_comparison, use_container_width=True)
+
 
         elif analysis_type == "🔍 Detailed Health Subcategory Deep Dive":
             st.subheader("🔬 Health Subcategory Deep Dive Analysis")
