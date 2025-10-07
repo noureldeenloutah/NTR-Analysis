@@ -9044,18 +9044,25 @@ with tab_subcat:
             key="subcategory_analysis_type"
         )
 
-        if analysis_type == "📊 Top Health Performers Overview":
+        analysis_type = st.radio(
+            "Choose Analysis Type:",
+            ["🏥 Top Health Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
+            horizontal=True
+        )
+
+        if analysis_type == "🏥 Top Health Performers Overview":
             with st.spinner('📊 Generating top performers overview...'):
-                st.subheader("🏆 Top 20 Subcategories Performance")
+                st.subheader("🏆 Top 20 Generic Terms Performance")
                 
-                display_count = min(20, len(sc))
-                top_sc = sc.head(display_count).copy()
+                # Optimized data slicing
+                display_count = min(20, len(gt_agg))
+                top_20_gt = gt_agg.head(display_count).copy()
                 
                 # ✅ NEW: Combined Volume, CTR & CR Analysis Chart
                 st.subheader("🚀 Search Volume vs Performance Matrix")
                 
                 # Calculate conversion rate as conversions/search volume for better representation
-                top_sc['conversion_rate_volume'] = (top_sc['conversions'] / top_sc['Counts'] * 100).round(2)
+                top_20_gt['conversion_rate_volume'] = (top_20_gt['Conversions'] / top_20_gt['count'] * 100).round(2)
                 
                 # Create subplot with secondary y-axis
                 fig_combined = make_subplots(
@@ -9067,10 +9074,10 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Bar(
                         name='Search Volume',
-                        x=top_sc['sub_category'],
-                        y=top_sc['Counts'],
+                        x=top_20_gt['search'],
+                        y=top_20_gt['count'],
                         marker_color='rgba(46, 125, 50, 0.7)',
-                        text=[format_number(int(x)) for x in top_sc['Counts']],
+                        text=[format_number(int(x)) for x in top_20_gt['count']],
                         textposition='outside',
                         yaxis='y',
                         offsetgroup=1
@@ -9082,8 +9089,8 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Scatter(
                         name='CTR %',
-                        x=top_sc['sub_category'],
-                        y=top_sc['ctr'],
+                        x=top_20_gt['search'],
+                        y=top_20_gt['ctr'],
                         mode='lines+markers',
                         line=dict(color='#FF6B35', width=3),
                         marker=dict(size=8, color='#FF6B35'),
@@ -9096,8 +9103,8 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Scatter(
                         name='Conversion Rate %',
-                        x=top_sc['sub_category'],
-                        y=top_sc['conversion_rate_volume'],
+                        x=top_20_gt['search'],
+                        y=top_20_gt['conversion_rate_volume'],
                         mode='lines+markers',
                         line=dict(color='#9C27B0', width=3, dash='dash'),
                         marker=dict(size=8, color='#9C27B0'),
@@ -9117,7 +9124,7 @@ with tab_subcat:
                         tickangle=45, 
                         showgrid=True, 
                         gridcolor='#C8E6C8',
-                        title='Health Subcategories'
+                        title='Generic Health Terms'
                     ),
                     legend=dict(
                         orientation="h",
@@ -9145,25 +9152,25 @@ with tab_subcat:
                 
                 # Enhanced bar chart
                 st.subheader("📊 Search Volume Distribution")
-                fig_top_subcats = px.bar(
-                    top_sc,
-                    x='sub_category',
-                    y='Counts',
-                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Subcategories by Search Volume</b>',
-                    labels={'Counts': 'Health Search Volume', 'sub_category': 'Health Subcategories'},
-                    color='Counts',
+                fig_top_generics = px.bar(
+                    top_20_gt,
+                    x='search',
+                    y='count',
+                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Generic Terms by Search Volume</b>',
+                    labels={'count': 'Health Search Volume', 'search': 'Generic Health Terms'},
+                    color='count',
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    text='Counts'
+                    text='count'
                 )
                 
                 # Format text with format_number
-                fig_top_subcats.update_traces(
+                fig_top_generics.update_traces(
                     texttemplate='%{text}',
                     textposition='outside',
-                    text=[format_number(int(x)) for x in top_sc['Counts']]
+                    text=[format_number(int(x)) for x in top_20_gt['count']]
                 )
                 
-                fig_top_subcats.update_layout(
+                fig_top_generics.update_layout(
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
@@ -9173,7 +9180,7 @@ with tab_subcat:
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig_top_subcats, use_container_width=True)
+                st.plotly_chart(fig_top_generics, use_container_width=True)
                 
                 # Performance metrics comparison
                 st.subheader("📊 Performance Metrics Comparison")
@@ -9182,19 +9189,19 @@ with tab_subcat:
                 
                 fig_metrics_comparison.add_trace(go.Bar(
                     name='Health CTR %',
-                    x=top_sc['sub_category'],
-                    y=top_sc['ctr'],
+                    x=top_20_gt['search'],
+                    y=top_20_gt['ctr'],
                     marker_color='#4CAF50',
-                    text=[f'{x:.1f}%' for x in top_sc['ctr']],
+                    text=[f'{x:.1f}%' for x in top_20_gt['ctr']],
                     textposition='outside'
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
                     name='Nutraceuticals & Nutrition Conversion Rate %',
-                    x=top_sc['sub_category'],
-                    y=top_sc['conversion_rate'],
+                    x=top_20_gt['search'],
+                    y=top_20_gt['conversion_rate'],
                     marker_color='#81C784',
-                    text=[f'{x:.1f}%' for x in top_sc['conversion_rate']],
+                    text=[f'{x:.1f}%' for x in top_20_gt['conversion_rate']],
                     textposition='outside'
                 ))
                 
@@ -9210,6 +9217,7 @@ with tab_subcat:
                 )
                 
                 st.plotly_chart(fig_metrics_comparison, use_container_width=True)
+
 
 
         elif analysis_type == "🔍 Detailed Health Subcategory Deep Dive":
