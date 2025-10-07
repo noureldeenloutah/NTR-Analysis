@@ -7153,13 +7153,11 @@ with tab_category:
 
         st.markdown("---")
 
-
-
-
     
     # Enhanced Category-Keyword Intelligence Matrix
+    # Enhanced Category-Keyword Intelligence Matrix
     st.subheader("🔥 Nutraceuticals & Nutrition Category-Keyword Intelligence Matrix")
-    
+
     # Create category filter dropdown
     if 'search' in queries.columns:
         # Get available categories (excluding null and 'other')
@@ -7245,6 +7243,63 @@ with tab_category:
                             <div class="brand-metric-label">📈 Market Share</div>
                         </div>
                         """, unsafe_allow_html=True)
+            else:
+                # ✅ FIXED: Use the SAME calculation method as main dashboard cards
+                # Calculate from raw data instead of averaging category metrics
+                total_searches = int(category_queries['Counts'].sum())
+                total_clicks = int(category_queries['clicks'].sum())
+                total_conversions = int(category_queries['conversions'].sum())
+                
+                # ✅ CONSISTENT: Same calculation as main dashboard
+                overall_ctr_matrix = (total_clicks / total_searches * 100) if total_searches > 0 else 0
+                overall_cr_matrix = (total_conversions / total_searches * 100) if total_searches > 0 else 0
+                overall_classic_cr_matrix = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                
+                # UPDATED: Now showing 5 metrics with consistent calculations
+                metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+                
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{format_number(total_searches)}</div>
+                        <div class="brand-metric-label">📊 Total Market</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{overall_ctr_matrix:.2f}%</div>
+                        <div class="brand-metric-label">📈 Overall CTR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col3:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{overall_cr_matrix:.2f}%</div>
+                        <div class="brand-metric-label">🎯 Overall CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col4:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{overall_classic_cr_matrix:.2f}%</div>
+                        <div class="brand-metric-label">🔄 Overall Classic CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col5:
+                    st.markdown(f"""
+                    <div class="brand-metric-card">
+                        <div class="brand-metric-value">{format_number(total_clicks)}</div>
+                        <div class="brand-metric-label">🍃 Total Clicks</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Rest of your code remains the same...
+
             else:
                 # Show overall metrics
                 total_searches = cs['Counts'].sum()
