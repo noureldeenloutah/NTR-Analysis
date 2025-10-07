@@ -8387,10 +8387,17 @@ with tab_subcat:
                 st.error("❌ No valid health subcategory data available after filtering.")
                 st.stop()
             
-            # ✅ PERFORMANCE: Cache subcategory calculations
+            # ✅ PERFORMANCE: Cache subcategory calculations with FIXED data type handling
             @st.cache_data(ttl=1800, show_spinner=False)
             def calculate_subcategory_metrics(df, subcat_col):
-                """Calculate comprehensive subcategory metrics with caching"""
+                """Calculate comprehensive subcategory metrics with caching and proper data type handling"""
+                # ✅ FIX: Ensure numeric columns are properly converted
+                numeric_columns = ['Counts', 'clicks', 'conversions']
+                for col in numeric_columns:
+                    if col in df.columns:
+                        # Convert to numeric, handling any string values
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+                
                 sc = df.groupby(subcat_col).agg({
                     'Counts': 'sum',
                     'clicks': 'sum', 
@@ -8400,18 +8407,19 @@ with tab_subcat:
                 # Rename column for consistency
                 sc = sc.rename(columns={subcat_col: 'sub_category'})
                 
-                # Round to integers for cleaner display
-                sc['clicks'] = sc['clicks'].round().astype(int)
-                sc['conversions'] = sc['conversions'].round().astype(int)
+                # ✅ FIX: Proper conversion to integers with rounding
+                sc['Counts'] = sc['Counts'].round().astype('int64')
+                sc['clicks'] = sc['clicks'].round().astype('int64')
+                sc['conversions'] = sc['conversions'].round().astype('int64')
                 
-                # Calculate performance metrics
-                sc['ctr'] = sc.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-                sc['classic_cvr'] = sc.apply(lambda r: (r['conversions']/r['clicks']*100) if r['clicks']>0 else 0, axis=1)
-                sc['conversion_rate'] = sc.apply(lambda r: (r['conversions']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
+                # Calculate performance metrics with safe division
+                sc['ctr'] = sc.apply(lambda r: (float(r['clicks'])/float(r['Counts'])*100) if r['Counts']>0 else 0, axis=1)
+                sc['classic_cvr'] = sc.apply(lambda r: (float(r['conversions'])/float(r['clicks'])*100) if r['clicks']>0 else 0, axis=1)
+                sc['conversion_rate'] = sc.apply(lambda r: (float(r['conversions'])/float(r['Counts'])*100) if r['Counts']>0 else 0, axis=1)
                 
                 # Calculate additional metrics
-                total_clicks = sc['clicks'].sum()
-                total_conversions = sc['conversions'].sum()
+                total_clicks = int(sc['clicks'].sum())
+                total_conversions = int(sc['conversions'].sum())
                 
                 sc['click_share'] = sc['clicks'] / total_clicks * 100 if total_clicks > 0 else 0
                 sc['conversion_share'] = sc['conversions'] / total_conversions * 100 if total_conversions > 0 else 0
@@ -8450,12 +8458,12 @@ with tab_subcat:
         # ✅ ENHANCED: Key Metrics Section with better performance indicators
         st.subheader("🌿 Health Subcategory Performance Overview")
         
-        # Calculate key metrics
+        # Calculate key metrics with proper data type handling
         total_searches = int(sc['Counts'].sum())
         total_clicks = int(sc['clicks'].sum())
         total_conversions = int(sc['conversions'].sum())
-        avg_ctr = sc['ctr'].mean()
-        avg_cr = sc['conversion_rate'].mean()
+        avg_ctr = float(sc['ctr'].mean())
+        avg_cr = float(sc['conversion_rate'].mean())
         top_subcategory = sc.iloc[0]['sub_category'] if len(sc) > 0 else 'N/A'
         top_subcategory_volume = int(sc.iloc[0]['Counts']) if len(sc) > 0 else 0
         
@@ -8560,11 +8568,17 @@ with tab_subcat:
             with st.spinner('🔥 Analyzing top health keywords by subcategory...'):
                 @st.cache_data(ttl=1800, show_spinner=False)
                 def analyze_subcategory_keywords(df, subcat_col, kw_col, top_n=10):
-                    """Analyze keywords by subcategory with caching"""
+                    """Analyze keywords by subcategory with caching and proper data type handling"""
                     df_filtered = df[df[kw_col].notna() & df[subcat_col].notna()].copy()
                     
                     if len(df_filtered) == 0:
                         return pd.DataFrame(), {}
+                    
+                    # ✅ FIX: Ensure numeric columns are properly converted
+                    numeric_columns = ['Counts', 'clicks', 'conversions']
+                    for col in numeric_columns:
+                        if col in df_filtered.columns:
+                            df_filtered[col] = pd.to_numeric(df_filtered[col], errors='coerce').fillna(0)
                     
                     df_grouped = df_filtered.groupby([subcat_col, kw_col]).agg({
                         'Counts': 'sum',
@@ -8574,18 +8588,23 @@ with tab_subcat:
                     
                     df_grouped = df_grouped.rename(columns={'Counts': 'count'})
                     
-                    # Calculate keyword-level metrics
+                    # ✅ FIX: Proper data type conversion
+                    df_grouped['count'] = df_grouped['count'].round().astype('int64')
+                    df_grouped['clicks'] = df_grouped['clicks'].round().astype('int64')
+                    df_grouped['conversions'] = df_grouped['conversions'].round().astype('int64')
+                    
+                    # Calculate keyword-level metrics with safe division
                     df_grouped['keyword_ctr'] = df_grouped.apply(
-                        lambda r: (r['clicks']/r['count']*100) if r['count']>0 else 0, axis=1
+                        lambda r: (float(r['clicks'])/float(r['count'])*100) if r['count']>0 else 0, axis=1
                     )
                     df_grouped['keyword_cr'] = df_grouped.apply(
-                        lambda r: (r['conversions']/r['count']*100) if r['count']>0 else 0, axis=1
+                        lambda r: (float(r['conversions'])/float(r['count'])*100) if r['count']>0 else 0, axis=1
                     )
                     
                     # Generate summary
                     top_keywords_summary = []
                     subcategory_stats = {}
-                    total_volume_all_subcategories = df_grouped['count'].sum()
+                    total_volume_all_subcategories = int(df_grouped['count'].sum())
                     
                     for subcat in df_grouped[subcat_col].unique():
                         subcat_data = df_grouped[df_grouped[subcat_col] == subcat].sort_values('count', ascending=False)
@@ -8595,17 +8614,17 @@ with tab_subcat:
                         keywords_list = []
                         for _, row in top_keywords.iterrows():
                             performance_indicator = "🌟" if row['keyword_ctr'] > 5 else "⚡" if row['keyword_ctr'] > 2 else "📊"
-                            keywords_list.append(f"{performance_indicator} {row[kw_col]} ({format_number(row['count'])})")
+                            keywords_list.append(f"{performance_indicator} {row[kw_col]} ({format_number(int(row['count']))})")
                         
                         keywords_str = ' | '.join(keywords_list)
                         
                         # Calculate subcategory totals
-                        actual_subcategory_total = subcat_data['count'].sum()
+                        actual_subcategory_total = int(subcat_data['count'].sum())
                         share_percentage = (actual_subcategory_total / total_volume_all_subcategories * 100) if total_volume_all_subcategories > 0 else 0
                         
                         unique_keywords = len(subcat_data)
-                        avg_keyword_count = subcat_data['count'].mean()
-                        top_keyword_dominance = (top_keywords.iloc[0]['count'] / actual_subcategory_total * 100) if len(top_keywords) > 0 and actual_subcategory_total > 0 else 0
+                        avg_keyword_count = float(subcat_data['count'].mean())
+                        top_keyword_dominance = (float(top_keywords.iloc[0]['count']) / actual_subcategory_total * 100) if len(top_keywords) > 0 and actual_subcategory_total > 0 else 0
                         
                         subcategory_stats[subcat] = {
                             'total_keywords': unique_keywords,
@@ -8621,7 +8640,7 @@ with tab_subcat:
                             'Health Subcategory': subcat,
                             f'Top {top_n} Health Keywords (with counts)': keywords_str,
                             'Total Health Keywords': unique_keywords,
-                            'Subcategory Total Volume': format_number(int(actual_subcategory_total)),
+                            'Subcategory Total Volume': format_number(actual_subcategory_total),
                             'Nutraceuticals & Nutrition Share %': f"{share_percentage:.2f}%",
                             'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
                             'Top Health Keyword': top_keywords.iloc[0][kw_col] if len(top_keywords) > 0 else 'N/A',
@@ -8629,10 +8648,26 @@ with tab_subcat:
                             'Health Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                         })
                     
-                    # Sort by total volume
+                    # Sort by total volume (handle string conversion properly)
+                    def extract_numeric_value(value_str):
+                        """Extract numeric value from formatted string"""
+                        try:
+                            # Remove commas and convert K, M, B to numbers
+                            clean_str = value_str.replace(',', '')
+                            if 'K' in clean_str:
+                                return float(clean_str.replace('K', '')) * 1000
+                            elif 'M' in clean_str:
+                                return float(clean_str.replace('M', '')) * 1000000
+                            elif 'B' in clean_str:
+                                return float(clean_str.replace('B', '')) * 1000000000
+                            else:
+                                return float(clean_str)
+                        except:
+                            return 0
+                    
                     top_keywords_summary = sorted(
                         top_keywords_summary, 
-                        key=lambda x: int(x['Subcategory Total Volume'].replace('K', '000').replace('M', '000000').replace('B', '000000000').replace(',', '')), 
+                        key=lambda x: extract_numeric_value(x['Subcategory Total Volume']), 
                         reverse=True
                     )
                     
@@ -8686,7 +8721,7 @@ with tab_subcat:
                                 <span class='icon'>🚀</span>
                                 <div class='value'>{subcategory_name}</div>
                                 <div class='label'>Highest Volume Health Subcategory</div>
-                                <div class='sub-label'>{format_number(int(highest_volume_subcat[1]['total_count']))} total health searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition share</div>
+                                <div class='sub-label'>{format_number(highest_volume_subcat[1]['total_count'])} total health searches<br>{highest_volume_subcat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition share</div>
                             </div>
                             """, unsafe_allow_html=True)
                         
@@ -8744,7 +8779,7 @@ with tab_subcat:
                 fig_top_subcats.update_traces(
                     texttemplate='%{text}',
                     textposition='outside',
-                    text=[format_number(x) for x in top_sc['Counts']]
+                    text=[format_number(int(x)) for x in top_sc['Counts']]
                 )
                 
                 fig_top_subcats.update_layout(
@@ -8806,7 +8841,7 @@ with tab_subcat:
                     subcat_data = sc[sc['sub_category'] == selected_subcategory].iloc[0]
                     
                     # ✅ IMPROVED: More efficient rank calculation
-                    subcat_rank = sc.reset_index().index[sc['sub_category'] == selected_subcategory].tolist()[0] + 1
+                    subcat_rank = sc[sc['sub_category'] == selected_subcategory].index[0] + 1
                     
                     # Detailed metrics display
                     col_detail1, col_detail2, col_detail3, col_detail4 = st.columns(4)
@@ -8824,7 +8859,7 @@ with tab_subcat:
                         """, unsafe_allow_html=True)
                     
                     with col_detail2:
-                        market_share = (subcat_data['Counts'] / total_searches * 100) if total_searches > 0 else 0
+                        market_share = (float(subcat_data['Counts']) / total_searches * 100) if total_searches > 0 else 0
                         share_performance = "high-health-performance" if market_share > 5 else "medium-health-performance" if market_share > 2 else "low-health-performance"
                         share_text = "High" if market_share > 5 else "Medium" if market_share > 2 else "Low"
                         st.markdown(f"""
@@ -8837,7 +8872,7 @@ with tab_subcat:
                         """, unsafe_allow_html=True)
                     
                     with col_detail3:
-                        performance_score = (subcat_data['ctr'] + subcat_data['conversion_rate']) / 2
+                        performance_score = (float(subcat_data['ctr']) + float(subcat_data['conversion_rate'])) / 2
                         score_performance = "high-health-performance" if performance_score > 3 else "medium-health-performance" if performance_score > 1 else "low-health-performance"
                         score_text = "High" if performance_score > 3 else "Medium" if performance_score > 1 else "Low"
                         st.markdown(f"""
@@ -8850,7 +8885,7 @@ with tab_subcat:
                         """, unsafe_allow_html=True)
                     
                     with col_detail4:
-                        conversion_efficiency = subcat_data['conversion_rate'] / subcat_data['ctr'] * 100 if subcat_data['ctr'] > 0 else 0
+                        conversion_efficiency = float(subcat_data['conversion_rate']) / float(subcat_data['ctr']) * 100 if float(subcat_data['ctr']) > 0 else 0
                         efficiency_performance = "high-health-performance" if conversion_efficiency > 50 else "medium-health-performance" if conversion_efficiency > 25 else "low-health-performance"
                         efficiency_text = "High" if conversion_efficiency > 50 else "Medium" if conversion_efficiency > 25 else "Low"
                         st.markdown(f"""
@@ -8873,21 +8908,21 @@ with tab_subcat:
                             format_number(int(subcat_data['Counts'])),
                             format_number(int(subcat_data['clicks'])),
                             format_number(int(subcat_data['conversions'])),
-                            f"{subcat_data['ctr']:.2f}%",
-                            f"{subcat_data['classic_cvr']:.2f}%",
-                            f"{subcat_data['conversion_rate']:.2f}%",
-                            f"{subcat_data['click_share']:.2f}%",
-                            f"{subcat_data['conversion_share']:.2f}%"
+                            f"{float(subcat_data['ctr']):.2f}%",
+                            f"{float(subcat_data['classic_cvr']):.2f}%",
+                            f"{float(subcat_data['conversion_rate']):.2f}%",
+                            f"{float(subcat_data['click_share']):.2f}%",
+                            f"{float(subcat_data['conversion_share']):.2f}%"
                         ],
                         'Health Performance': [
-                            'High' if subcat_data['Counts'] > sc['Counts'].median() else 'Low',
-                            'High' if subcat_data['clicks'] > sc['clicks'].median() else 'Low',
-                            'High' if subcat_data['conversions'] > sc['conversions'].median() else 'Low',
-                            'High' if subcat_data['ctr'] > sc['ctr'].median() else 'Low',
-                            'High' if subcat_data['classic_cvr'] > sc['classic_cvr'].median() else 'Low',
-                            'High' if subcat_data['conversion_rate'] > sc['conversion_rate'].median() else 'Low',
-                            'High' if subcat_data['click_share'] > sc['click_share'].median() else 'Low',
-                            'High' if subcat_data['conversion_share'] > sc['conversion_share'].median() else 'Low'
+                            'High' if float(subcat_data['Counts']) > float(sc['Counts'].median()) else 'Low',
+                            'High' if float(subcat_data['clicks']) > float(sc['clicks'].median()) else 'Low',
+                            'High' if float(subcat_data['conversions']) > float(sc['conversions'].median()) else 'Low',
+                            'High' if float(subcat_data['ctr']) > float(sc['ctr'].median()) else 'Low',
+                            'High' if float(subcat_data['classic_cvr']) > float(sc['classic_cvr'].median()) else 'Low',
+                            'High' if float(subcat_data['conversion_rate']) > float(sc['conversion_rate'].median()) else 'Low',
+                            'High' if float(subcat_data['click_share']) > float(sc['click_share'].median()) else 'Low',
+                            'High' if float(subcat_data['conversion_share']) > float(sc['conversion_share'].median()) else 'Low'
                         ]
                     }
                     
@@ -8898,18 +8933,18 @@ with tab_subcat:
                     st.markdown("### 📊 Health Performance Radar Chart")
                     
                     # Normalize values for radar chart (avoid division by zero)
-                    max_counts = sc['Counts'].max() if sc['Counts'].max() > 0 else 1
-                    max_ctr = sc['ctr'].max() if sc['ctr'].max() > 0 else 1
-                    max_cr = sc['conversion_rate'].max() if sc['conversion_rate'].max() > 0 else 1
-                    max_click_share = sc['click_share'].max() if sc['click_share'].max() > 0 else 1
-                    max_conv_share = sc['conversion_share'].max() if sc['conversion_share'].max() > 0 else 1
+                    max_counts = float(sc['Counts'].max()) if float(sc['Counts'].max()) > 0 else 1
+                    max_ctr = float(sc['ctr'].max()) if float(sc['ctr'].max()) > 0 else 1
+                    max_cr = float(sc['conversion_rate'].max()) if float(sc['conversion_rate'].max()) > 0 else 1
+                    max_click_share = float(sc['click_share'].max()) if float(sc['click_share'].max()) > 0 else 1
+                    max_conv_share = float(sc['conversion_share'].max()) if float(sc['conversion_share'].max()) > 0 else 1
                     
                     normalized_data = {
-                        'Health Search Volume': subcat_data['Counts'] / max_counts * 100,
-                        'Health CTR': subcat_data['ctr'] / max_ctr * 100,
-                        'Nutraceuticals & Nutrition Conversion Rate': subcat_data['conversion_rate'] / max_cr * 100,
-                        'Health Click Share': subcat_data['click_share'] / max_click_share * 100,
-                        'Nutraceuticals & Nutrition Conversion Share': subcat_data['conversion_share'] / max_conv_share * 100
+                        'Health Search Volume': float(subcat_data['Counts']) / max_counts * 100,
+                        'Health CTR': float(subcat_data['ctr']) / max_ctr * 100,
+                        'Nutraceuticals & Nutrition Conversion Rate': float(subcat_data['conversion_rate']) / max_cr * 100,
+                        'Health Click Share': float(subcat_data['click_share']) / max_click_share * 100,
+                        'Nutraceuticals & Nutrition Conversion Share': float(subcat_data['conversion_share']) / max_conv_share * 100
                     }
                     
                     fig_radar = go.Figure()
@@ -8951,17 +8986,28 @@ with tab_subcat:
                         subcat_keywords = subcategory_queries[subcategory_queries[subcategory_column] == selected_subcategory].copy()
                         
                         if len(subcat_keywords) > 0:
+                            # ✅ FIX: Ensure numeric columns are properly converted
+                            numeric_columns = ['Counts', 'clicks', 'conversions']
+                            for col in numeric_columns:
+                                if col in subcat_keywords.columns:
+                                    subcat_keywords[col] = pd.to_numeric(subcat_keywords[col], errors='coerce').fillna(0)
+                            
                             keyword_analysis = subcat_keywords.groupby(keyword_col).agg({
                                 'Counts': 'sum',
                                 'clicks': 'sum',
                                 'conversions': 'sum'
                             }).reset_index()
                             
+                            # ✅ FIX: Proper data type conversion
+                            keyword_analysis['Counts'] = keyword_analysis['Counts'].round().astype('int64')
+                            keyword_analysis['clicks'] = keyword_analysis['clicks'].round().astype('int64')
+                            keyword_analysis['conversions'] = keyword_analysis['conversions'].round().astype('int64')
+                            
                             keyword_analysis['keyword_ctr'] = keyword_analysis.apply(
-                                lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1
+                                lambda r: (float(r['clicks'])/float(r['Counts'])*100) if r['Counts']>0 else 0, axis=1
                             )
                             keyword_analysis['keyword_cr'] = keyword_analysis.apply(
-                                lambda r: (r['conversions']/r['Counts']*100) if r['Counts']>0 else 0, axis=1
+                                lambda r: (float(r['conversions'])/float(r['Counts'])*100) if r['Counts']>0 else 0, axis=1
                             )
                             
                             keyword_analysis = keyword_analysis.sort_values('Counts', ascending=False).head(15)
@@ -8982,7 +9028,7 @@ with tab_subcat:
                             fig_keywords.update_traces(
                                 texttemplate='%{text}',
                                 textposition='outside',
-                                text=[format_number(x) for x in keyword_analysis['Counts']]
+                                text=[format_number(int(x)) for x in keyword_analysis['Counts']]
                             )
                             
                             fig_keywords.update_layout(
@@ -9016,8 +9062,8 @@ with tab_subcat:
                     
                     # Compare with similar performing subcategories
                     similar_volume_range = 0.3  # 30% range
-                    min_volume = subcat_data['Counts'] * (1 - similar_volume_range)
-                    max_volume = subcat_data['Counts'] * (1 + similar_volume_range)
+                    min_volume = float(subcat_data['Counts']) * (1 - similar_volume_range)
+                    max_volume = float(subcat_data['Counts']) * (1 + similar_volume_range)
                     
                     similar_subcats = sc[
                         (sc['Counts'] >= min_volume) & 
@@ -9072,9 +9118,9 @@ with tab_subcat:
                         'Health Search Volume': [int(subcat_data['Counts'])],
                         'Total Health Clicks': [int(subcat_data['clicks'])],
                         'Total Nutraceuticals & Nutrition Conversions': [int(subcat_data['conversions'])],
-                        'Health CTR %': [subcat_data['ctr']],
-                        'Classic CVR %': [subcat_data['classic_cvr']],
-                        'Nutraceuticals & Nutrition Conversion Rate %': [subcat_data['conversion_rate']],
+                        'Health CTR %': [float(subcat_data['ctr'])],
+                        'Classic CVR %': [float(subcat_data['classic_cvr'])],
+                        'Nutraceuticals & Nutrition Conversion Rate %': [float(subcat_data['conversion_rate'])],
                         'Health Market Rank': [subcat_rank],
                         'Nutraceuticals & Nutrition Market Share %': [market_share],
                         'Health Performance Score': [performance_score],
@@ -9398,10 +9444,10 @@ with tab_subcat:
         col_insight1, col_insight2 = st.columns(2)
         
         with col_insight1:
-            top_subcat_share = sc.iloc[0]['click_share'] if not sc.empty else 0
+            top_subcat_share = float(sc.iloc[0]['click_share']) if not sc.empty else 0
             top_subcat_name = sc.iloc[0]['sub_category'] if not sc.empty else "N/A"
             high_performers = len(sc[sc['ctr'] > 5]) if not sc.empty else 0
-            avg_conversion_rate = sc['conversion_rate'].mean() if not sc.empty else 0
+            avg_conversion_rate = float(sc['conversion_rate'].mean()) if not sc.empty else 0
             subcats_above_avg_cr = len(sc[sc['conversion_rate'] > avg_conversion_rate]) if not sc.empty else 0
             
             st.markdown(f"""
@@ -9444,7 +9490,7 @@ with tab_subcat:
             )
         
         with summary_col2:
-            top_ctr = sc['ctr'].max() if not sc.empty else 0
+            top_ctr = float(sc['ctr'].max()) if not sc.empty else 0
             st.metric(
                 label="📈 Health Market Avg CTR",
                 value=f"{avg_ctr:.2f}%",
@@ -9503,7 +9549,7 @@ with tab_subcat:
                 # Top performers for summary
                 top_performers = []
                 for _, row in sc.head(5).iterrows():
-                    top_performers.append(f"• {row['sub_category']}: {format_number(int(row['Counts']))} searches, {row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR")
+                    top_performers.append(f"• {row['sub_category']}: {format_number(int(row['Counts']))} searches, {float(row['ctr']):.2f}% CTR, {float(row['conversion_rate']):.2f}% CR")
                 
                 # Optimization opportunities
                 low_ctr_subcats = sc[sc['ctr'] < 2]['sub_category'].head(3).tolist()
@@ -9516,7 +9562,7 @@ Generated: {timestamp_readable}
 NUTRACEUTICALS & NUTRITION MARKET OVERVIEW:
 • Total Health Subcategories Analyzed: {len(sc)}
 • Total Health Searches: {format_number(total_searches)}
-• Market Leader: {sc.iloc[0]['sub_category']} ({sc.iloc[0]['click_share']:.1f}% click share)
+• Market Leader: {sc.iloc[0]['sub_category']} ({float(sc.iloc[0]['click_share']):.1f}% click share)
 • Average Health CTR: {avg_ctr:.2f}%
 • Average Nutraceuticals & Nutrition CR: {avg_cr:.2f}%
 
@@ -9573,6 +9619,16 @@ MARKET RECOMMENDATIONS:
             st.write("**Available columns:**", list(queries.columns))
             st.write("**Data shape:**", queries.shape)
             st.write("**Error details:**", str(e))
+            st.write("**Error type:**", type(e).__name__)
+            
+            # Show sample data for debugging
+            if not queries.empty:
+                st.write("**Sample data (first 5 rows):**")
+                st.dataframe(queries.head())
+                
+                # Check data types
+                st.write("**Column data types:**")
+                st.write(queries.dtypes)
             
         st.info("""
         💡 **Troubleshooting Tips:**
@@ -9580,17 +9636,19 @@ MARKET RECOMMENDATIONS:
         - Check that numeric columns ('Counts', 'clicks', 'conversions') contain valid numbers
         - Verify there are no completely empty rows or columns
         - Make sure subcategory values are not all null or empty
+        - Ensure numeric columns don't contain text values that can't be converted to numbers
         """)
         
         st.markdown("""
         **Expected data format:**
         - Column 'sub_category' (or similar) with health subcategory names
-        - Column 'Counts' with search volume data
-        - Column 'clicks' with click data  
-        - Column 'conversions' with conversion data
+        - Column 'Counts' with search volume data (numeric)
+        - Column 'clicks' with click data (numeric)
+        - Column 'conversions' with conversion data (numeric)
         - Optional: Column 'keyword' for keyword analysis
         """)
 
+                    
 
 # ----------------- Generic Type Tab -----------------
 
