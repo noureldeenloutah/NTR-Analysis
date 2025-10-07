@@ -10088,331 +10088,179 @@ with tab_generic:
             step=5,
             key="generic_terms_count_slider"
         )
-    
-    # 🚀 LAZY CSS LOADING - Only load once per session for generic terms
-    if 'generic_terms_health_css_loaded' not in st.session_state:
-        st.markdown("""
-        <style>
-        .generic-health-metric-card {
-            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-            padding: 20px; border-radius: 15px; text-align: center; color: white;
-            box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-            transition: transform 0.2s ease; width: 100%;
-        }
-        .generic-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-        .generic-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-        .generic-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-        .generic-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-        .generic-health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
-        .generic-health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
-        .generic-health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
-        .generic-health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
-        .generic-health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
-        </style>
-        """, unsafe_allow_html=True)
-        st.session_state.generic_terms_health_css_loaded = True
-
-    # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
-    month_names = {
-        '2025-06': 'June 2025',
-        '2025-07': 'July 2025',
-        '2025-08': 'August 2025'
-    }
-
-    # 🚀 COMPUTE: Get generic terms data with caching (filter-aware)
-    generic_filter_state = {
-        'filters_applied': st.session_state.get('filters_applied', False),
-        'data_shape': queries.shape,
-        'data_hash': hash(str(gt_agg['search'].tolist()[:10]) if not gt_agg.empty else "empty")
-    }
-    generic_filter_key = str(hash(str(generic_filter_state)))
-
-    @st.cache_data(ttl=1800, show_spinner=False)
-    def compute_generic_health_performance_monthly(_df, _gt, month_names_dict, cache_key):
-        """🔄 FIXED: Proper monthly CTR/CR calculations for health generic terms"""
-        if _df.empty or _gt.empty:
-            return pd.DataFrame(), []
         
-        # Get top generic terms by total counts
-        top_generics_list = _gt.nlargest(50, 'count')['search'].tolist()
+        # Create a simple performance table for generic type data
+        display_gt = gt_agg.head(num_generic_terms).copy()
         
-        # Filter original data for top generic terms
-        top_data = _df[_df['search'].isin(top_generics_list)].copy()
+        # Calculate share percentage
+        total_volume = gt_agg['count'].sum()
+        display_gt['Share (%)'] = (display_gt['count'] / total_volume * 100).round(2)
         
-        # Get unique months from the data
-        if 'month' in top_data.columns:
-            unique_months = sorted(top_data['month'].unique())
-        else:
-            unique_months = []
+        # Rename columns for better display
+        display_gt = display_gt.rename(columns={
+            'search': 'Generic Health Term',
+            'count': 'Total Volume',
+            'Clicks': 'Total Clicks',
+            'Conversions': 'Total Conversions',
+            'ctr': 'CTR (%)',
+            'conversion_rate': 'Conversion Rate (%)',
+            'classic_cvr': 'CVR (%)',
+            'click_share': 'Click Share (%)',
+            'conversion_share': 'Conv Share (%)'
+        })
         
-        # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
-        result_data = []
+        # Reorder columns for better presentation
+        column_order = [
+            'Generic Health Term', 'Total Volume', 'Share (%)', 
+            'CTR (%)', 'Conversion Rate (%)', 'CVR (%)',
+            'Total Clicks', 'Total Conversions', 
+            'Click Share (%)', 'Conv Share (%)'
+        ]
+        display_gt = display_gt[column_order]
         
-        for generic_term in top_generics_list:
-            generic_data = top_data[top_data['search'] == generic_term]
-            
-            # ✅ SKIP GENERIC TERMS WITH NO DATA
-            if generic_data.empty:
-                continue
-            
-            # Base information
-            total_counts = int(generic_data['count'].sum())
-            total_clicks = int(generic_data['clicks'].sum())
-            total_conversions = int(generic_data['conversions'].sum())
-            
-            # ✅ SKIP GENERIC TERMS WITH ZERO VOLUME
-            if total_counts == 0:
-                continue
-                
-            overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-            overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-            
-            # Calculate share percentage
-            share_pct = (total_counts / _df['count'].sum()) * 100 if _df['count'].sum() > 0 else 0
-            
-            row = {
-                'Generic Health Term': generic_term,
-                'Total Volume': total_counts,
-                'Share %': share_pct,
-                'Overall CTR': overall_ctr,
-                'Overall CR': overall_cr,
-                'Total Clicks': total_clicks,
-                'Total Conversions': total_conversions
-            }
-            
-            # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
-            for month in unique_months:
-                month_data = generic_data[generic_data['month'] == month]
-                month_display = month_names_dict.get(month, month)
-                
-                if not month_data.empty:
-                    # ✅ FIXED: Calculate month-specific metrics
-                    month_counts = int(month_data['count'].sum())
-                    month_clicks = int(month_data['clicks'].sum())
-                    month_conversions = int(month_data['conversions'].sum())
-                    
-                    # ✅ FIXED: Month-specific CTR and CR calculations
-                    month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                    month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                    
-                    row[f'{month_display} Vol'] = month_counts
-                    row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
-                    row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
-                else:
-                    row[f'{month_display} Vol'] = 0
-                    row[f'{month_display} CTR'] = 0
-                    row[f'{month_display} CR'] = 0
-            
-            result_data.append(row)
+        # Format numeric columns
+        display_gt_formatted = display_gt.copy()
+        display_gt_formatted['Total Volume'] = display_gt_formatted['Total Volume'].apply(lambda x: format_number(int(x)))
+        display_gt_formatted['Total Clicks'] = display_gt_formatted['Total Clicks'].apply(lambda x: format_number(int(x)))
+        display_gt_formatted['Total Conversions'] = display_gt_formatted['Total Conversions'].apply(lambda x: format_number(int(x)))
         
-        result_df = pd.DataFrame(result_data)
-        result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+        # Enhanced styling with performance-based highlighting
+        def highlight_generic_performance(df):
+            """Highlight performance metrics based on thresholds"""
+            styles = pd.DataFrame('', index=df.index, columns=df.columns)
+            
+            # CTR highlighting
+            if 'CTR (%)' in df.columns:
+                for idx in df.index:
+                    ctr_val = df.loc[idx, 'CTR (%)']
+                    if pd.notnull(ctr_val):
+                        if ctr_val >= 8:  # High CTR
+                            styles.loc[idx, 'CTR (%)'] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                        elif ctr_val >= 5:  # Medium CTR
+                            styles.loc[idx, 'CTR (%)'] = 'background-color: rgba(76, 175, 80, 0.15);'
+                        elif ctr_val < 2:  # Low CTR
+                            styles.loc[idx, 'CTR (%)'] = 'background-color: rgba(244, 67, 54, 0.15);'
+            
+            # Conversion Rate highlighting
+            if 'Conversion Rate (%)' in df.columns:
+                for idx in df.index:
+                    cr_val = df.loc[idx, 'Conversion Rate (%)']
+                    if pd.notnull(cr_val):
+                        if cr_val >= 3:  # High CR
+                            styles.loc[idx, 'Conversion Rate (%)'] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                        elif cr_val >= 1.5:  # Medium CR
+                            styles.loc[idx, 'Conversion Rate (%)'] = 'background-color: rgba(76, 175, 80, 0.15);'
+                        elif cr_val < 0.5:  # Low CR
+                            styles.loc[idx, 'Conversion Rate (%)'] = 'background-color: rgba(244, 67, 54, 0.15);'
+            
+            # Volume highlighting (top performers)
+            if 'Share (%)' in df.columns:
+                for idx in df.index:
+                    share_val = df.loc[idx, 'Share (%)']
+                    if pd.notnull(share_val):
+                        if share_val >= 5:  # High market share
+                            styles.loc[idx, 'Share (%)'] = 'background-color: rgba(46, 125, 50, 0.2); color: #1B5E20; font-weight: bold;'
+                        elif share_val >= 2:  # Medium market share
+                            styles.loc[idx, 'Share (%)'] = 'background-color: rgba(46, 125, 50, 0.1);'
+            
+            return styles
         
-        # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
-        result_df = result_df[result_df['Total Volume'] > 0]
+        # Apply styling
+        styled_gt = display_gt_formatted.style.apply(highlight_generic_performance, axis=None)
         
-        return result_df, unique_months
-
-    top_generics_monthly, unique_months_gen = compute_generic_health_performance_monthly(queries, gt_agg, month_names, generic_filter_key)
-    
-    if top_generics_monthly.empty:
-        st.warning("No valid generic terms data after processing.")
-    else:
-        # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
-        top_generics_monthly = top_generics_monthly.dropna(subset=['Generic Health Term'])
-        top_generics_monthly = top_generics_monthly[top_generics_monthly['Total Volume'] > 0]
-        top_generics_monthly = top_generics_monthly.head(num_generic_terms)
+        styled_gt = styled_gt.format({
+            'Share (%)': '{:.2f}%',
+            'CTR (%)': '{:.2f}%',
+            'Conversion Rate (%)': '{:.2f}%',
+            'CVR (%)': '{:.2f}%',
+            'Click Share (%)': '{:.2f}%',
+            'Conv Share (%)': '{:.2f}%'
+        }).set_properties(**{
+            'text-align': 'center',
+            'vertical-align': 'middle',
+            'font-size': '11px',
+            'padding': '6px',
+            'line-height': '1.2'
+        }).set_table_styles([
+            {'selector': 'th', 'props': [
+                ('text-align', 'center'), 
+                ('font-weight', 'bold'), 
+                ('background-color', '#E8F5E8'), 
+                ('color', '#1B5E20'), 
+                ('padding', '8px'), 
+                ('border', '1px solid #ddd'),
+                ('font-size', '10px')
+            ]},
+            {'selector': 'td', 'props': [
+                ('text-align', 'center'), 
+                ('padding', '6px'), 
+                ('border', '1px solid #ddd')
+            ]},
+            {'selector': 'tbody tr:nth-child(even)', 'props': [
+                ('background-color', '#F8FDF8')
+            ]},
+            {'selector': 'tbody tr:hover', 'props': [
+                ('background-color', '#E8F5E8 !important')
+            ]}
+        ])
         
-        # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-        base_columns = ['Generic Health Term', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
-        
-        # Group monthly columns by type for easier comparison
-        volume_columns = []
-        ctr_columns = []
-        cr_columns = []
-        
-        for month in sorted(unique_months_gen):
-            month_display = month_names.get(month, month)
-            volume_columns.append(f'{month_display} Vol')
-            ctr_columns.append(f'{month_display} CTR')
-            cr_columns.append(f'{month_display} CR')
-        
-        # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
-        ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
-        existing_columns = [col for col in ordered_columns if col in top_generics_monthly.columns]
-        top_generics_monthly = top_generics_monthly[existing_columns]
-
-        # 🚀 ENHANCED: Smart styling with better comparison highlighting
-        generics_hash = hash(str(top_generics_monthly.shape) + str(top_generics_monthly.columns.tolist()) + str(top_generics_monthly.iloc[0].to_dict()) if len(top_generics_monthly) > 0 else "empty")
-        
-        if ('styled_generics_health' not in st.session_state or 
-            st.session_state.get('generics_health_cache_key') != generics_hash):
-            
-            st.session_state.generics_health_cache_key = generics_hash
-            
-            # 🚀 FAST: Apply format_number to numeric columns before styling
-            display_generics = top_generics_monthly.copy()
-            
-            # Format volume columns with format_number
-            volume_cols_to_format = ['Total Volume'] + volume_columns
-            for col in volume_cols_to_format:
-                if col in display_generics.columns:
-                    display_generics[col] = display_generics[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
-            
-            # Format clicks and conversions
-            if 'Total Clicks' in display_generics.columns:
-                display_generics['Total Clicks'] = display_generics['Total Clicks'].apply(lambda x: format_number(int(x)))
-            if 'Total Conversions' in display_generics.columns:
-                display_generics['Total Conversions'] = display_generics['Total Conversions'].apply(lambda x: format_number(int(x)))
-            
-            # 🔄 ENHANCED: Better performance highlighting with comparison focus
-            def highlight_generic_health_performance_with_comparison(df):
-                """Enhanced highlighting for better health generic terms comparison"""
-                styles = pd.DataFrame('', index=df.index, columns=df.columns)
-                
-                if len(unique_months_gen) < 2:
-                    return styles
-                
-                sorted_months = sorted(unique_months_gen)
-                
-                # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
-                for i in range(1, len(sorted_months)):
-                    current_month = month_names.get(sorted_months[i], sorted_months[i])
-                    prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
-                    
-                    current_ctr_col = f'{current_month} CTR'
-                    prev_ctr_col = f'{prev_month} CTR'
-                    current_cr_col = f'{current_month} CR'
-                    prev_cr_col = f'{prev_month} CR'
-                    
-                    # CTR comparison with threshold
-                    if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                        for idx in df.index:
-                            current_ctr = df.loc[idx, current_ctr_col]
-                            prev_ctr = df.loc[idx, prev_ctr_col]
-                            
-                            if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                if change_pct > 10:  # 10% improvement
-                                    styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                elif change_pct < -10:  # 10% decline
-                                    styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                elif abs(change_pct) > 5:  # 5-10% change
-                                    color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                    styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                    
-                    # CR comparison with threshold
-                    if current_cr_col in df.columns and prev_cr_col in df.columns:
-                        for idx in df.index:
-                            current_cr = df.loc[idx, current_cr_col]
-                            prev_cr = df.loc[idx, prev_cr_col]
-                            
-                            if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                if change_pct > 10:  # 10% improvement
-                                    styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                elif change_pct < -10:  # 10% decline
-                                    styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                elif abs(change_pct) > 5:  # 5-10% change
-                                    color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                    styles.loc[idx, current_cr_col] = f'background-color: {color};'
-                
-                # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
-                for col in volume_columns:
-                    if col in df.columns:
-                        styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
-                
-                return styles
-            
-            # Create styled DataFrame from the formatted copy
-            styled_generics = display_generics.style.apply(highlight_generic_health_performance_with_comparison, axis=None)
-            
-            styled_generics = styled_generics.set_properties(**{
-                'text-align': 'center',
-                'vertical-align': 'middle',
-                'font-size': '11px',
-                'padding': '4px',
-                'line-height': '1.1'
-            }).set_table_styles([
-                {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
-                {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
-                {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
-            ])
-            
-            # 🔄 IMPROVED: Format dictionary
-            format_dict = {
-                'Share %': '{:.2f}%',
-                'Overall CTR': '{:.2f}%',
-                'Overall CR': '{:.2f}%'
-            }
-            
-            # Add formatting for monthly CTR and CR columns
-            for col in ctr_columns + cr_columns:
-                if col in display_generics.columns:
-                    format_dict[col] = '{:.2f}%'
-
-            styled_generics = styled_generics.format(format_dict)
-            st.session_state.styled_generics_health = styled_generics
-
-        # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
-        # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
-        actual_rows = len(top_generics_monthly)
-        table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
+        # Display the table with dynamic height
+        actual_rows = len(display_gt_formatted)
+        table_height = min(max(actual_rows * 45 + 60, 250), 650)
         
         st.dataframe(
-            st.session_state.styled_generics_health, 
-            use_container_width=True, 
-            height=table_height,  # ✅ DYNAMIC HEIGHT
+            styled_gt,
+            use_container_width=True,
+            height=table_height,
             hide_index=True
         )
-
-        # 🔄 ENHANCED: Better legend with comparison focus
+        
+        # Performance legend
         st.markdown("""
         <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-            <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Comparison Guide:</h4>
+            <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Performance Indicators:</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
-                <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
-                <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
-                <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
-                <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                <div>🏆 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = High Performance</div>
+                <div>✅ <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = Good Performance</div>
+                <div>⚠️ <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = Needs Attention</div>
+                <div>📊 <strong style="background-color: rgba(46, 125, 50, 0.2); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Market Leaders</strong> = High Share %</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-        # 🔄 ENHANCED: Column grouping explanation for generic terms
-        if unique_months_gen:
-            month_list = [month_names.get(m, m) for m in sorted(unique_months_gen)]
-            st.markdown(f"""
-            <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Column Organization:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                    <div><strong>🌱 Base Metrics:</strong> Generic Health Term, Total Volume, Share %, Overall CTR/CR</div>
-                    <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
-                    <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
-                    <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # 🚀 ENHANCED DOWNLOAD SECTION
-        st.markdown("<br>", unsafe_allow_html=True)
         
-        csv_generics = top_generics_monthly.to_csv(index=False)
+        # Column explanation
+        st.markdown("""
+        <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+            <h4 style="margin: 0 0 8px 0; color: #1B5E20;">📊 Column Definitions:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; font-size: 0.9em;">
+                <div><strong>🌱 CTR (%):</strong> Click-through rate (Clicks ÷ Volume)</div>
+                <div><strong>💚 Conversion Rate (%):</strong> Conversion rate based on searches</div>
+                <div><strong>🎯 CVR (%):</strong> Conversion rate based on clicks</div>
+                <div><strong>📈 Share (%):</strong> Percentage of total search volume</div>
+                <div><strong>🖱️ Click Share (%):</strong> Percentage of total clicks</div>
+                <div><strong>✅ Conv Share (%):</strong> Percentage of total conversions</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Download section
+        st.markdown("<br>", unsafe_allow_html=True)
+        csv_data = gt_agg.head(num_generic_terms).to_csv(index=False)
         
         col_download = st.columns([1, 2, 1])
         with col_download[1]:
             st.download_button(
                 label="📥 Download Generic Health Terms CSV",
-                data=csv_generics,
-                file_name=f"top_{num_generic_terms}_generic_health_terms_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                data=csv_data,
+                file_name=f"top_{num_generic_terms}_generic_health_terms_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
-                help="Download the generic health terms table with monthly comparison data",
+                help="Download the generic health terms performance data",
                 use_container_width=True,
-                key="generic_terms_monthly_download"
+                key="generic_terms_download"
             )
+        
         st.markdown("---")
+
 
         # Interactive generic type analysis
         st.subheader("🎯 Interactive Generic Type Analysis")
