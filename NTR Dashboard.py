@@ -1062,21 +1062,17 @@ st.markdown("""
 st.markdown('<div class="main-header">🌱 Nutraceuticals & Nutrition — Advanced Analytics Hub</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Explore Nutraceuticals & Nutrition search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
 
-# 🚀 CACHED Calculate metrics
-@st.cache_data(ttl=300, show_spinner=False)
-def calculate_metrics(_df):
-    total_counts = int(_df['Counts'].sum())
-    total_clicks = int(_df['clicks'].sum())
-    total_conversions = int(_df['conversions'].sum())
+# ✅ UPDATED: Non-cached function that works with filtered data
+def calculate_metrics(df):
+    """Calculate metrics from dataframe (works with filtered data)"""
+    total_counts = int(df['Counts'].sum())
+    total_clicks = int(df['clicks'].sum())
+    total_conversions = int(df['conversions'].sum())
     overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-    overall_cr = (total_conversions / total_counts * 100) if total_clicks > 0 else 0
+    overall_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0  # Fixed: conversions/clicks
     return total_counts, total_clicks, total_conversions, overall_ctr, overall_cr
 
-total_counts, total_clicks, total_conversions, overall_ctr, overall_cr = calculate_metrics(queries)
-total_revenue = 0.0  # No revenue column
-
-c1, c2, c3, c4, c5 = st.columns(5)
-# Add this helper function at the top of your file (after imports)
+# Helper function for number formatting
 def format_number(num):
     """Format numbers with K/M suffix"""
     if num >= 1_000_000:
@@ -1086,27 +1082,52 @@ def format_number(num):
     else:
         return f"{num:,.0f}"
 
-# Then update the KPI cards:
-with c1:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_counts)}</div><div class='label'>🌿 Total Searches</div></div>", unsafe_allow_html=True)
-with c2:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_clicks)}</div><div class='label'>🍃 Total Clicks</div></div>", unsafe_allow_html=True)
-with c3:
-    st.markdown(f"<div class='kpi'><div class='value'>{format_number(total_conversions)}</div><div class='label'>💚 Total Conversions</div></div>", unsafe_allow_html=True)
-with c4:
-    st.markdown(f"<div class='kpi'><div class='value'>{overall_ctr:.2f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
-with c5:
-    st.markdown(f"<div class='kpi'><div class='value'>{overall_cr:.2f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
+# ✅ PLACEHOLDER: Calculate initial metrics (will be recalculated after filtering)
+total_counts, total_clicks, total_conversions, overall_ctr, overall_cr = calculate_metrics(queries)
+total_revenue = 0.0  # No revenue column
 
+# ✅ CREATE PLACEHOLDER CONTAINERS for KPI cards
+kpi_container = st.container()
 
-# Show data source info in sidebar
-st.sidebar.info(f"**Data Source:** {main_key}")
-st.sidebar.write(f"**Total Rows:** {len(queries):,}")
-st.sidebar.write(f"**Total Searches:** {total_counts:,}")
-st.sidebar.write(f"**Calculated Clicks:** {total_clicks:,}")
-st.sidebar.write(f"**Calculated Conversions:** {total_conversions:,}")
+# ✅ FUNCTION to update KPI display
+def display_kpi_cards(df):
+    """Display KPI cards with current dataframe metrics"""
+    counts, clicks, conversions, ctr, cr = calculate_metrics(df)
+    
+    with kpi_container:
+        c1, c2, c3, c4, c5 = st.columns(5)
+        
+        with c1:
+            st.markdown(f"<div class='kpi'><div class='value'>{format_number(counts)}</div><div class='label'>🌿 Total Searches</div></div>", unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"<div class='kpi'><div class='value'>{format_number(clicks)}</div><div class='label'>🍃 Total Clicks</div></div>", unsafe_allow_html=True)
+        with c3:
+            st.markdown(f"<div class='kpi'><div class='value'>{format_number(conversions)}</div><div class='label'>💚 Total Conversions</div></div>", unsafe_allow_html=True)
+        with c4:
+            st.markdown(f"<div class='kpi'><div class='value'>{ctr:.2f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
+        with c5:
+            st.markdown(f"<div class='kpi'><div class='value'>{cr:.2f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
+    
+    return counts, clicks, conversions, ctr, cr
 
-# Add debug info in an expander so it doesn't clutter the sidebar
+# ✅ Display initial KPI cards
+total_counts, total_clicks, total_conversions, overall_ctr, overall_cr = display_kpi_cards(queries)
+
+# ✅ UPDATED SIDEBAR: Function to update sidebar info
+def update_sidebar_info(df, data_source):
+    """Update sidebar with current dataframe info"""
+    counts, clicks, conversions, ctr, cr = calculate_metrics(df)
+    
+    st.sidebar.info(f"**Data Source:** {data_source}")
+    st.sidebar.write(f"**Total Rows:** {len(df):,}")
+    st.sidebar.write(f"**Total Searches:** {counts:,}")
+    st.sidebar.write(f"**Calculated Clicks:** {clicks:,}")
+    st.sidebar.write(f"**Calculated Conversions:** {conversions:,}")
+
+# ✅ Initial sidebar update
+update_sidebar_info(queries, main_key)
+
+# ✅ Debug info (unchanged)
 with st.sidebar.expander("🔍 Data Debug Info"):
     st.write(f"Main sheet: {main_key}")
     st.write(f"Processed columns: {list(queries.columns)}")
@@ -1121,10 +1142,6 @@ with st.sidebar.expander("🔍 Data Debug Info"):
     st.write("**Calculation Method:**")
     st.write("• Clicks = Searches × Click Through Rate")
     st.write("• Conversions = Clicks × Conversion Rate")
-    
-    # Show sample of raw data
-    st.write("**Sample data (first 3 rows):**")
-    st.dataframe(raw_queries.head(3))
 
 # ----------------- Tabs -----------------
 tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
@@ -1983,7 +2000,6 @@ with tab_overview:
                                 </div>
                                 """, unsafe_allow_html=True)
                         
-                        # ✅ ADDED: Top declining queries section
                         # ✅ BEST GENERIC: Queries Needing Attention (Filter-Compatible)
                         st.markdown("---")
                         st.markdown("#### ⚠️ Queries Needing Attention")
