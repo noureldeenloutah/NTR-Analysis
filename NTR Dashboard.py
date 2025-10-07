@@ -1069,7 +1069,7 @@ def calculate_metrics(df):
     total_clicks = int(df['clicks'].sum())
     total_conversions = int(df['conversions'].sum())
     overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-    overall_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0  # Fixed: conversions/clicks
+    overall_cr = (total_conversions / total_counts * 100) if total_clicks > 0 else 0  
     return total_counts, total_clicks, total_conversions, overall_ctr, overall_cr
 
 # Helper function for number formatting
