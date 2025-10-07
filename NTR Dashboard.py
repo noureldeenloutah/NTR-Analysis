@@ -7140,29 +7140,6 @@ with tab_category:
                                     
                                     st.markdown("<br>", unsafe_allow_html=True)
                                 
-                                # ✅ SUMMARY: Overall trend summary with actual calculated values
-                                total_categories = len(monthly_trends['category'].unique())
-                                total_months = len(monthly_trends['Date'].unique())
-                                avg_ctr = monthly_trends['CTR'].mean()
-                                avg_cr = monthly_trends['CR'].mean()
-                                total_volume = monthly_trends['Counts'].sum()
-                                
-                                st.markdown(f"""
-                                <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); padding: 15px; border-radius: 10px; color: white; text-align: center; margin: 20px 0;">
-                                    <h3 style="margin: 0 0 10px 0;">🌿 Health Categories Trend Summary</h3>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
-                                        <div><strong>{total_categories}</strong><br>Categories Analyzed</div>
-                                        <div><strong>{total_months}</strong><br>Months Tracked</div>
-                                        <div><strong>{format_number(int(total_volume))}</strong><br>Total Search Volume</div>
-                                        <div><strong>{avg_ctr:.2f}%</strong><br>Average CTR</div>
-                                        <div><strong>{avg_cr:.2f}%</strong><br>Average CR</div>
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                # ✅ VERIFICATION: Show comparison with table values
-                                st.markdown("### 🔍 Verification: Chart vs Table Data")
-                                st.info("💡 **Tip**: Expand the debug section above to verify that chart calculations match your table exactly!")
                                 
                         else:
                             st.info("No valid trend data available for the top 5 health categories")
