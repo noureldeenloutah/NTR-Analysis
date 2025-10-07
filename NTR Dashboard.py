@@ -8694,342 +8694,342 @@ with tab_subcat:
                         key="health_subcategory_keywords_summary_download"
                     )
 
-        # ✅ NEW: Top Subcategories Performance Table
-        st.markdown("---")
-        st.subheader("🏆 Top Nutraceuticals & Nutrition Subcategory Performance")
-        
-        num_subcategories = st.slider(
-            "Number of health subcategories to display:", 
-            min_value=10, 
-            max_value=50, 
-            value=20, 
-            step=5,
-            key="subcategory_count_slider"
-        )
-        
-        # 🚀 LAZY CSS LOADING - Only load once per session for subcategories
-        if 'subcategory_health_css_loaded' not in st.session_state:
-            st.markdown("""
-            <style>
-            .subcategory-health-metric-card {
-                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-                padding: 20px; border-radius: 15px; text-align: center; color: white;
-                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-                min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-                transition: transform 0.2s ease; width: 100%;
-            }
-            .subcategory-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-            .subcategory-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-            .subcategory-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-            .subcategory-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-            .subcategory-health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
-            .subcategory-health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
-            .subcategory-health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
-            .subcategory-health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
-            .subcategory-health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
-            </style>
-            """, unsafe_allow_html=True)
-            st.session_state.subcategory_health_css_loaded = True
-
-        # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
-        month_names = {
-            '2025-06': 'June 2025',
-            '2025-07': 'July 2025',
-            '2025-08': 'August 2025'
-        }
-
-        # 🚀 COMPUTE: Get subcategory data with caching (filter-aware)
-        subcategory_filter_state = {
-            'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': queries.shape,
-            'data_hash': hash(str(sc['sub_category'].tolist()[:10]) if not sc.empty else "empty")
-        }
-        subcategory_filter_key = str(hash(str(subcategory_filter_state)))
-
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_subcategory_health_performance_monthly(_df, _sc, month_names_dict, cache_key):
-            """🔄 FIXED: Proper monthly CTR/CR calculations for health subcategories"""
-            if _df.empty or _sc.empty:
-                return pd.DataFrame(), []
-            
-            # Get top subcategories by total counts
-            top_subcategories_list = _sc.nlargest(50, 'Counts')['sub_category'].tolist()
-            
-            # Filter original data for top subcategories
-            top_data = _df[_df[subcategory_column].isin(top_subcategories_list)].copy()
-            
-            # Get unique months from the data
-            if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].unique())
-            else:
-                unique_months = []
-            
-            # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
-            result_data = []
-            
-            for subcategory in top_subcategories_list:
-                subcategory_data = top_data[top_data[subcategory_column] == subcategory]
+                # ✅ NEW: Top Subcategories Performance Table
+                st.markdown("---")
+                st.subheader("🏆 Top Nutraceuticals & Nutrition Subcategory Performance")
                 
-                # ✅ SKIP SUBCATEGORIES WITH NO DATA
-                if subcategory_data.empty:
-                    continue
-                
-                # Base information
-                total_counts = int(subcategory_data['Counts'].sum())
-                total_clicks = int(subcategory_data['clicks'].sum())
-                total_conversions = int(subcategory_data['conversions'].sum())
-                
-                # ✅ SKIP SUBCATEGORIES WITH ZERO VOLUME
-                if total_counts == 0:
-                    continue
-                    
-                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-                
-                # Calculate share percentage
-                share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
-                
-                row = {
-                    'Health Subcategory': subcategory,
-                    'Total Volume': total_counts,
-                    'Share %': share_pct,
-                    'Overall CTR': overall_ctr,
-                    'Overall CR': overall_cr,
-                    'Total Clicks': total_clicks,
-                    'Total Conversions': total_conversions
-                }
-                
-                # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
-                for month in unique_months:
-                    month_data = subcategory_data[subcategory_data['month'] == month]
-                    month_display = month_names_dict.get(month, month)
-                    
-                    if not month_data.empty:
-                        # ✅ FIXED: Calculate month-specific metrics
-                        month_counts = int(month_data['Counts'].sum())
-                        month_clicks = int(month_data['clicks'].sum())
-                        month_conversions = int(month_data['conversions'].sum())
-                        
-                        # ✅ FIXED: Month-specific CTR and CR calculations
-                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                        
-                        row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
-                        row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
-                    else:
-                        row[f'{month_display} Vol'] = 0
-                        row[f'{month_display} CTR'] = 0
-                        row[f'{month_display} CR'] = 0
-                
-                result_data.append(row)
-            
-            result_df = pd.DataFrame(result_data)
-            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            
-            # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
-            result_df = result_df[result_df['Total Volume'] > 0]
-            
-            return result_df, unique_months
-
-        top_subcategories_monthly, unique_months_sub = compute_subcategory_health_performance_monthly(queries, sc, month_names, subcategory_filter_key)
-        
-        if top_subcategories_monthly.empty:
-            st.warning("No valid subcategory data after processing.")
-        else:
-            # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
-            top_subcategories_monthly = top_subcategories_monthly.dropna(subset=['Health Subcategory'])
-            top_subcategories_monthly = top_subcategories_monthly[top_subcategories_monthly['Total Volume'] > 0]
-            top_subcategories_monthly = top_subcategories_monthly.head(num_subcategories)
-            
-            # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-            base_columns = ['Health Subcategory', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
-            
-            # Group monthly columns by type for easier comparison
-            volume_columns = []
-            ctr_columns = []
-            cr_columns = []
-            
-            for month in sorted(unique_months_sub):
-                month_display = month_names.get(month, month)
-                volume_columns.append(f'{month_display} Vol')
-                ctr_columns.append(f'{month_display} CTR')
-                cr_columns.append(f'{month_display} CR')
-            
-            # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
-            ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
-            existing_columns = [col for col in ordered_columns if col in top_subcategories_monthly.columns]
-            top_subcategories_monthly = top_subcategories_monthly[existing_columns]
-
-            # 🚀 ENHANCED: Smart styling with better comparison highlighting
-            subcategories_hash = hash(str(top_subcategories_monthly.shape) + str(top_subcategories_monthly.columns.tolist()) + str(top_subcategories_monthly.iloc[0].to_dict()) if len(top_subcategories_monthly) > 0 else "empty")
-            
-            if ('styled_subcategories_health' not in st.session_state or 
-                st.session_state.get('subcategories_health_cache_key') != subcategories_hash):
-                
-                st.session_state.subcategories_health_cache_key = subcategories_hash
-                
-                # 🚀 FAST: Apply format_number to numeric columns before styling
-                display_subcategories = top_subcategories_monthly.copy()
-                
-                # Format volume columns with format_number
-                volume_cols_to_format = ['Total Volume'] + volume_columns
-                for col in volume_cols_to_format:
-                    if col in display_subcategories.columns:
-                        display_subcategories[col] = display_subcategories[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
-                
-                # Format clicks and conversions
-                if 'Total Clicks' in display_subcategories.columns:
-                    display_subcategories['Total Clicks'] = display_subcategories['Total Clicks'].apply(lambda x: format_number(int(x)))
-                if 'Total Conversions' in display_subcategories.columns:
-                    display_subcategories['Total Conversions'] = display_subcategories['Total Conversions'].apply(lambda x: format_number(int(x)))
-                
-                # 🔄 ENHANCED: Better performance highlighting with comparison focus
-                def highlight_subcategory_health_performance_with_comparison(df):
-                    """Enhanced highlighting for better health subcategory comparison"""
-                    styles = pd.DataFrame('', index=df.index, columns=df.columns)
-                    
-                    if len(unique_months_sub) < 2:
-                        return styles
-                    
-                    sorted_months = sorted(unique_months_sub)
-                    
-                    # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
-                    for i in range(1, len(sorted_months)):
-                        current_month = month_names.get(sorted_months[i], sorted_months[i])
-                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
-                        
-                        current_ctr_col = f'{current_month} CTR'
-                        prev_ctr_col = f'{prev_month} CTR'
-                        current_cr_col = f'{current_month} CR'
-                        prev_cr_col = f'{prev_month} CR'
-                        
-                        # CTR comparison with threshold
-                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                            for idx in df.index:
-                                current_ctr = df.loc[idx, current_ctr_col]
-                                prev_ctr = df.loc[idx, prev_ctr_col]
-                                
-                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:  # 10% improvement
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                        
-                        # CR comparison with threshold
-                        if current_cr_col in df.columns and prev_cr_col in df.columns:
-                            for idx in df.index:
-                                current_cr = df.loc[idx, current_cr_col]
-                                prev_cr = df.loc[idx, prev_cr_col]
-                                
-                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:  # 10% improvement
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
-                    
-                    # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
-                    for col in volume_columns:
-                        if col in df.columns:
-                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
-                    
-                    return styles
-                
-                # Create styled DataFrame from the formatted copy
-                styled_subcategories = display_subcategories.style.apply(highlight_subcategory_health_performance_with_comparison, axis=None)
-                
-                styled_subcategories = styled_subcategories.set_properties(**{
-                    'text-align': 'center',
-                    'vertical-align': 'middle',
-                    'font-size': '11px',
-                    'padding': '4px',
-                    'line-height': '1.1'
-                }).set_table_styles([
-                    {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
-                    {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
-                    {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
-                ])
-                
-                # 🔄 IMPROVED: Format dictionary
-                format_dict = {
-                    'Share %': '{:.2f}%',
-                    'Overall CTR': '{:.2f}%',
-                    'Overall CR': '{:.2f}%'
-                }
-                
-                # Add formatting for monthly CTR and CR columns
-                for col in ctr_columns + cr_columns:
-                    if col in display_subcategories.columns:
-                        format_dict[col] = '{:.2f}%'
-
-                styled_subcategories = styled_subcategories.format(format_dict)
-                st.session_state.styled_subcategories_health = styled_subcategories
-
-            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
-            # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
-            actual_rows = len(top_subcategories_monthly)
-            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
-            
-            st.dataframe(
-                st.session_state.styled_subcategories_health, 
-                use_container_width=True, 
-                height=table_height,  # ✅ DYNAMIC HEIGHT
-                hide_index=True
-            )
-
-            # 🔄 ENHANCED: Better legend with comparison focus
-            st.markdown("""
-            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Subcategory Comparison Guide:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # 🔄 ENHANCED: Column grouping explanation for subcategories
-            if unique_months_sub:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months_sub)]
-                st.markdown(f"""
-                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Subcategory Column Organization:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Health Subcategory, Total Volume, Share %, Overall CTR/CR</div>
-                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
-                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
-                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # 🚀 ENHANCED DOWNLOAD SECTION
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            csv_subcategories = top_subcategories_monthly.to_csv(index=False)
-            
-            col_download = st.columns([1, 2, 1])
-            with col_download[1]:
-                st.download_button(
-                    label="📥 Download Nutraceuticals & Nutrition Subcategories CSV",
-                    data=csv_subcategories,
-                    file_name=f"top_{num_subcategories}_health_subcategories_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv",
-                    help="Download the health subcategories table with monthly comparison data",
-                    use_container_width=True,
-                    key="subcategory_monthly_download"
+                num_subcategories = st.slider(
+                    "Number of health subcategories to display:", 
+                    min_value=10, 
+                    max_value=50, 
+                    value=20, 
+                    step=5,
+                    key="subcategory_count_slider"
                 )
+                
+                # 🚀 LAZY CSS LOADING - Only load once per session for subcategories
+                if 'subcategory_health_css_loaded' not in st.session_state:
+                    st.markdown("""
+                    <style>
+                    .subcategory-health-metric-card {
+                        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+                        padding: 20px; border-radius: 15px; text-align: center; color: white;
+                        box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
+                        min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+                        transition: transform 0.2s ease; width: 100%;
+                    }
+                    .subcategory-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
+                    .subcategory-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+                    .subcategory-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
+                    .subcategory-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+                    .subcategory-health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
+                    .subcategory-health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
+                    .subcategory-health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
+                    .subcategory-health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+                    .subcategory-health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
+                    </style>
+                    """, unsafe_allow_html=True)
+                    st.session_state.subcategory_health_css_loaded = True
+
+                # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
+                month_names = {
+                    '2025-06': 'June 2025',
+                    '2025-07': 'July 2025',
+                    '2025-08': 'August 2025'
+                }
+
+                # 🚀 COMPUTE: Get subcategory data with caching (filter-aware)
+                subcategory_filter_state = {
+                    'filters_applied': st.session_state.get('filters_applied', False),
+                    'data_shape': queries.shape,
+                    'data_hash': hash(str(sc['sub_category'].tolist()[:10]) if not sc.empty else "empty")
+                }
+                subcategory_filter_key = str(hash(str(subcategory_filter_state)))
+
+                @st.cache_data(ttl=1800, show_spinner=False)
+                def compute_subcategory_health_performance_monthly(_df, _sc, month_names_dict, cache_key):
+                    """🔄 FIXED: Proper monthly CTR/CR calculations for health subcategories"""
+                    if _df.empty or _sc.empty:
+                        return pd.DataFrame(), []
+                    
+                    # Get top subcategories by total counts
+                    top_subcategories_list = _sc.nlargest(50, 'Counts')['sub_category'].tolist()
+                    
+                    # Filter original data for top subcategories
+                    top_data = _df[_df[subcategory_column].isin(top_subcategories_list)].copy()
+                    
+                    # Get unique months from the data
+                    if 'month' in top_data.columns:
+                        unique_months = sorted(top_data['month'].unique())
+                    else:
+                        unique_months = []
+                    
+                    # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
+                    result_data = []
+                    
+                    for subcategory in top_subcategories_list:
+                        subcategory_data = top_data[top_data[subcategory_column] == subcategory]
+                        
+                        # ✅ SKIP SUBCATEGORIES WITH NO DATA
+                        if subcategory_data.empty:
+                            continue
+                        
+                        # Base information
+                        total_counts = int(subcategory_data['Counts'].sum())
+                        total_clicks = int(subcategory_data['clicks'].sum())
+                        total_conversions = int(subcategory_data['conversions'].sum())
+                        
+                        # ✅ SKIP SUBCATEGORIES WITH ZERO VOLUME
+                        if total_counts == 0:
+                            continue
+                            
+                        overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                        overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                        
+                        # Calculate share percentage
+                        share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
+                        
+                        row = {
+                            'Health Subcategory': subcategory,
+                            'Total Volume': total_counts,
+                            'Share %': share_pct,
+                            'Overall CTR': overall_ctr,
+                            'Overall CR': overall_cr,
+                            'Total Clicks': total_clicks,
+                            'Total Conversions': total_conversions
+                        }
+                        
+                        # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
+                        for month in unique_months:
+                            month_data = subcategory_data[subcategory_data['month'] == month]
+                            month_display = month_names_dict.get(month, month)
+                            
+                            if not month_data.empty:
+                                # ✅ FIXED: Calculate month-specific metrics
+                                month_counts = int(month_data['Counts'].sum())
+                                month_clicks = int(month_data['clicks'].sum())
+                                month_conversions = int(month_data['conversions'].sum())
+                                
+                                # ✅ FIXED: Month-specific CTR and CR calculations
+                                month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                                month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                                
+                                row[f'{month_display} Vol'] = month_counts
+                                row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
+                                row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
+                            else:
+                                row[f'{month_display} Vol'] = 0
+                                row[f'{month_display} CTR'] = 0
+                                row[f'{month_display} CR'] = 0
+                        
+                        result_data.append(row)
+                    
+                    result_df = pd.DataFrame(result_data)
+                    result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+                    
+                    # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
+                    result_df = result_df[result_df['Total Volume'] > 0]
+                    
+                    return result_df, unique_months
+
+                top_subcategories_monthly, unique_months_sub = compute_subcategory_health_performance_monthly(queries, sc, month_names, subcategory_filter_key)
+                
+                if top_subcategories_monthly.empty:
+                    st.warning("No valid subcategory data after processing.")
+                else:
+                    # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
+                    top_subcategories_monthly = top_subcategories_monthly.dropna(subset=['Health Subcategory'])
+                    top_subcategories_monthly = top_subcategories_monthly[top_subcategories_monthly['Total Volume'] > 0]
+                    top_subcategories_monthly = top_subcategories_monthly.head(num_subcategories)
+                    
+                    # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
+                    base_columns = ['Health Subcategory', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+                    
+                    # Group monthly columns by type for easier comparison
+                    volume_columns = []
+                    ctr_columns = []
+                    cr_columns = []
+                    
+                    for month in sorted(unique_months_sub):
+                        month_display = month_names.get(month, month)
+                        volume_columns.append(f'{month_display} Vol')
+                        ctr_columns.append(f'{month_display} CTR')
+                        cr_columns.append(f'{month_display} CR')
+                    
+                    # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+                    ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+                    existing_columns = [col for col in ordered_columns if col in top_subcategories_monthly.columns]
+                    top_subcategories_monthly = top_subcategories_monthly[existing_columns]
+
+                    # 🚀 ENHANCED: Smart styling with better comparison highlighting
+                    subcategories_hash = hash(str(top_subcategories_monthly.shape) + str(top_subcategories_monthly.columns.tolist()) + str(top_subcategories_monthly.iloc[0].to_dict()) if len(top_subcategories_monthly) > 0 else "empty")
+                    
+                    if ('styled_subcategories_health' not in st.session_state or 
+                        st.session_state.get('subcategories_health_cache_key') != subcategories_hash):
+                        
+                        st.session_state.subcategories_health_cache_key = subcategories_hash
+                        
+                        # 🚀 FAST: Apply format_number to numeric columns before styling
+                        display_subcategories = top_subcategories_monthly.copy()
+                        
+                        # Format volume columns with format_number
+                        volume_cols_to_format = ['Total Volume'] + volume_columns
+                        for col in volume_cols_to_format:
+                            if col in display_subcategories.columns:
+                                display_subcategories[col] = display_subcategories[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                        
+                        # Format clicks and conversions
+                        if 'Total Clicks' in display_subcategories.columns:
+                            display_subcategories['Total Clicks'] = display_subcategories['Total Clicks'].apply(lambda x: format_number(int(x)))
+                        if 'Total Conversions' in display_subcategories.columns:
+                            display_subcategories['Total Conversions'] = display_subcategories['Total Conversions'].apply(lambda x: format_number(int(x)))
+                        
+                        # 🔄 ENHANCED: Better performance highlighting with comparison focus
+                        def highlight_subcategory_health_performance_with_comparison(df):
+                            """Enhanced highlighting for better health subcategory comparison"""
+                            styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                            
+                            if len(unique_months_sub) < 2:
+                                return styles
+                            
+                            sorted_months = sorted(unique_months_sub)
+                            
+                            # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
+                            for i in range(1, len(sorted_months)):
+                                current_month = month_names.get(sorted_months[i], sorted_months[i])
+                                prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                                
+                                current_ctr_col = f'{current_month} CTR'
+                                prev_ctr_col = f'{prev_month} CTR'
+                                current_cr_col = f'{current_month} CR'
+                                prev_cr_col = f'{prev_month} CR'
+                                
+                                # CTR comparison with threshold
+                                if current_ctr_col in df.columns and prev_ctr_col in df.columns:
+                                    for idx in df.index:
+                                        current_ctr = df.loc[idx, current_ctr_col]
+                                        prev_ctr = df.loc[idx, prev_ctr_col]
+                                        
+                                        if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                            change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                            if change_pct > 10:  # 10% improvement
+                                                styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                            elif change_pct < -10:  # 10% decline
+                                                styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                            elif abs(change_pct) > 5:  # 5-10% change
+                                                color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                                styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                                
+                                # CR comparison with threshold
+                                if current_cr_col in df.columns and prev_cr_col in df.columns:
+                                    for idx in df.index:
+                                        current_cr = df.loc[idx, current_cr_col]
+                                        prev_cr = df.loc[idx, prev_cr_col]
+                                        
+                                        if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                            change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                            if change_pct > 10:  # 10% improvement
+                                                styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                            elif change_pct < -10:  # 10% decline
+                                                styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                            elif abs(change_pct) > 5:  # 5-10% change
+                                                color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                                styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                            
+                            # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                            for col in volume_columns:
+                                if col in df.columns:
+                                    styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                            
+                            return styles
+                        
+                        # Create styled DataFrame from the formatted copy
+                        styled_subcategories = display_subcategories.style.apply(highlight_subcategory_health_performance_with_comparison, axis=None)
+                        
+                        styled_subcategories = styled_subcategories.set_properties(**{
+                            'text-align': 'center',
+                            'vertical-align': 'middle',
+                            'font-size': '11px',
+                            'padding': '4px',
+                            'line-height': '1.1'
+                        }).set_table_styles([
+                            {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                            {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
+                            {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
+                        ])
+                        
+                        # 🔄 IMPROVED: Format dictionary
+                        format_dict = {
+                            'Share %': '{:.2f}%',
+                            'Overall CTR': '{:.2f}%',
+                            'Overall CR': '{:.2f}%'
+                        }
+                        
+                        # Add formatting for monthly CTR and CR columns
+                        for col in ctr_columns + cr_columns:
+                            if col in display_subcategories.columns:
+                                format_dict[col] = '{:.2f}%'
+
+                        styled_subcategories = styled_subcategories.format(format_dict)
+                        st.session_state.styled_subcategories_health = styled_subcategories
+
+                    # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
+                    # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
+                    actual_rows = len(top_subcategories_monthly)
+                    table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
+                    
+                    st.dataframe(
+                        st.session_state.styled_subcategories_health, 
+                        use_container_width=True, 
+                        height=table_height,  # ✅ DYNAMIC HEIGHT
+                        hide_index=True
+                    )
+
+                    # 🔄 ENHANCED: Better legend with comparison focus
+                    st.markdown("""
+                    <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Subcategory Comparison Guide:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                            <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                            <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                            <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                            <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    # 🔄 ENHANCED: Column grouping explanation for subcategories
+                    if unique_months_sub:
+                        month_list = [month_names.get(m, m) for m in sorted(unique_months_sub)]
+                        st.markdown(f"""
+                        <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                            <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Subcategory Column Organization:</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                                <div><strong>🌱 Base Metrics:</strong> Health Subcategory, Total Volume, Share %, Overall CTR/CR</div>
+                                <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
+                                <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
+                                <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    # 🚀 ENHANCED DOWNLOAD SECTION
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    csv_subcategories = top_subcategories_monthly.to_csv(index=False)
+                    
+                    col_download = st.columns([1, 2, 1])
+                    with col_download[1]:
+                        st.download_button(
+                            label="📥 Download Nutraceuticals & Nutrition Subcategories CSV",
+                            data=csv_subcategories,
+                            file_name=f"top_{num_subcategories}_health_subcategories_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv",
+                            help="Download the health subcategories table with monthly comparison data",
+                            use_container_width=True,
+                            key="subcategory_monthly_download"
+                        )
 
                     
                     # Intelligence insights
