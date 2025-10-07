@@ -10083,11 +10083,11 @@ with tab_generic:
         # Analysis type selector
         analysis_type = st.radio(
             "Choose Analysis Type:",
-            ["📊 Top Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
+            ["🏥 Top Health Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
             horizontal=True
         )
 
-        if analysis_type == "📊 Top Performers Overview":
+        if analysis_type == "🏥 Top Health Performers Overview":
             st.subheader("🏆 Top 20 Generic Terms Performance")
             
             # Optimized data slicing
@@ -10133,6 +10133,156 @@ with tab_generic:
             
             fig_metrics_comparison = create_metrics_comparison_chart(top_20_gt)
             st.plotly_chart(fig_metrics_comparison, use_container_width=True)
+
+            # 🚀 Search Volume vs Performance Matrix - NEW CHART
+            st.subheader("🚀 Search Volume vs Performance Matrix")
+
+            @st.cache_data
+            def create_performance_matrix_chart(data):
+                fig = px.scatter(
+                    data.head(50),  # Top 50 for better visualization
+                    x='count',
+                    y='ctr',
+                    size='Conversions',
+                    color='conversion_rate',
+                    hover_name='search',
+                    hover_data={
+                        'count': ':,',
+                        'ctr': ':.2f',
+                        'conversion_rate': ':.2f',
+                        'Conversions': ':,'
+                    },
+                    title='<b style="color:#2E7D32;">🚀 Search Volume vs CTR Performance Matrix</b>',
+                    labels={
+                        'count': 'Search Volume',
+                        'ctr': 'Click-Through Rate (%)',
+                        'conversion_rate': 'Conversion Rate (%)'
+                    },
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#4CAF50', '#2E7D32'],
+                    size_max=30
+                )
+                
+                # Add quadrant lines for better analysis
+                median_volume = data['count'].median()
+                median_ctr = data['ctr'].median()
+                
+                # Add vertical line for median volume
+                fig.add_vline(
+                    x=median_volume, 
+                    line_dash="dash", 
+                    line_color="#66BB6A", 
+                    annotation_text="Median Volume",
+                    annotation_position="top"
+                )
+                
+                # Add horizontal line for median CTR
+                fig.add_hline(
+                    y=median_ctr, 
+                    line_dash="dash", 
+                    line_color="#66BB6A", 
+                    annotation_text="Median CTR",
+                    annotation_position="right"
+                )
+                
+                fig.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=600,
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8', type='log'),  # Log scale for better distribution
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    coloraxis_colorbar=dict(title="Conversion Rate %")
+                )
+                
+                return fig
+
+            fig_matrix = create_performance_matrix_chart(gt_agg)
+            st.plotly_chart(fig_matrix, use_container_width=True)
+
+            # Performance Matrix Insights
+            col_matrix1, col_matrix2 = st.columns(2)
+
+            with col_matrix1:
+                # Quadrant analysis
+                median_volume = gt_agg['count'].median()
+                median_ctr = gt_agg['ctr'].median()
+                
+                # Define quadrants
+                stars = len(gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] >= median_ctr)])  # High volume, High CTR
+                question_marks = len(gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] >= median_ctr)])  # Low volume, High CTR
+                cash_cows = len(gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] < median_ctr)])  # High volume, Low CTR
+                dogs = len(gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] < median_ctr)])  # Low volume, Low CTR
+                
+                st.markdown(f"""
+                <div class='nutrition-insight-card'>
+                    <h4>🎯 Performance Matrix Analysis</h4>
+                    <p><strong>⭐ Stars (High Volume + High CTR):</strong> {stars} terms<br>
+                    <strong>❓ Question Marks (Low Volume + High CTR):</strong> {question_marks} terms<br>
+                    <strong>🐄 Cash Cows (High Volume + Low CTR):</strong> {cash_cows} terms<br>
+                    <strong>🐕 Dogs (Low Volume + Low CTR):</strong> {dogs} terms</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with col_matrix2:
+                # Top performers in each quadrant
+                stars_top = gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] >= median_ctr)].head(3)
+                question_marks_top = gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] >= median_ctr)].head(3)
+                
+                st.markdown(f"""
+                <div class='nutrition-insight-card'>
+                    <h4>🏆 Top Health Performers by Quadrant</h4>
+                    <p><strong>⭐ Star Performers:</strong><br>
+                    {chr(10).join([f"• {row['search'][:20]}..." if len(row['search']) > 20 else f"• {row['search']}" for _, row in stars_top.iterrows()]) if len(stars_top) > 0 else "• No star performers found"}<br><br>
+                    <strong>❓ High-Potential Terms:</strong><br>
+                    {chr(10).join([f"• {row['search'][:20]}..." if len(row['search']) > 20 else f"• {row['search']}" for _, row in question_marks_top.iterrows()]) if len(question_marks_top) > 0 else "• No high-potential terms found"}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Performance Matrix Strategy Recommendations
+            st.markdown("### 💡 Strategic Recommendations by Performance Matrix")
+
+            strategy_col1, strategy_col2, strategy_col3, strategy_col4 = st.columns(4)
+
+            with strategy_col1:
+                st.markdown(f"""
+                <div class='nutrition-generic-metric-card'>
+                    <span class='icon'>⭐</span>
+                    <div class='value'>{stars}</div>
+                    <div class='label'>Stars</div>
+                    <div class='sub-label'>Maintain & invest more</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with strategy_col2:
+                st.markdown(f"""
+                <div class='nutrition-generic-metric-card'>
+                    <span class='icon'>❓</span>
+                    <div class='value'>{question_marks}</div>
+                    <div class='label'>Question Marks</div>
+                    <div class='sub-label'>Scale volume carefully</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with strategy_col3:
+                st.markdown(f"""
+                <div class='nutrition-generic-metric-card'>
+                    <span class='icon'>🐄</span>
+                    <div class='value'>{cash_cows}</div>
+                    <div class='label'>Cash Cows</div>
+                    <div class='sub-label'>Optimize for efficiency</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with strategy_col4:
+                st.markdown(f"""
+                <div class='nutrition-generic-metric-card'>
+                    <span class='icon'>🐕</span>
+                    <div class='value'>{dogs}</div>
+                    <div class='label'>Dogs</div>
+                    <div class='sub-label'>Consider discontinuing</div>
+                </div>
+                """, unsafe_allow_html=True)
+
 
         elif analysis_type == "🔍 Detailed Term Deep Dive":
             st.subheader("🔬 Generic Term Deep Dive Analysis")
