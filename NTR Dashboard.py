@@ -10417,7 +10417,6 @@ with tab_generic:
 
 
 
-
         # Interactive generic type analysis
         st.subheader("🎯 Interactive Generic Type Analysis")
 
