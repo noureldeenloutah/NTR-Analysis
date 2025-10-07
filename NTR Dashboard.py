@@ -5562,13 +5562,13 @@ with tab_brand:
                 brand_metrics = bs[bs['brand'] == selected_brand].iloc[0] if not bs[bs['brand'] == selected_brand].empty else None
                 
                 if brand_metrics is not None:
-                    # UPDATED: Now showing 5 metrics including both CR types
+                    # UPDATED: Now showing 5 metrics including both CR types with format_number
                     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
                     
                     with metric_col1:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['Counts']:,.0f}</div>
+                            <div class="brand-metric-value">{format_number(brand_metrics['Counts'])}</div>
                             <div class="brand-metric-label">📊 Total Searches</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -5611,13 +5611,13 @@ with tab_brand:
                 avg_cr = bs['cr'].mean()  # ADDED: CR (Search-based)
                 avg_classic_cr = bs['classic_cr'].mean()
                 
-                # UPDATED: Now showing 4 metrics including both CR types
+                # UPDATED: Now showing 4 metrics including both CR types with format_number
                 metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
                 
                 with metric_col1:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{total_searches:,.0f}</div>
+                        <div class="brand-metric-value">{format_number(total_searches)}</div>
                         <div class="brand-metric-label">📊 Total Market</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -5728,7 +5728,7 @@ with tab_brand:
                     aspect='auto'
                 )
                 
-                # UPDATED: Create custom hover data with CTR, CR, and Classic CR
+                # UPDATED: Create custom hover data with CTR, CR, and Classic CR using format_number
                 hover_text = []
                 for i, brand in enumerate(heatmap_data.index):
                     hover_row = []
@@ -5740,7 +5740,7 @@ with tab_brand:
                         hover_row.append(
                             f"<b>{brand}</b><br>" +
                             f"Search Term: {search}<br>" +
-                            f"Total Searches: {counts:,.0f}<br>" +
+                            f"Total Searches: {format_number(counts)}<br>" +  # 🚀 UPDATED: format_number
                             f"CTR: {ctr:.2f}%<br>" +
                             f"CR (Search): {cr:.2f}%<br>" +  # ADDED: CR in hover
                             f"Classic CR: {classic_cr:.2f}%"
@@ -5803,17 +5803,19 @@ with tab_brand:
                     text='Counts'
                 )
                 
-                # UPDATED: Enhanced hover template with both CR types
+                # UPDATED: Enhanced hover template with both CR types using format_number
                 fig_brand_search.update_traces(
-                    texttemplate='%{text:,.0f}',
+                    texttemplate='%{text}',  # 🚀 UPDATED: Will be formatted by customdata
                     textposition='outside',
                     hovertemplate='<b>%{x}</b><br>' +
-                                'Search Volume: %{y:,.0f}<br>' +
+                                'Search Volume: %{customdata[3]}<br>' +  # 🚀 UPDATED: Use formatted number
                                 'CTR: %{customdata[0]:.2f}%<br>' +
                                 'CR (Search): %{customdata[1]:.2f}%<br>' +  # ADDED: CR in hover
                                 'Classic CR: %{customdata[2]:.2f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
-                    customdata=brand_search_data[['ctr', 'cr', 'classic_cr']].values  # UPDATED: Include both CR types
+                    customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
+                            for _, row in brand_search_data.iterrows()],  # 🚀 UPDATED: Include formatted numbers
+                    text=[format_number(x) for x in brand_search_data['Counts']]  # 🚀 UPDATED: Format bar labels
                 )
                 
                 fig_brand_search.update_layout(
@@ -5840,8 +5842,8 @@ with tab_brand:
                     'classic_cr': 'Classic CR (%)'
                 })
                 
-                # Format the display
-                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(lambda x: f"{x:,.0f}")
+                # 🚀 UPDATED: Format the display using format_number
+                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
                 display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
@@ -5855,6 +5857,7 @@ with tab_brand:
         st.error("❌ Required columns 'brand' and 'search' not found in the dataset.")
 
     st.markdown("---")
+
 
     
     # Strategic Brand Intelligence Dashboard (3 Tabs)
