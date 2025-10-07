@@ -6592,10 +6592,19 @@ with tab_category:
             for category in top_categories_list:
                 category_data = top_data[top_data[category_column] == category]
                 
+                # ✅ SKIP CATEGORIES WITH NO DATA
+                if category_data.empty:
+                    continue
+                
                 # Base information
                 total_counts = int(category_data['Counts'].sum())
                 total_clicks = int(category_data['clicks'].sum())
                 total_conversions = int(category_data['conversions'].sum())
+                
+                # ✅ SKIP CATEGORIES WITH ZERO VOLUME
+                if total_counts == 0:
+                    continue
+                    
                 overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                 overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                 
@@ -6640,6 +6649,9 @@ with tab_category:
             result_df = pd.DataFrame(result_data)
             result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
             
+            # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
+            result_df = result_df[result_df['Total Volume'] > 0]
+            
             return result_df, unique_months
 
         top_categories_monthly, unique_months = compute_category_health_performance_monthly(queries, cs, month_names, filter_key)
@@ -6647,7 +6659,9 @@ with tab_category:
         if top_categories_monthly.empty:
             st.warning("No valid category data after processing.")
         else:
-            # Limit to selected number of categories
+            # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
+            top_categories_monthly = top_categories_monthly.dropna(subset=['Health Category'])
+            top_categories_monthly = top_categories_monthly[top_categories_monthly['Total Volume'] > 0]
             top_categories_monthly = top_categories_monthly.head(num_categories)
             
             # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
@@ -6781,11 +6795,15 @@ with tab_category:
                 styled_categories = styled_categories.format(format_dict)
                 st.session_state.styled_categories_health = styled_categories
 
-            # 🚀 DISPLAY: Cached styled DataFrame
+            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
+            # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
+            actual_rows = len(top_categories_monthly)
+            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
+            
             st.dataframe(
                 st.session_state.styled_categories_health, 
                 use_container_width=True, 
-                height=600,
+                height=table_height,  # ✅ DYNAMIC HEIGHT
                 hide_index=True
             )
 
