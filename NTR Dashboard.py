@@ -9044,25 +9044,18 @@ with tab_subcat:
             key="subcategory_analysis_type"
         )
 
-        analysis_type = st.radio(
-            "Choose Analysis Type:",
-            ["🏥 Top Health Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
-            horizontal=True
-        )
-
-        if analysis_type == "🏥 Top Health Performers Overview":
+        if analysis_type == "📊 Top Health Performers Overview":
             with st.spinner('📊 Generating top performers overview...'):
-                st.subheader("🏆 Top 20 Generic Terms Performance")
+                st.subheader("🏆 Top 20 Subcategories Performance")
                 
-                # Optimized data slicing
-                display_count = min(20, len(gt_agg))
-                top_20_gt = gt_agg.head(display_count).copy()
+                display_count = min(20, len(sc))
+                top_sc = sc.head(display_count).copy()
                 
                 # ✅ NEW: Combined Volume, CTR & CR Analysis Chart
                 st.subheader("🚀 Search Volume vs Performance Matrix")
                 
                 # Calculate conversion rate as conversions/search volume for better representation
-                top_20_gt['conversion_rate_volume'] = (top_20_gt['Conversions'] / top_20_gt['count'] * 100).round(2)
+                top_sc['conversion_rate_volume'] = (top_sc['conversions'] / top_sc['Counts'] * 100).round(2)
                 
                 # Create subplot with secondary y-axis
                 fig_combined = make_subplots(
@@ -9074,10 +9067,10 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Bar(
                         name='Search Volume',
-                        x=top_20_gt['search'],
-                        y=top_20_gt['count'],
+                        x=top_sc['sub_category'],
+                        y=top_sc['Counts'],
                         marker_color='rgba(46, 125, 50, 0.7)',
-                        text=[format_number(int(x)) for x in top_20_gt['count']],
+                        text=[format_number(int(x)) for x in top_sc['Counts']],
                         textposition='outside',
                         yaxis='y',
                         offsetgroup=1
@@ -9089,8 +9082,8 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Scatter(
                         name='CTR %',
-                        x=top_20_gt['search'],
-                        y=top_20_gt['ctr'],
+                        x=top_sc['sub_category'],
+                        y=top_sc['ctr'],
                         mode='lines+markers',
                         line=dict(color='#FF6B35', width=3),
                         marker=dict(size=8, color='#FF6B35'),
@@ -9103,8 +9096,8 @@ with tab_subcat:
                 fig_combined.add_trace(
                     go.Scatter(
                         name='Conversion Rate %',
-                        x=top_20_gt['search'],
-                        y=top_20_gt['conversion_rate_volume'],
+                        x=top_sc['sub_category'],
+                        y=top_sc['conversion_rate_volume'],
                         mode='lines+markers',
                         line=dict(color='#9C27B0', width=3, dash='dash'),
                         marker=dict(size=8, color='#9C27B0'),
@@ -9124,7 +9117,7 @@ with tab_subcat:
                         tickangle=45, 
                         showgrid=True, 
                         gridcolor='#C8E6C8',
-                        title='Generic Health Terms'
+                        title='Health Subcategories'
                     ),
                     legend=dict(
                         orientation="h",
@@ -9152,25 +9145,25 @@ with tab_subcat:
                 
                 # Enhanced bar chart
                 st.subheader("📊 Search Volume Distribution")
-                fig_top_generics = px.bar(
-                    top_20_gt,
-                    x='search',
-                    y='count',
-                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Generic Terms by Search Volume</b>',
-                    labels={'count': 'Health Search Volume', 'search': 'Generic Health Terms'},
-                    color='count',
+                fig_top_subcats = px.bar(
+                    top_sc,
+                    x='sub_category',
+                    y='Counts',
+                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Subcategories by Search Volume</b>',
+                    labels={'Counts': 'Health Search Volume', 'sub_category': 'Health Subcategories'},
+                    color='Counts',
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    text='count'
+                    text='Counts'
                 )
                 
                 # Format text with format_number
-                fig_top_generics.update_traces(
+                fig_top_subcats.update_traces(
                     texttemplate='%{text}',
                     textposition='outside',
-                    text=[format_number(int(x)) for x in top_20_gt['count']]
+                    text=[format_number(int(x)) for x in top_sc['Counts']]
                 )
                 
-                fig_top_generics.update_layout(
+                fig_top_subcats.update_layout(
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
@@ -9180,7 +9173,7 @@ with tab_subcat:
                     showlegend=False
                 )
                 
-                st.plotly_chart(fig_top_generics, use_container_width=True)
+                st.plotly_chart(fig_top_subcats, use_container_width=True)
                 
                 # Performance metrics comparison
                 st.subheader("📊 Performance Metrics Comparison")
@@ -9189,19 +9182,19 @@ with tab_subcat:
                 
                 fig_metrics_comparison.add_trace(go.Bar(
                     name='Health CTR %',
-                    x=top_20_gt['search'],
-                    y=top_20_gt['ctr'],
+                    x=top_sc['sub_category'],
+                    y=top_sc['ctr'],
                     marker_color='#4CAF50',
-                    text=[f'{x:.1f}%' for x in top_20_gt['ctr']],
+                    text=[f'{x:.1f}%' for x in top_sc['ctr']],
                     textposition='outside'
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
                     name='Nutraceuticals & Nutrition Conversion Rate %',
-                    x=top_20_gt['search'],
-                    y=top_20_gt['conversion_rate'],
+                    x=top_sc['sub_category'],
+                    y=top_sc['conversion_rate'],
                     marker_color='#81C784',
-                    text=[f'{x:.1f}%' for x in top_20_gt['conversion_rate']],
+                    text=[f'{x:.1f}%' for x in top_sc['conversion_rate']],
                     textposition='outside'
                 ))
                 
@@ -9217,7 +9210,6 @@ with tab_subcat:
                 )
                 
                 st.plotly_chart(fig_metrics_comparison, use_container_width=True)
-
 
 
         elif analysis_type == "🔍 Detailed Health Subcategory Deep Dive":
@@ -10091,205 +10083,179 @@ with tab_generic:
         # Analysis type selector
         analysis_type = st.radio(
             "Choose Analysis Type:",
-            ["🏥 Top Health Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
-            horizontal=True
+            ["📊 Top Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
+            horizontal=True,
+            key="generic_terms_analysis_type"  # ✅ Added unique key
         )
 
-        if analysis_type == "🏥 Top Health Performers Overview":
-            st.subheader("🏆 Top 20 Generic Terms Performance")
-            
-            # Optimized data slicing
-            top_20_gt = gt_agg.head(20)
-            
-            # Optimized chart creation
-            @st.cache_data
-            def create_top_performers_chart(data):
-                fig = px.bar(
-                    data, x='search', y='count',
-                    title='<b style="color:#2E7D32;">🌱 Top 20 Generic Terms by Search Volume</b>',
-                    labels={'count': 'Search Volume', 'search': 'Generic Terms'},
-                    color='count', color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    text='count'
-                )
-                fig.update_traces(texttemplate='%{text:,}', textposition='outside')
-                fig.update_layout(
-                    plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'), height=500,
-                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
-                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'), showlegend=False
-                )
-                return fig
-            
-            fig_top_generics = create_top_performers_chart(top_20_gt)
-            st.plotly_chart(fig_top_generics, use_container_width=True)
-            
-            # Performance metrics comparison chart
-            st.subheader("📊 Performance Metrics Comparison")
-            
-            @st.cache_data
-            def create_metrics_comparison_chart(data):
-                fig = go.Figure()
-                fig.add_trace(go.Bar(name='CTR %', x=data['search'], y=data['ctr'], marker_color='#4CAF50'))
-                fig.add_trace(go.Bar(name='Conversion Rate %', x=data['search'], y=data['conversion_rate'], marker_color='#81C784'))
-                fig.update_layout(
-                    title='<b style="color:#2E7D32;">🌱 CTR vs Conversion Rate Comparison</b>',
-                    barmode='group', plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'), height=400,
-                    xaxis=dict(tickangle=45), yaxis=dict(title='Percentage (%)')
-                )
-                return fig
-            
-            fig_metrics_comparison = create_metrics_comparison_chart(top_20_gt)
-            st.plotly_chart(fig_metrics_comparison, use_container_width=True)
-
-            # 🚀 Search Volume vs Performance Matrix - NEW CHART
-            st.subheader("🚀 Search Volume vs Performance Matrix")
-
-            @st.cache_data
-            def create_performance_matrix_chart(data):
-                fig = px.scatter(
-                    data.head(50),  # Top 50 for better visualization
-                    x='count',
-                    y='ctr',
-                    size='Conversions',
-                    color='conversion_rate',
-                    hover_name='search',
-                    hover_data={
-                        'count': ':,',
-                        'ctr': ':.2f',
-                        'conversion_rate': ':.2f',
-                        'Conversions': ':,'
-                    },
-                    title='<b style="color:#2E7D32;">🚀 Search Volume vs CTR Performance Matrix</b>',
-                    labels={
-                        'count': 'Search Volume',
-                        'ctr': 'Click-Through Rate (%)',
-                        'conversion_rate': 'Conversion Rate (%)'
-                    },
-                    color_continuous_scale=['#E8F5E8', '#81C784', '#4CAF50', '#2E7D32'],
-                    size_max=30
+        if analysis_type == "📊 Top Performers Overview":
+            with st.spinner('📊 Generating top performers overview...'):
+                st.subheader("🏆 Top 20 Generic Terms Performance")
+                
+                # Optimized data slicing
+                display_count = min(20, len(gt_agg))
+                top_20_gt = gt_agg.head(display_count).copy()
+                
+                # ✅ NEW: Combined Volume, CTR & CR Analysis Chart
+                st.subheader("🚀 Search Volume vs Performance Matrix")
+                
+                # Calculate conversion rate as conversions/search volume for better representation
+                top_20_gt['conversion_rate_volume'] = (top_20_gt['Conversions'] / top_20_gt['count'] * 100).round(2)
+                
+                # Create subplot with secondary y-axis
+                fig_combined = make_subplots(
+                    specs=[[{"secondary_y": True}]],
+                    subplot_titles=("",)
                 )
                 
-                # Add quadrant lines for better analysis
-                median_volume = data['count'].median()
-                median_ctr = data['ctr'].median()
-                
-                # Add vertical line for median volume
-                fig.add_vline(
-                    x=median_volume, 
-                    line_dash="dash", 
-                    line_color="#66BB6A", 
-                    annotation_text="Median Volume",
-                    annotation_position="top"
+                # Add search volume bars (primary y-axis)
+                fig_combined.add_trace(
+                    go.Bar(
+                        name='Search Volume',
+                        x=top_20_gt['search'],
+                        y=top_20_gt['count'],
+                        marker_color='rgba(46, 125, 50, 0.7)',
+                        text=[format_number(int(x)) for x in top_20_gt['count']],
+                        textposition='outside',
+                        yaxis='y',
+                        offsetgroup=1
+                    ),
+                    secondary_y=False,
                 )
                 
-                # Add horizontal line for median CTR
-                fig.add_hline(
-                    y=median_ctr, 
-                    line_dash="dash", 
-                    line_color="#66BB6A", 
-                    annotation_text="Median CTR",
-                    annotation_position="right"
+                # Add CTR line (secondary y-axis)
+                fig_combined.add_trace(
+                    go.Scatter(
+                        name='CTR %',
+                        x=top_20_gt['search'],
+                        y=top_20_gt['ctr'],
+                        mode='lines+markers',
+                        line=dict(color='#FF6B35', width=3),
+                        marker=dict(size=8, color='#FF6B35'),
+                        yaxis='y2'
+                    ),
+                    secondary_y=True,
                 )
                 
-                fig.update_layout(
+                # Add Conversion Rate line (secondary y-axis)
+                fig_combined.add_trace(
+                    go.Scatter(
+                        name='Conversion Rate %',
+                        x=top_20_gt['search'],
+                        y=top_20_gt['conversion_rate_volume'],
+                        mode='lines+markers',
+                        line=dict(color='#9C27B0', width=3, dash='dash'),
+                        marker=dict(size=8, color='#9C27B0'),
+                        yaxis='y2'
+                    ),
+                    secondary_y=True,
+                )
+                
+                # Update layout
+                fig_combined.update_layout(
+                    title='<b style="color:#2E7D32;">🌿 Health Search Volume vs CTR & Conversion Performance</b>',
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
-                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8', type='log'),  # Log scale for better distribution
-                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                    coloraxis_colorbar=dict(title="Conversion Rate %")
+                    xaxis=dict(
+                        tickangle=45, 
+                        showgrid=True, 
+                        gridcolor='#C8E6C8',
+                        title='Generic Health Terms'
+                    ),
+                    legend=dict(
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="right",
+                        x=1
+                    )
                 )
                 
-                return fig
-
-            fig_matrix = create_performance_matrix_chart(gt_agg)
-            st.plotly_chart(fig_matrix, use_container_width=True)
-
-            # Performance Matrix Insights
-            col_matrix1, col_matrix2 = st.columns(2)
-
-            with col_matrix1:
-                # Quadrant analysis
-                median_volume = gt_agg['count'].median()
-                median_ctr = gt_agg['ctr'].median()
+                # Set y-axes titles
+                fig_combined.update_yaxes(
+                    title_text="<b>Search Volume</b>", 
+                    secondary_y=False,
+                    showgrid=True, 
+                    gridcolor='#C8E6C8'
+                )
+                fig_combined.update_yaxes(
+                    title_text="<b>Performance Rate (%)</b>", 
+                    secondary_y=True,
+                    showgrid=False
+                )
                 
-                # Define quadrants
-                stars = len(gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] >= median_ctr)])  # High volume, High CTR
-                question_marks = len(gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] >= median_ctr)])  # Low volume, High CTR
-                cash_cows = len(gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] < median_ctr)])  # High volume, Low CTR
-                dogs = len(gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] < median_ctr)])  # Low volume, Low CTR
+                st.plotly_chart(fig_combined, use_container_width=True)
                 
-                st.markdown(f"""
-                <div class='nutrition-insight-card'>
-                    <h4>🎯 Performance Matrix Analysis</h4>
-                    <p><strong>⭐ Stars (High Volume + High CTR):</strong> {stars} terms<br>
-                    <strong>❓ Question Marks (Low Volume + High CTR):</strong> {question_marks} terms<br>
-                    <strong>🐄 Cash Cows (High Volume + Low CTR):</strong> {cash_cows} terms<br>
-                    <strong>🐕 Dogs (Low Volume + Low CTR):</strong> {dogs} terms</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with col_matrix2:
-                # Top performers in each quadrant
-                stars_top = gt_agg[(gt_agg['count'] >= median_volume) & (gt_agg['ctr'] >= median_ctr)].head(3)
-                question_marks_top = gt_agg[(gt_agg['count'] < median_volume) & (gt_agg['ctr'] >= median_ctr)].head(3)
+                # Enhanced bar chart (updated from original)
+                st.subheader("📊 Search Volume Distribution")
                 
-                st.markdown(f"""
-                <div class='nutrition-insight-card'>
-                    <h4>🏆 Top Health Performers by Quadrant</h4>
-                    <p><strong>⭐ Star Performers:</strong><br>
-                    {chr(10).join([f"• {row['search'][:20]}..." if len(row['search']) > 20 else f"• {row['search']}" for _, row in stars_top.iterrows()]) if len(stars_top) > 0 else "• No star performers found"}<br><br>
-                    <strong>❓ High-Potential Terms:</strong><br>
-                    {chr(10).join([f"• {row['search'][:20]}..." if len(row['search']) > 20 else f"• {row['search']}" for _, row in question_marks_top.iterrows()]) if len(question_marks_top) > 0 else "• No high-potential terms found"}</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # Performance Matrix Strategy Recommendations
-            st.markdown("### 💡 Strategic Recommendations by Performance Matrix")
-
-            strategy_col1, strategy_col2, strategy_col3, strategy_col4 = st.columns(4)
-
-            with strategy_col1:
-                st.markdown(f"""
-                <div class='nutrition-generic-metric-card'>
-                    <span class='icon'>⭐</span>
-                    <div class='value'>{stars}</div>
-                    <div class='label'>Stars</div>
-                    <div class='sub-label'>Maintain & invest more</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with strategy_col2:
-                st.markdown(f"""
-                <div class='nutrition-generic-metric-card'>
-                    <span class='icon'>❓</span>
-                    <div class='value'>{question_marks}</div>
-                    <div class='label'>Question Marks</div>
-                    <div class='sub-label'>Scale volume carefully</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with strategy_col3:
-                st.markdown(f"""
-                <div class='nutrition-generic-metric-card'>
-                    <span class='icon'>🐄</span>
-                    <div class='value'>{cash_cows}</div>
-                    <div class='label'>Cash Cows</div>
-                    <div class='sub-label'>Optimize for efficiency</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with strategy_col4:
-                st.markdown(f"""
-                <div class='nutrition-generic-metric-card'>
-                    <span class='icon'>🐕</span>
-                    <div class='value'>{dogs}</div>
-                    <div class='label'>Dogs</div>
-                    <div class='sub-label'>Consider discontinuing</div>
-                </div>
-                """, unsafe_allow_html=True)
+                @st.cache_data
+                def create_top_performers_chart(data):
+                    fig = px.bar(
+                        data, x='search', y='count',
+                        title=f'<b style="color:#2E7D32;">🌱 Top {display_count} Generic Terms by Search Volume</b>',
+                        labels={'count': 'Search Volume', 'search': 'Generic Terms'},
+                        color='count', color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                        text='count'
+                    )
+                    # ✅ Updated with format_number for 1.5K format
+                    fig.update_traces(
+                        texttemplate='%{text}',
+                        textposition='outside',
+                        text=[format_number(int(x)) for x in data['count']]
+                    )
+                    fig.update_layout(
+                        plot_bgcolor='rgba(248,255,248,0.95)', 
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'), 
+                        height=500,
+                        xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                        yaxis=dict(showgrid=True, gridcolor='#C8E6C8'), 
+                        showlegend=False
+                    )
+                    return fig
+                
+                fig_top_generics = create_top_performers_chart(top_20_gt)
+                st.plotly_chart(fig_top_generics, use_container_width=True)
+                
+                # Performance metrics comparison chart (updated from original)
+                st.subheader("📊 Performance Metrics Comparison")
+                
+                @st.cache_data
+                def create_metrics_comparison_chart(data):
+                    fig = go.Figure()
+                    fig.add_trace(go.Bar(
+                        name='Health CTR %', 
+                        x=data['search'], 
+                        y=data['ctr'], 
+                        marker_color='#4CAF50',
+                        text=[f'{x:.1f}%' for x in data['ctr']],
+                        textposition='outside'
+                    ))
+                    fig.add_trace(go.Bar(
+                        name='Nutraceuticals & Nutrition Conversion Rate %', 
+                        x=data['search'], 
+                        y=data['conversion_rate'], 
+                        marker_color='#81C784',
+                        text=[f'{x:.1f}%' for x in data['conversion_rate']],
+                        textposition='outside'
+                    ))
+                    fig.update_layout(
+                        title='<b style="color:#2E7D32;">🌿 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Comparison</b>',
+                        barmode='group', 
+                        plot_bgcolor='rgba(248,255,248,0.95)', 
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'), 
+                        height=500,
+                        xaxis=dict(tickangle=45), 
+                        yaxis=dict(title='Percentage (%)')
+                    )
+                    return fig
+                
+                fig_metrics_comparison = create_metrics_comparison_chart(top_20_gt)
+                st.plotly_chart(fig_metrics_comparison, use_container_width=True)
 
 
         elif analysis_type == "🔍 Detailed Term Deep Dive":
