@@ -1398,6 +1398,7 @@ with tab_overview:
         return _df.to_csv(index=False)
 
     # NOW START THE ACTUAL SECTION
+    # NOW START THE ACTUAL SECTION
     st.markdown("## 🔍 Top 50 Health Queries Analysis")
 
     if queries.empty or 'Counts' not in queries.columns or queries['Counts'].isna().all():
@@ -1455,17 +1456,29 @@ with tab_overview:
                 '2025-08': 'August 2025'
             }
 
-            # 🚀 COMPUTE: Get data with caching (filter-aware) - ENHANCED WITH BETTER ARRANGEMENT
-            filter_state = {
-                'filters_applied': st.session_state.get('filters_applied', False),
-                'data_shape': queries.shape,
-                'data_hash': hash(str(queries['search'].tolist()[:10]) if not queries.empty else "empty")
-            }
-            filter_key = str(hash(str(filter_state)))
+            # ✅ FIXED: Create filter-aware cache key that updates when filters change
+            def create_filter_cache_key():
+                """Create a cache key that includes filter state"""
+                filter_state = {
+                    'filters_applied': st.session_state.get('filters_applied', False),
+                    'data_shape': queries.shape,
+                    'data_hash': hash(str(queries['search'].tolist()[:10]) if not queries.empty else "empty"),
+                    # Include actual filter values to ensure cache updates
+                    'brand_filter': str(sorted(brand_filter)) if 'brand_filter' in locals() else "",
+                    'dept_filter': str(sorted(dept_filter)) if 'dept_filter' in locals() else "",
+                    'cat_filter': str(sorted(cat_filter)) if 'cat_filter' in locals() else "",
+                    'subcat_filter': str(sorted(subcat_filter)) if 'subcat_filter' in locals() else "",
+                    'text_filter': text_filter if 'text_filter' in locals() else "",
+                    'date_range': str(date_range) if 'date_range' in locals() else ""
+                }
+                return str(hash(str(filter_state)))
 
-            @st.cache_data(ttl=1800, show_spinner=False)
-            def compute_top50_health_queries_better_arrangement(_df, month_names_dict, cache_key):
-                """🔄 FIXED: Proper monthly CTR/CR calculations for health queries"""
+            filter_cache_key = create_filter_cache_key()
+
+            # ✅ FIXED: Updated cache function with filter awareness
+            @st.cache_data(ttl=300, show_spinner=False)  # Reduced TTL for more responsive filtering
+            def compute_top50_health_queries_filter_aware(_df, month_names_dict, cache_key):
+                """🔄 FIXED: Filter-aware computation of top 50 health queries"""
                 if _df.empty:
                     return pd.DataFrame(), []
                 
@@ -1541,11 +1554,18 @@ with tab_overview:
                 
                 return result_df, unique_months
 
-            top50, unique_months = compute_top50_health_queries_better_arrangement(queries, month_names, filter_key)
+            # ✅ FIXED: Use filter-aware cache key
+            top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key)
 
             if top50.empty:
                 st.warning("No valid data after processing top 50 health queries.")
             else:
+                # ✅ FIXED: Show filter status for this section
+                if st.session_state.get('filters_applied', False):
+                    st.info(f"🔍 **Filtered Results**: Showing Top 50 from {len(queries):,} filtered health queries")
+                else:
+                    st.info(f"📊 **All Data**: Showing Top 50 from {len(queries):,} total health queries")
+
                 # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
                 base_columns = ['Health Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
                 
@@ -1565,13 +1585,14 @@ with tab_overview:
                 existing_columns = [col for col in ordered_columns if col in top50.columns]
                 top50 = top50[existing_columns]
 
-                # 🚀 ENHANCED: Smart styling with better comparison highlighting
+                # ✅ FIXED: Filter-aware styling cache
                 top50_hash = hash(str(top50.shape) + str(top50.columns.tolist()) + str(top50.iloc[0].to_dict()) if len(top50) > 0 else "empty")
+                styling_cache_key = f"{top50_hash}_{filter_cache_key}"
                 
                 if ('styled_top50_health' not in st.session_state or 
-                    st.session_state.get('top50_health_cache_key') != top50_hash):
+                    st.session_state.get('top50_health_cache_key') != styling_cache_key):
                     
-                    st.session_state.top50_health_cache_key = top50_hash
+                    st.session_state.top50_health_cache_key = styling_cache_key
                     
                     # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_top50 = top50.copy()
@@ -1812,12 +1833,15 @@ with tab_overview:
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # ✅ FIXED: Include filter status in filename
+                    filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                    
                     st.download_button(
                         label="📥 Download Health Queries CSV",
                         data=csv,
-                        file_name=f"top_50_health_queries_better_arrangement_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        file_name=f"top_50_health_queries{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
-                        help="Download the health table with improved column arrangement for easier comparison",
+                        help="Download the health table with current filter settings applied",
                         use_container_width=True
                     )
                 
@@ -1896,6 +1920,150 @@ with tab_overview:
                                     <small>CR: {item['latest_cr']:.2f}% ({sign}{item['improvement']:.1f}%)</small>
                                 </div>
                                 """, unsafe_allow_html=True)
+                        
+                        # ✅ ADDED: Monthly comparison insights
+                        st.markdown("---")
+                        st.markdown("#### 📈 Monthly Performance Summary")
+                        
+                        if len(unique_months) >= 2:
+                            latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                            prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                            
+                            # Calculate overall month-over-month changes
+                            latest_total_vol = int(pd.to_numeric(top50[f'{latest_month} Vol'], errors='coerce').sum())
+                            prev_total_vol = int(pd.to_numeric(top50[f'{prev_month} Vol'], errors='coerce').sum())
+                            
+                            latest_avg_ctr = top50[f'{latest_month} CTR'].mean()
+                            prev_avg_ctr = top50[f'{prev_month} CTR'].mean()
+                            
+                            latest_avg_cr = top50[f'{latest_month} CR'].mean()
+                            prev_avg_cr = top50[f'{prev_month} CR'].mean()
+                            
+                            # Volume change
+                            vol_change = ((latest_total_vol - prev_total_vol) / prev_total_vol * 100) if prev_total_vol > 0 else 0
+                            vol_trend = "📈" if vol_change > 0 else "📉" if vol_change < 0 else "➡️"
+                            
+                            # CTR change
+                            ctr_change = ((latest_avg_ctr - prev_avg_ctr) / prev_avg_ctr * 100) if prev_avg_ctr > 0 else 0
+                            ctr_trend = "📈" if ctr_change > 0 else "📉" if ctr_change < 0 else "➡️"
+                            
+                            # CR change
+                            cr_change = ((latest_avg_cr - prev_avg_cr) / prev_avg_cr * 100) if prev_avg_cr > 0 else 0
+                            cr_trend = "📈" if cr_change > 0 else "📉" if cr_change < 0 else "➡️"
+                            
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>📊 Volume Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {format_number(prev_total_vol)}</p>
+                                    <p><strong>{latest_month}:</strong> {format_number(latest_total_vol)}</p>
+                                    <p><strong>Change:</strong> {vol_change:+.1f}% {vol_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            with col2:
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>🎯 CTR Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_ctr:.2f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_ctr:.2f}%</p>
+                                    <p><strong>Change:</strong> {ctr_change:+.1f}% {ctr_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            with col3:
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>💚 CR Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_cr:.2f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_cr:.2f}%</p>
+                                    <p><strong>Change:</strong> {cr_change:+.1f}% {cr_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        # ✅ ADDED: Top declining queries section
+                        st.markdown("---")
+                        st.markdown("#### ⚠️ Queries Needing Attention")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("##### 📉 CTR Decliners")
+                            ctr_decliners = sorted(ctr_improvements, key=lambda x: x['improvement'])[:3]
+                            
+                            for item in ctr_decliners:
+                                if item['improvement'] < 0:
+                                    st.markdown(f"""
+                                    <div class="health-decliner-item">
+                                        <strong>{item['query'][:30]}...</strong><br>
+                                        <small>CTR: {item['latest_ctr']:.2f}% ({item['improvement']:.1f}%)</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("##### 📉 CR Decliners")
+                            cr_decliners = sorted(cr_improvements, key=lambda x: x['improvement'])[:3]
+                            
+                            for item in cr_decliners:
+                                if item['improvement'] < 0:
+                                    st.markdown(f"""
+                                    <div class="health-decliner-item">
+                                        <strong>{item['query'][:30]}...</strong><br>
+                                        <small>CR: {item['latest_cr']:.2f}% ({item['improvement']:.1f}%)</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        
+                        # ✅ ADDED: Key insights summary
+                        st.markdown("---")
+                        st.markdown("#### 💡 Key Health Insights")
+                        
+                        insights = []
+                        
+                        # Volume insights
+                        if vol_change > 10:
+                            insights.append(f"🚀 **Strong Growth**: Health search volume increased by {vol_change:.1f}% from {prev_month} to {latest_month}")
+                        elif vol_change < -10:
+                            insights.append(f"⚠️ **Volume Decline**: Health search volume decreased by {abs(vol_change):.1f}% from {prev_month} to {latest_month}")
+                        
+                        # CTR insights
+                        if ctr_change > 5:
+                            insights.append(f"📈 **CTR Improvement**: Average click-through rate improved by {ctr_change:.1f}%")
+                        elif ctr_change < -5:
+                            insights.append(f"📉 **CTR Concern**: Average click-through rate declined by {abs(ctr_change):.1f}%")
+                        
+                        # CR insights
+                        if cr_change > 5:
+                            insights.append(f"🎯 **Conversion Success**: Average conversion rate improved by {cr_change:.1f}%")
+                        elif cr_change < -5:
+                            insights.append(f"🔄 **Conversion Challenge**: Average conversion rate declined by {abs(cr_change):.1f}%")
+                        
+                        # Top performer insights
+                        if ctr_improvements:
+                            top_ctr_performer = ctr_improvements[0]
+                            if top_ctr_performer['improvement'] > 20:
+                                insights.append(f"⭐ **CTR Champion**: '{top_ctr_performer['query'][:40]}...' showed exceptional {top_ctr_performer['improvement']:.1f}% CTR improvement")
+                        
+                        if cr_improvements:
+                            top_cr_performer = cr_improvements[0]
+                            if top_cr_performer['improvement'] > 20:
+                                insights.append(f"🏆 **CR Champion**: '{top_cr_performer['query'][:40]}...' achieved remarkable {top_cr_performer['improvement']:.1f}% CR improvement")
+                        
+                        # Display insights
+                        if insights:
+                            for insight in insights:
+                                st.markdown(f"- {insight}")
+                        else:
+                            st.markdown("- 📊 **Stable Performance**: Health metrics show consistent performance across months")
+                        
+                        # ✅ ADDED: Filter status reminder
+                        if st.session_state.get('filters_applied', False):
+                            st.markdown("---")
+                            st.info("🔍 **Note**: These insights are based on your current filter settings. Reset filters to see full dataset analysis.")
+                    
+                    else:
+                        st.info("📅 Monthly performance analysis requires data from at least 2 months.")
 
         except KeyError as e:
             st.error(f"Column error: {e}. Check column names in your data.")
@@ -1911,6 +2079,7 @@ with tab_overview:
                     st.write(f"Sample values: {top50['Total Volume'].head()}")
 
     st.markdown("---")
+
 
 
 # ----------------- Performance Snapshot -----------------
