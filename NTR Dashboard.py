@@ -10,6 +10,8 @@ import pytz
 from collections import defaultdict
 from fuzzywuzzy import fuzz
 from plotly.subplots import make_subplots
+from uuid import uuid4
+import hashlib
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
@@ -10076,11 +10078,7 @@ with tab_generic:
             """, unsafe_allow_html=True)
         
         st.markdown("---")
-        
-import streamlit as st
-import pandas as pd
-from uuid import uuid4
-import hashlib
+    
 
 
         # ✅ NEW: Top Generic Terms Performance Table
