@@ -6639,9 +6639,10 @@ with tab_category:
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
             
-            # Use the already filtered category data
-            trend_data = category_queries[
-                category_queries[category_column].isin(top_5_categories)
+            # Use the original queries data filtered by categories (not pre-aggregated data)
+            trend_data = queries[
+                (queries[category_column].isin(top_5_categories)) &
+                (queries[category_column].notna())
             ].copy()
             
             if not trend_data.empty:
@@ -6651,11 +6652,11 @@ with tab_category:
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # Create proper monthly aggregation
+                        # Create proper monthly aggregation from individual query records
                         trend_data['Month'] = trend_data['Date'].dt.to_period('M')
                         trend_data['Month_Display'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # 🚀 FIXED: Group by Month and category - sum ALL metrics for each month
+                        # Group by Month and category - sum ALL metrics for each month from individual records
                         monthly_trends = trend_data.groupby(['Month_Display', category_column]).agg({
                             'Counts': 'sum',
                             'clicks': 'sum',
@@ -6724,7 +6725,7 @@ with tab_category:
                                 hovermode='x unified'
                             )
                             
-                            # 🚀 ENHANCED: Custom hover template with all metrics
+                            # Enhanced hover template with all metrics
                             hover_customdata = []
                             for _, row in monthly_trends.iterrows():
                                 hover_customdata.append([
@@ -6743,98 +6744,6 @@ with tab_category:
                             )
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
-                            
-                            # 🚀 ADDED: Monthly trend summary table
-                            st.markdown("#### 📋 Monthly Trend Summary")
-                            
-                            # Create summary table with latest month data
-                            latest_month = monthly_trends['Month_Display'].max()
-                            latest_data = monthly_trends[monthly_trends['Month_Display'] == latest_month].copy()
-                            
-                            if not latest_data.empty:
-                                # Sort by search volume for latest month
-                                latest_data = latest_data.sort_values('Counts', ascending=False)
-                                
-                                # Create display table
-                                trend_summary = latest_data[['category', 'Counts', 'ctr', 'cr']].copy()
-                                trend_summary = trend_summary.rename(columns={
-                                    'category': 'Category',
-                                    'Counts': 'Search Volume',
-                                    'ctr': 'CTR (%)',
-                                    'cr': 'CR (%)'
-                                })
-                                
-                                # Format the display
-                                trend_summary['Search Volume'] = trend_summary['Search Volume'].apply(format_number)
-                                trend_summary['CTR (%)'] = trend_summary['CTR (%)'].apply(lambda x: f"{x:.2f}%")
-                                trend_summary['CR (%)'] = trend_summary['CR (%)'].apply(lambda x: f"{x:.2f}%")
-                                
-                                st.markdown(f"**Latest Month Performance ({latest_month}):**")
-                                st.dataframe(trend_summary, use_container_width=True, hide_index=True)
-                            
-                            # 🚀 ADDED: Trend insights
-                            st.markdown("#### 💡 Trend Insights")
-                            
-                            col_insight1, col_insight2 = st.columns(2)
-                            
-                            with col_insight1:
-                                # Calculate growth trends
-                                if len(monthly_trends['Month_Display'].unique()) >= 2:
-                                    # Get first and last month for each category
-                                    growth_analysis = []
-                                    for category in top_5_categories:
-                                        cat_data = monthly_trends[monthly_trends['category'] == category].sort_values('Date')
-                                        if len(cat_data) >= 2:
-                                            first_month = cat_data.iloc[0]
-                                            last_month = cat_data.iloc[-1]
-                                            
-                                            volume_growth = ((last_month['Counts'] - first_month['Counts']) / first_month['Counts'] * 100) if first_month['Counts'] > 0 else 0
-                                            ctr_change = last_month['ctr'] - first_month['ctr']
-                                            cr_change = last_month['cr'] - first_month['cr']
-                                            
-                                            growth_analysis.append({
-                                                'category': category,
-                                                'volume_growth': volume_growth,
-                                                'ctr_change': ctr_change,
-                                                'cr_change': cr_change
-                                            })
-                                    
-                                    if growth_analysis:
-                                        # Find best performing category
-                                        best_volume_growth = max(growth_analysis, key=lambda x: x['volume_growth'])
-                                        best_ctr_improvement = max(growth_analysis, key=lambda x: x['ctr_change'])
-                                        
-                                        st.markdown(f"""
-                                        <div class='category-insight'>
-                                            <h5>📈 Growth Leaders</h5>
-                                            <p>• <strong>Volume Growth:</strong> {best_volume_growth['category'][:20]}{'...' if len(best_volume_growth['category']) > 20 else ''}<br>
-                                            &nbsp;&nbsp;{best_volume_growth['volume_growth']:+.1f}% growth<br>
-                                            • <strong>CTR Improvement:</strong> {best_ctr_improvement['category'][:20]}{'...' if len(best_ctr_improvement['category']) > 20 else ''}<br>
-                                            &nbsp;&nbsp;{best_ctr_improvement['ctr_change']:+.2f}% CTR change</p>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                            
-                            with col_insight2:
-                                # Market trend analysis
-                                total_volume_trend = monthly_trends.groupby('Month_Display')['Counts'].sum()
-                                avg_ctr_trend = monthly_trends.groupby('Month_Display')['ctr'].mean()
-                                
-                                if len(total_volume_trend) >= 2:
-                                    overall_growth = ((total_volume_trend.iloc[-1] - total_volume_trend.iloc[0]) / total_volume_trend.iloc[0] * 100)
-                                    ctr_trend = avg_ctr_trend.iloc[-1] - avg_ctr_trend.iloc[0]
-                                    
-                                    trend_direction = "📈 Growing" if overall_growth > 5 else "📊 Stable" if overall_growth > -5 else "📉 Declining"
-                                    ctr_direction = "improving" if ctr_trend > 0.5 else "stable" if ctr_trend > -0.5 else "declining"
-                                    
-                                    st.markdown(f"""
-                                    <div class='category-insight'>
-                                        <h5>🎯 Market Trends</h5>
-                                        <p>• <strong>Overall Market:</strong> {trend_direction}<br>
-                                        &nbsp;&nbsp;{overall_growth:+.1f}% volume change<br>
-                                        • <strong>Engagement:</strong> CTR is {ctr_direction}<br>
-                                        &nbsp;&nbsp;{ctr_trend:+.2f}% average change</p>
-                                    </div>
-                                    """, unsafe_allow_html=True)
                         else:
                             st.info("No Nutraceuticals & Nutrition trend data available for the selected date range and categories")
                     else:
@@ -6845,6 +6754,7 @@ with tab_category:
                 st.info("No Nutraceuticals & Nutrition category data available for the selected date range")
     
     st.markdown("---")
+
 
     
     # Enhanced Category-Keyword Intelligence Matrix
