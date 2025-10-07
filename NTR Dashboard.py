@@ -8694,18 +8694,18 @@ with tab_subcat:
                         key="health_subcategory_keywords_summary_download"
                     )
 
-                # ✅ NEW: Top Subcategories Performance Table
-                st.markdown("---")
-                st.subheader("🏆 Top Nutraceuticals & Nutrition Subcategory Performance")
-                
-                num_subcategories = st.slider(
-                    "Number of health subcategories to display:", 
-                    min_value=10, 
-                    max_value=50, 
-                    value=20, 
-                    step=5,
-                    key="subcategory_count_slider"
-                )
+                    # ✅ NEW: Top Subcategories Performance Table
+                    st.markdown("---")
+                    st.subheader("🏆 Top Nutraceuticals & Nutrition Subcategory Performance")
+                    
+                    num_subcategories = st.slider(
+                        "Number of health subcategories to display:", 
+                        min_value=10, 
+                        max_value=50, 
+                        value=20, 
+                        step=5,
+                        key="subcategory_count_slider"
+                    )
                 
                 # 🚀 LAZY CSS LOADING - Only load once per session for subcategories
                 if 'subcategory_health_css_loaded' not in st.session_state:
@@ -9031,12 +9031,11 @@ with tab_subcat:
                             key="subcategory_monthly_download"
                         )
 
+                    # ✅ FIXED: Intelligence insights with proper if-else structure
+                    st.markdown("---")
+                    st.subheader("🌿 Health Subcategory Keyword Intelligence")
                     
-                    # Intelligence insights
                     if subcategory_stats:
-                        st.markdown("---")
-                        st.subheader("🌿 Health Subcategory Keyword Intelligence")
-                        
                         col_insight1, col_insight2, col_insight3 = st.columns(3)
                         
                         with col_insight1:
@@ -9074,12 +9073,12 @@ with tab_subcat:
                                 <div class='sub-label'>{most_concentrated_subcat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
                             </div>
                             """, unsafe_allow_html=True)
+                    else:
+                        st.info("Health subcategory intelligence data not available.")
+
                 else:
                     st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Subcategory")
                     st.info("Health keyword data not available for subcategory analysis.")
-        else:
-            st.subheader("🔥 Top 10 Health Keywords by Nutraceuticals & Nutrition Subcategory")
-            st.info("Health keyword data not available for subcategory analysis.")
         
         st.markdown("---")
         
