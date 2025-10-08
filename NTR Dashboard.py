@@ -6789,7 +6789,7 @@ with tab_category:
                 cs.sort_values('cr', ascending=False).head(15), 
                 x='category', 
                 y='cr',
-                title='<b style="color:#2E7D32;">💚 Nutraceuticals & Nutrition Conversion Rate by Category (%)</b>',
+                title='<b style="color:#2E7D32;">💚 Conversion Rate by Category (%)</b>',
                 color='cr',
                 color_continuous_scale=['#A5D6A7', '#1B5E20'],
                 text='cr'
@@ -7802,7 +7802,7 @@ with tab_category:
     
     # 🚀 ADDED: Number of keywords selection option - MOVED TO TOP
     num_keywords = st.selectbox(
-        "🔥 Select number of top health keywords to analyze:",
+        "🔥 Select number of top keywords to analyze:",
         options=[10, 15, 20, 25, 30, 50],
         index=0,
         key="num_keywords_selector"
@@ -7851,8 +7851,8 @@ with tab_category:
             
             # Display options
             display_option = st.radio(
-                "Choose Nutraceuticals & Nutrition keyword display format:",
-                ["Top Health Keywords Summary", "Heatmap Visualization"],  # 🚀 REMOVED: "Interactive Table"
+                "Choose keyword display format:",
+                ["Top Keywords Summary", "Heatmap Visualization"],  # 🚀 REMOVED: "Interactive Table"
                 horizontal=True
             )
             
@@ -10002,7 +10002,7 @@ with tab_class:
     
     with col_left:
         # Enhanced Class Performance Analysis
-        st.subheader("📈 Nutraceuticals & Nutrition Class Performance Matrix")
+        st.subheader("📈 Class Performance Matrix")
         
         # Calculate comprehensive class metrics
         cls = class_queries.groupby(class_column).agg({
@@ -10035,7 +10035,7 @@ with tab_class:
             size='clicks',
             color='cr',
             hover_name='class',
-            title='<b style="color:#2E7D32; font-size:18px;">🎯 Nutraceuticals & Nutrition Class Performance Matrix: Search Volume vs CTR</b>',
+            title='<b style="color:#2E7D32; font-size:18px;">🎯 Class Performance Matrix: Search Volume vs CTR</b>',
             labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
@@ -10102,7 +10102,7 @@ with tab_class:
                 cls.sort_values('cr', ascending=False).head(15), 
                 x='class', 
                 y='cr',
-                title='<b style="color:#2E7D32;">💚 Nutraceuticals & Nutrition Conversion Rate by Class (%)</b>',
+                title='<b style="color:#2E7D32;">💚 Conversion Rate by Class (%)</b>',
                 color='cr',
                 color_continuous_scale=['#A5D6A7', '#1B5E20'],
                 text='cr'
@@ -10125,7 +10125,7 @@ with tab_class:
             st.plotly_chart(fig_cr, use_container_width=True)
         
         # Top Classes Performance Table
-        st.subheader("🏆 Top Nutraceuticals & Nutrition Class Performance")
+        st.subheader("🏆 Top Class Performance")
         
         num_classes = st.slider(
             "Number of health classes to display:", 
@@ -10417,7 +10417,7 @@ with tab_class:
             # Better legend with comparison focus
             st.markdown("""
             <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Health Class Comparison Guide:</h4>
+                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Comparison Guide:</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                     <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
                     <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
@@ -10433,7 +10433,7 @@ with tab_class:
                 month_list = [month_names.get(m, m) for m in sorted(unique_months)]
                 st.markdown(f"""
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Health Class Column Organization:</h4>
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Column Organization:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                         <div><strong>🌱 Base Metrics:</strong> Health Class, Total Volume, Share %, Overall CTR/CR</div>
                         <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
@@ -10462,7 +10462,7 @@ with tab_class:
     
     with col_right:
         # Class Market Share Pie Chart
-        st.subheader("🎯 Nutraceuticals & Nutrition Class Market Share")
+        st.subheader("🎯 Class Market Share")
         
         top_classes_pie = cls.nlargest(10, 'Counts')
         
@@ -10486,7 +10486,7 @@ with tab_class:
         st.plotly_chart(fig_pie, use_container_width=True)
         
         # Class Performance Categories
-        st.subheader("🎯 Nutraceuticals & Nutrition Class Performance Distribution")
+        st.subheader("🎯 Class Performance Distribution")
         
         # Categorize classes based on performance
         cls['performance_category'] = pd.cut(
@@ -10525,7 +10525,7 @@ with tab_class:
         
         # Enhanced Class Trend Analysis
         if 'Date' in queries.columns:
-            st.subheader("📈 Nutraceuticals & Nutrition Class Trend Analysis")
+            st.subheader("📈 Class Trend Analysis")
             
             # Get top 5 classes for trend analysis
             top_5_classes = cls.nlargest(5, 'Counts')['class'].tolist()
@@ -10760,7 +10760,7 @@ with tab_class:
 
     
     # Enhanced Class-Keyword Intelligence Matrix
-    st.subheader("🔥 Nutraceuticals & Nutrition Class-Keyword Intelligence Matrix")
+    st.subheader("🔥 Class-Keyword Intelligence Matrix")
 
     # Create class filter dropdown
     if 'search' in queries.columns:
@@ -10771,7 +10771,7 @@ with tab_class:
         available_classes = sorted(available_classes)
         
         # Create dropdown with "All Classes" option
-        class_options = ['All Health Classes'] + list(available_classes)
+        class_options = ['All Classes'] + list(available_classes)
         
         # Enhanced UI for class selection with metrics
         st.markdown("""
@@ -10793,14 +10793,14 @@ with tab_class:
         
         with col_select:
             selected_class = st.selectbox(
-                "🎯 Select Health Class to Analyze:",
+                "🎯 Select Class to Analyze:",
                 options=class_options,
                 index=0,
                 key="class_selector"
             )
         
         with col_metrics:
-            if selected_class != 'All Health Classes':
+            if selected_class != 'All Classes':
                 # Show metrics for selected class
                 class_metrics = cls[cls['class'] == selected_class].iloc[0] if not cls[cls['class'] == selected_class].empty else None
                 
@@ -10903,7 +10903,7 @@ with tab_class:
                     """, unsafe_allow_html=True)
         
         # Filter data based on selection
-        if selected_class == 'All Health Classes':
+        if selected_class == 'All Classes':
             # Show top 8 classes if "All Classes" is selected
             top_classes_matrix = cls.nlargest(8, 'Counts')['class'].tolist()
             filtered_data = class_queries[class_queries[class_column].isin(top_classes_matrix)]
@@ -10921,7 +10921,7 @@ with tab_class:
         ].copy()
         
         if not matrix_data.empty:
-            if selected_class == 'All Health Classes':
+            if selected_class == 'All Classes':
                 # Enhanced heatmap with CTR/CR data
                 class_search_matrix = matrix_data.groupby([class_column, 'search']).agg({
                     'Counts': 'sum',
@@ -11108,12 +11108,12 @@ with tab_class:
 
     
     # Enhanced Top Keywords per Class Analysis
-    # 🔑 Top Health Keywords per Nutraceuticals & Nutrition Class Analysis
-    st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Class Analysis")
+    # 🔑 Top Keywords per Nutraceuticals & Nutrition Class Analysis
+    st.subheader("🔑 Top Keywords per Class Analysis")
 
     # Number of keywords selection option - moved to top
     num_keywords = st.selectbox(
-        "🔥 Select number of top health keywords to analyze:",
+        "🔥 Select number of top keywords to analyze:",
         options=[10, 15, 20, 25, 30, 50],
         index=0,
         key="num_keywords_selector_class"
@@ -11162,8 +11162,8 @@ with tab_class:
             
             # Display options - FIXED: Added unique key
             display_option = st.radio(
-                "Choose Nutraceuticals & Nutrition keyword display format:",
-                ["Top Health Keywords Summary", "Heatmap Visualization"],
+                "Choose keyword display format:",
+                ["Top Keywords Summary", "Heatmap Visualization"],
                 horizontal=True,
                 key="class_keyword_display_radio"  # ✅ UNIQUE KEY ADDED
             )
@@ -11258,7 +11258,7 @@ with tab_class:
                 
                 # Additional insights section with enhanced font sizes
                 st.markdown("---")
-                st.subheader("📊 Nutraceuticals & Nutrition Class Health Keyword Intelligence")
+                st.subheader("📊 Class Keyword Intelligence")
                 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
                 
@@ -11270,7 +11270,7 @@ with tab_class:
                     <div class='enhanced-health-class-metric'>
                         <span class='icon'>🌟</span>
                         <div class='value'>{class_name}</div>
-                        <div class='label'>Most Diverse Health Class</div>
+                        <div class='label'>Most Diverse Class</div>
                         <div class='sub-label'>{most_diverse_cls[1]['total_keywords']} unique health keywords</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11283,7 +11283,7 @@ with tab_class:
                     <div class='enhanced-health-class-metric'>
                         <span class='icon'>🚀</span>
                         <div class='value'>{class_name}</div>
-                        <div class='label'>Highest Volume Nutraceuticals & Nutrition Class</div>
+                        <div class='label'>Highest Volume Class</div>
                         <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total health searches<br>{highest_volume_cls[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11304,7 +11304,7 @@ with tab_class:
             # Download button for keyword analysis
             csv_keywords = df_ckw.to_csv(index=False)
             st.download_button(
-                label="📥 Download Nutraceuticals & Nutrition Class Health Keywords CSV",
+                label="📥 Download Class Keywords CSV",
                 data=csv_keywords,
                 file_name=f"nutraceuticals_class_health_keywords_top_{num_keywords}.csv",
                 mime="text/csv",
@@ -11321,87 +11321,10 @@ with tab_class:
     except Exception as e:
         st.error(f"Error processing health keyword analysis: {str(e)}")
         st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
-
-    # Health Class Insights Section
-    st.markdown("---")
-    col_insight1, col_insight2 = st.columns(2)
-    
-    with col_insight1:
-        top_class_share = cls.iloc[0]['share_pct'] if not cls.empty else 0
-        top_class_name = cls.iloc[0]['class'] if not cls.empty else "N/A"
-        high_performers = len(cls[cls['ctr'] > 5]) if not cls.empty else 0
-        avg_conversion_rate = cls['cr'].mean() if not cls.empty else 0
-        classes_above_avg_cr = len(cls[cls['cr'] > avg_conversion_rate]) if not cls.empty else 0
-        
-        st.markdown(f"""
-        <div class='class-insight'>
-            <h4>🎯 Key Nutraceuticals & Nutrition Class Insights</h4>
-            <p>• <strong>{top_class_name}</strong> leads health market with {top_class_share:.1f}% share<br>
-            • {high_performers} Nutraceuticals & Nutrition classes achieve CTR > 5% (premium performance)<br>
-            • {classes_above_avg_cr} classes exceed avg CR of {avg_conversion_rate:.2f}%<br>
-            • Health market shows {"strong" if cls['share_pct'].iloc[0] > 30 else "balanced" if cls['share_pct'].iloc[0] > 15 else "fragmented"} class concentration</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col_insight2:
-        low_performers = len(cls[cls['ctr'] < 2]) if not cls.empty else 0
-        opportunity_classes = len(cls[(cls['Counts'] > cls['Counts'].median()) & (cls['ctr'] < 3)]) if not cls.empty else 0
-        
-        st.markdown(f"""
-        <div class='class-insight'>
-            <h4>💚 Health Class Strategy Recommendations</h4>
-            <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition classes (CTR < 2%)<br>
-            • {opportunity_classes} high-volume health classes need engagement boost<br>
-            • Focus on Nutraceuticals & Nutrition keywords for leading health classes<br>
-            • {"Diversify" if cls['share_pct'].iloc[0] > 40 else "Strengthen"} health product portfolio strategy</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # Final Class Summary Dashboard
-    st.markdown("---")
-    st.subheader("📊 Nutraceuticals & Nutrition Class Performance Dashboard Summary")
-    
-    # Create final summary metrics
-    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
-    
-    with summary_col1:
-        total_searches = cls['Counts'].sum() if not cls.empty else 0
-        st.metric(
-            label="🎯 Total Health Searches",
-            value=format_number(total_searches),
-            delta=f"{len(cls)} Nutraceuticals & Nutrition classes analyzed"
-        )
-    
-    with summary_col2:
-        avg_market_ctr = cls['ctr'].mean() if not cls.empty else 0
-        top_ctr = cls['ctr'].max() if not cls.empty else 0
-        st.metric(
-            label="📈 Market Avg CTR",
-            value=f"{avg_market_ctr:.2f}%",
-            delta=f"Best: {top_ctr:.2f}%"
-        )
-    
-    with summary_col3:
-        total_conversions = cls['conversions'].sum() if not cls.empty else 0
-        avg_cr = cls['cr'].mean() if not cls.empty else 0
-        st.metric(
-            label="💚 Total Conversions",
-            value=format_number(total_conversions),
-            delta=f"Avg CR: {avg_cr:.2f}%"
-        )
-    
-    with summary_col4:
-        market_concentration = f"{cls['share_pct'].iloc[0]:.1f}%" if not cls.empty else "0%"
-        concentration_status = "High" if cls['share_pct'].iloc[0] > 30 else "Medium" if cls['share_pct'].iloc[0] > 15 else "Low"
-        st.metric(
-            label="🎯 Market Concentration",
-            value=market_concentration,
-            delta=f"{concentration_status} concentration"
-        )
     
     # Export all class data
     st.markdown("---")
-    st.subheader("📥 Export Nutraceuticals & Nutrition Class Intelligence")
+    st.subheader("📥 Export Class Intelligence")
     
     export_col1, export_col2 = st.columns(2)
     
@@ -11413,7 +11336,7 @@ with tab_class:
             
             csv_export = export_data.to_csv(index=False)
             st.download_button(
-                label="📊 Download Complete Nutraceuticals & Nutrition Class Analysis",
+                label="📊 Download Complete Class Analysis",
                 data=csv_export,
                 file_name=f"nutraceuticals_class_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                 mime="text/csv",
@@ -11453,8 +11376,6 @@ STRATEGIC HEALTH INSIGHTS:
                 mime="text/plain",
                 key="class_executive_summary_export"
             )
-
-
 
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
