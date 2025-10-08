@@ -12808,19 +12808,50 @@ with tab_insights:
     def preprocess_insights_data():
         df = queries.copy()
         
-        # Clean and standardize column names
-        df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+        # Clean column names - handle spaces and case
+        df.columns = df.columns.str.strip()
         
-        # Rename columns to match expected format
-        column_mapping = {
-            'search': 'search_volume',
-            'count': 'search_volume',
-            'counts': 'search_volume',
-            'click_through_rate': 'ctr',
-            'converion_rate': 'cr',
-            'conversion_rate': 'cr'
-        }
+        # Create a mapping for common column name variations
+        column_mapping = {}
+        for col in df.columns:
+            col_lower = col.lower().replace(' ', '_')
+            if 'search' in col_lower or col_lower in ['count', 'counts']:
+                column_mapping[col] = 'search_volume'
+            elif 'click' in col_lower and 'through' not in col_lower and 'position' not in col_lower:
+                column_mapping[col] = 'clicks'
+            elif 'conversion' in col_lower and 'rate' not in col_lower:
+                column_mapping[col] = 'conversions'
+            elif 'ctr' in col_lower or 'click_through_rate' in col_lower or 'click through rate' in col_lower:
+                column_mapping[col] = 'ctr_original'
+            elif ('cr' in col_lower or 'conversion_rate' in col_lower or 'converion_rate' in col_lower) and 'click' not in col_lower:
+                column_mapping[col] = 'cr_original'
+            elif 'position' in col_lower:
+                column_mapping[col] = 'averageclickposition'
+            elif 'brand' in col_lower:
+                column_mapping[col] = 'brand'
+            elif 'category' in col_lower and 'sub' not in col_lower:
+                column_mapping[col] = 'category'
+            elif 'sub' in col_lower and 'category' in col_lower:
+                column_mapping[col] = 'sub_category'
+            elif 'class' in col_lower:
+                column_mapping[col] = 'class'
+            elif 'department' in col_lower:
+                column_mapping[col] = 'department'
+            elif 'underperform' in col_lower:
+                column_mapping[col] = 'underperforming'
+            elif 'start' in col_lower and 'date' in col_lower:
+                column_mapping[col] = 'start_date'
+            elif 'end' in col_lower and 'date' in col_lower:
+                column_mapping[col] = 'end_date'
+        
         df.rename(columns=column_mapping, inplace=True)
+        
+        # Ensure required columns exist
+        required_cols = ['search_volume', 'clicks', 'conversions']
+        for col in required_cols:
+            if col not in df.columns:
+                st.error(f"❌ Missing required column: {col}")
+                st.stop()
         
         # Convert to numeric
         df['search_volume'] = pd.to_numeric(df['search_volume'], errors='coerce').fillna(0)
@@ -12840,13 +12871,28 @@ with tab_insights:
         )
         
         # Clean brand column
-        df['brand'] = df['brand'].astype(str).replace('nan', 'Other').str.strip()
-        df['brand'] = df['brand'].replace('', 'Other')
+        if 'brand' in df.columns:
+            df['brand'] = df['brand'].astype(str).replace(['nan', 'None', ''], 'Other').str.strip()
+        else:
+            df['brand'] = 'Other'
         
         # Clean category columns
         for col in ['department', 'category', 'sub_category', 'class']:
             if col in df.columns:
-                df[col] = df[col].astype(str).str.strip()
+                df[col] = df[col].astype(str).replace(['nan', 'None'], '').str.strip()
+            else:
+                df[col] = ''
+        
+        # Handle underperforming flag
+        if 'underperforming' in df.columns:
+            df['underperforming'] = df['underperforming'].astype(str).str.upper().isin(['TRUE', 'T', '1', 'YES'])
+        else:
+            df['underperforming'] = False
+        
+        # Handle date columns
+        for date_col in ['start_date', 'end_date']:
+            if date_col in df.columns:
+                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
         
         return df
 
@@ -12919,41 +12965,43 @@ with tab_insights:
                 render_fn()
             except Exception as e:
                 st.error(f"⚠️ Rendering error: {e}")
+                import traceback
+                st.code(traceback.format_exc())
 
     # ==================== TOP 15 STRATEGIC QUESTIONS ====================
 
     # Q1: Top 10 Products by Search Volume & Conversion Efficiency
     def q1():
-        agg = df_insights.groupby('brand').agg({
+        agg = df_insights.groupby('brand', as_index=False).agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        }).reset_index()
+        })
         
-        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-        agg['conversion_efficiency'] = (agg['cr'] * agg['ctr']).round(2)
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+        agg['conversion_efficiency'] = (agg['cr'] * agg['ctr']).fillna(0).round(2)
         
-        out = agg.sort_values('search_volume', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'conversion_efficiency']]
+        out = agg.sort_values('search_volume', ascending=False).head(10).copy()
         
-        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Efficiency Score']
+        # Format for display
+        display_df = out.copy()
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
         
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Clicks': '{:,.0f}',
-            'Conversions': '{:,.0f}',
-            'CTR (%)': '{:.2f}',
-            'CR (%)': '{:.2f}',
-            'Efficiency Score': '{:.2f}'
-        }).background_gradient(subset=['Efficiency Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+        display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'conversion_efficiency']]
+        display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Efficiency Score']
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q1_top_products_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q1_dl")
         
-        fig = px.scatter(out, x='CTR (%)', y='CR (%)', size='Search Volume', color='Efficiency Score',
-                        hover_data=['Brand'], title='Top 10 Products: CTR vs CR Performance',
-                        color_continuous_scale='Greens', text='Brand')
-        fig.update_traces(textposition='top center')
+        fig = px.scatter(out, x='ctr', y='cr', size='search_volume', color='conversion_efficiency',
+                        hover_data=['brand'], title='Top 10 Products: CTR vs CR Performance',
+                        color_continuous_scale='Greens', text='brand')
+        fig.update_traces(textposition='top center', textfont_size=10)
+        fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
         st.plotly_chart(fig, use_container_width=True)
     
     q_expand(
@@ -12964,38 +13012,38 @@ with tab_insights:
 
     # Q2: Category Performance Analysis - Which Categories Drive Revenue?
     def q2():
-        if 'category' in df_insights.columns:
-            agg = df_insights.groupby('category').agg({
+        if 'category' in df_insights.columns and df_insights['category'].notna().any():
+            agg = df_insights[df_insights['category'] != ''].groupby('category', as_index=False).agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
-            }).reset_index()
+            })
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-            agg['search_share'] = (agg['search_volume'] / agg['search_volume'].sum() * 100).round(2)
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+            total_sv = agg['search_volume'].sum()
+            agg['search_share'] = (agg['search_volume'] / total_sv * 100).fillna(0).round(2) if total_sv > 0 else 0
             
-            out = agg.sort_values('conversions', ascending=False).head(10)
-            out = out[['category', 'search_volume', 'conversions', 'ctr', 'cr', 'search_share']]
-            out.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+            out = agg.sort_values('conversions', ascending=False).head(10).copy()
             
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}',
-                'Search Share (%)': '{:.2f}'
-            }).background_gradient(subset=['Conversions'], cmap='Greens'), use_container_width=True, hide_index=True)
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            
+            display_df = display_df[['category', 'search_volume_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
+            display_df.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
             
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q2_category_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q2_dl")
             
-            fig = px.bar(out, x='Category', y='Conversions', color='CR (%)',
-                        title='Top 10 Categories by Conversions', color_continuous_scale='Greens', text='Conversions')
-            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-            fig.update_layout(xaxis_tickangle=-45)
+            fig = px.bar(out, x='category', y='conversions', color='cr',
+                        title='Top 10 Categories by Conversions', color_continuous_scale='Greens')
+            fig.update_layout(xaxis_tickangle=-45, xaxis_title="Category", yaxis_title="Conversions")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Category data not available")
+            st.info("📊 Category data not available")
     
     q_expand(
         "Q2 — Category Performance Analysis - Revenue Drivers",
@@ -13008,38 +13056,44 @@ with tab_insights:
         threshold = df_insights['search_volume'].quantile(0.70)
         median_cr = df_insights['cr_calculated'].median()
         
-        out = df_insights[
+        filtered = df_insights[
             (df_insights['search_volume'] >= threshold) & 
             (df_insights['cr_calculated'] < median_cr)
-        ].groupby('brand').agg({
-            'search_volume': 'sum',
-            'clicks': 'sum',
-            'conversions': 'sum',
-            'cr_calculated': 'mean'
-        }).reset_index()
+        ]
         
-        out['potential_conversions'] = (out['search_volume'] * median_cr / 100).round(0)
-        out['conversion_gap'] = (out['potential_conversions'] - out['conversions']).round(0)
-        
-        out = out.sort_values('conversion_gap', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'conversions', 'cr_calculated', 'potential_conversions', 'conversion_gap']]
-        out.columns = ['Brand', 'Search Volume', 'Current Conversions', 'Current CR (%)', 'Potential Conversions', 'Conversion Gap']
-        
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Current Conversions': '{:,.0f}',
-            'Current CR (%)': '{:.2f}',
-            'Potential Conversions': '{:,.0f}',
-            'Conversion Gap': '{:,.0f}'
-        }).background_gradient(subset=['Conversion Gap'], cmap='Reds'), use_container_width=True, hide_index=True)
-        
-        st.download_button("📥 Download Data", out.to_csv(index=False), f"q3_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q3_dl")
-        
-        fig = px.bar(out, x='Brand', y='Conversion Gap', color='Current CR (%)',
-                    title='Top 10 Conversion Optimization Opportunities', color_continuous_scale='Reds', text='Conversion Gap')
-        fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-        fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
+        if len(filtered) > 0:
+            out = filtered.groupby('brand', as_index=False).agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum',
+                'cr_calculated': 'mean'
+            })
+            
+            out['potential_conversions'] = (out['search_volume'] * median_cr / 100).round(0)
+            out['conversion_gap'] = (out['potential_conversions'] - out['conversions']).round(0)
+            
+            out = out.sort_values('conversion_gap', ascending=False).head(10).copy()
+            
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            display_df['potential_conversions_fmt'] = display_df['potential_conversions'].apply(format_number)
+            display_df['conversion_gap_fmt'] = display_df['conversion_gap'].apply(format_number)
+            
+            display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'potential_conversions_fmt', 'conversion_gap_fmt']]
+            display_df.columns = ['Brand', 'Search Volume', 'Current Conversions', 'Current CR (%)', 'Potential Conversions', 'Conversion Gap']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q3_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q3_dl")
+            
+            fig = px.bar(out, x='brand', y='conversion_gap', color='cr_calculated',
+                        title='Top 10 Conversion Optimization Opportunities', color_continuous_scale='Reds')
+            fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Conversion Gap")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 No high volume, low CR opportunities found")
     
     q_expand(
         "Q3 — High Search Volume, Low CR - Optimization Opportunities",
@@ -13052,40 +13106,46 @@ with tab_insights:
         high_ctr = df_insights['ctr_calculated'].quantile(0.70)
         low_cr = df_insights['cr_calculated'].quantile(0.30)
         
-        out = df_insights[
+        filtered = df_insights[
             (df_insights['ctr_calculated'] >= high_ctr) & 
             (df_insights['cr_calculated'] <= low_cr) &
             (df_insights['search_volume'] >= 100)
-        ].groupby('brand').agg({
-            'search_volume': 'sum',
-            'clicks': 'sum',
-            'conversions': 'sum',
-            'ctr_calculated': 'mean',
-            'cr_calculated': 'mean'
-        }).reset_index()
+        ]
         
-        out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
-        
-        out = out.sort_values('bounce_indicator', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
-        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
-        
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Clicks': '{:,.0f}',
-            'Conversions': '{:,.0f}',
-            'CTR (%)': '{:.2f}',
-            'CR (%)': '{:.2f}',
-            'Experience Gap': '{:.2f}'
-        }).background_gradient(subset=['Experience Gap'], cmap='Oranges'), use_container_width=True, hide_index=True)
-        
-        st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
-        
-        fig = px.scatter(out, x='CTR (%)', y='CR (%)', size='Search Volume', color='Experience Gap',
-                        hover_data=['Brand'], title='High CTR, Low CR: Experience Issues',
-                        color_continuous_scale='Oranges', text='Brand')
-        fig.update_traces(textposition='top center')
-        st.plotly_chart(fig, use_container_width=True)
+        if len(filtered) > 0:
+            out = filtered.groupby('brand', as_index=False).agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum',
+                'ctr_calculated': 'mean',
+                'cr_calculated': 'mean'
+            })
+            
+            out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
+            
+            out = out.sort_values('bounce_indicator', ascending=False).head(10).copy()
+            
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            
+            display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
+            display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
+            
+            fig = px.scatter(out, x='ctr_calculated', y='cr_calculated', size='search_volume', color='bounce_indicator',
+                            hover_data=['brand'], title='High CTR, Low CR: Experience Issues',
+                            color_continuous_scale='Oranges', text='brand')
+            fig.update_traces(textposition='top center', textfont_size=10)
+            fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 No high CTR, low CR issues found")
     
     q_expand(
         "Q4 — High CTR, Low CR - Post-Click Experience Issues",
@@ -13095,36 +13155,41 @@ with tab_insights:
 
     # Q5: Brand Performance Comparison - Branded vs Generic
     def q5():
-        df_insights['brand_type'] = df_insights['brand'].apply(
-            lambda x: 'Generic' if x.lower() == 'other' else 'Branded'
+        df_temp = df_insights.copy()
+        df_temp['brand_type'] = df_temp['brand'].apply(
+            lambda x: 'Generic' if str(x).lower() == 'other' else 'Branded'
         )
         
-        agg = df_insights.groupby('brand_type').agg({
+        agg = df_temp.groupby('brand_type', as_index=False).agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        }).reset_index()
+        })
         
-        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-        agg['search_share'] = (agg['search_volume'] / agg['search_volume'].sum() * 100).round(2)
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+        total_sv = agg['search_volume'].sum()
+        agg['search_share'] = (agg['search_volume'] / total_sv * 100).fillna(0).round(2) if total_sv > 0 else 0
         
-        out = agg[['brand_type', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'search_share']]
-        out.columns = ['Brand Type', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+        out = agg.copy()
         
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Clicks': '{:,.0f}',
-            'Conversions': '{:,.0f}',
-            'CTR (%)': '{:.2f}',
-            'CR (%)': '{:.2f}',
-            'Search Share (%)': '{:.2f}'
-        }).background_gradient(subset=['CR (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+        # Format for display
+        display_df = out.copy()
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+        
+        display_df = display_df[['brand_type', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
+        display_df.columns = ['Brand Type', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q5_branded_vs_generic_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q5_dl")
         
-        fig = px.bar(out, x='Brand Type', y=['Search Volume', 'Clicks', 'Conversions'],
-                    title='Branded vs Generic Performance', barmode='group', color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
+        fig = px.bar(out, x='brand_type', y=['search_volume', 'clicks', 'conversions'],
+                    title='Branded vs Generic Performance', barmode='group', 
+                    color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
+        fig.update_layout(xaxis_title="Brand Type", yaxis_title="Count")
         st.plotly_chart(fig, use_container_width=True)
     
     q_expand(
@@ -13135,37 +13200,40 @@ with tab_insights:
 
     # Q6: Seasonal Trends - Month-over-Month Performance
     def q6():
-        if 'start_date' in df_insights.columns:
-            df_insights['month'] = pd.to_datetime(df_insights['start_date']).dt.to_period('M').astype(str)
+        if 'start_date' in df_insights.columns and df_insights['start_date'].notna().any():
+            df_temp = df_insights.copy()
+            df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
             
-            agg = df_insights.groupby('month').agg({
+            agg = df_temp.groupby('month', as_index=False).agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
-            }).reset_index()
+            })
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
             
-            agg = agg.sort_values('month')
-            out = agg[['month', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr']]
-            out.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            out = agg.sort_values('month').copy()
             
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}'
-            }), use_container_width=True, hide_index=True)
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            
+            display_df = display_df[['month', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
+            display_df.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
             
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q6_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q6_dl")
             
-            fig = px.line(out, x='Month', y=['Search Volume', 'Clicks', 'Conversions'],
+            fig = px.line(out, x='month', y=['search_volume', 'clicks', 'conversions'],
                          title='Month-over-Month Performance Trends', markers=True)
+            fig.update_layout(xaxis_title="Month", yaxis_title="Count")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Date data not available")
+            st.info("📊 Date data not available")
     
     q_expand(
         "Q6 — Seasonal Trends - Month-over-Month Performance",
@@ -13174,37 +13242,43 @@ with tab_insights:
     )
 
     # Q7: Top 10 Underperforming Products (Flagged)
+    # Q7: Top 10 Underperforming Products (Flagged)
     def q7():
         if 'underperforming' in df_insights.columns:
-            out = df_insights[df_insights['underperforming'] == True].groupby('brand').agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum',
-                'ctr_calculated': 'mean',
-                'cr_calculated': 'mean'
-            }).reset_index()
+            filtered = df_insights[df_insights['underperforming'] == True]
             
-            out = out.sort_values('search_volume', ascending=False).head(10)
-            out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated']]
-            out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
-            
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}'
-            }).background_gradient(subset=['CR (%)'], cmap='Reds'), use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q7_dl")
-            
-            fig = px.bar(out, x='Brand', y='Search Volume', color='CR (%)',
-                        title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds', text='Search Volume')
-            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
-            fig.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
+            if len(filtered) > 0:
+                out = filtered.groupby('brand', as_index=False).agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum',
+                    'ctr_calculated': 'mean',
+                    'cr_calculated': 'mean'
+                })
+                
+                out = out.sort_values('search_volume', ascending=False).head(10).copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                
+                display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated']]
+                display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q7_dl")
+                
+                fig = px.bar(out, x='brand', y='search_volume', color='cr_calculated',
+                            title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds')
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Search Volume")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No underperforming products flagged")
         else:
-            st.info("Underperforming flag not available")
+            st.info("📊 Underperforming flag not available")
     
     q_expand(
         "Q7 — Top 10 Underperforming Products (System Flagged)",
@@ -13214,40 +13288,43 @@ with tab_insights:
 
     # Q8: Click Position Analysis - Search Ranking Impact
     def q8():
-        if 'averageclickposition' in df_insights.columns:
-            df_insights['position_bucket'] = pd.cut(df_insights['averageclickposition'], 
-                                                    bins=[0, 3, 6, 10, float('inf')], 
-                                                    labels=['Top 3', 'Position 4-6', 'Position 7-10', 'Beyond 10'])
+        if 'averageclickposition' in df_insights.columns and df_insights['averageclickposition'].notna().any():
+            df_temp = df_insights[df_insights['averageclickposition'].notna()].copy()
+            df_temp['position_bucket'] = pd.cut(df_temp['averageclickposition'], 
+                                                bins=[0, 3, 6, 10, float('inf')], 
+                                                labels=['Top 3', 'Position 4-6', 'Position 7-10', 'Beyond 10'])
             
-            agg = df_insights.groupby('position_bucket').agg({
+            agg = df_temp.groupby('position_bucket', as_index=False).agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
-            }).reset_index()
+            })
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
             
-            out = agg[['position_bucket', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr']]
-            out.columns = ['Position', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            out = agg.copy()
             
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}'
-            }).background_gradient(subset=['CTR (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            
+            display_df = display_df[['position_bucket', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
+            display_df.columns = ['Position', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
             
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q8_position_analysis_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q8_dl")
             
-            fig = px.bar(out, x='Position', y=['CTR (%)', 'CR (%)'],
+            fig = px.bar(out, x='position_bucket', y=['ctr', 'cr'],
                         title='Click Position Impact on CTR & CR', barmode='group',
                         color_discrete_sequence=['#4CAF50', '#81C784'])
-            fig.update_layout(yaxis_title="Percentage (%)")
+            fig.update_layout(xaxis_title="Position", yaxis_title="Percentage (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Click position data not available")
+            st.info("📊 Click position data not available")
     
     q_expand(
         "Q8 — Click Position Analysis - Search Ranking Impact",
@@ -13258,36 +13335,41 @@ with tab_insights:
     # Q9: Sub-Category Deep Dive - Granular Performance Insights
     def q9():
         if 'sub_category' in df_insights.columns:
-            agg = df_insights[df_insights['sub_category'] != ''].groupby('sub_category').agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            }).reset_index()
+            filtered = df_insights[df_insights['sub_category'] != '']
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-            agg['revenue_potential'] = (agg['conversions'] * agg['cr']).round(2)
-            
-            out = agg.sort_values('conversions', ascending=False).head(10)
-            out = out[['sub_category', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'revenue_potential']]
-            out.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
-            
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}',
-                'Revenue Score': '{:.2f}'
-            }).background_gradient(subset=['Revenue Score'], cmap='Greens'), use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q9_subcategory_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q9_dl")
-            
-            fig = px.treemap(out, path=['Sub-Category'], values='Search Volume', color='CR (%)',
-                           title='Sub-Category Performance Treemap', color_continuous_scale='Greens')
-            st.plotly_chart(fig, use_container_width=True)
+            if len(filtered) > 0:
+                agg = filtered.groupby('sub_category', as_index=False).agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                })
+                
+                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['revenue_potential'] = (agg['conversions'] * agg['cr']).fillna(0).round(2)
+                
+                out = agg.sort_values('conversions', ascending=False).head(10).copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                
+                display_df = display_df[['sub_category', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_potential']]
+                display_df.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q9_subcategory_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q9_dl")
+                
+                fig = px.treemap(out, path=['sub_category'], values='search_volume', color='cr',
+                               title='Sub-Category Performance Treemap', color_continuous_scale='Greens')
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No sub-category data available")
         else:
-            st.info("Sub-category data not available")
+            st.info("📊 Sub-category data not available")
     
     q_expand(
         "Q9 — Sub-Category Deep Dive - Granular Performance Insights",
@@ -13297,35 +13379,44 @@ with tab_insights:
 
     # Q10: Conversion Funnel Efficiency - Full Journey Analysis
     def q10():
-        agg = df_insights.groupby('brand').agg({
+        agg = df_insights.groupby('brand', as_index=False).agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        }).reset_index()
+        })
         
-        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-        agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).round(2)
-        agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).round(2)
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+        agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).fillna(0).round(2)
+        agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).fillna(0).round(2)
         
-        out = agg.sort_values('funnel_efficiency', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'click_to_conversion', 'funnel_efficiency']]
-        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'Click-to-Conv (%)', 'Funnel Efficiency (%)']
+        out = agg.sort_values('funnel_efficiency', ascending=False).head(10).copy()
         
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Clicks': '{:,.0f}',
-            'Conversions': '{:,.0f}',
-            'CTR (%)': '{:.2f}',
-            'Click-to-Conv (%)': '{:.2f}',
-            'Funnel Efficiency (%)': '{:.2f}'
-        }).background_gradient(subset=['Funnel Efficiency (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+        # Format for display
+        display_df = out.copy()
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+        
+        display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'click_to_conversion', 'funnel_efficiency']]
+        display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'Click-to-Conv (%)', 'Funnel Efficiency (%)']
+        
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
         
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q10_funnel_efficiency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q10_dl")
         
-        fig = px.funnel(out.head(5), x='Search Volume', y='Brand', 
-                       title='Top 5 Brands: Conversion Funnel', color='Funnel Efficiency (%)',
-                       color_continuous_scale='Greens')
+        # Create funnel visualization with top 5 brands
+        top5 = out.head(5).copy()
+        funnel_data = []
+        for _, row in top5.iterrows():
+            funnel_data.append({'Stage': 'Search Volume', 'Brand': row['brand'], 'Value': row['search_volume']})
+            funnel_data.append({'Stage': 'Clicks', 'Brand': row['brand'], 'Value': row['clicks']})
+            funnel_data.append({'Stage': 'Conversions', 'Brand': row['brand'], 'Value': row['conversions']})
+        
+        funnel_df = pd.DataFrame(funnel_data)
+        fig = px.bar(funnel_df, x='Value', y='Brand', color='Stage', orientation='h',
+                    title='Top 5 Brands: Conversion Funnel', barmode='group',
+                    color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
         st.plotly_chart(fig, use_container_width=True)
     
     q_expand(
@@ -13339,40 +13430,48 @@ with tab_insights:
         low_volume = df_insights['search_volume'].quantile(0.30)
         high_cr = df_insights['cr_calculated'].quantile(0.70)
         
-        out = df_insights[
+        filtered = df_insights[
             (df_insights['search_volume'] <= low_volume) & 
             (df_insights['cr_calculated'] >= high_cr) &
             (df_insights['search_volume'] >= 50)
-        ].groupby('brand').agg({
-            'search_volume': 'sum',
-            'clicks': 'sum',
-            'conversions': 'sum',
-            'cr_calculated': 'mean'
-        }).reset_index()
+        ]
         
-        out['growth_potential'] = (out['search_volume'] * 3).round(0)  # 3x growth scenario
-        out['projected_conversions'] = (out['growth_potential'] * out['cr_calculated'] / 100).round(0)
-        
-        out = out.sort_values('cr_calculated', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'conversions', 'cr_calculated', 'growth_potential', 'projected_conversions']]
-        out.columns = ['Brand', 'Current Search Volume', 'Current Conversions', 'CR (%)', 'Growth Potential (3x)', 'Projected Conversions']
-        
-        st.dataframe(out.style.format({
-            'Current Search Volume': '{:,.0f}',
-            'Current Conversions': '{:,.0f}',
-            'CR (%)': '{:.2f}',
-            'Growth Potential (3x)': '{:,.0f}',
-            'Projected Conversions': '{:,.0f}'
-        }).background_gradient(subset=['Projected Conversions'], cmap='Greens'), use_container_width=True, hide_index=True)
-        
-        st.download_button("📥 Download Data", out.to_csv(index=False), f"q11_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q11_dl")
-        
-        fig = px.scatter(out, x='Current Search Volume', y='CR (%)', size='Projected Conversions', 
-                        color='Projected Conversions', hover_data=['Brand'], 
-                        title='Hidden Gems: Low Volume, High CR Products',
-                        color_continuous_scale='Greens', text='Brand')
-        fig.update_traces(textposition='top center')
-        st.plotly_chart(fig, use_container_width=True)
+        if len(filtered) > 0:
+            out = filtered.groupby('brand', as_index=False).agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum',
+                'cr_calculated': 'mean'
+            })
+            
+            out['growth_potential'] = (out['search_volume'] * 3).round(0)  # 3x growth scenario
+            out['projected_conversions'] = (out['growth_potential'] * out['cr_calculated'] / 100).round(0)
+            
+            out = out.sort_values('cr_calculated', ascending=False).head(10).copy()
+            
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            display_df['growth_potential_fmt'] = display_df['growth_potential'].apply(format_number)
+            display_df['projected_conversions_fmt'] = display_df['projected_conversions'].apply(format_number)
+            
+            display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'growth_potential_fmt', 'projected_conversions_fmt']]
+            display_df.columns = ['Brand', 'Current Search Volume', 'Current Conversions', 'CR (%)', 'Growth Potential (3x)', 'Projected Conversions']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q11_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q11_dl")
+            
+            fig = px.scatter(out, x='search_volume', y='cr_calculated', size='projected_conversions', 
+                            color='projected_conversions', hover_data=['brand'], 
+                            title='Hidden Gems: Low Volume, High CR Products',
+                            color_continuous_scale='Greens', text='brand')
+            fig.update_traces(textposition='top center', textfont_size=10)
+            fig.update_layout(xaxis_title="Current Search Volume", yaxis_title="CR (%)")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 No hidden gems found")
     
     q_expand(
         "Q11 — Low Search Volume, High CR - Hidden Gems",
@@ -13385,38 +13484,40 @@ with tab_insights:
         if 'brand' in df_insights.columns:
             branded = df_insights[df_insights['brand'].str.lower() != 'other']
             
-            agg = branded.groupby('brand').agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            }).reset_index()
-            
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-            agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
-            
-            out = agg.sort_values('loyalty_score', ascending=False).head(10)
-            out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'loyalty_score']]
-            out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Loyalty Score']
-            
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}',
-                'Loyalty Score': '{:.2f}'
-            }).background_gradient(subset=['Loyalty Score'], cmap='Greens'), use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q12_brand_loyalty_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q12_dl")
-            
-            fig = px.bar(out, x='Brand', y='Loyalty Score', color='Loyalty Score',
-                        title='Top 10 Brands by Loyalty Score', color_continuous_scale='Greens', text='Loyalty Score')
-            fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-            fig.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
+            if len(branded) > 0:
+                agg = branded.groupby('brand', as_index=False).agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                })
+                
+                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
+                
+                out = agg.sort_values('loyalty_score', ascending=False).head(10).copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                
+                display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'loyalty_score']]
+                display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Loyalty Score']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q12_brand_loyalty_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q12_dl")
+                
+                fig = px.bar(out, x='brand', y='loyalty_score', color='loyalty_score',
+                            title='Top 10 Brands by Loyalty Score', color_continuous_scale='Greens')
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Loyalty Score")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No branded products found")
         else:
-            st.info("Brand data not available")
+            st.info("📊 Brand data not available")
     
     q_expand(
         "Q12 — Brand Loyalty Index - Repeat Search Behavior",
@@ -13429,38 +13530,39 @@ with tab_insights:
         median_ctr = df_insights['ctr_calculated'].median()
         median_cr = df_insights['cr_calculated'].median()
         
-        out = df_insights.groupby('brand').agg({
+        out = df_insights.groupby('brand', as_index=False).agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum',
             'ctr_calculated': 'mean',
             'cr_calculated': 'mean'
-        }).reset_index()
+        })
         
         out['ctr_gap'] = (median_ctr - out['ctr_calculated']).round(2)
         out['cr_gap'] = (median_cr - out['cr_calculated']).round(2)
         out['total_gap'] = (out['ctr_gap'] + out['cr_gap']).round(2)
         
-        out = out[out['total_gap'] > 0].sort_values('total_gap', ascending=False).head(10)
-        out = out[['brand', 'search_volume', 'ctr_calculated', 'cr_calculated', 'ctr_gap', 'cr_gap', 'total_gap']]
-        out.columns = ['Brand', 'Search Volume', 'Current CTR (%)', 'Current CR (%)', 'CTR Gap', 'CR Gap', 'Total Gap']
+        out = out[out['total_gap'] > 0].sort_values('total_gap', ascending=False).head(10).copy()
         
-        st.dataframe(out.style.format({
-            'Search Volume': '{:,.0f}',
-            'Current CTR (%)': '{:.2f}',
-            'Current CR (%)': '{:.2f}',
-            'CTR Gap': '{:.2f}',
-            'CR Gap': '{:.2f}',
-            'Total Gap': '{:.2f}'
-        }).background_gradient(subset=['Total Gap'], cmap='Reds'), use_container_width=True, hide_index=True)
-        
-        st.download_button("📥 Download Data", out.to_csv(index=False), f"q13_competitive_gap_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q13_dl")
-        
-        fig = px.bar(out, x='Brand', y=['CTR Gap', 'CR Gap'],
-                    title='Top 10 Competitive Gap Analysis', barmode='stack',
-                    color_discrete_sequence=['#FF9800', '#F44336'])
-        fig.update_layout(xaxis_tickangle=-45, yaxis_title="Gap (%)")
-        st.plotly_chart(fig, use_container_width=True)
+        if len(out) > 0:
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            
+            display_df = display_df[['brand', 'search_volume_fmt', 'ctr_calculated', 'cr_calculated', 'ctr_gap', 'cr_gap', 'total_gap']]
+            display_df.columns = ['Brand', 'Search Volume', 'Current CTR (%)', 'Current CR (%)', 'CTR Gap', 'CR Gap', 'Total Gap']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q13_competitive_gap_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q13_dl")
+            
+            fig = px.bar(out, x='brand', y=['ctr_gap', 'cr_gap'],
+                        title='Top 10 Competitive Gap Analysis', barmode='stack',
+                        color_discrete_sequence=['#FF9800', '#F44336'])
+            fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Gap (%)")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 No competitive gaps found")
     
     q_expand(
         "Q13 — Competitive Gap Analysis - Where Are We Losing?",
@@ -13471,40 +13573,45 @@ with tab_insights:
     # Q14: High-Value Keywords - Revenue-Driving Search Terms
     def q14():
         if 'category' in df_insights.columns and 'sub_category' in df_insights.columns:
-            df_insights['keyword'] = df_insights['category'] + ' - ' + df_insights['sub_category']
+            df_temp = df_insights.copy()
+            df_temp['keyword'] = df_temp['category'].astype(str) + ' - ' + df_temp['sub_category'].astype(str)
             
-            agg = df_insights[df_insights['keyword'] != ' - '].groupby('keyword').agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            }).reset_index()
+            filtered = df_temp[df_temp['keyword'] != ' - ']
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
-            agg['revenue_score'] = (agg['conversions'] * agg['cr']).round(2)
-            
-            out = agg.sort_values('revenue_score', ascending=False).head(10)
-            out = out[['keyword', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'revenue_score']]
-            out.columns = ['Keyword', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
-            
-            st.dataframe(out.style.format({
-                'Search Volume': '{:,.0f}',
-                'Clicks': '{:,.0f}',
-                'Conversions': '{:,.0f}',
-                'CTR (%)': '{:.2f}',
-                'CR (%)': '{:.2f}',
-                'Revenue Score': '{:.2f}'
-            }).background_gradient(subset=['Revenue Score'], cmap='Greens'), use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q14_high_value_keywords_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q14_dl")
-            
-            fig = px.bar(out, x='Keyword', y='Revenue Score', color='CR (%)',
-                        title='Top 10 High-Value Keywords', color_continuous_scale='Greens', text='Revenue Score')
-            fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-            fig.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
+            if len(filtered) > 0:
+                agg = filtered.groupby('keyword', as_index=False).agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                })
+                
+                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['revenue_score'] = (agg['conversions'] * agg['cr']).fillna(0).round(2)
+                
+                out = agg.sort_values('revenue_score', ascending=False).head(10).copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
+                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                
+                display_df = display_df[['keyword', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_score']]
+                display_df.columns = ['Keyword', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q14_high_value_keywords_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q14_dl")
+                
+                fig = px.bar(out, x='keyword', y='revenue_score', color='cr',
+                            title='Top 10 High-Value Keywords', color_continuous_scale='Greens')
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Keyword", yaxis_title="Revenue Score")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No keyword data available")
         else:
-            st.info("Keyword data not available")
+            st.info("📊 Keyword data not available")
     
     q_expand(
         "Q14 — High-Value Keywords - Revenue-Driving Search Terms",
@@ -13514,40 +13621,46 @@ with tab_insights:
 
     # Q15: Performance Consistency - Stable vs Volatile Products
     def q15():
-        if 'start_date' in df_insights.columns:
-            df_insights['month'] = pd.to_datetime(df_insights['start_date']).dt.to_period('M').astype(str)
+        if 'start_date' in df_insights.columns and df_insights['start_date'].notna().any():
+            df_temp = df_insights.copy()
+            df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
             
             # Calculate coefficient of variation for each brand
-            brand_cv = df_insights.groupby('brand').agg({
-                'search_volume': ['mean', 'std'],
+            brand_stats = df_temp.groupby('brand').agg({
+                'search_volume': ['mean', 'std', 'sum'],
                 'conversions': ['sum', 'mean']
             }).reset_index()
             
-            brand_cv.columns = ['brand', 'avg_search', 'std_search', 'total_conversions', 'avg_conversions']
-            brand_cv['cv'] = (brand_cv['std_search'] / brand_cv['avg_search'] * 100).round(2)
-            brand_cv['stability_score'] = (100 - brand_cv['cv']).clip(lower=0).round(2)
+            brand_stats.columns = ['brand', 'avg_search', 'std_search', 'total_search', 'total_conversions', 'avg_conversions']
+            brand_stats['cv'] = (brand_stats['std_search'] / brand_stats['avg_search'] * 100).fillna(0).round(2)
+            brand_stats['stability_score'] = (100 - brand_stats['cv']).clip(lower=0).round(2)
             
-            out = brand_cv[brand_cv['total_conversions'] >= 10].sort_values('stability_score', ascending=False).head(10)
-            out = out[['brand', 'avg_search', 'total_conversions', 'cv', 'stability_score']]
-            out.columns = ['Brand', 'Avg Search Volume', 'Total Conversions', 'Volatility (%)', 'Stability Score']
+            out = brand_stats[brand_stats['total_conversions'] >= 10].sort_values('stability_score', ascending=False).head(10).copy()
             
-            st.dataframe(out.style.format({
-                'Avg Search Volume': '{:,.0f}',
-                'Total Conversions': '{:,.0f}',
-                'Volatility (%)': '{:.2f}',
-                'Stability Score': '{:.2f}'
-            }).background_gradient(subset=['Stability Score'], cmap='Greens'), use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q15_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q15_dl")
-            
-            fig = px.scatter(out, x='Volatility (%)', y='Stability Score', size='Total Conversions',
-                           color='Stability Score', hover_data=['Brand'], 
-                           title='Performance Consistency: Stable vs Volatile Products',
-                           color_continuous_scale='Greens', text='Brand')
-            fig.update_traces(textposition='top center')
-            st.plotly_chart(fig, use_container_width=True)
+            if len(out) > 0:
+                # Format for display
+                display_df = out.copy()
+                display_df['avg_search_fmt'] = display_df['avg_search'].apply(format_number)
+                display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(format_number)
+                
+                display_df = display_df[['brand', 'avg_search_fmt', 'total_conversions_fmt', 'cv', 'stability_score']]
+                display_df.columns = ['Brand', 'Avg Search Volume', 'Total Conversions', 'Volatility (%)', 'Stability Score']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q15_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q15_dl")
+                
+                fig = px.scatter(out, x='cv', y='stability_score', size='total_conversions',
+                               color='stability_score', hover_data=['brand'], 
+                               title='Performance Consistency: Stable vs Volatile Products',
+                               color_continuous_scale='Greens', text='brand')
+                fig.update_traces(textposition='top center', textfont_size=10)
+                fig.update_layout(xaxis_title="Volatility (%)", yaxis_title="Stability Score")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 Insufficient data for consistency analysis")
         else:
-            st.info("Date data not available for consistency analysis")
+            st.info("📊 Date data not available for consistency analysis")
     
     q_expand(
         "Q15 — Performance Consistency - Stable vs Volatile Products",
@@ -13582,6 +13695,7 @@ with tab_insights:
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
 # ----------------- Export / Downloads -----------------
 # Export Tab - FIXED with correct dataframe name
