@@ -14038,11 +14038,13 @@ with tab_insights:
             <li><strong>Q14 - High-Value Keywords:</strong> Allocate marketing budget to revenue-driving keyword combinations</li>
             <li><strong>Q15 - Stability Analysis:</strong> Use stable brands for forecasting; manage volatile brands with dynamic strategies</li>
         </ul>
-        <p style="color: #1B5E20; margin-top: 1rem; font-style: italic;">
-            📧 For advanced analytics, predictive modeling, or custom dashboards, contact the analytics team.
+        <p style="color: #1B5E20; margin-top: 1.5rem; font-style: italic; font-size: 1.05em;">
+            📧 <strong>For advanced analytics, predictive modeling, or custom dashboards, contact:</strong><br>
+            <span style="font-size: 1.1em; font-weight: 600; color: #2E7D32;">Nour Eldeen Mohamed - <a href="mailto:ElSayed.NE@sakhaa.sa" style="color: #1B5E20; text-decoration: none;">ElSayed.NE@sakhaa.sa</a></span>
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
