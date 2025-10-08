@@ -12959,7 +12959,14 @@ with tab_insights:
 
     # Q1: Top 10 Products by Search Volume & Conversion Efficiency
     def q1():
-        agg = df_insights.groupby('brand').agg({
+        # Filter out 'Other' brand (generic items)
+        filtered = df_insights[df_insights['brand'].str.lower() != 'other'].copy()
+        
+        if len(filtered) == 0:
+            st.info("📊 No branded products found (all items are generic)")
+            return
+        
+        agg = filtered.groupby('brand').agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
@@ -12985,17 +12992,18 @@ with tab_insights:
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q1_top_products_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q1_dl")
         
         fig = px.scatter(out, x='ctr', y='cr', size='search_volume', color='conversion_efficiency',
-                        hover_data=['brand'], title='Top 10 Products: CTR vs CR Performance',
+                        hover_data=['brand'], title='Top 10 Branded Products: CTR vs CR Performance',
                         color_continuous_scale='Greens', text='brand')
         fig.update_traces(textposition='top center', textfont_size=10)
         fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
         st.plotly_chart(fig, use_container_width=True)
     
     q_expand(
-        "Q1 — Top 10 Products by Search Volume & Conversion Efficiency",
-        "Identifies high-demand products with strong conversion potential. Focus marketing budget on brands with high efficiency scores (CTR × CR) to maximize ROI.",
+        "Q1 — Top 10 Brands by Search Volume & Conversion Efficiency",
+        "Identifies high-demand branded products with strong conversion potential. Focus marketing budget on brands with high efficiency scores (CTR × CR) to maximize ROI. Generic items ('Other') excluded.",
         q1, "🏆"
     )
+
 
     # Q2: Category Performance Analysis
     def q2():
