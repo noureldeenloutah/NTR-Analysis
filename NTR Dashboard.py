@@ -13487,59 +13487,121 @@ with tab_insights:
         q10, "🎢"
     )
 
-    # Q11: Low Search Volume, High CR - Hidden Gems
+    # Q11: Brand Cannibalization - Competing Products Analysis
     def q11():
-        low_volume = df_insights['search_volume'].quantile(0.30)
-        high_cr = df_insights['cr_calculated'].quantile(0.70)
+        # Filter meaningful data
+        df_temp = df_insights[
+            (df_insights['Counts'] >= 200) &
+            (df_insights['Brand'] != 'Other')
+        ].copy()
         
-        filtered = df_insights[
-            (df_insights['search_volume'] <= low_volume) & 
-            (df_insights['cr_calculated'] >= high_cr) &
-            (df_insights['search_volume'] >= 50)
-        ]
-        
-        if len(filtered) > 0:
-            out = filtered.groupby('brand').agg({
-                'search_volume': 'sum',
+        if len(df_temp) > 0:
+            # Group by brand to find brands with multiple competing search queries
+            brand_analysis = df_temp.groupby('Brand').agg({
+                'search': 'count',  # Number of different search queries
+                'Counts': 'sum',
                 'clicks': 'sum',
-                'conversions': 'sum',
-                'cr_calculated': 'mean'
+                'conversions': 'sum'
             }).reset_index()
             
-            out['growth_potential'] = (out['search_volume'] * 3).round(0)  # 3x growth scenario
-            out['projected_conversions'] = (out['growth_potential'] * out['cr_calculated'] / 100).round(0)
+            brand_analysis.columns = ['brand', 'query_count', 'total_search_volume', 'total_clicks', 'total_conversions']
             
-            out = out.nlargest(10, 'cr_calculated').copy()
+            # Filter brands with multiple queries (potential cannibalization)
+            brand_analysis = brand_analysis[brand_analysis['query_count'] >= 3].copy()
             
-            # Format for display
-            display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
-            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-            display_df['growth_potential_fmt'] = display_df['growth_potential'].apply(lambda x: format_number(int(x)))
-            display_df['projected_conversions_fmt'] = display_df['projected_conversions'].apply(lambda x: format_number(int(x)))
-            
-            display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'growth_potential_fmt', 'projected_conversions_fmt']]
-            display_df.columns = ['Brand', 'Current Search Volume', 'Current Conversions', 'CR (%)', 'Growth Potential (3x)', 'Projected Conversions']
-            
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q11_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q11_dl")
-            
-            fig = px.scatter(out, x='search_volume', y='cr_calculated', size='projected_conversions', 
-                            color='projected_conversions', hover_data=['brand'], 
-                            title='Hidden Gems: Low Volume, High CR Products',
-                            color_continuous_scale='Greens', text='brand')
-            fig.update_traces(textposition='top center', textfont_size=10)
-            fig.update_layout(xaxis_title="Current Search Volume", yaxis_title="CR (%)")
-            st.plotly_chart(fig, use_container_width=True)
+            if len(brand_analysis) > 0:
+                # Calculate metrics
+                brand_analysis['avg_ctr'] = (brand_analysis['total_clicks'] / brand_analysis['total_search_volume'] * 100).fillna(0)
+                brand_analysis['avg_cr'] = (brand_analysis['total_conversions'] / brand_analysis['total_search_volume'] * 100).fillna(0)
+                brand_analysis['cannibalization_score'] = (
+                    brand_analysis['query_count'] * 
+                    (100 - brand_analysis['avg_ctr'])  # More queries + lower CTR = higher cannibalization risk
+                )
+                
+                out = brand_analysis.nlargest(20, 'cannibalization_score').copy()
+                
+                # Get detailed breakdown for top cannibalizing brand
+                top_brand = out.iloc[0]['brand']
+                top_brand_details = df_temp[df_temp['Brand'] == top_brand].copy()
+                top_brand_details['ctr'] = (top_brand_details['clicks'] / top_brand_details['Counts'] * 100).fillna(0)
+                top_brand_details['cr'] = (top_brand_details['conversions'] / top_brand_details['Counts'] * 100).fillna(0)
+                top_brand_details = top_brand_details.nlargest(10, 'Counts')[['search', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']]
+                
+                # Format for display - Main table
+                display_df = out.copy()
+                display_df['total_search_volume_fmt'] = display_df['total_search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['total_clicks_fmt'] = display_df['total_clicks'].apply(lambda x: format_number(int(x)))
+                display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
+                display_df['avg_ctr_fmt'] = display_df['avg_ctr'].apply(lambda x: f"{x:.2f}%")
+                display_df['avg_cr_fmt'] = display_df['avg_cr'].apply(lambda x: f"{x:.2f}%")
+                display_df['cannibalization_score_fmt'] = display_df['cannibalization_score'].apply(lambda x: f"{x:.0f}")
+                
+                display_df = display_df[['brand', 'query_count', 'total_search_volume_fmt', 'total_clicks_fmt', 
+                                        'total_conversions_fmt', 'avg_ctr_fmt', 'avg_cr_fmt', 'cannibalization_score_fmt']]
+                display_df.columns = ['Brand', '# Queries', 'Total Search Volume', 'Total Clicks', 
+                                    'Total Conversions', 'Avg CTR', 'Avg CR', 'Cannibalization Risk']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                # Warning callout
+                st.warning(f"⚠️ **{top_brand}** has {out.iloc[0]['query_count']:.0f} competing search queries with {format_number(int(out.iloc[0]['total_search_volume']))} total search volume. This may indicate keyword cannibalization!")
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), 
+                                f"q11_cannibalization_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                "text/csv", key="q11_dl")
+                
+                # Detailed breakdown of top cannibalizing brand
+                st.subheader(f"🔍 Detailed Breakdown: {top_brand}")
+                
+                detail_display = top_brand_details.copy()
+                detail_display['query'] = detail_display['search'].apply(lambda x: f"{top_brand} {x}")
+                detail_display['Counts_fmt'] = detail_display['Counts'].apply(lambda x: format_number(int(x)))
+                detail_display['clicks_fmt'] = detail_display['clicks'].apply(lambda x: format_number(int(x)))
+                detail_display['conversions_fmt'] = detail_display['conversions'].apply(lambda x: format_number(int(x)))
+                detail_display['ctr_fmt'] = detail_display['ctr'].apply(lambda x: f"{x:.2f}%")
+                detail_display['cr_fmt'] = detail_display['cr'].apply(lambda x: f"{x:.2f}%")
+                
+                detail_display = detail_display[['query', 'search', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
+                detail_display.columns = ['Query', 'Search Term', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
+                
+                st.dataframe(detail_display, use_container_width=True, hide_index=True)
+                
+                # Visualization: Cannibalization Risk by Brand
+                fig = px.bar(out.head(10), x='brand', y='cannibalization_score',
+                            title='Top 10 Brands with Highest Cannibalization Risk',
+                            color='query_count', color_continuous_scale='Reds',
+                            hover_data=['query_count', 'total_search_volume', 'avg_ctr'])
+                fig.update_layout(
+                    xaxis_title="Brand",
+                    yaxis_title="Cannibalization Risk Score",
+                    xaxis_tickangle=-45
+                )
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Scatter: Query Count vs CTR
+                fig2 = px.scatter(out, x='query_count', y='avg_ctr',
+                                size='total_search_volume', color='avg_cr',
+                                hover_data=['brand', 'total_clicks', 'total_conversions'],
+                                title='Brand Cannibalization: Query Count vs CTR (Size = Search Volume)',
+                                color_continuous_scale='RdYlGn',
+                                labels={'query_count': '# of Competing Queries', 'avg_ctr': 'Average CTR (%)'})
+                fig2.update_layout(
+                    xaxis_title="Number of Competing Queries",
+                    yaxis_title="Average CTR (%)"
+                )
+                st.plotly_chart(fig2, use_container_width=True)
+                
+            else:
+                st.info("📊 No significant brand cannibalization detected")
         else:
-            st.info("📊 No hidden gems found")
-    
+            st.info("📊 Insufficient data for cannibalization analysis")
+
     q_expand(
-        "Q11 — Low Search Volume, High CR - Hidden Gems",
-        "Discovers niche products with excellent conversion rates but low visibility. Invest in SEO, paid ads, and content marketing to scale these high-potential products.",
-        q11, "💎"
+        "Q11 — 🔄 Brand Cannibalization - Competing Products Analysis",
+        "Identifies brands with multiple search queries that may be competing against each other, diluting CTR and conversions. **Action:** Consolidate product listings, optimize primary keywords, and redirect low-performing variants to main product pages.",
+        q11, "🔄"
     )
+
 
     # Q12: Brand Loyalty Index - Repeat Search Behavior
     def q12():
