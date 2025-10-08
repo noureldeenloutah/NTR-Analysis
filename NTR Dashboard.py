@@ -12044,20 +12044,39 @@ with tab_pivot:
     
     pivot_cache_key = generate_pivot_cache_key(queries)
 
-    # Hero Image for Pivot Builder Tab
-    pivot_image_options = {
-        "Pivot Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Pivot+Performance+Analysis",
-        "Pivot Builder": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Pivot+Intelligence+Dashboard",
-        "Abstract Pivots": "https://source.unsplash.com/1200x200/?data,analytics,pivot",
-        "Pivot Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Data+Pivot+Insights",
-    }
-    selected_pivot_image = st.sidebar.selectbox(
-        "Choose Pivot Tab Hero", 
-        options=list(pivot_image_options.keys()), 
-        index=0, 
-        key="pivot_hero_image_selector"
-    )
-    st.image(pivot_image_options[selected_pivot_image], use_container_width=True)
+    # 🎨 GREEN-THEMED HERO HEADER FOR PIVOT TAB
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🔄 Pivot Intelligence Hub 🔄
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Deep Dive into Custom Pivots and Advanced Data Insights
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
     # Apply CSS for consistency
     st.markdown("""
