@@ -22,6 +22,10 @@ def format_number(num):
         return f"{num/1_000:.1f}K"
     else:
         return f"{num:,.0f}"
+# 🚀 ADD PERCENTAGE FORMATTING FUNCTION
+def format_percentage(num):
+    """Format percentages with 2 decimal places"""
+    return f"{num:.2f}%"
 
 # 🚀 STREAMLIT PERFORMANCE CONFIG (PUT RIGHT HERE AFTER IMPORTS)
 try:
@@ -11098,7 +11102,7 @@ with tab_class:
         st.error(f"Error processing health keyword analysis: {str(e)}")
         st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
     
-    
+
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
     st.header("🌱 Generic Type Intelligence Hub")
@@ -12767,16 +12771,18 @@ with tab_time:
             """, unsafe_allow_html=True)
 
         
+
         # Interactive Analysis Section
         st.markdown("---")
         st.subheader("🎯 Interactive Temporal Analysis")
-        
+
         analysis_type = st.radio(
             "Choose Analysis Type:",
             ["📊 Trends Overview", "🔍 Detailed Month Analysis", "🏷 Brand Comparison", "📊 Distribution Analysis"],
-            horizontal=True
+            horizontal=True,
+            key="temporal_analysis_type_radio"  # ✅ Added unique key
         )
-        
+
         if analysis_type == "📊 Trends Overview":
             st.subheader("📈 Monthly Trends")
             
@@ -12821,13 +12827,14 @@ with tab_time:
             fig_counts, fig_metrics = create_trends_charts(monthly, time_cache_key)
             st.plotly_chart(fig_counts, use_container_width=True)
             st.plotly_chart(fig_metrics, use_container_width=True)
-        
+
         elif analysis_type == "🔍 Detailed Month Analysis":
             st.subheader("🔬 Detailed Monthly Performance")
             
             selected_month = st.selectbox(
                 "Select a month for detailed Nutraceuticals & Nutrition analysis:",
-                options=monthly['month'].tolist(), index=0
+                options=monthly['month'].tolist(), index=0,
+                key="detailed_month_selector"  # ✅ Added unique key
             )
             
             if selected_month:
@@ -12852,7 +12859,7 @@ with tab_time:
                     st.markdown(f"""
                     <div class='time-metric-card'>
                         <span class='icon'>📊</span>
-                        <div class='value'>{market_share:.2f}%</div>
+                        <div class='value'>{format_percentage(market_share)}</div>
                         <div class='label'>Nutraceuticals & Nutrition Market Share</div>
                         <div class='sub-label'>Of total health searches</div>
                     </div>
@@ -12862,7 +12869,7 @@ with tab_time:
                     st.markdown(f"""
                     <div class='time-metric-card'>
                         <span class='icon'>📈</span>
-                        <div class='value'>{month_data['ctr']:.2f}% <span class='time-performance-badge {"high-time-performance" if month_data['ctr'] > 5 else "medium-time-performance" if month_data['ctr'] > 2 else "low-time-performance"}'>{"High" if month_data['ctr'] > 5 else "Medium" if month_data['ctr'] > 2 else "Low"}</span></div>
+                        <div class='value'>{format_percentage(month_data['ctr'])} <span class='time-performance-badge {"high-time-performance" if month_data['ctr'] > 5 else "medium-time-performance" if month_data['ctr'] > 2 else "low-time-performance"}'>{"High" if month_data['ctr'] > 5 else "Medium" if month_data['ctr'] > 2 else "Low"}</span></div>
                         <div class='label'>Health CTR</div>
                         <div class='sub-label'>Month performance</div>
                     </div>
@@ -12872,7 +12879,7 @@ with tab_time:
                     st.markdown(f"""
                     <div class='time-metric-card'>
                         <span class='icon'>💚</span>
-                        <div class='value'>{month_data['conversion_rate']:.2f}% <span class='time-performance-badge {"high-time-performance" if month_data['conversion_rate'] > 3 else "medium-time-performance" if month_data['conversion_rate'] > 1 else "low-time-performance"}'>{"High" if month_data['conversion_rate'] > 3 else "Medium" if month_data['conversion_rate'] > 1 else "Low"}</span></div>
+                        <div class='value'>{format_percentage(month_data['conversion_rate'])} <span class='time-performance-badge {"high-time-performance" if month_data['conversion_rate'] > 3 else "medium-time-performance" if month_data['conversion_rate'] > 1 else "low-time-performance"}'>{"High" if month_data['conversion_rate'] > 3 else "Medium" if month_data['conversion_rate'] > 1 else "Low"}</span></div>
                         <div class='label'>Nutraceuticals & Nutrition Conversion Rate</div>
                         <div class='sub-label'>Month performance</div>
                     </div>
@@ -12883,9 +12890,14 @@ with tab_time:
                 metrics_data = {
                     'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 'CTR', 'Conversion Rate', 'Classic CVR', 'Click Share', 'Conversion Share'],
                     'Value': [
-                        f"{int(month_data['Counts']):,}", f"{int(month_data['clicks']):,}", f"{int(month_data['conversions']):,}",
-                        f"{month_data['ctr']:.2f}%", f"{month_data['conversion_rate']:.2f}%", f"{month_data['classic_cvr']:.2f}%",
-                        f"{month_data['click_share']:.2f}%", f"{month_data['conversion_share']:.2f}%"
+                        format_number(month_data['Counts']), 
+                        format_number(month_data['clicks']), 
+                        format_number(month_data['conversions']),
+                        format_percentage(month_data['ctr']), 
+                        format_percentage(month_data['conversion_rate']), 
+                        format_percentage(month_data['classic_cvr']),
+                        format_percentage(month_data['click_share']), 
+                        format_percentage(month_data['conversion_share'])
                     ],
                     'Health Performance': [
                         'High' if month_data['Counts'] > monthly['Counts'].median() else 'Low',
@@ -12902,7 +12914,7 @@ with tab_time:
                 st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
                 st.dataframe(metrics_df, use_container_width=True, hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
-        
+
         elif analysis_type == "🏷 Brand Comparison":
             st.subheader("🏷 Top Brands Performance by Month")
             
@@ -12957,12 +12969,12 @@ with tab_time:
                 display_brands = brand_month[['month', 'brand', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
                 display_brands.columns = ['Month', 'Brand', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %']
                 
-                # Vectorized formatting
-                display_brands['Health Search Volume'] = display_brands['Health Search Volume'].apply(lambda x: f"{int(x):,}")
-                display_brands['Health Clicks'] = display_brands['Health Clicks'].apply(lambda x: f"{int(x):,}")
-                display_brands['Nutraceuticals & Nutrition Conversions'] = display_brands['Nutraceuticals & Nutrition Conversions'].apply(lambda x: f"{int(x):,}")
-                display_brands['Health CTR %'] = display_brands['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                display_brands['Nutraceuticals & Nutrition Conversion Rate %'] = display_brands['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                # ✅ Vectorized formatting with format_number and format_percentage
+                display_brands['Health Search Volume'] = display_brands['Health Search Volume'].apply(format_number)
+                display_brands['Health Clicks'] = display_brands['Health Clicks'].apply(format_number)
+                display_brands['Nutraceuticals & Nutrition Conversions'] = display_brands['Nutraceuticals & Nutrition Conversions'].apply(format_number)
+                display_brands['Health CTR %'] = display_brands['Health CTR %'].apply(format_percentage)
+                display_brands['Nutraceuticals & Nutrition Conversion Rate %'] = display_brands['Nutraceuticals & Nutrition Conversion Rate %'].apply(format_percentage)
                 
                 st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_brands, use_container_width=True, hide_index=True)
@@ -12979,7 +12991,7 @@ with tab_time:
                 )
             else:
                 st.info("Brand or month data not available for brand-month health analysis.")
-        
+
         elif analysis_type == "📊 Distribution Analysis":
             st.subheader("📊 Monthly Distribution Analysis")
             
@@ -13019,12 +13031,11 @@ with tab_time:
                 st.markdown(f"""
                 <div class='time-metric-card'>
                     <span class='icon'>🔝</span>
-                    <div class='value'>{top_3_concentration:.1f}%</div>
+                    <div class='value'>{format_percentage(top_3_concentration)}</div>
                     <div class='label'>Top 3 Months Share</div>
                     <div class='sub-label'>Search volume concentration</div>
                 </div>
                 """, unsafe_allow_html=True)
-        
 
         # Advanced Filtering Section
         st.markdown("---")
@@ -13178,7 +13189,7 @@ with tab_time:
                     st.markdown(f"""
                     <div class='time-metric-card'>
                         <span class='icon'>📈</span>
-                        <div class='value'>{filtered_metrics['avg_ctr']:.2f}% <span class='time-performance-badge {ctr_performance}'>{"High" if filtered_metrics['avg_ctr'] > 5 else "Medium" if filtered_metrics['avg_ctr'] > 2 else "Low"}</span></div>
+                        <div class='value'>{format_percentage(filtered_metrics['avg_ctr'])} <span class='time-performance-badge {ctr_performance}'>{"High" if filtered_metrics['avg_ctr'] > 5 else "Medium" if filtered_metrics['avg_ctr'] > 2 else "Low"}</span></div>
                         <div class='label'>Avg CTR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -13189,7 +13200,7 @@ with tab_time:
                     st.markdown(f"""
                     <div class='time-metric-card'>
                         <span class='icon'>💚</span>
-                        <div class='value'>{filtered_metrics['avg_cr']:.2f}% <span class='time-performance-badge {cr_performance}'>{"High" if filtered_metrics['avg_cr'] > 3 else "Medium" if filtered_metrics['avg_cr'] > 1 else "Low"}</span></div>
+                        <div class='value'>{format_percentage(filtered_metrics['avg_cr'])} <span class='time-performance-badge {cr_performance}'>{"High" if filtered_metrics['avg_cr'] > 3 else "Medium" if filtered_metrics['avg_cr'] > 1 else "Low"}</span></div>
                         <div class='label'>Avg CR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -13199,12 +13210,12 @@ with tab_time:
                 display_filtered = filtered_data[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
                 display_filtered.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %']
                 
-                # Vectorized formatting
-                display_filtered['Search Volume'] = display_filtered['Search Volume'].apply(lambda x: f"{int(x):,}")
-                display_filtered['Clicks'] = display_filtered['Clicks'].apply(lambda x: f"{int(x):,}")
-                display_filtered['Conversions'] = display_filtered['Conversions'].apply(lambda x: f"{int(x):,}")
-                display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
-                display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                # ✅ Vectorized formatting with format_number and format_percentage
+                display_filtered['Search Volume'] = display_filtered['Search Volume'].apply(format_number)
+                display_filtered['Clicks'] = display_filtered['Clicks'].apply(format_number)
+                display_filtered['Conversions'] = display_filtered['Conversions'].apply(format_number)
+                display_filtered['CTR %'] = display_filtered['CTR %'].apply(format_percentage)
+                display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(format_percentage)
                 
                 st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
                 st.dataframe(display_filtered, use_container_width=True, hide_index=True)
@@ -13221,6 +13232,7 @@ with tab_time:
                 )
             else:
                 st.warning("⚠️ No months match the selected filters. Try adjusting your criteria.")
+
 
         
         # Download and Export Section
