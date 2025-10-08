@@ -13190,59 +13190,158 @@ with tab_insights:
         q6, "📅"
     )
 
-    # Q7: Underperforming Products
+    # Q7: Underperforming Products - Flagged by System
     def q7():
         if 'underperforming' in df_insights.columns:
-            filtered = df_insights[df_insights['underperforming'] == True]
+            # Filter underperforming products
+            filtered = df_insights[
+                (df_insights['underperforming'] == True) &
+                (df_insights['Brand'] != 'Other') &
+                (df_insights['Counts'] >= 200)  # search volume threshold
+            ].copy()
             
             if len(filtered) > 0:
-                # Group by both brand and search_query to preserve query information
-                out = filtered.groupby(['brand', 'search_query']).agg({
-                    'search_volume': 'sum',
+                out = filtered.groupby(['Brand', 'search']).agg({
+                    'Counts': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum',
-                    'ctr_calculated': 'mean',
-                    'cr_calculated': 'mean'
+                    'Click Through Rate': 'mean',
+                    'Converion Rate': 'mean'
                 }).reset_index()
                 
-                # Filter out "Other" brand
-                out = out[out['brand'] != 'Other']
-                
-                out = out.nlargest(10, 'search_volume').copy()
+                out.columns = ['brand', 'search_query', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr']
+                out = out.sort_values('search_volume', ascending=False).head(20)
                 
                 # Format for display
                 display_df = out.copy()
                 display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
                 display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
                 display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+                display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
+                display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
                 
-                # Format CTR and CR as percentages
-                display_df['ctr_fmt'] = display_df['ctr_calculated'].apply(lambda x: f"{x:.2f}%")
-                display_df['cr_fmt'] = display_df['cr_calculated'].apply(lambda x: f"{x:.2f}%")
-                
-                display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
-                display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
+                display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
+                                        'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
+                display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 
+                                    'Conversions', 'CTR', 'CR']
                 
                 st.dataframe(display_df, use_container_width=True, hide_index=True)
                 
-                st.download_button("📥 Download Data", out.to_csv(index=False), f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q7_dl")
+                # Add warning callout
+                total_underperforming = len(filtered)
+                total_volume = filtered['Counts'].sum()
+                st.warning(f"⚠️ **{total_underperforming} underperforming products** with {format_number(int(total_volume))} total search volume need immediate attention!")
                 
-                fig = px.bar(out, x='brand', y='search_volume', color='cr_calculated',
-                            title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds',
-                            hover_data=['search_query'])
-                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Search Volume")
+                st.download_button("📥 Download Data", out.to_csv(index=False), 
+                                f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                "text/csv", key="q7_dl")
+                
+                # Bar chart of top underperformers
+                fig = px.bar(out.head(10), x='brand', y='search_volume',
+                            title='Top 10 Underperforming Products by Search Volume',
+                            color='ctr', color_continuous_scale='Reds_r',
+                            hover_data=['search_query', 'clicks', 'conversions'])
+                fig.update_layout(xaxis_title="Brand", yaxis_title="Search Volume")
                 st.plotly_chart(fig, use_container_width=True)
+                
             else:
-                st.info("📊 No underperforming products flagged")
+                st.info("📊 No underperforming products found (after filters)")
         else:
-            st.info("📊 Underperforming flag not available")
+            st.info("📊 Underperforming flag not available in data")
 
     q_expand(
-        "Q7 — Top 10 Underperforming Products (System Flagged)",
-        "Products flagged by the system as underperforming. Immediate action required: review pricing, stock availability, product descriptions, and competitive positioning.",
-        q7, "🔴"
+        "Q7 — ⚠️ Underperforming Products - System Flagged",
+        "Products flagged by the system as underperforming. **Immediate action required:** review pricing, stock availability, product descriptions, and competitive positioning.",
+        q7, "⚠️"
     )
 
+    # Q8: Hidden Gems - High Converting Products with Low Visibility
+    def q8():
+        # Filter products with meaningful data
+        df_temp = df_insights[
+            (df_insights['clicks'] >= 10) &  # Minimum clicks for statistical significance
+            (df_insights['conversions'] >= 2) &  # At least some conversions
+            (df_insights['Counts'] >= 200) &  # Minimum search volume threshold
+            (df_insights['Brand'] != 'Other')  # Exclude "Other" brand
+        ].copy()
+        
+        if len(df_temp) > 0:
+            # Calculate CTR and CR if not already calculated
+            df_temp['ctr_calculated'] = (df_temp['clicks'] / df_temp['Counts'] * 100).fillna(0)
+            df_temp['cr_calculated'] = (df_temp['conversions'] / df_temp['Counts'] * 100).fillna(0)
+            
+            # Calculate percentiles for CR and CTR
+            df_temp['cr_percentile'] = df_temp['cr_calculated'].rank(pct=True) * 100
+            df_temp['ctr_percentile'] = df_temp['ctr_calculated'].rank(pct=True) * 100
+            
+            # Hidden Gems: High CR (top 25%) but Low CTR (bottom 50%)
+            # These products convert well when clicked but aren't getting enough visibility
+            hidden_gems = df_temp[
+                (df_temp['cr_percentile'] >= 75) &  # Top 25% conversion rate
+                (df_temp['ctr_percentile'] <= 50)    # Bottom 50% click-through rate
+            ].copy()
+            
+            if len(hidden_gems) > 0:
+                # Calculate opportunity score: high CR + high search volume + low CTR = big opportunity
+                hidden_gems['opportunity_score'] = (
+                    hidden_gems['cr_calculated'] * 
+                    hidden_gems['Counts'] * 
+                    (100 - hidden_gems['ctr_calculated'])
+                )
+                
+                out = hidden_gems.nlargest(10, 'opportunity_score')[
+                    ['Brand', 'search', 'Counts', 'clicks', 'conversions', 
+                    'ctr_calculated', 'cr_calculated', 'opportunity_score']
+                ].copy()
+                
+                out.columns = ['brand', 'search_query', 'search_volume', 'clicks', 'conversions', 
+                            'ctr_calculated', 'cr_calculated', 'opportunity_score']
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+                display_df['ctr_fmt'] = display_df['ctr_calculated'].apply(lambda x: f"{x:.2f}%")
+                display_df['cr_fmt'] = display_df['cr_calculated'].apply(lambda x: f"{x:.2f}%")
+                display_df['opportunity_fmt'] = display_df['opportunity_score'].apply(lambda x: format_number(int(x)))
+                
+                display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
+                                        'conversions_fmt', 'ctr_fmt', 'cr_fmt', 'opportunity_fmt']]
+                display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 
+                                    'Conversions', 'CTR', 'CR', 'Opportunity Score']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                # Add insight callout
+                top_gem = out.iloc[0]
+                st.success(f"💎 **Top Hidden Gem:** {top_gem['brand']} ('{top_gem['search_query']}') has {top_gem['cr_calculated']:.2f}% CR but only {top_gem['ctr_calculated']:.2f}% CTR. Improving visibility could unlock {format_number(int(top_gem['search_volume'] * (5 - top_gem['ctr_calculated'])/100))} additional clicks!")
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), 
+                                f"q8_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                "text/csv", key="q8_dl")
+                
+                # Scatter plot: CTR vs CR with bubble size = search volume
+                fig = px.scatter(out, x='ctr_calculated', y='cr_calculated', 
+                            size='search_volume', color='opportunity_score',
+                            hover_data=['brand', 'search_query'],
+                            title='Hidden Gems: High CR, Low CTR (Size = Search Volume)',
+                            color_continuous_scale='Viridis',
+                            labels={'ctr_calculated': 'CTR (%)', 'cr_calculated': 'CR (%)'})
+                fig.update_layout(xaxis_title="Click-Through Rate (%)", 
+                                yaxis_title="Conversion Rate (%)")
+                st.plotly_chart(fig, use_container_width=True)
+                
+            else:
+                st.info("📊 No hidden gems identified. All high-converting products already have good visibility!")
+        else:
+            st.info("📊 Insufficient data for hidden gems analysis")
+
+    q_expand(
+        "Q8 — 💎 Hidden Gems: High Converting Products with Low Visibility",
+        "Products that convert exceptionally well when clicked but aren't getting enough visibility. **Action:** Boost these in search rankings, feature in recommendations, improve product titles/images, or increase ad spend. Quick wins with high ROI potential!",
+        q8, "💎"
+    )
 
 
     # Q9: Sub-Category Deep Dive - Granular Performance Insights
