@@ -13844,51 +13844,169 @@ with tab_insights:
     # Q15: Performance Consistency - Stable vs Volatile Products
     def q15():
         if 'start_date' in df_insights.columns and df_insights['start_date'].notna().any():
-            df_temp = df_insights.copy()
-            df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
+            # Filter meaningful data (>= 200 search volume)
+            df_temp = df_insights[
+                (df_insights['Counts'] >= 200) &
+                (df_insights['Brand'] != 'Other')
+            ].copy()
             
-            # Calculate coefficient of variation for each brand
-            brand_stats = df_temp.groupby('brand').agg({
-                'search_volume': ['mean', 'std', 'sum'],
-                'conversions': ['sum', 'mean']
-            }).reset_index()
-            
-            brand_stats.columns = ['brand', 'avg_search', 'std_search', 'total_search', 'total_conversions', 'avg_conversions']
-            brand_stats['cv'] = (brand_stats['std_search'] / brand_stats['avg_search'] * 100).fillna(0).round(2)
-            brand_stats['stability_score'] = (100 - brand_stats['cv']).clip(lower=0).round(2)
-            
-            out = brand_stats[brand_stats['total_conversions'] >= 10].nlargest(10, 'stability_score').copy()
-            
-            if len(out) > 0:
-                # Format for display
-                display_df = out.copy()
-                display_df['avg_search_fmt'] = display_df['avg_search'].apply(lambda x: format_number(int(x)))
-                display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
+            if len(df_temp) > 0:
+                df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
                 
-                display_df = display_df[['brand', 'avg_search_fmt', 'total_conversions_fmt', 'cv', 'stability_score']]
-                display_df.columns = ['Brand', 'Avg Search Volume', 'Total Conversions', 'Volatility (%)', 'Stability Score']
+                # Calculate coefficient of variation for each brand
+                brand_stats = df_temp.groupby('Brand').agg({
+                    'search': lambda x: x.nunique(),  # Count unique queries
+                    'Counts': ['mean', 'std', 'sum'],
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                brand_stats.columns = ['brand', 'unique_queries', 'avg_search', 'std_search', 'total_search', 'total_clicks', 'total_conversions']
                 
-                st.download_button("📥 Download Data", out.to_csv(index=False), f"q15_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q15_dl")
+                # Calculate metrics
+                brand_stats['cv'] = (brand_stats['std_search'] / brand_stats['avg_search'] * 100).fillna(0)
+                brand_stats['stability_score'] = (100 - brand_stats['cv']).clip(lower=0)
+                brand_stats['ctr'] = (brand_stats['total_clicks'] / brand_stats['total_search'] * 100).fillna(0)
+                brand_stats['cr'] = (brand_stats['total_conversions'] / brand_stats['total_search'] * 100).fillna(0)
                 
-                fig = px.scatter(out, x='cv', y='stability_score', size='total_conversions',
-                               color='stability_score', hover_data=['brand'], 
-                               title='Performance Consistency: Stable vs Volatile Products',
-                               color_continuous_scale='Greens', text='brand')
-                fig.update_traces(textposition='top center', textfont_size=10)
-                fig.update_layout(xaxis_title="Volatility (%)", yaxis_title="Stability Score")
-                st.plotly_chart(fig, use_container_width=True)
+                # Filter brands with at least 10 conversions
+                brand_stats = brand_stats[brand_stats['total_conversions'] >= 10].copy()
+                
+                if len(brand_stats) > 0:
+                    # Sort by stability score
+                    out = brand_stats.nlargest(20, 'stability_score').copy()
+                    
+                    # Format for display
+                    display_df = out.copy()
+                    display_df['avg_search_fmt'] = display_df['avg_search'].apply(lambda x: format_number(int(x)))
+                    display_df['total_search_fmt'] = display_df['total_search'].apply(lambda x: format_number(int(x)))
+                    display_df['total_clicks_fmt'] = display_df['total_clicks'].apply(lambda x: format_number(int(x)))
+                    display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
+                    display_df['cv_fmt'] = display_df['cv'].apply(lambda x: f"{x:.2f}%")
+                    display_df['stability_score_fmt'] = display_df['stability_score'].apply(lambda x: f"{x:.2f}")
+                    display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
+                    display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+                    
+                    display_df = display_df[['brand', 'unique_queries', 'avg_search_fmt', 'total_search_fmt', 
+                                            'total_clicks_fmt', 'total_conversions_fmt', 'ctr_fmt', 'cr_fmt',
+                                            'cv_fmt', 'stability_score_fmt']]
+                    display_df.columns = ['Brand', '# Unique Queries', 'Avg Search Volume', 'Total Search Volume',
+                                        'Total Clicks', 'Total Conversions', 'CTR', 'CR', 
+                                        'Volatility', 'Stability Score']
+                    
+                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                    
+                    # Insights callout
+                    top_stable = out.iloc[0]['brand']
+                    top_stability = out.iloc[0]['stability_score']
+                    top_cv = out.iloc[0]['cv']
+                    
+                    st.success(f"""
+                    🎯 **Most Stable Brand: {top_stable}**
+                    - Stability Score: **{top_stability:.2f}**
+                    - Volatility: **{top_cv:.2f}%**
+                    - CTR: **{out.iloc[0]['ctr']:.2f}%** | CR: **{out.iloc[0]['cr']:.2f}%**
+                    - This brand shows consistent, predictable performance
+                    """)
+                    
+                    st.download_button("📥 Download Data", out.to_csv(index=False), 
+                                    f"q15_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                    "text/csv", key="q15_dl")
+                    
+                    # Visualization 1: Stability Score vs Volatility
+                    fig = px.scatter(out, x='cv', y='stability_score', 
+                                size='total_search', color='stability_score',
+                                hover_data=['brand', 'unique_queries', 'ctr', 'cr', 'total_conversions'], 
+                                title='Performance Consistency: Stability vs Volatility (Size = Total Search Volume)',
+                                color_continuous_scale='RdYlGn',
+                                text='brand')
+                    fig.update_traces(textposition='top center', textfont_size=9)
+                    fig.update_layout(
+                        xaxis_title="Volatility (Coefficient of Variation %)",
+                        yaxis_title="Stability Score"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Visualization 2: Top 10 Most Stable Brands
+                    fig2 = px.bar(out.head(10), x='brand', y='stability_score',
+                                color='stability_score',
+                                title='Top 10 Most Stable Brands',
+                                color_continuous_scale='Greens',
+                                hover_data=['unique_queries', 'total_search', 'cv', 'ctr', 'cr'])
+                    fig2.update_layout(
+                        xaxis_tickangle=-45,
+                        xaxis_title="Brand",
+                        yaxis_title="Stability Score"
+                    )
+                    st.plotly_chart(fig2, use_container_width=True)
+                    
+                    # Categorize brands by stability
+                    out['category'] = pd.cut(out['stability_score'], 
+                                            bins=[0, 50, 75, 100], 
+                                            labels=['High Volatility', 'Medium Stability', 'High Stability'])
+                    
+                    category_summary = out.groupby('category').agg({
+                        'brand': 'count',
+                        'total_search': 'sum',
+                        'total_conversions': 'sum'
+                    }).reset_index()
+                    category_summary.columns = ['Stability Category', 'Brand Count', 'Total Search Volume', 'Total Conversions']
+                    
+                    st.subheader("📊 Stability Distribution")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.dataframe(category_summary, use_container_width=True, hide_index=True)
+                    
+                    with col2:
+                        fig3 = px.pie(category_summary, values='Brand Count', names='Stability Category',
+                                    title='Brand Distribution by Stability',
+                                    color='Stability Category',
+                                    color_discrete_map={'High Stability': '#00CC96', 
+                                                        'Medium Stability': '#FFA15A',
+                                                        'High Volatility': '#EF553B'})
+                        st.plotly_chart(fig3, use_container_width=True)
+                    
+                    # Actionable insights
+                    st.info("""
+                    **💡 How to Use Stability Scores:**
+                    
+                    **High Stability (Score > 75):**
+                    - ✅ Reliable for demand forecasting
+                    - ✅ Safe for bulk inventory investment
+                    - ✅ Ideal for long-term contracts
+                    - ✅ Predictable revenue streams
+                    
+                    **Medium Stability (Score 50-75):**
+                    - 🔄 Monitor seasonal patterns
+                    - 🔄 Implement flexible inventory management
+                    - 🔄 Use promotional campaigns strategically
+                    
+                    **High Volatility (Score < 50):**
+                    - ⚠️ Requires dynamic pricing strategies
+                    - ⚠️ Use just-in-time inventory
+                    - ⚠️ Investigate demand drivers (trends, seasonality)
+                    - ⚠️ Consider demand smoothing tactics
+                    
+                    **Coefficient of Variation (CV):**
+                    - Low CV (< 25%): Consistent demand
+                    - Medium CV (25-50%): Moderate fluctuation
+                    - High CV (> 50%): Highly unpredictable
+                    """)
+                    
+                else:
+                    st.info("📊 No brands found with at least 10 conversions")
             else:
-                st.info("📊 Insufficient data for consistency analysis")
+                st.info("📊 No brands found with search volume >= 200")
         else:
             st.info("📊 Date data not available for consistency analysis")
-    
+
     q_expand(
-        "Q15 — Performance Consistency - Stable vs Volatile Products",
-        "Identifies products with consistent performance vs. those with high volatility. Stable products are reliable for forecasting; volatile products need demand planning and promotional strategies.",
+        "Q15 — 📊 Performance Consistency - Stable vs Volatile Products",
+        "Identifies products with consistent performance vs. those with high volatility. **Filtered: Search Volume >= 200, Min 10 Conversions**. Stable products are reliable for forecasting; volatile products need demand planning and promotional strategies.",
         q15, "📊"
     )
+
 
     # Final Summary & Recommendations
     st.markdown("---")
