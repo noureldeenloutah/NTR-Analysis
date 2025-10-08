@@ -12890,58 +12890,6 @@ with tab_insights:
         st.code(traceback.format_exc())
         st.stop()
 
-    # Overall Performance Summary
-    st.subheader("📊 Overall Performance Summary")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    total_search_volume = df_insights['search_volume'].sum()
-    total_clicks = df_insights['clicks'].sum()
-    total_conversions = df_insights['conversions'].sum()
-    
-    overall_ctr = (total_clicks / total_search_volume * 100) if total_search_volume > 0 else 0
-    overall_cr = (total_conversions / total_search_volume * 100) if total_search_volume > 0 else 0
-    
-    with col1:
-        st.markdown(f"""
-        <div class='insight-metric-card'>
-            <span class='icon'>🔍</span>
-            <div class='value'>{format_number(total_search_volume)}</div>
-            <div class='label'>Total Search Volume</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(f"""
-        <div class='insight-metric-card'>
-            <span class='icon'>👆</span>
-            <div class='value'>{format_number(total_clicks)}</div>
-            <div class='label'>Total Clicks</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        ctr_badge = "high-performance" if overall_ctr > 20 else "medium-performance" if overall_ctr > 10 else "low-performance"
-        ctr_label = "High" if overall_ctr > 20 else "Medium" if overall_ctr > 10 else "Low"
-        st.markdown(f"""
-        <div class='insight-metric-card'>
-            <span class='icon'>📈</span>
-            <div class='value'>{overall_ctr:.2f}% <span class='performance-badge {ctr_badge}'>{ctr_label}</span></div>
-            <div class='label'>Overall CTR</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        cr_badge = "high-performance" if overall_cr > 10 else "medium-performance" if overall_cr > 5 else "low-performance"
-        cr_label = "High" if overall_cr > 10 else "Medium" if overall_cr > 5 else "Low"
-        st.markdown(f"""
-        <div class='insight-metric-card'>
-            <span class='icon'>💚</span>
-            <div class='value'>{overall_cr:.2f}% <span class='performance-badge {cr_badge}'>{cr_label}</span></div>
-            <div class='label'>Overall CR</div>
-        </div>
-        """, unsafe_allow_html=True)
-
     st.markdown("---")
 
     # Helper function for expandable questions
@@ -13000,7 +12948,7 @@ with tab_insights:
     
     q_expand(
         "Q1 — Top 10 Brands by Search Volume & Conversion Efficiency",
-        "Identifies high-demand branded products with strong conversion potential. Focus marketing budget on brands with high efficiency scores (CTR × CR) to maximize ROI. Generic items ('Other') excluded.",
+        "Identifies high-demand branded products with strong conversion potential. Focus marketing budget on brands with high efficiency scores (CTR × CR) to maximize ROI.",
         q1, "🏆"
     )
 
@@ -13106,10 +13054,12 @@ with tab_insights:
         high_ctr = df_insights['ctr_calculated'].quantile(0.70)
         low_cr = df_insights['cr_calculated'].quantile(0.30)
         
+        # Filter out 'Other' brand and items with search volume < 200
         filtered = df_insights[
+            (df_insights['brand'].str.lower() != 'other') &
             (df_insights['ctr_calculated'] >= high_ctr) & 
             (df_insights['cr_calculated'] <= low_cr) &
-            (df_insights['search_volume'] >= 100)
+            (df_insights['search_volume'] >= 200)
         ]
         
         if len(filtered) > 0:
@@ -13139,17 +13089,17 @@ with tab_insights:
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
             
             fig = px.scatter(out, x='ctr_calculated', y='cr_calculated', size='search_volume', color='bounce_indicator',
-                            hover_data=['brand'], title='High CTR, Low CR: Experience Issues',
+                            hover_data=['brand'], title='High CTR, Low CR: Experience Issues (Branded Products)',
                             color_continuous_scale='Oranges', text='brand')
             fig.update_traces(textposition='top center', textfont_size=10)
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No high CTR, low CR issues found")
+            st.info("📊 No high CTR, low CR issues found for branded products with 200+ search volume")
     
     q_expand(
         "Q4 — High CTR, Low CR - Post-Click Experience Issues",
-        "Products attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Audit product pages and optimize checkout.",
+        "Branded products attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Audit product pages and optimize checkout. Filters: Search volume ≥200, excludes generic items.",
         q4, "🚨"
     )
 
