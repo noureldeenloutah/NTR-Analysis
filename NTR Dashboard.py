@@ -13391,49 +13391,99 @@ with tab_insights:
 
     # Q10: Conversion Funnel Efficiency - Full Journey Analysis
     def q10():
-        agg = df_insights.groupby('brand').agg({
-            'search_volume': 'sum',
-            'clicks': 'sum',
-            'conversions': 'sum'
-        }).reset_index()
+        # Filter out low volume searches
+        df_temp = df_insights[
+            (df_insights['Counts'] >= 200) &
+            (df_insights['Brand'] != 'Other')
+        ].copy()
         
-        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
-        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
-        agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).fillna(0).round(2)
-        agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).fillna(0).round(2)
-        
-        out = agg.nlargest(10, 'funnel_efficiency').copy()
-        
-        # Format for display
-        display_df = out.copy()
-        display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
-        display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
-        display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-        
-        display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'click_to_conversion', 'funnel_efficiency']]
-        display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'Click-to-Conv (%)', 'Funnel Efficiency (%)']
-        
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
-        
-        st.download_button("📥 Download Data", out.to_csv(index=False), f"q10_funnel_efficiency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q10_dl")
-        
-        # Create funnel visualization with top 5 brands
-        top5 = out.head(5).copy()
-        funnel_data = []
-        for _, row in top5.iterrows():
-            funnel_data.append({'Stage': 'Search Volume', 'Brand': row['brand'], 'Value': row['search_volume']})
-            funnel_data.append({'Stage': 'Clicks', 'Brand': row['brand'], 'Value': row['clicks']})
-            funnel_data.append({'Stage': 'Conversions', 'Brand': row['brand'], 'Value': row['conversions']})
-        
-        funnel_df = pd.DataFrame(funnel_data)
-        fig = px.bar(funnel_df, x='Value', y='Brand', color='Stage', orientation='h',
-                    title='Top 5 Brands: Conversion Funnel', barmode='group',
-                    color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
-        st.plotly_chart(fig, use_container_width=True)
-    
+        if len(df_temp) > 0:
+            agg = df_temp.groupby(['Brand', 'search']).agg({
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg.columns = ['brand', 'search_query', 'search_volume', 'clicks', 'conversions']
+            
+            # Filter out aggregated rows with search volume < 200
+            agg = agg[agg['search_volume'] >= 200].copy()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0)
+            agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).fillna(0)
+            agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).fillna(0)
+            
+            out = agg.nlargest(20, 'funnel_efficiency').copy()
+            
+            # Format for display
+            display_df = out.copy()
+            display_df['query'] = display_df.apply(
+                lambda row: f"{row['brand']} {row['search_query']}", axis=1
+            )
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
+            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+            display_df['click_to_conversion_fmt'] = display_df['click_to_conversion'].apply(lambda x: f"{x:.2f}%")
+            display_df['funnel_efficiency_fmt'] = display_df['funnel_efficiency'].apply(lambda x: f"{x:.2f}%")
+            
+            display_df = display_df[['query', 'brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
+                                    'conversions_fmt', 'ctr_fmt', 'cr_fmt', 'click_to_conversion_fmt', 'funnel_efficiency_fmt']]
+            display_df.columns = ['Query', 'Brand', 'Search Query', 'Search Volume', 'Clicks', 
+                                'Conversions', 'CTR', 'CR', 'Click-to-Conv', 'Funnel Efficiency']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            # Add insight callout
+            top_performer = out.iloc[0]
+            st.success(f"🏆 **Top Funnel Performer:** {top_performer['brand']} ('{top_performer['search_query']}') with {top_performer['funnel_efficiency']:.2f}% efficiency - converting {top_performer['conversions']:.0f} out of {format_number(int(top_performer['search_volume']))} searches!")
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), 
+                            f"q10_funnel_efficiency_{datetime.now().strftime('%Y%m%d')}.csv", 
+                            "text/csv", key="q10_dl")
+            
+            # Create funnel visualization with top 5 products
+            top5 = out.head(5).copy()
+            funnel_data = []
+            for _, row in top5.iterrows():
+                product_label = f"{row['brand']} - {row['search_query'][:20]}..."
+                funnel_data.append({'Stage': 'Search Volume', 'Product': product_label, 'Value': row['search_volume']})
+                funnel_data.append({'Stage': 'Clicks', 'Product': product_label, 'Value': row['clicks']})
+                funnel_data.append({'Stage': 'Conversions', 'Product': product_label, 'Value': row['conversions']})
+            
+            funnel_df = pd.DataFrame(funnel_data)
+            fig = px.bar(funnel_df, x='Value', y='Product', color='Stage', orientation='h',
+                        title='Top 5 Products: Conversion Funnel Journey',
+                        barmode='group',
+                        color_discrete_sequence=['#4CAF50', '#FFC107', '#2196F3'])
+            fig.update_layout(
+                xaxis_title="Volume",
+                yaxis_title="Product",
+                legend_title="Funnel Stage"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Scatter plot: CTR vs CR with bubble size = funnel efficiency
+            fig2 = px.scatter(out.head(15), x='ctr', y='cr', 
+                            size='funnel_efficiency', color='funnel_efficiency',
+                            hover_data=['brand', 'search_query', 'search_volume'],
+                            title='Funnel Efficiency: CTR vs CR (Size = Efficiency Score)',
+                            color_continuous_scale='Viridis',
+                            labels={'ctr': 'CTR (%)', 'cr': 'CR (%)'})
+            fig2.update_layout(
+                xaxis_title="Click-Through Rate (%)", 
+                yaxis_title="Conversion Rate (%)"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+            
+        else:
+            st.info("📊 Insufficient data for funnel efficiency analysis (minimum 200 search volume required)")
+
     q_expand(
-        "Q10 — Conversion Funnel Efficiency - Full Journey Analysis",
-        "Measures end-to-end funnel performance from search to conversion. Brands with high funnel efficiency have optimized user journeys. Replicate their success across other products.",
+        "Q10 — 🎢 Conversion Funnel Efficiency - Full Journey Analysis",
+        "Measures end-to-end funnel performance from search to conversion. Products with high funnel efficiency have optimized user journeys. **Action:** Analyze top performers and replicate their success across other products.",
         q10, "🎢"
     )
 
