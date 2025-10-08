@@ -13066,11 +13066,12 @@ with tab_insights:
             out = filtered.groupby('brand').agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
-                'conversions': 'sum',
-                'ctr_calculated': 'mean',
-                'cr_calculated': 'mean'
+                'conversions': 'sum'
             }).reset_index()
             
+            # Recalculate CTR and CR from aggregated totals
+            out['ctr_calculated'] = (out['clicks'] / out['search_volume'] * 100).fillna(0).round(4)
+            out['cr_calculated'] = (out['conversions'] / out['search_volume'] * 100).fillna(0).round(4)
             out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
             
             out = out.nlargest(10, 'bounce_indicator').copy()
