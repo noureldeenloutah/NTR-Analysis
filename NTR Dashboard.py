@@ -11745,197 +11745,197 @@ with tab_time:
         st.markdown("---")
         st.subheader("🔍 Advanced Filtering & Custom Analysis")
 
-                with st.expander("🎛️ Custom Filter Options", expanded=False):
-                    filter_col1, filter_col2, filter_col3 = st.columns(3)
+        with st.expander("🎛️ Custom Filter Options", expanded=False):
+            filter_col1, filter_col2, filter_col3 = st.columns(3)
+            
+            with filter_col1:
+                st.markdown("**Volume Filters**")
+                min_searches = st.number_input(
+                    "Minimum Search Volume:",
+                    min_value=0,
+                    max_value=int(monthly['Counts'].max()),
+                    value=0,
+                    key="min_searches_time_filter"
+                )
+                max_searches = st.number_input(
+                    "Maximum Search Volume:",
+                    min_value=int(min_searches),
+                    max_value=int(monthly['Counts'].max()),
+                    value=int(monthly['Counts'].max()),
+                    key="max_searches_time_filter"
+                )
+            
+            with filter_col2:
+                st.markdown("**Performance Filters**")
+                min_ctr = st.slider(
+                    "Minimum CTR (%):",
+                    min_value=0.0,
+                    max_value=float(monthly['ctr'].max()),
+                    value=0.0,
+                    step=0.1,
+                    key="min_ctr_time_filter"
+                )
+                min_cr = st.slider(
+                    "Minimum Conversion Rate (%):",
+                    min_value=0.0,
+                    max_value=float(monthly['conversion_rate'].max()),
+                    value=0.0,
+                    step=0.1,
+                    key="min_cr_time_filter"
+                )
+            
+            with filter_col3:
+                st.markdown("**Brand Filter**")
+                if 'brand' in queries_clean.columns and queries_clean['brand'].notna().any():
+                    # 🚀 OPTIMIZED: Cached brand options
+                    @st.cache_data(ttl=1800, show_spinner=False)
+                    def get_brand_options(df, cache_key):
+                        """🚀 OPTIMIZED: Pre-computed brand list"""
+                        brand_series = df['brand'].astype(str).replace('nan', '')
+                        return [b for b in brand_series.unique().tolist() if b.lower() != 'other' and b]
                     
-                    with filter_col1:
-                        st.markdown("**Volume Filters**")
-                        min_searches = st.number_input(
-                            "Minimum Search Volume:",
-                            min_value=0,
-                            max_value=int(monthly['Counts'].max()),
-                            value=0,
-                            key="min_searches_time_filter"
-                        )
-                        max_searches = st.number_input(
-                            "Maximum Search Volume:",
-                            min_value=int(min_searches),
-                            max_value=int(monthly['Counts'].max()),
-                            value=int(monthly['Counts'].max()),
-                            key="max_searches_time_filter"
-                        )
-                    
-                    with filter_col2:
-                        st.markdown("**Performance Filters**")
-                        min_ctr = st.slider(
-                            "Minimum CTR (%):",
-                            min_value=0.0,
-                            max_value=float(monthly['ctr'].max()),
-                            value=0.0,
-                            step=0.1,
-                            key="min_ctr_time_filter"
-                        )
-                        min_cr = st.slider(
-                            "Minimum Conversion Rate (%):",
-                            min_value=0.0,
-                            max_value=float(monthly['conversion_rate'].max()),
-                            value=0.0,
-                            step=0.1,
-                            key="min_cr_time_filter"
-                        )
-                    
-                    with filter_col3:
-                        st.markdown("**Brand Filter**")
-                        if 'brand' in queries_clean.columns and queries_clean['brand'].notna().any():
-                            # 🚀 OPTIMIZED: Cached brand options
-                            @st.cache_data(ttl=1800, show_spinner=False)
-                            def get_brand_options(df, cache_key):
-                                """🚀 OPTIMIZED: Pre-computed brand list"""
-                                brand_series = df['brand'].astype(str).replace('nan', '')
-                                return [b for b in brand_series.unique().tolist() if b.lower() != 'other' and b]
-                            
-                            brand_options = get_brand_options(queries_clean, time_cache_key)
-                            selected_brands = st.multiselect(
-                                "Select brands to include:",
-                                options=brand_options,
-                                default=brand_options[:min(3, len(brand_options))],
-                                key="brand_time_filter"
-                            )
-                        else:
-                            selected_brands = []
-                            st.info("No brand data available for filtering.")
-                    
-                    # 🚀 OPTIMIZED: Apply filters with vectorized operations
-                    filtered_data = monthly.copy()
-                    
-                    # Volume and performance filters
-                    filter_mask = (
-                        (filtered_data['Counts'] >= min_searches) &
-                        (filtered_data['Counts'] <= max_searches) &
-                        (filtered_data['ctr'] >= min_ctr) &
-                        (filtered_data['conversion_rate'] >= min_cr)
+                    brand_options = get_brand_options(queries_clean, time_cache_key)
+                    selected_brands = st.multiselect(
+                        "Select brands to include:",
+                        options=brand_options,
+                        default=brand_options[:min(3, len(brand_options))],
+                        key="brand_time_filter"
                     )
-                    filtered_data = filtered_data[filter_mask]
+                else:
+                    selected_brands = []
+                    st.info("No brand data available for filtering.")
+            
+            # 🚀 OPTIMIZED: Apply filters with vectorized operations
+            filtered_data = monthly.copy()
+            
+            # Volume and performance filters
+            filter_mask = (
+                (filtered_data['Counts'] >= min_searches) &
+                (filtered_data['Counts'] <= max_searches) &
+                (filtered_data['ctr'] >= min_ctr) &
+                (filtered_data['conversion_rate'] >= min_cr)
+            )
+            filtered_data = filtered_data[filter_mask]
+            
+            # 🚀 OPTIMIZED: Brand filter with cached computation
+            if selected_brands:
+                @st.cache_data(ttl=1800, show_spinner=False)
+                def apply_brand_filter(df, brands, cache_key):
+                    """🚀 OPTIMIZED: Cached brand filtering"""
+                    brand_series = df['brand'].astype(str).replace('nan', '')
+                    brand_filtered = df[
+                        (brand_series.isin(brands)) & 
+                        (brand_series.str.lower() != 'other')
+                    ].groupby('month').agg({
+                        'Counts': 'sum',
+                        'clicks': 'sum',
+                        'conversions': 'sum'
+                    }).reset_index()
                     
-                    # 🚀 OPTIMIZED: Brand filter with cached computation
-                    if selected_brands:
-                        @st.cache_data(ttl=1800, show_spinner=False)
-                        def apply_brand_filter(df, brands, cache_key):
-                            """🚀 OPTIMIZED: Cached brand filtering"""
-                            brand_series = df['brand'].astype(str).replace('nan', '')
-                            brand_filtered = df[
-                                (brand_series.isin(brands)) & 
-                                (brand_series.str.lower() != 'other')
-                            ].groupby('month').agg({
-                                'Counts': 'sum',
-                                'clicks': 'sum',
-                                'conversions': 'sum'
-                            }).reset_index()
-                            
-                            # Vectorized calculations
-                            brand_filtered['ctr'] = np.where(brand_filtered['Counts'] > 0, (brand_filtered['clicks'] / brand_filtered['Counts'] * 100), 0)
-                            brand_filtered['conversion_rate'] = np.where(brand_filtered['Counts'] > 0, (brand_filtered['conversions'] / brand_filtered['Counts'] * 100), 0)
-                            brand_filtered['classic_cvr'] = np.where(brand_filtered['clicks'] > 0, (brand_filtered['conversions'] / brand_filtered['clicks'] * 100), 0)
-                            brand_filtered['click_share'] = np.where(total_clicks > 0, (brand_filtered['clicks'] / total_clicks * 100), 0)
-                            brand_filtered['conversion_share'] = np.where(total_conversions > 0, (brand_filtered['conversions'] / total_conversions * 100), 0)
-                            
-                            return brand_filtered
-                        
-                        brand_filtered = apply_brand_filter(queries_clean, selected_brands, time_cache_key + str(selected_brands))
-                        
-                        # Merge with filtered_data
-                        filtered_data = filtered_data.merge(
-                            brand_filtered[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr', 'click_share', 'conversion_share']],
-                            on='month', how='inner', suffixes=('', '_brand')
-                        )
-                        
-                        # Update columns with brand-filtered values
-                        for col in ['Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr', 'click_share', 'conversion_share']:
-                            filtered_data[col] = filtered_data[f'{col}_brand']
-                            filtered_data = filtered_data.drop(columns=f'{col}_brand')
+                    # Vectorized calculations
+                    brand_filtered['ctr'] = np.where(brand_filtered['Counts'] > 0, (brand_filtered['clicks'] / brand_filtered['Counts'] * 100), 0)
+                    brand_filtered['conversion_rate'] = np.where(brand_filtered['Counts'] > 0, (brand_filtered['conversions'] / brand_filtered['Counts'] * 100), 0)
+                    brand_filtered['classic_cvr'] = np.where(brand_filtered['clicks'] > 0, (brand_filtered['conversions'] / brand_filtered['clicks'] * 100), 0)
+                    brand_filtered['click_share'] = np.where(total_clicks > 0, (brand_filtered['clicks'] / total_clicks * 100), 0)
+                    brand_filtered['conversion_share'] = np.where(total_conversions > 0, (brand_filtered['conversions'] / total_conversions * 100), 0)
                     
-                    # Display filtered results
-                    if len(filtered_data) > 0:
-                        st.markdown(f"### 📊 Filtered Results: {len(filtered_data)} months")
-                        
-                        filtered_col1, filtered_col2, filtered_col3, filtered_col4 = st.columns(4)
-                        
-                        # 🚀 OPTIMIZED: Pre-calculated filtered metrics
-                        filtered_metrics = {
-                            'count': len(filtered_data),
-                            'total_searches': filtered_data['Counts'].sum(),
-                            'avg_ctr': filtered_data['ctr'].mean(),
-                            'avg_cr': filtered_data['conversion_rate'].mean()
-                        }
-                        
-                        with filtered_col1:
-                            st.markdown(f"""
-                            <div class='time-metric-card'>
-                                <span class='icon'>📅</span>
-                                <div class='value'>{filtered_metrics['count']}</div>
-                                <div class='label'>Months Found</div>
-                                <div class='sub-label'>Matching filters</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with filtered_col2:
-                            st.markdown(f"""
-                            <div class='time-metric-card'>
-                                <span class='icon'>🔍</span>
-                                <div class='value'>{format_number(filtered_metrics['total_searches'])}</div>
-                                <div class='label'>Total Searches</div>
-                                <div class='sub-label'>Filtered volume</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with filtered_col3:
-                            ctr_performance = "high-time-performance" if filtered_metrics['avg_ctr'] > 5 else "medium-time-performance" if filtered_metrics['avg_ctr'] > 2 else "low-time-performance"
-                            st.markdown(f"""
-                            <div class='time-metric-card'>
-                                <span class='icon'>📈</span>
-                                <div class='value'>{filtered_metrics['avg_ctr']:.2f}% <span class='time-performance-badge {ctr_performance}'>{"High" if filtered_metrics['avg_ctr'] > 5 else "Medium" if filtered_metrics['avg_ctr'] > 2 else "Low"}</span></div>
-                                <div class='label'>Avg CTR</div>
-                                <div class='sub-label'>Filtered average</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        with filtered_col4:
-                            cr_performance = "high-time-performance" if filtered_metrics['avg_cr'] > 3 else "medium-time-performance" if filtered_metrics['avg_cr'] > 1 else "low-time-performance"
-                            st.markdown(f"""
-                            <div class='time-metric-card'>
-                                <span class='icon'>💚</span>
-                                <div class='value'>{filtered_metrics['avg_cr']:.2f}% <span class='time-performance-badge {cr_performance}'>{"High" if filtered_metrics['avg_cr'] > 3 else "Medium" if filtered_metrics['avg_cr'] > 1 else "Low"}</span></div>
-                                <div class='label'>Avg CR</div>
-                                <div class='sub-label'>Filtered average</div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                        
-                        # 🚀 OPTIMIZED: Pre-formatted display table
-                        display_filtered = filtered_data[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
-                        display_filtered.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %']
-                        
-                        # Vectorized formatting
-                        display_filtered['Search Volume'] = display_filtered['Search Volume'].apply(lambda x: f"{int(x):,}")
-                        display_filtered['Clicks'] = display_filtered['Clicks'].apply(lambda x: f"{int(x):,}")
-                        display_filtered['Conversions'] = display_filtered['Conversions'].apply(lambda x: f"{int(x):,}")
-                        display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
-                        display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
-                        
-                        st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
-                        st.dataframe(display_filtered, use_container_width=True, hide_index=True)
-                        st.markdown("</div>", unsafe_allow_html=True)
-                        
-                        # Download filtered data
-                        filtered_csv = filtered_data.to_csv(index=False)
-                        st.download_button(
-                            label="📥 Download Filtered Data",
-                            data=filtered_csv,
-                            file_name=f"filtered_monthly_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                            mime="text/csv",
-                            key="filtered_time_health_download"
-                        )
-                    else:
-                        st.warning("⚠️ No months match the selected filters. Try adjusting your criteria.")
+                    return brand_filtered
+                
+                brand_filtered = apply_brand_filter(queries_clean, selected_brands, time_cache_key + str(selected_brands))
+                
+                # Merge with filtered_data
+                filtered_data = filtered_data.merge(
+                    brand_filtered[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr', 'click_share', 'conversion_share']],
+                    on='month', how='inner', suffixes=('', '_brand')
+                )
+                
+                # Update columns with brand-filtered values
+                for col in ['Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr', 'click_share', 'conversion_share']:
+                    filtered_data[col] = filtered_data[f'{col}_brand']
+                    filtered_data = filtered_data.drop(columns=f'{col}_brand')
+            
+            # Display filtered results
+            if len(filtered_data) > 0:
+                st.markdown(f"### 📊 Filtered Results: {len(filtered_data)} months")
+                
+                filtered_col1, filtered_col2, filtered_col3, filtered_col4 = st.columns(4)
+                
+                # 🚀 OPTIMIZED: Pre-calculated filtered metrics
+                filtered_metrics = {
+                    'count': len(filtered_data),
+                    'total_searches': filtered_data['Counts'].sum(),
+                    'avg_ctr': filtered_data['ctr'].mean(),
+                    'avg_cr': filtered_data['conversion_rate'].mean()
+                }
+                
+                with filtered_col1:
+                    st.markdown(f"""
+                    <div class='time-metric-card'>
+                        <span class='icon'>📅</span>
+                        <div class='value'>{filtered_metrics['count']}</div>
+                        <div class='label'>Months Found</div>
+                        <div class='sub-label'>Matching filters</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with filtered_col2:
+                    st.markdown(f"""
+                    <div class='time-metric-card'>
+                        <span class='icon'>🔍</span>
+                        <div class='value'>{format_number(filtered_metrics['total_searches'])}</div>
+                        <div class='label'>Total Searches</div>
+                        <div class='sub-label'>Filtered volume</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with filtered_col3:
+                    ctr_performance = "high-time-performance" if filtered_metrics['avg_ctr'] > 5 else "medium-time-performance" if filtered_metrics['avg_ctr'] > 2 else "low-time-performance"
+                    st.markdown(f"""
+                    <div class='time-metric-card'>
+                        <span class='icon'>📈</span>
+                        <div class='value'>{filtered_metrics['avg_ctr']:.2f}% <span class='time-performance-badge {ctr_performance}'>{"High" if filtered_metrics['avg_ctr'] > 5 else "Medium" if filtered_metrics['avg_ctr'] > 2 else "Low"}</span></div>
+                        <div class='label'>Avg CTR</div>
+                        <div class='sub-label'>Filtered average</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with filtered_col4:
+                    cr_performance = "high-time-performance" if filtered_metrics['avg_cr'] > 3 else "medium-time-performance" if filtered_metrics['avg_cr'] > 1 else "low-time-performance"
+                    st.markdown(f"""
+                    <div class='time-metric-card'>
+                        <span class='icon'>💚</span>
+                        <div class='value'>{filtered_metrics['avg_cr']:.2f}% <span class='time-performance-badge {cr_performance}'>{"High" if filtered_metrics['avg_cr'] > 3 else "Medium" if filtered_metrics['avg_cr'] > 1 else "Low"}</span></div>
+                        <div class='label'>Avg CR</div>
+                        <div class='sub-label'>Filtered average</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # 🚀 OPTIMIZED: Pre-formatted display table
+                display_filtered = filtered_data[['month', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
+                display_filtered.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'Conversion Rate %']
+                
+                # Vectorized formatting
+                display_filtered['Search Volume'] = display_filtered['Search Volume'].apply(lambda x: f"{int(x):,}")
+                display_filtered['Clicks'] = display_filtered['Clicks'].apply(lambda x: f"{int(x):,}")
+                display_filtered['Conversions'] = display_filtered['Conversions'].apply(lambda x: f"{int(x):,}")
+                display_filtered['CTR %'] = display_filtered['CTR %'].apply(lambda x: f"{x:.2f}%")
+                display_filtered['Conversion Rate %'] = display_filtered['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                
+                st.markdown("<div class='time-table-container'>", unsafe_allow_html=True)
+                st.dataframe(display_filtered, use_container_width=True, hide_index=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+                # Download filtered data
+                filtered_csv = filtered_data.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Filtered Data",
+                    data=filtered_csv,
+                    file_name=f"filtered_monthly_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    key="filtered_time_health_download"
+                )
+            else:
+                st.warning("⚠️ No months match the selected filters. Try adjusting your criteria.")
 
         
         # Download and Export Section
