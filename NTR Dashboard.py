@@ -13049,8 +13049,8 @@ with tab_insights:
         q3, "⚠️"
     )
 
-    # Q4a: High CTR, Low CR - Post-Click Experience Issues (By Search Query)
-    def q4a():
+    # Q4: High CTR, Low CR - Post-Click Experience Issues (By Search Query)
+    def q4():
         high_ctr = df_insights['ctr_calculated'].quantile(0.70)
         low_cr = df_insights['cr_calculated'].quantile(0.30)
         
@@ -13079,7 +13079,7 @@ with tab_insights:
             
             st.dataframe(display_df, use_container_width=True, hide_index=True)
             
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q4a_experience_issues_by_query_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4a_dl")
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_by_query_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
             
             fig = px.scatter(out, x='ctr_calculated', y='cr_calculated', size='search_volume', color='bounce_indicator',
                             hover_data=['search', 'brand'], title='High CTR, Low CR: Experience Issues by Search Query',
@@ -13091,9 +13091,9 @@ with tab_insights:
             st.info("📊 No high CTR, low CR issues found for search queries with 200+ search volume")
     
     q_expand(
-        "Q4a — High CTR, Low CR by Search Query",
+        "Q4 — High CTR, Low CR by Search Query",
         "Individual search terms attracting clicks but failing to convert. Shows specific queries with post-click experience issues. Filters: Search volume ≥200, excludes generic items.",
-        q4a, "🔍"
+        q4, "🔍"
     )
 
 
@@ -14022,20 +14022,28 @@ with tab_insights:
     ">
         <h3 style="color: #1B5E20; margin-bottom: 1rem;">💡 Key Takeaways & Action Items</h3>
         <ul style="color: #2E7D32; line-height: 1.8; font-size: 1.05em;">
-            <li><strong>Prioritize Q3 & Q4:</strong> Fix high-traffic, low-conversion products first for immediate ROI</li>
-            <li><strong>Scale Q11:</strong> Invest in hidden gems with high CR but low visibility</li>
-            <li><strong>Monitor Q7:</strong> Address underperforming products flagged by the system</li>
-            <li><strong>Optimize Q8:</strong> Improve search rankings for products beyond top 3 positions</li>
-            <li><strong>Leverage Q12:</strong> Build loyalty programs around high-loyalty brands</li>
-            <li><strong>Close Q13 Gaps:</strong> Benchmark against competitors and close performance gaps</li>
-            <li><strong>Focus Q14 Keywords:</strong> Allocate marketing budget to high-value keywords</li>
-            <li><strong>Plan with Q6:</strong> Use seasonal trends for inventory and promotion planning</li>
+            <li><strong>Q1 - Top Brands:</strong> Focus marketing budget on high-efficiency branded products (CTR × CR)</li>
+            <li><strong>Q2 - Category Performance:</strong> Prioritize inventory and promotions for top-converting categories</li>
+            <li><strong>Q3 - Conversion Opportunities:</strong> Fix high-traffic, low-CR products first for immediate ROI</li>
+            <li><strong>Q4 - Experience Issues:</strong> Optimize post-click experience for high-CTR, low-CR search queries</li>
+            <li><strong>Q5 - Brand vs Generic:</strong> Balance SEO and brand marketing based on search intent patterns</li>
+            <li><strong>Q6 - Seasonal Trends:</strong> Use month-over-month patterns for inventory and promotion planning</li>
+            <li><strong>Q7 - Underperformers:</strong> Address system-flagged products with immediate action on pricing/stock</li>
+            <li><strong>Q8 - Hidden Gems:</strong> Boost visibility for high-converting, low-CTR products (quick wins!)</li>
+            <li><strong>Q9 - Sub-Categories:</strong> Focus merchandising on high-revenue sub-categories</li>
+            <li><strong>Q10 - Funnel Efficiency:</strong> Replicate success patterns from top-performing conversion funnels</li>
+            <li><strong>Q11 - Cannibalization:</strong> Consolidate fragmented search queries to reduce brand cannibalization</li>
+            <li><strong>Q12 - Brand Loyalty:</strong> Build loyalty programs around high-loyalty brands (CTR + CR weighted)</li>
+            <li><strong>Q13 - Competitive Gaps:</strong> Close performance gaps vs. category benchmarks</li>
+            <li><strong>Q14 - High-Value Keywords:</strong> Allocate marketing budget to revenue-driving keyword combinations</li>
+            <li><strong>Q15 - Stability Analysis:</strong> Use stable brands for forecasting; manage volatile brands with dynamic strategies</li>
         </ul>
         <p style="color: #1B5E20; margin-top: 1rem; font-style: italic;">
             📧 For advanced analytics, predictive modeling, or custom dashboards, contact the analytics team.
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 # ----------------- Export / Downloads -----------------
