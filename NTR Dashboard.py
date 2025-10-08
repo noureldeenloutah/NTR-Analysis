@@ -2241,7 +2241,7 @@ with tab_overview:
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🔍</span>
-            <div class='value'>{format_number(unique_queries)} ({total_share:.2f}%)</div>
+            <div class='value'>{format_number(unique_queries)}</div>
             <div class='label'>Unique Health Queries</div>
         </div>
         """, unsafe_allow_html=True)
