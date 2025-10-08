@@ -13487,35 +13487,39 @@ with tab_insights:
         q10, "🎢"
     )
 
-    # Q11: Brand Cannibalization - Competing Products Analysis
+    # Q11: Brand Cannibalization - Competing Products Analysis (REVISED)
     def q11():
         # Filter meaningful data
         df_temp = df_insights[
-            (df_insights['Counts'] >= 200) &
+            (df_insights['Counts'] >= 50) &  # Lower threshold to catch more variations
             (df_insights['Brand'] != 'Other')
         ].copy()
         
         if len(df_temp) > 0:
             # Group by brand to find brands with multiple competing search queries
             brand_analysis = df_temp.groupby('Brand').agg({
-                'search': 'count',  # Number of different search queries
+                'search': lambda x: x.nunique(),  # Count UNIQUE search queries
                 'Counts': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
             }).reset_index()
             
-            brand_analysis.columns = ['brand', 'query_count', 'total_search_volume', 'total_clicks', 'total_conversions']
+            brand_analysis.columns = ['brand', 'unique_queries', 'total_search_volume', 'total_clicks', 'total_conversions']
             
             # Filter brands with multiple queries (potential cannibalization)
-            brand_analysis = brand_analysis[brand_analysis['query_count'] >= 3].copy()
+            brand_analysis = brand_analysis[brand_analysis['unique_queries'] >= 5].copy()
             
             if len(brand_analysis) > 0:
                 # Calculate metrics
                 brand_analysis['avg_ctr'] = (brand_analysis['total_clicks'] / brand_analysis['total_search_volume'] * 100).fillna(0)
                 brand_analysis['avg_cr'] = (brand_analysis['total_conversions'] / brand_analysis['total_search_volume'] * 100).fillna(0)
+                
+                # Cannibalization score: More unique queries + lower CTR = higher risk
+                brand_analysis['query_fragmentation'] = brand_analysis['unique_queries'] / brand_analysis['total_search_volume'] * 10000
                 brand_analysis['cannibalization_score'] = (
-                    brand_analysis['query_count'] * 
-                    (100 - brand_analysis['avg_ctr'])  # More queries + lower CTR = higher cannibalization risk
+                    brand_analysis['unique_queries'] * 
+                    (100 - brand_analysis['avg_ctr']) * 
+                    brand_analysis['query_fragmentation']
                 )
                 
                 out = brand_analysis.nlargest(20, 'cannibalization_score').copy()
@@ -13525,7 +13529,7 @@ with tab_insights:
                 top_brand_details = df_temp[df_temp['Brand'] == top_brand].copy()
                 top_brand_details['ctr'] = (top_brand_details['clicks'] / top_brand_details['Counts'] * 100).fillna(0)
                 top_brand_details['cr'] = (top_brand_details['conversions'] / top_brand_details['Counts'] * 100).fillna(0)
-                top_brand_details = top_brand_details.nlargest(10, 'Counts')[['search', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']]
+                top_brand_details = top_brand_details.nlargest(30, 'Counts')[['search', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']]
                 
                 # Format for display - Main table
                 display_df = out.copy()
@@ -13536,71 +13540,81 @@ with tab_insights:
                 display_df['avg_cr_fmt'] = display_df['avg_cr'].apply(lambda x: f"{x:.2f}%")
                 display_df['cannibalization_score_fmt'] = display_df['cannibalization_score'].apply(lambda x: f"{x:.0f}")
                 
-                display_df = display_df[['brand', 'query_count', 'total_search_volume_fmt', 'total_clicks_fmt', 
+                display_df = display_df[['brand', 'unique_queries', 'total_search_volume_fmt', 'total_clicks_fmt', 
                                         'total_conversions_fmt', 'avg_ctr_fmt', 'avg_cr_fmt', 'cannibalization_score_fmt']]
-                display_df.columns = ['Brand', '# Queries', 'Total Search Volume', 'Total Clicks', 
+                display_df.columns = ['Brand', '# Unique Queries', 'Total Search Volume', 'Total Clicks', 
                                     'Total Conversions', 'Avg CTR', 'Avg CR', 'Cannibalization Risk']
                 
                 st.dataframe(display_df, use_container_width=True, hide_index=True)
                 
                 # Warning callout
-                st.warning(f"⚠️ **{top_brand}** has {out.iloc[0]['query_count']:.0f} competing search queries with {format_number(int(out.iloc[0]['total_search_volume']))} total search volume. This may indicate keyword cannibalization!")
+                st.warning(f"⚠️ **{top_brand}** has **{out.iloc[0]['unique_queries']:.0f} unique search queries** with **{format_number(int(out.iloc[0]['total_search_volume']))}** total search volume. This indicates severe keyword fragmentation!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
                                 f"q11_cannibalization_{datetime.now().strftime('%Y%m%d')}.csv", 
                                 "text/csv", key="q11_dl")
                 
                 # Detailed breakdown of top cannibalizing brand
-                st.subheader(f"🔍 Detailed Breakdown: {top_brand}")
+                st.subheader(f"🔍 Detailed Query Breakdown: {top_brand} (Top 30 by Volume)")
                 
                 detail_display = top_brand_details.copy()
-                detail_display['query'] = detail_display['search'].apply(lambda x: f"{top_brand} {x}")
                 detail_display['Counts_fmt'] = detail_display['Counts'].apply(lambda x: format_number(int(x)))
                 detail_display['clicks_fmt'] = detail_display['clicks'].apply(lambda x: format_number(int(x)))
                 detail_display['conversions_fmt'] = detail_display['conversions'].apply(lambda x: format_number(int(x)))
                 detail_display['ctr_fmt'] = detail_display['ctr'].apply(lambda x: f"{x:.2f}%")
                 detail_display['cr_fmt'] = detail_display['cr'].apply(lambda x: f"{x:.2f}%")
                 
-                detail_display = detail_display[['query', 'search', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
-                detail_display.columns = ['Query', 'Search Term', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
+                detail_display = detail_display[['search', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
+                detail_display.columns = ['Search Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
                 
                 st.dataframe(detail_display, use_container_width=True, hide_index=True)
                 
+                # Actionable insights
+                st.info(f"""
+                **💡 Consolidation Strategy for {top_brand}:**
+                1. **Identify core queries:** Group similar searches (e.g., misspellings, language variations)
+                2. **Create primary landing pages:** 3-5 optimized pages instead of {out.iloc[0]['unique_queries']:.0f}
+                3. **Redirect low-volume queries:** Use 301 redirects to consolidate traffic
+                4. **Optimize metadata:** Include common variations in keywords/descriptions
+                5. **Expected impact:** Potential CTR increase of 20-40% through consolidation
+                """)
+                
                 # Visualization: Cannibalization Risk by Brand
-                fig = px.bar(out.head(10), x='brand', y='cannibalization_score',
-                            title='Top 10 Brands with Highest Cannibalization Risk',
-                            color='query_count', color_continuous_scale='Reds',
-                            hover_data=['query_count', 'total_search_volume', 'avg_ctr'])
+                fig = px.bar(out.head(10), x='brand', y='unique_queries',
+                            title='Top 10 Brands: Query Fragmentation (# of Unique Queries)',
+                            color='cannibalization_score', color_continuous_scale='Reds',
+                            hover_data=['total_search_volume', 'avg_ctr', 'avg_cr'])
                 fig.update_layout(
                     xaxis_title="Brand",
-                    yaxis_title="Cannibalization Risk Score",
+                    yaxis_title="Number of Unique Search Queries",
                     xaxis_tickangle=-45
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 
                 # Scatter: Query Count vs CTR
-                fig2 = px.scatter(out, x='query_count', y='avg_ctr',
+                fig2 = px.scatter(out, x='unique_queries', y='avg_ctr',
                                 size='total_search_volume', color='avg_cr',
                                 hover_data=['brand', 'total_clicks', 'total_conversions'],
-                                title='Brand Cannibalization: Query Count vs CTR (Size = Search Volume)',
+                                title='Cannibalization Impact: More Queries = Lower CTR?',
                                 color_continuous_scale='RdYlGn',
-                                labels={'query_count': '# of Competing Queries', 'avg_ctr': 'Average CTR (%)'})
+                                labels={'unique_queries': '# of Unique Queries', 'avg_ctr': 'Average CTR (%)'})
                 fig2.update_layout(
-                    xaxis_title="Number of Competing Queries",
+                    xaxis_title="Number of Unique Search Queries",
                     yaxis_title="Average CTR (%)"
                 )
                 st.plotly_chart(fig2, use_container_width=True)
                 
             else:
-                st.info("📊 No significant brand cannibalization detected")
+                st.info("📊 No significant brand cannibalization detected (brands need 5+ unique queries)")
         else:
             st.info("📊 Insufficient data for cannibalization analysis")
 
     q_expand(
         "Q11 — 🔄 Brand Cannibalization - Competing Products Analysis",
-        "Identifies brands with multiple search queries that may be competing against each other, diluting CTR and conversions. **Action:** Consolidate product listings, optimize primary keywords, and redirect low-performing variants to main product pages.",
+        "Identifies brands with excessive query fragmentation (multiple search variations competing). **Action:** Consolidate listings, redirect misspellings, optimize primary keywords, and create clear product hierarchy.",
         q11, "🔄"
     )
+
 
 
     # Q12: Brand Loyalty Index - Repeat Search Behavior
