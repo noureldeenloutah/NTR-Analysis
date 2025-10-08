@@ -12699,627 +12699,889 @@ with tab_pivot:
             st.code(str(e))
 
 
-# ----------------- Insights & Questions (Modified) -----------------
+# ----------------- Insights & Strategic Questions (Optimized) -----------------
 with tab_insights:
-    st.header("🌿 Health Insights & Actionable Questions (10)")
-    st.markdown("Curated health insights focused on **search** data for Nutraceuticals & Nutrition-driven decisions, with enhanced tables, charts, and visuals. 🚀")
+    # 🎨 GREEN-THEMED HERO HEADER
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🔍 Strategic Insights Hub 🔍
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Data-Driven Decisions Through Advanced Performance Analytics
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Hero Image for Insights Tab
-    insights_image_options = {
-        "Health Insights Analytics": "https://placehold.co/1200x200/E8F5E8/2E7D32?text=Health+Insights+Performance+Analysis",
-        "Wellness Insights Hub": "https://placehold.co/1200x200/4CAF50/FFFFFF?text=Wellness+Insights+Intelligence+Dashboard",
-        "Abstract Health Insights": "https://source.unsplash.com/1200x200/?health,wellness,insights",
-        "Health Insights Gradient": "https://placehold.co/1200x200/C8E6C8/1B5E20?text=Lady+Care+Health+Insights",
-    }
-    selected_insights_image = st.sidebar.selectbox("Choose Insights Tab Hero", options=list(insights_image_options.keys()), index=0, key="insights_hero_image_selector")
-    st.image(insights_image_options[selected_insights_image], use_container_width=True)
-
-    # Apply CSS for enhanced green health theme consistency
+    # Enhanced CSS for professional styling
     st.markdown("""
     <style>
-    .health-insight-metric-card {
+    .insight-metric-card {
         background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-        padding: 25px;
-        border-radius: 15px;
+        padding: 20px;
+        border-radius: 12px;
         text-align: center;
         color: #1B5E20;
-        box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3);
+        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
         margin: 10px 0;
-        min-height: 160px;
+        min-height: 140px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        transition: transform 0.2s ease;
+        transition: all 0.3s ease;
         border-left: 4px solid #4CAF50;
     }
-    .health-insight-metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4);
+    .insight-metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(46, 125, 50, 0.3);
     }
-    .health-insight-metric-card .icon {
-        font-size: 3em;
-        margin-bottom: 10px;
-        display: block;
-        color: #2E7D32;
-    }
-    .health-insight-metric-card .value {
-        font-size: 1.6em;
-        font-weight: bold;
+    .insight-metric-card .icon {
+        font-size: 2.5em;
         margin-bottom: 8px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        line-height: 1.2;
-        color: #1B5E20;
-    }
-    .health-insight-metric-card .label {
-        font-size: 1.1em;
-        opacity: 0.95;
-        font-weight: 600;
-        margin-bottom: 6px;
         color: #2E7D32;
     }
-    .health-insight-metric-card .sub-label {
-        font-size: 1em;
-        opacity: 0.9;
-        font-weight: 500;
-        line-height: 1.2;
-        color: #388E3C;
-    }
-    .health-insight-performance-badge {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        font-weight: bold;
-        margin-left: 8px;
-    }
-    .high-health-insight-performance {
-        background-color: #4CAF50;
-        color: white;
-    }
-    .medium-health-insight-performance {
-        background-color: #81C784;
-        color: white;
-    }
-    .low-health-insight-performance {
-        background-color: #A5D6A7;
+    .insight-metric-card .value {
+        font-size: 1.8em;
+        font-weight: 700;
+        margin-bottom: 6px;
         color: #1B5E20;
     }
-    .health-insight-table-container {
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-        padding: 20px;
-        border-radius: 15px;
-        border-left: 5px solid #4CAF50;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px 0;
-        transition: transform 0.2s ease;
-    }
-    .health-insight-table-container:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-    .health-insight-table-container table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: Arial, sans-serif;
-    }
-    .health-insight-table-container th {
-        background-color: #4CAF50;
-        color: white;
-        font-weight: bold;
-        padding: 12px;
-        text-align: left;
-        font-size: 1.1em;
-    }
-    .health-insight-table-container td {
-        padding: 10px;
+    .insight-metric-card .label {
         font-size: 1em;
-        color: #2D3748;
-        border-bottom: 1px solid #E2E8F0;
+        font-weight: 600;
+        color: #2E7D32;
     }
-    .health-insight-table-container tr:nth-child(even) {
-        background-color: #E8F5E8;
+    .performance-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-left: 6px;
     }
-    .health-insight-table-container tr:hover {
-        background-color: #C8E6C8;
-    }
-    .health-insight-box {
+    .high-performance { background-color: #4CAF50; color: white; }
+    .medium-performance { background-color: #FFC107; color: #1B5E20; }
+    .low-performance { background-color: #F44336; color: white; }
+    .insight-box {
         background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
         padding: 15px;
         border-radius: 10px;
         border-left: 4px solid #4CAF50;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(46, 125, 50, 0.1);
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
     }
-    .health-insight-box h4 {
+    .insight-box h4 {
         color: #2E7D32;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        font-size: 1.1em;
     }
-    .health-insight-box p {
+    .insight-box p {
         color: #388E3C;
-        line-height: 1.5;
+        line-height: 1.6;
+        margin: 0;
     }
     </style>
     """, unsafe_allow_html=True)
 
     # Cache data processing for performance
     @st.cache_data
-    def preprocess_data():
+    def preprocess_insights_data():
         df = queries.copy()
-        df['brand'] = df['brand'].astype(str).replace('nan', '').str.strip()
-        df['Counts'] = pd.to_numeric(df['Counts'], errors='coerce').fillna(0)
+        
+        # Clean and standardize column names
+        df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+        
+        # Rename columns to match expected format
+        column_mapping = {
+            'search': 'search_volume',
+            'count': 'search_volume',
+            'counts': 'search_volume',
+            'click_through_rate': 'ctr',
+            'converion_rate': 'cr',
+            'conversion_rate': 'cr'
+        }
+        df.rename(columns=column_mapping, inplace=True)
+        
+        # Convert to numeric
+        df['search_volume'] = pd.to_numeric(df['search_volume'], errors='coerce').fillna(0)
         df['clicks'] = pd.to_numeric(df['clicks'], errors='coerce').fillna(0)
         df['conversions'] = pd.to_numeric(df['conversions'], errors='coerce').fillna(0)
-        df['month'] = df['month'].astype(str).str.strip()
-        df['sub_category'] = df['sub_category'].astype(str).str.strip() if 'sub_category' in df.columns else ''
-        df['category'] = df['category'].astype(str).str.strip() if 'category' in df.columns else ''
+        
+        # Recalculate CR correctly: conversions / search_volume
+        df['cr_calculated'] = df.apply(
+            lambda r: (r['conversions'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
+            axis=1
+        )
+        
+        # Recalculate CTR: clicks / search_volume
+        df['ctr_calculated'] = df.apply(
+            lambda r: (r['clicks'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
+            axis=1
+        )
+        
+        # Clean brand column
+        df['brand'] = df['brand'].astype(str).replace('nan', 'Other').str.strip()
+        df['brand'] = df['brand'].replace('', 'Other')
+        
+        # Clean category columns
+        for col in ['department', 'category', 'sub_category', 'class']:
+            if col in df.columns:
+                df[col] = df[col].astype(str).str.strip()
+        
         return df
 
     # Load preprocessed data
     try:
-        queries_clean = preprocess_data()
+        df_insights = preprocess_insights_data()
     except Exception as e:
-        st.error(f"Data preprocessing error: {e}")
+        st.error(f"⚠️ Data preprocessing error: {e}")
         st.stop()
 
-    # Overall Health Insights Summary
-    st.subheader("📊 Overall Health Insights Summary")
-    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    # Overall Performance Summary
+    st.subheader("📊 Overall Performance Summary")
     
-    total_queries = len(queries_clean['normalized_query'].unique())
-    total_searches = queries_clean['Counts'].sum()
-    avg_ctr = queries_clean.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1).mean()
-    avg_cr = queries_clean.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1).mean()
+    col1, col2, col3, col4 = st.columns(4)
     
-    with summary_col1:
+    total_search_volume = df_insights['search_volume'].sum()
+    total_clicks = df_insights['clicks'].sum()
+    total_conversions = df_insights['conversions'].sum()
+    
+    overall_ctr = (total_clicks / total_search_volume * 100) if total_search_volume > 0 else 0
+    overall_cr = (total_conversions / total_search_volume * 100) if total_search_volume > 0 else 0
+    
+    with col1:
         st.markdown(f"""
-        <div class='health-insight-metric-card'>
+        <div class='insight-metric-card'>
             <span class='icon'>🔍</span>
-            <div class='value'>{format_number(total_queries)}</div>
-            <div class='label'>Unique Health Queries</div>
-            <div class='sub-label'>Analyzed</div>
+            <div class='value'>{format_number(total_search_volume)}</div>
+            <div class='label'>Total Search Volume</div>
         </div>
         """, unsafe_allow_html=True)
     
-    with summary_col2:
+    with col2:
         st.markdown(f"""
-        <div class='health-insight-metric-card'>
+        <div class='insight-metric-card'>
+            <span class='icon'>👆</span>
+            <div class='value'>{format_number(total_clicks)}</div>
+            <div class='label'>Total Clicks</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        ctr_badge = "high-performance" if overall_ctr > 20 else "medium-performance" if overall_ctr > 10 else "low-performance"
+        ctr_label = "High" if overall_ctr > 20 else "Medium" if overall_ctr > 10 else "Low"
+        st.markdown(f"""
+        <div class='insight-metric-card'>
             <span class='icon'>📈</span>
-            <div class='value'>{format_number(total_searches)}</div>
-            <div class='label'>Total Health Searches</div>
-            <div class='sub-label'>Volume</div>
+            <div class='value'>{overall_ctr:.2f}% <span class='performance-badge {ctr_badge}'>{ctr_label}</span></div>
+            <div class='label'>Overall CTR</div>
         </div>
         """, unsafe_allow_html=True)
     
-    with summary_col3:
-        performance_class = "high-health-insight-performance" if avg_ctr > 5 else "medium-health-insight-performance" if avg_ctr > 2 else "low-health-insight-performance"
+    with col4:
+        cr_badge = "high-performance" if overall_cr > 10 else "medium-performance" if overall_cr > 5 else "low-performance"
+        cr_label = "High" if overall_cr > 10 else "Medium" if overall_cr > 5 else "Low"
         st.markdown(f"""
-        <div class='health-insight-metric-card'>
-            <span class='icon'>📊</span>
-            <div class='value'>{avg_ctr:.2f}% <span class='health-insight-performance-badge {performance_class}'>{"High" if avg_ctr > 5 else "Medium" if avg_ctr > 2 else "Low"}</span></div>
-            <div class='label'>Average Health CTR</div>
-            <div class='sub-label'>Engagement</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with summary_col4:
-        performance_class = "high-health-insight-performance" if avg_cr > 3 else "medium-health-insight-performance" if avg_cr > 1 else "low-health-insight-performance"
-        st.markdown(f"""
-        <div class='health-insight-metric-card'>
+        <div class='insight-metric-card'>
             <span class='icon'>💚</span>
-            <div class='value'>{avg_cr:.2f}% <span class='health-insight-performance-badge {performance_class}'>{"High" if avg_cr > 3 else "Medium" if avg_cr > 1 else "Low"}</span></div>
-            <div class='label'>Average Nutraceuticals & Nutrition CR</div>
-            <div class='sub-label'>Conversion</div>
+            <div class='value'>{overall_cr:.2f}% <span class='performance-badge {cr_badge}'>{cr_label}</span></div>
+            <div class='label'>Overall CR</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("---")
 
+    # Helper function for expandable questions
     def q_expand(title, explanation, render_fn, icon="💡"):
         with st.expander(f"{icon} {title}", expanded=False):
-            st.markdown(f"<div class='health-insight-box'><h4>Why & How to Use</h4><p>{explanation}</p></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='insight-box'><h4>📌 Strategic Value</h4><p>{explanation}</p></div>", unsafe_allow_html=True)
             try:
-                st.markdown("<div class='health-insight-table-container'>", unsafe_allow_html=True)
                 render_fn()
-                st.markdown("</div>", unsafe_allow_html=True)
             except Exception as e:
-                st.error(f"Rendering error: {e}")
+                st.error(f"⚠️ Rendering error: {e}")
 
-    # Q1: Top Queries by Counts (Top 10)
+    # ==================== TOP 15 STRATEGIC QUESTIONS ====================
+
+    # Q1: Top 10 Products by Search Volume & Conversion Efficiency
     def q1():
-        out = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum'),
-            conversions=('conversions', 'sum')
-        ).reset_index()
-        out['ctr'] = out.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-        out['cr'] = out.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1)
-        total_counts = out['Counts'].sum()
-        out['share_counts'] = out['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = out.sort_values('Counts', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'conversions', 'ctr', 'cr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['conversions'] = out['conversions'].apply(lambda x: f"{x:,.0f}")
-        out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-        out['cr'] = out['cr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q1 Health Table",
-            data=csv,
-            file_name=f"q1_top_health_queries_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q1_health_download"
-        )
-        fig = px.bar(out, x='normalized_query', y=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                     title='Top 10 Health Queries by Counts', color_discrete_sequence=['#4CAF50'], text_auto=True)
-        fig.update_layout(xaxis_title="Query", yaxis_title="Counts", xaxis_tickangle=45)
+        agg = df_insights.groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).reset_index()
+        
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+        agg['conversion_efficiency'] = (agg['cr'] * agg['ctr']).round(2)
+        
+        out = agg.sort_values('search_volume', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'conversion_efficiency']]
+        
+        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Efficiency Score']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Clicks': '{:,.0f}',
+            'Conversions': '{:,.0f}',
+            'CTR (%)': '{:.2f}',
+            'CR (%)': '{:.2f}',
+            'Efficiency Score': '{:.2f}'
+        }).background_gradient(subset=['Efficiency Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q1_top_products_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q1_dl")
+        
+        fig = px.scatter(out, x='CTR (%)', y='CR (%)', size='Search Volume', color='Efficiency Score',
+                        hover_data=['Brand'], title='Top 10 Products: CTR vs CR Performance',
+                        color_continuous_scale='Greens', text='Brand')
+        fig.update_traces(textposition='top center')
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q1 — Top Health Queries by Counts (Top 10)",
-             "Which queries drive the most Counts? Prioritize for Nutraceuticals & Nutrition search tuning and inventory planning.",
-             q1, "📈")
+    
+    q_expand(
+        "Q1 — Top 10 Products by Search Volume & Conversion Efficiency",
+        "Identifies high-demand products with strong conversion potential. Focus marketing budget on brands with high efficiency scores (CTR × CR) to maximize ROI.",
+        q1, "🏆"
+    )
 
-    # Q2: High Counts, Low CTR Queries (Top 10)
+    # Q2: Category Performance Analysis - Which Categories Drive Revenue?
     def q2():
-        df2 = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum')
-        ).reset_index()
-        df2['ctr'] = df2.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-        total_counts = df2['Counts'].sum()
-        df2['share_counts'] = df2['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = df2[(df2['Counts'] >= df2['Counts'].quantile(0.6)) & (df2['ctr'] <= df2['ctr'].quantile(0.3))].sort_values('Counts', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'ctr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
+        if 'category' in df_insights.columns:
+            agg = df_insights.groupby('category').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['search_share'] = (agg['search_volume'] / agg['search_volume'].sum() * 100).round(2)
+            
+            out = agg.sort_values('conversions', ascending=False).head(10)
+            out = out[['category', 'search_volume', 'conversions', 'ctr', 'cr', 'search_share']]
+            out.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}',
+                'Search Share (%)': '{:.2f}'
+            }).background_gradient(subset=['Conversions'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q2_category_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q2_dl")
+            
+            fig = px.bar(out, x='Category', y='Conversions', color='CR (%)',
+                        title='Top 10 Categories by Conversions', color_continuous_scale='Greens', text='Conversions')
+            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+            fig.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True)
         else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q2 Health Table",
-            data=csv,
-            file_name=f"q2_high_counts_low_ctr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q2_health_download"
-        )
-        fig = px.scatter(out, x=out['Counts'].apply(lambda x: float(x.replace(',', ''))), y=out['ctr'].apply(lambda x: float(x.strip('%'))),
-                         text='normalized_query', title='High Counts, Low CTR Health Queries',
-                         color_discrete_sequence=['#4CAF50'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
-        fig.update_traces(textposition='top center')
-        fig.update_layout(xaxis_title="Counts", yaxis_title="CTR (%)")
-        st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q2 — High Counts, Low CTR Health Queries (Top 10)",
-             "Queries with high Counts but low engagement. Improve Nutraceuticals & Nutrition relevance, snippets, or imagery.",
-             q2, "⚠️")
+            st.info("Category data not available")
+    
+    q_expand(
+        "Q2 — Category Performance Analysis - Revenue Drivers",
+        "Reveals which product categories generate the most conversions. Prioritize inventory, promotions, and content for top-performing categories to boost revenue.",
+        q2, "📦"
+    )
 
-    # Q3: Top Queries by Conversion Rate (Min Counts=200, Top 10)
+    # Q3: High Search Volume, Low CR - Conversion Optimization Opportunities
     def q3():
-        df3 = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum'),
-            conversions=('conversions', 'sum')
-        ).reset_index()
-        df3 = df3[df3['Counts'] >= 200]
-        df3['cr'] = df3.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1)
-        total_counts = df3['Counts'].sum()
-        df3['share_counts'] = df3['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = df3.sort_values('cr', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'conversions', 'cr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['conversions'] = out['conversions'].apply(lambda x: f"{x:,.0f}")
-        out['cr'] = out['cr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q3 Health Table",
-            data=csv,
-            file_name=f"q3_top_conversion_rate_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q3_health_download"
-        )
-        fig = px.bar(out, x='normalized_query', y=out['cr'].apply(lambda x: float(x.strip('%'))),
-                     title='Top 10 Health Queries by Conversion Rate', color_discrete_sequence=['#4CAF50'], text_auto='.2f')
-        fig.update_layout(xaxis_title="Query", yaxis_title="Conversion Rate (%)", xaxis_tickangle=45)
+        threshold = df_insights['search_volume'].quantile(0.70)
+        median_cr = df_insights['cr_calculated'].median()
+        
+        out = df_insights[
+            (df_insights['search_volume'] >= threshold) & 
+            (df_insights['cr_calculated'] < median_cr)
+        ].groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum',
+            'cr_calculated': 'mean'
+        }).reset_index()
+        
+        out['potential_conversions'] = (out['search_volume'] * median_cr / 100).round(0)
+        out['conversion_gap'] = (out['potential_conversions'] - out['conversions']).round(0)
+        
+        out = out.sort_values('conversion_gap', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'conversions', 'cr_calculated', 'potential_conversions', 'conversion_gap']]
+        out.columns = ['Brand', 'Search Volume', 'Current Conversions', 'Current CR (%)', 'Potential Conversions', 'Conversion Gap']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Current Conversions': '{:,.0f}',
+            'Current CR (%)': '{:.2f}',
+            'Potential Conversions': '{:,.0f}',
+            'Conversion Gap': '{:,.0f}'
+        }).background_gradient(subset=['Conversion Gap'], cmap='Reds'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q3_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q3_dl")
+        
+        fig = px.bar(out, x='Brand', y='Conversion Gap', color='Current CR (%)',
+                    title='Top 10 Conversion Optimization Opportunities', color_continuous_scale='Reds', text='Conversion Gap')
+        fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+        fig.update_layout(xaxis_tickangle=-45)
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q3 — Top Health Queries by Conversion Rate (Min Counts=200)",
-             "High-converting queries for Nutraceuticals & Nutrition paid promotions or product focus.",
-             q3, "🎯")
+    
+    q_expand(
+        "Q3 — High Search Volume, Low CR - Optimization Opportunities",
+        "Identifies products with high traffic but poor conversion. Optimize product pages, pricing, reviews, and checkout flow to capture lost revenue. Prioritize by conversion gap.",
+        q3, "⚠️"
+    )
 
-    # Q4: Long-Tail vs Short-Tail Queries
+    # Q4: High CTR, Low CR - Post-Click Experience Issues
     def q4():
-        lt = queries_clean[queries_clean['query_length'] >= 20]
-        lt_counts = lt['Counts'].sum()
-        total_counts = queries_clean['Counts'].sum()
-        st.markdown(f"<div class='health-insight-metric-card'><span class='icon'>📏</span><div class='value'>{lt_counts:,.0f}</div><div class='label'>Long-Tail Counts</div><div class='sub-label'>Queries ≥20 chars, Share: {lt_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
-        out = pd.DataFrame({
-            'Type': ['Long-Tail (≥20 chars)', 'Short-Tail (<20 chars)'],
-            'Counts': [lt_counts, total_counts - lt_counts],
-            'share_counts': [lt_counts / total_counts * 100 if total_counts > 0 else 0, (total_counts - lt_counts) / total_counts * 100 if total_counts > 0 else 0]
-        })
-        out = out[['Type', 'Counts', 'share_counts']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=200, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q4 Health Table",
-            data=csv,
-            file_name=f"q4_long_tail_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q4_health_download"
-        )
-        fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                     title='Long-Tail vs Short-Tail Health Counts Share',
-                     color_discrete_sequence=['#4CAF50', '#81C784'])
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(showlegend=True)
-        st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q4 — Long-Tail vs Short-Tail Health Queries",
-             "How much Counts come from long-tail queries? Key for Nutraceuticals & Nutrition content strategy.",
-             q4, "📏")
-
-    # Q5: Branded vs Generic Counts Share
-    def q5():
-        if 'brand' in queries_clean.columns:
-            generic = queries_clean[queries_clean['brand'].str.lower() == 'other']
-            branded = queries_clean[(queries_clean['brand'].notna()) & (queries_clean['brand'] != '') & (queries_clean['brand'].str.lower() != 'other')]
-            generic_counts = generic['Counts'].sum()
-            branded_counts = branded['Counts'].sum()
-            total_counts = queries_clean['Counts'].sum()
-            st.markdown(f"<div class='health-insight-metric-card'><span class='icon'>🏷</span><div class='value'>{branded_counts:,.0f}</div><div class='label'>Branded Health Counts</div><div class='sub-label'>Share: {branded_counts/total_counts:.2%}</div></div>", unsafe_allow_html=True)
-            out = pd.DataFrame({
-                'Type': ['Branded', 'Generic'],
-                'Counts': [branded_counts, generic_counts],
-                'share_counts': [branded_counts / total_counts * 100 if total_counts > 0 else 0, generic_counts / total_counts * 100 if total_counts > 0 else 0]
-            })
-            out = out[['Type', 'Counts', 'share_counts']]
-            out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-            out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-            if AGGRID_OK:
-                AgGrid(out, height=200, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-            else:
-                st.dataframe(out, use_container_width=True, hide_index=True)
-            csv = out.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Q5 Health Table",
-                data=csv,
-                file_name=f"q5_branded_generic_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime="text/csv",
-                key="q5_health_download"
-            )
-            fig = px.pie(out, names='Type', values=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                         title='Branded vs Generic Health Counts Share',
-                         color_discrete_sequence=['#4CAF50', '#81C784'])
-            fig.update_traces(textposition='inside', textinfo='percent+label')
-            fig.update_layout(showlegend=True)
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("Brand column not present.")
-    q_expand("Q5 — Branded vs Generic Health Counts Share",
-             "Assess brand vs generic search intent, with 'Other' as Generic.",
-             q5, "🏷")
-
-    # Q6: Query Funnel Snapshot (Top 10)
-    def q6():
-        out = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum'),
-            conversions=('conversions', 'sum')
-        ).reset_index()
-        out['ctr'] = out.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-        out['cr'] = out.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1)
-        total_counts = out['Counts'].sum()
-        out['share_counts'] = out['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = out.sort_values('Counts', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'conversions', 'ctr', 'cr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['conversions'] = out['conversions'].apply(lambda x: f"{x:,.0f}")
-        out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-        out['cr'] = out['cr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q6 Health Table",
-            data=csv,
-            file_name=f"q6_health_funnel_snapshot_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q6_health_download"
-        )
-        fig = px.bar(out, x='normalized_query', y=[out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                                                   out['clicks'].apply(lambda x: float(x.replace(',', ''))),
-                                                   out['conversions'].apply(lambda x: float(x.replace(',', '')))],
-                     title='Top 10 Health Queries: Funnel Snapshot',
-                     barmode='group', color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
-        fig.update_layout(xaxis_title="Query", yaxis_title="Value", xaxis_tickangle=45)
-        st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q6 — Health Query Funnel Snapshot (Top 10)",
-             "View top queries' Nutraceuticals & Nutrition funnel: Counts → clicks → conversions.",
-             q6, "📊")
-
-    # Q7: Top Queries by CTR (Min Counts=200, Top 10)
-    def q7():
-        df7 = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum')
-        ).reset_index()
-        df7 = df7[df7['Counts'] >= 200]
-        df7['ctr'] = df7.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-        total_counts = df7['Counts'].sum()
-        df7['share_counts'] = df7['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = df7.sort_values('ctr', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'ctr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q7 Health Table",
-            data=csv,
-            file_name=f"q7_top_ctr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q7_health_download"
-        )
-        fig = px.bar(out, x='normalized_query', y=out['ctr'].apply(lambda x: float(x.strip('%'))),
-                     title='Top 10 Health Queries by CTR', color_discrete_sequence=['#4CAF50'], text_auto='.2f')
-        fig.update_layout(xaxis_title="Query", yaxis_title="CTR (%)", xaxis_tickangle=45)
-        st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q7 — Top Health Queries by CTR (Min Counts=200)",
-             "High-engagement queries for Nutraceuticals & Nutrition ad campaigns or content.",
-             q7, "📈")
-
-    # Q8: High Counts, Low CTR & Conversion Rate (Top 10)
-    def q8():
-        df8 = queries_clean.groupby('normalized_query').agg(
-            Counts=('Counts', 'sum'),
-            clicks=('clicks', 'sum'),
-            conversions=('conversions', 'sum')
-        ).reset_index()
-        df8['ctr'] = df8.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-        df8['cr'] = df8.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1)
-        total_counts = df8['Counts'].sum()
-        df8['share_counts'] = df8['Counts'] / total_counts * 100 if total_counts > 0 else 0
-        out = df8[(df8['Counts'] >= df8['Counts'].quantile(0.6)) &
-                  (df8['ctr'] <= df8['ctr'].mean()) &
-                  (df8['cr'] <= df8['cr'].mean())].sort_values('Counts', ascending=False).head(10)
-        out = out[['normalized_query', 'Counts', 'share_counts', 'clicks', 'conversions', 'ctr', 'cr']]
-        out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-        out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-        out['conversions'] = out['conversions'].apply(lambda x: f"{x:,.0f}")
-        out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-        out['cr'] = out['cr'].apply(lambda x: f"{x:.2f}%")
-        out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-        if AGGRID_OK:
-            AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-        else:
-            st.dataframe(out, use_container_width=True, hide_index=True)
-        csv = out.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Q8 Health Table",
-            data=csv,
-            file_name=f"q8_low_ctr_cr_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            key="q8_health_download"
-        )
-        fig = px.scatter(out, x=out['ctr'].apply(lambda x: float(x.strip('%'))),
-                         y=out['cr'].apply(lambda x: float(x.strip('%'))),
-                         text='normalized_query', title='High Counts, Low CTR & Conversion Rate Health',
-                         color_discrete_sequence=['#4CAF50'], size=out['Counts'].apply(lambda x: float(x.replace(',', ''))))
+        high_ctr = df_insights['ctr_calculated'].quantile(0.70)
+        low_cr = df_insights['cr_calculated'].quantile(0.30)
+        
+        out = df_insights[
+            (df_insights['ctr_calculated'] >= high_ctr) & 
+            (df_insights['cr_calculated'] <= low_cr) &
+            (df_insights['search_volume'] >= 100)
+        ].groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum',
+            'ctr_calculated': 'mean',
+            'cr_calculated': 'mean'
+        }).reset_index()
+        
+        out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
+        
+        out = out.sort_values('bounce_indicator', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
+        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Clicks': '{:,.0f}',
+            'Conversions': '{:,.0f}',
+            'CTR (%)': '{:.2f}',
+            'CR (%)': '{:.2f}',
+            'Experience Gap': '{:.2f}'
+        }).background_gradient(subset=['Experience Gap'], cmap='Oranges'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
+        
+        fig = px.scatter(out, x='CTR (%)', y='CR (%)', size='Search Volume', color='Experience Gap',
+                        hover_data=['Brand'], title='High CTR, Low CR: Experience Issues',
+                        color_continuous_scale='Oranges', text='Brand')
         fig.update_traces(textposition='top center')
-        fig.update_layout(xaxis_title="CTR (%)", yaxis_title="Conversion Rate (%)")
         st.plotly_chart(fig, use_container_width=True)
-    q_expand("Q8 — High Counts, Low CTR & Conversion Rate Health (Top 10)",
-             "Optimize Nutraceuticals & Nutrition search results for these underperforming queries.",
-             q8, "⚠️")
+    
+    q_expand(
+        "Q4 — High CTR, Low CR - Post-Click Experience Issues",
+        "Products attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Audit product pages, improve descriptions, add reviews, and optimize checkout.",
+        q4, "🚨"
+    )
 
-    # Q9: Top Brands by Counts (Top 10, Excluding "Other")
+    # Q5: Brand Performance Comparison - Branded vs Generic
+    def q5():
+        df_insights['brand_type'] = df_insights['brand'].apply(
+            lambda x: 'Generic' if x.lower() == 'other' else 'Branded'
+        )
+        
+        agg = df_insights.groupby('brand_type').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).reset_index()
+        
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+        agg['search_share'] = (agg['search_volume'] / agg['search_volume'].sum() * 100).round(2)
+        
+        out = agg[['brand_type', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'search_share']]
+        out.columns = ['Brand Type', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Clicks': '{:,.0f}',
+            'Conversions': '{:,.0f}',
+            'CTR (%)': '{:.2f}',
+            'CR (%)': '{:.2f}',
+            'Search Share (%)': '{:.2f}'
+        }).background_gradient(subset=['CR (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q5_branded_vs_generic_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q5_dl")
+        
+        fig = px.bar(out, x='Brand Type', y=['Search Volume', 'Clicks', 'Conversions'],
+                    title='Branded vs Generic Performance', barmode='group', color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
+        st.plotly_chart(fig, use_container_width=True)
+    
+    q_expand(
+        "Q5 — Brand Performance: Branded vs Generic Search Intent",
+        "Compares branded vs generic search behavior. High generic searches indicate discovery opportunities; high branded searches show brand strength. Balance SEO and brand marketing accordingly.",
+        q5, "🏷️"
+    )
+
+    # Q6: Seasonal Trends - Month-over-Month Performance
+    def q6():
+        if 'start_date' in df_insights.columns:
+            df_insights['month'] = pd.to_datetime(df_insights['start_date']).dt.to_period('M').astype(str)
+            
+            agg = df_insights.groupby('month').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            
+            agg = agg.sort_values('month')
+            out = agg[['month', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr']]
+            out.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}'
+            }), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q6_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q6_dl")
+            
+            fig = px.line(out, x='Month', y=['Search Volume', 'Clicks', 'Conversions'],
+                         title='Month-over-Month Performance Trends', markers=True)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Date data not available")
+    
+    q_expand(
+        "Q6 — Seasonal Trends - Month-over-Month Performance",
+        "Identifies seasonal patterns to optimize inventory, promotions, and ad spend. Plan campaigns around peak months and prepare for low-demand periods.",
+        q6, "📅"
+    )
+
+    # Q7: Top 10 Underperforming Products (Flagged)
+    def q7():
+        if 'underperforming' in df_insights.columns:
+            out = df_insights[df_insights['underperforming'] == True].groupby('brand').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum',
+                'ctr_calculated': 'mean',
+                'cr_calculated': 'mean'
+            }).reset_index()
+            
+            out = out.sort_values('search_volume', ascending=False).head(10)
+            out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated']]
+            out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}'
+            }).background_gradient(subset=['CR (%)'], cmap='Reds'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q7_dl")
+            
+            fig = px.bar(out, x='Brand', y='Search Volume', color='CR (%)',
+                        title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds', text='Search Volume')
+            fig.update_traces(texttemplate='%{text:,.0f}', textposition='outside')
+            fig.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Underperforming flag not available")
+    
+    q_expand(
+        "Q7 — Top 10 Underperforming Products (System Flagged)",
+        "Products flagged by the system as underperforming. Immediate action required: review pricing, stock availability, product descriptions, and competitive positioning.",
+        q7, "🔴"
+    )
+
+    # Q8: Click Position Analysis - Search Ranking Impact
+    def q8():
+        if 'averageclickposition' in df_insights.columns:
+            df_insights['position_bucket'] = pd.cut(df_insights['averageclickposition'], 
+                                                    bins=[0, 3, 6, 10, float('inf')], 
+                                                    labels=['Top 3', 'Position 4-6', 'Position 7-10', 'Beyond 10'])
+            
+            agg = df_insights.groupby('position_bucket').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            
+            out = agg[['position_bucket', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr']]
+            out.columns = ['Position', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}'
+            }).background_gradient(subset=['CTR (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q8_position_analysis_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q8_dl")
+            
+            fig = px.bar(out, x='Position', y=['CTR (%)', 'CR (%)'],
+                        title='Click Position Impact on CTR & CR', barmode='group',
+                        color_discrete_sequence=['#4CAF50', '#81C784'])
+            fig.update_layout(yaxis_title="Percentage (%)")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Click position data not available")
+    
+    q_expand(
+        "Q8 — Click Position Analysis - Search Ranking Impact",
+        "Shows how search ranking affects CTR and CR. Products in top 3 positions get significantly more clicks. Optimize SEO and paid search to improve rankings for high-value products.",
+        q8, "🎯"
+    )
+
+    # Q9: Sub-Category Deep Dive - Granular Performance Insights
     def q9():
-        if 'brand' in queries_clean.columns:
-            out = queries_clean[queries_clean['brand'].str.lower() != 'other'].groupby('brand').agg(
-                Counts=('Counts', 'sum'),
-                clicks=('clicks', 'sum'),
-                conversions=('conversions', 'sum')
-            ).reset_index()
-            out['ctr'] = out.apply(lambda r: (r['clicks'] / r['Counts'] * 100) if r['Counts'] > 0 else 0, axis=1)
-            out['cr'] = out.apply(lambda r: (r['conversions'] / r['clicks'] * 100) if r['clicks'] > 0 else 0, axis=1)
-            total_counts = out['Counts'].sum()
-            out['share_counts'] = out['Counts'] / total_counts * 100 if total_counts > 0 else 0
-            out = out.sort_values('Counts', ascending=False).head(10)
-            out = out[['brand', 'Counts', 'share_counts', 'clicks', 'conversions', 'ctr', 'cr']]
-            out['Counts'] = out['Counts'].apply(lambda x: f"{x:,.0f}")
-            out['clicks'] = out['clicks'].apply(lambda x: f"{x:,.0f}")
-            out['conversions'] = out['conversions'].apply(lambda x: f"{x:,.0f}")
-            out['ctr'] = out['ctr'].apply(lambda x: f"{x:.2f}%")
-            out['cr'] = out['cr'].apply(lambda x: f"{x:.2f}%")
-            out['share_counts'] = out['share_counts'].apply(lambda x: f"{x:.2f}%")
-            if AGGRID_OK:
-                AgGrid(out, height=300, gridOptions=GridOptionsBuilder.from_dataframe(out).build(), theme='material')
-            else:
-                st.dataframe(out, use_container_width=True, hide_index=True)
-            csv = out.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Q9 Health Table",
-                data=csv,
-                file_name=f"q9_top_brands_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime="text/csv",
-                key="q9_health_download"
-            )
-            fig = px.bar(out, x='brand', y=out['Counts'].apply(lambda x: float(x.replace(',', ''))),
-                         title='Top 10 Brands by Health Counts', color_discrete_sequence=['#4CAF50'], text_auto=True)
-            fig.update_layout(xaxis_title="Brand", yaxis_title="Counts", xaxis_tickangle=45)
+        if 'sub_category' in df_insights.columns:
+            agg = df_insights[df_insights['sub_category'] != ''].groupby('sub_category').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['revenue_potential'] = (agg['conversions'] * agg['cr']).round(2)
+            
+            out = agg.sort_values('conversions', ascending=False).head(10)
+            out = out[['sub_category', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'revenue_potential']]
+            out.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}',
+                'Revenue Score': '{:.2f}'
+            }).background_gradient(subset=['Revenue Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q9_subcategory_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q9_dl")
+            
+            fig = px.treemap(out, path=['Sub-Category'], values='Search Volume', color='CR (%)',
+                           title='Sub-Category Performance Treemap', color_continuous_scale='Greens')
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Brand column not present.")
-    q_expand("Q9 — Top Brands by Health Counts (Top 10)",
-             "Rank brands by Counts for Nutraceuticals & Nutrition partnerships or promotions, excluding 'Other'.",
-             q9, "🏷")
+            st.info("Sub-category data not available")
+    
+    q_expand(
+        "Q9 — Sub-Category Deep Dive - Granular Performance Insights",
+        "Identifies top-performing sub-categories for targeted merchandising. Focus on high-revenue sub-categories for promotions, cross-selling, and inventory expansion.",
+        q9, "🔬"
+    )
 
-    # Q10: Category vs Brand Performance (Pivot)
+    # Q10: Conversion Funnel Efficiency - Full Journey Analysis
     def q10():
-        if 'category' in queries_clean.columns and 'brand' in queries_clean.columns:
-            pivot = queries_clean[queries_clean['brand'].str.lower() != 'other'].pivot_table(
-                values='Counts', index='category', columns='brand', aggfunc='sum'
-            ).fillna(0)
-            total_counts = pivot.sum().sum()
-            pivot['Total'] = pivot.sum(axis=1)
-            pivot['share_counts'] = pivot['Total'] / total_counts * 100 if total_counts > 0 else 0
-            top_brands = queries_clean[queries_clean['brand'].str.lower() != 'other'].groupby('brand')['Counts'].sum().sort_values(ascending=False).head(5).index
-            pivot = pivot[top_brands.tolist() + ['Total', 'share_counts']]
-            pivot = pivot.reset_index()
-            pivot['Total'] = pivot['Total'].apply(lambda x: f"{x:,.0f}")
-            pivot['share_counts'] = pivot['share_counts'].apply(lambda x: f"{x:.2f}%")
-            for col in top_brands:
-                pivot[col] = pivot[col].apply(lambda x: f"{x:,.0f}")
-            pivot = pivot[['category', 'Total', 'share_counts'] + top_brands.tolist()]
-            if AGGRID_OK:
-                AgGrid(pivot, height=300, gridOptions=GridOptionsBuilder.from_dataframe(pivot).build(), theme='material')
-            else:
-                st.dataframe(pivot, use_container_width=True, hide_index=True)
-            csv = pivot.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Q10 Health Table",
-                data=csv,
-                file_name=f"q10_category_brand_health_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime="text/csv",
-                key="q10_health_download"
-            )
-            fig = px.bar(pivot.melt(id_vars='category', value_vars=top_brands, value_name='Counts'),
-                         x='category', y='Counts', color='brand', title='Health Category vs Brand Counts',
-                         barmode='stack', color_discrete_sequence=px.colors.qualitative.Set2)
-            fig.update_layout(xaxis_title="Category", yaxis_title="Counts", xaxis_tickangle=45)
+        agg = df_insights.groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).reset_index()
+        
+        agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+        agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+        agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).round(2)
+        agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).round(2)
+        
+        out = agg.sort_values('funnel_efficiency', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'click_to_conversion', 'funnel_efficiency']]
+        out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'Click-to-Conv (%)', 'Funnel Efficiency (%)']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Clicks': '{:,.0f}',
+            'Conversions': '{:,.0f}',
+            'CTR (%)': '{:.2f}',
+            'Click-to-Conv (%)': '{:.2f}',
+            'Funnel Efficiency (%)': '{:.2f}'
+        }).background_gradient(subset=['Funnel Efficiency (%)'], cmap='Greens'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q10_funnel_efficiency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q10_dl")
+        
+        fig = px.funnel(out.head(5), x='Search Volume', y='Brand', 
+                       title='Top 5 Brands: Conversion Funnel', color='Funnel Efficiency (%)',
+                       color_continuous_scale='Greens')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    q_expand(
+        "Q10 — Conversion Funnel Efficiency - Full Journey Analysis",
+        "Measures end-to-end funnel performance from search to conversion. Brands with high funnel efficiency have optimized user journeys. Replicate their success across other products.",
+        q10, "🎢"
+    )
+
+    # Q11: Low Search Volume, High CR - Hidden Gems
+    def q11():
+        low_volume = df_insights['search_volume'].quantile(0.30)
+        high_cr = df_insights['cr_calculated'].quantile(0.70)
+        
+        out = df_insights[
+            (df_insights['search_volume'] <= low_volume) & 
+            (df_insights['cr_calculated'] >= high_cr) &
+            (df_insights['search_volume'] >= 50)
+        ].groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum',
+            'cr_calculated': 'mean'
+        }).reset_index()
+        
+        out['growth_potential'] = (out['search_volume'] * 3).round(0)  # 3x growth scenario
+        out['projected_conversions'] = (out['growth_potential'] * out['cr_calculated'] / 100).round(0)
+        
+        out = out.sort_values('cr_calculated', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'conversions', 'cr_calculated', 'growth_potential', 'projected_conversions']]
+        out.columns = ['Brand', 'Current Search Volume', 'Current Conversions', 'CR (%)', 'Growth Potential (3x)', 'Projected Conversions']
+        
+        st.dataframe(out.style.format({
+            'Current Search Volume': '{:,.0f}',
+            'Current Conversions': '{:,.0f}',
+            'CR (%)': '{:.2f}',
+            'Growth Potential (3x)': '{:,.0f}',
+            'Projected Conversions': '{:,.0f}'
+        }).background_gradient(subset=['Projected Conversions'], cmap='Greens'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q11_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q11_dl")
+        
+        fig = px.scatter(out, x='Current Search Volume', y='CR (%)', size='Projected Conversions', 
+                        color='Projected Conversions', hover_data=['Brand'], 
+                        title='Hidden Gems: Low Volume, High CR Products',
+                        color_continuous_scale='Greens', text='Brand')
+        fig.update_traces(textposition='top center')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    q_expand(
+        "Q11 — Low Search Volume, High CR - Hidden Gems",
+        "Discovers niche products with excellent conversion rates but low visibility. Invest in SEO, paid ads, and content marketing to scale these high-potential products.",
+        q11, "💎"
+    )
+
+    # Q12: Brand Loyalty Index - Repeat Search Behavior
+    def q12():
+        if 'brand' in df_insights.columns:
+            branded = df_insights[df_insights['brand'].str.lower() != 'other']
+            
+            agg = branded.groupby('brand').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
+            
+            out = agg.sort_values('loyalty_score', ascending=False).head(10)
+            out = out[['brand', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'loyalty_score']]
+            out.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Loyalty Score']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}',
+                'Loyalty Score': '{:.2f}'
+            }).background_gradient(subset=['Loyalty Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q12_brand_loyalty_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q12_dl")
+            
+            fig = px.bar(out, x='Brand', y='Loyalty Score', color='Loyalty Score',
+                        title='Top 10 Brands by Loyalty Score', color_continuous_scale='Greens', text='Loyalty Score')
+            fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+            fig.update_layout(xaxis_tickangle=-45)
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Category or brand column missing.")
-    q_expand("Q10 — Health Category vs Brand Performance (Pivot)",
-             "Analyze brand performance within Nutraceuticals & Nutrition categories for targeted strategies.",
-             q10, "📦🏷")
+            st.info("Brand data not available")
+    
+    q_expand(
+        "Q12 — Brand Loyalty Index - Repeat Search Behavior",
+        "Measures brand loyalty through engagement and conversion. High-loyalty brands are ideal for exclusive partnerships, premium pricing, and loyalty programs.",
+        q12, "❤️"
+    )
 
-    st.info("For advanced health analyses (e.g., anomaly detection, semantic clustering), contact Nour Eldeen for custom Nutraceuticals & Nutrition solutions.")
+    # Q13: Competitive Gap Analysis - Where Are We Losing?
+    def q13():
+        median_ctr = df_insights['ctr_calculated'].median()
+        median_cr = df_insights['cr_calculated'].median()
+        
+        out = df_insights.groupby('brand').agg({
+            'search_volume': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum',
+            'ctr_calculated': 'mean',
+            'cr_calculated': 'mean'
+        }).reset_index()
+        
+        out['ctr_gap'] = (median_ctr - out['ctr_calculated']).round(2)
+        out['cr_gap'] = (median_cr - out['cr_calculated']).round(2)
+        out['total_gap'] = (out['ctr_gap'] + out['cr_gap']).round(2)
+        
+        out = out[out['total_gap'] > 0].sort_values('total_gap', ascending=False).head(10)
+        out = out[['brand', 'search_volume', 'ctr_calculated', 'cr_calculated', 'ctr_gap', 'cr_gap', 'total_gap']]
+        out.columns = ['Brand', 'Search Volume', 'Current CTR (%)', 'Current CR (%)', 'CTR Gap', 'CR Gap', 'Total Gap']
+        
+        st.dataframe(out.style.format({
+            'Search Volume': '{:,.0f}',
+            'Current CTR (%)': '{:.2f}',
+            'Current CR (%)': '{:.2f}',
+            'CTR Gap': '{:.2f}',
+            'CR Gap': '{:.2f}',
+            'Total Gap': '{:.2f}'
+        }).background_gradient(subset=['Total Gap'], cmap='Reds'), use_container_width=True, hide_index=True)
+        
+        st.download_button("📥 Download Data", out.to_csv(index=False), f"q13_competitive_gap_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q13_dl")
+        
+        fig = px.bar(out, x='Brand', y=['CTR Gap', 'CR Gap'],
+                    title='Top 10 Competitive Gap Analysis', barmode='stack',
+                    color_discrete_sequence=['#FF9800', '#F44336'])
+        fig.update_layout(xaxis_tickangle=-45, yaxis_title="Gap (%)")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    q_expand(
+        "Q13 — Competitive Gap Analysis - Where Are We Losing?",
+        "Identifies products underperforming vs. category benchmarks. Close gaps through competitive pricing, better merchandising, and enhanced product content.",
+        q13, "⚔️"
+    )
+
+    # Q14: High-Value Keywords - Revenue-Driving Search Terms
+    def q14():
+        if 'category' in df_insights.columns and 'sub_category' in df_insights.columns:
+            df_insights['keyword'] = df_insights['category'] + ' - ' + df_insights['sub_category']
+            
+            agg = df_insights[df_insights['keyword'] != ' - '].groupby('keyword').agg({
+                'search_volume': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).round(2)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).round(2)
+            agg['revenue_score'] = (agg['conversions'] * agg['cr']).round(2)
+            
+            out = agg.sort_values('revenue_score', ascending=False).head(10)
+            out = out[['keyword', 'search_volume', 'clicks', 'conversions', 'ctr', 'cr', 'revenue_score']]
+            out.columns = ['Keyword', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
+            
+            st.dataframe(out.style.format({
+                'Search Volume': '{:,.0f}',
+                'Clicks': '{:,.0f}',
+                'Conversions': '{:,.0f}',
+                'CTR (%)': '{:.2f}',
+                'CR (%)': '{:.2f}',
+                'Revenue Score': '{:.2f}'
+            }).background_gradient(subset=['Revenue Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q14_high_value_keywords_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q14_dl")
+            
+            fig = px.bar(out, x='Keyword', y='Revenue Score', color='CR (%)',
+                        title='Top 10 High-Value Keywords', color_continuous_scale='Greens', text='Revenue Score')
+            fig.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+            fig.update_layout(xaxis_tickangle=-45)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Keyword data not available")
+    
+    q_expand(
+        "Q14 — High-Value Keywords - Revenue-Driving Search Terms",
+        "Identifies keyword combinations (category + sub-category) that drive the most revenue. Prioritize these keywords in SEO, PPC campaigns, and content strategy.",
+        q14, "🔑"
+    )
+
+    # Q15: Performance Consistency - Stable vs Volatile Products
+    def q15():
+        if 'start_date' in df_insights.columns:
+            df_insights['month'] = pd.to_datetime(df_insights['start_date']).dt.to_period('M').astype(str)
+            
+            # Calculate coefficient of variation for each brand
+            brand_cv = df_insights.groupby('brand').agg({
+                'search_volume': ['mean', 'std'],
+                'conversions': ['sum', 'mean']
+            }).reset_index()
+            
+            brand_cv.columns = ['brand', 'avg_search', 'std_search', 'total_conversions', 'avg_conversions']
+            brand_cv['cv'] = (brand_cv['std_search'] / brand_cv['avg_search'] * 100).round(2)
+            brand_cv['stability_score'] = (100 - brand_cv['cv']).clip(lower=0).round(2)
+            
+            out = brand_cv[brand_cv['total_conversions'] >= 10].sort_values('stability_score', ascending=False).head(10)
+            out = out[['brand', 'avg_search', 'total_conversions', 'cv', 'stability_score']]
+            out.columns = ['Brand', 'Avg Search Volume', 'Total Conversions', 'Volatility (%)', 'Stability Score']
+            
+            st.dataframe(out.style.format({
+                'Avg Search Volume': '{:,.0f}',
+                'Total Conversions': '{:,.0f}',
+                'Volatility (%)': '{:.2f}',
+                'Stability Score': '{:.2f}'
+            }).background_gradient(subset=['Stability Score'], cmap='Greens'), use_container_width=True, hide_index=True)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), f"q15_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q15_dl")
+            
+            fig = px.scatter(out, x='Volatility (%)', y='Stability Score', size='Total Conversions',
+                           color='Stability Score', hover_data=['Brand'], 
+                           title='Performance Consistency: Stable vs Volatile Products',
+                           color_continuous_scale='Greens', text='Brand')
+            fig.update_traces(textposition='top center')
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Date data not available for consistency analysis")
+    
+    q_expand(
+        "Q15 — Performance Consistency - Stable vs Volatile Products",
+        "Identifies products with consistent performance vs. those with high volatility. Stable products are reliable for forecasting; volatile products need demand planning and promotional strategies.",
+        q15, "📊"
+    )
+
+    # Final Summary & Recommendations
+    st.markdown("---")
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        border-left: 5px solid #4CAF50;
+        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+        margin-top: 2rem;
+    ">
+        <h3 style="color: #1B5E20; margin-bottom: 1rem;">💡 Key Takeaways & Action Items</h3>
+        <ul style="color: #2E7D32; line-height: 1.8; font-size: 1.05em;">
+            <li><strong>Prioritize Q3 & Q4:</strong> Fix high-traffic, low-conversion products first for immediate ROI</li>
+            <li><strong>Scale Q11:</strong> Invest in hidden gems with high CR but low visibility</li>
+            <li><strong>Monitor Q7:</strong> Address underperforming products flagged by the system</li>
+            <li><strong>Optimize Q8:</strong> Improve search rankings for products beyond top 3 positions</li>
+            <li><strong>Leverage Q12:</strong> Build loyalty programs around high-loyalty brands</li>
+            <li><strong>Close Q13 Gaps:</strong> Benchmark against competitors and close performance gaps</li>
+            <li><strong>Focus Q14 Keywords:</strong> Allocate marketing budget to high-value keywords</li>
+            <li><strong>Plan with Q6:</strong> Use seasonal trends for inventory and promotion planning</li>
+        </ul>
+        <p style="color: #1B5E20; margin-top: 1rem; font-style: italic;">
+            📧 For advanced analytics, predictive modeling, or custom dashboards, contact the analytics team.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ----------------- Export / Downloads -----------------
 # Export Tab - FIXED with correct dataframe name
