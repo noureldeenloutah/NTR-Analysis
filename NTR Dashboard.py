@@ -13609,25 +13609,25 @@ with tab_pivot:
             
             # 🚀 OPTIMIZED: Display pivot with formatted columns
             st.markdown(f"### 📊 Showing {len(pv_filtered)} Brand-Query Pairs")
-
+            
             @st.cache_data(ttl=1800, show_spinner=False)
             def format_pivot_display(df, cache_key):
                 """🚀 OPTIMIZED: Format pivot for display"""
                 display_df = df[['brand', 'normalized_query', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate', 'classic_cvr']].copy()
                 display_df.columns = ['Brand', 'Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'CR %', 'Classic CVR %']
                 
-                # ✅ Vectorized formatting with format_number and format_percentage
-                display_df['Search Volume'] = display_df['Search Volume'].apply(format_number)
-                display_df['Clicks'] = display_df['Clicks'].apply(format_number)
-                display_df['Conversions'] = display_df['Conversions'].apply(format_number)
-                display_df['CTR %'] = display_df['CTR %'].apply(format_percentage)
-                display_df['CR %'] = display_df['CR %'].apply(format_percentage)
-                display_df['Classic CVR %'] = display_df['Classic CVR %'].apply(format_percentage)
+                # Vectorized formatting
+                display_df['Search Volume'] = display_df['Search Volume'].apply(lambda x: f"{int(x):,}")
+                display_df['Clicks'] = display_df['Clicks'].apply(lambda x: f"{int(x):,}")
+                display_df['Conversions'] = display_df['Conversions'].apply(lambda x: f"{int(x):,}")
+                display_df['CTR %'] = display_df['CTR %'].apply(lambda x: f"{x:.2f}%")
+                display_df['CR %'] = display_df['CR %'].apply(lambda x: f"{x:.2f}%")
+                display_df['Classic CVR %'] = display_df['Classic CVR %'].apply(lambda x: f"{x:.2f}%")
                 
                 return display_df
-
+            
             display_pv = format_pivot_display(pv_filtered, pivot_cache_key + str(min_counts) + str(min_ctr))
-
+            
             st.markdown("<div class='pivot-table-container'>", unsafe_allow_html=True)
             if AGGRID_OK:
                 gb = GridOptionsBuilder.from_dataframe(display_pv)
@@ -13638,7 +13638,7 @@ with tab_pivot:
             else:
                 st.dataframe(display_pv, use_container_width=True, hide_index=True, height=500)
             st.markdown("</div>", unsafe_allow_html=True)
-
+            
             # Download button
             csv_pv = pv_filtered.to_csv(index=False)
             st.download_button(
@@ -13648,9 +13648,8 @@ with tab_pivot:
                 mime="text/csv",
                 key="brand_query_pivot_download"
             )
-            else:
-                st.info("Brand or normalized_query column missing for this pivot.")
-
+        else:
+            st.info("Brand or normalized_query column missing for this pivot.")
             
         # Custom Pivot Builder
         st.markdown("---")
