@@ -11108,8 +11108,9 @@ with tab_class:
 
     
     # Enhanced Top Keywords per Class Analysis
+    # 🔑 Top Health Keywords per Nutraceuticals & Nutrition Class Analysis
     st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Class Analysis")
-    
+
     # Number of keywords selection option - moved to top
     num_keywords = st.selectbox(
         "🔥 Select number of top health keywords to analyze:",
@@ -11117,7 +11118,7 @@ with tab_class:
         index=0,
         key="num_keywords_selector_class"
     )
-    
+
     try:
         # Calculate keywords per class using the enhanced approach
         rows = []
@@ -11159,11 +11160,12 @@ with tab_class:
             # Create pivot table for keyword analysis
             pivot_ckw = df_ckw.pivot_table(index='class', columns='keyword', values='count', fill_value=0)
             
-            # Display options
+            # Display options - FIXED: Added unique key
             display_option = st.radio(
                 "Choose Nutraceuticals & Nutrition keyword display format:",
                 ["Top Health Keywords Summary", "Heatmap Visualization"],
-                horizontal=True
+                horizontal=True,
+                key="class_keyword_display_radio"  # ✅ UNIQUE KEY ADDED
             )
             
             if display_option == "Heatmap Visualization":
@@ -11380,9 +11382,9 @@ with tab_class:
                 # Format hover with format_number
                 fig_distribution.update_traces(
                     hovertemplate='<b>%{hovertext}</b><br>' +
-                                 'Unique Health Keywords: %{x}<br>' +
-                                 'Total Health Volume: %{customdata}<br>' +
-                                 'Avg Keyword Count: %{marker.size:.1f}<extra></extra>',
+                                'Unique Health Keywords: %{x}<br>' +
+                                'Total Health Volume: %{customdata}<br>' +
+                                'Avg Keyword Count: %{marker.size:.1f}<extra></extra>',
                     customdata=[format_number(x) for x in dist_df['Total Health Volume']]
                 )
                 
@@ -11399,6 +11401,11 @@ with tab_class:
             )
         else:
             st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
+
+    except Exception as e:
+        st.error(f"Error processing health keyword analysis: {str(e)}")
+        st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
+
     
     except Exception as e:
         st.error(f"Error processing health keyword analysis: {str(e)}")
