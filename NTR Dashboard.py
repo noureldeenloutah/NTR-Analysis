@@ -13622,49 +13622,130 @@ with tab_insights:
 
     # Q12: Brand Loyalty Index - Repeat Search Behavior
     def q12():
-        if 'brand' in df_insights.columns:
-            branded = df_insights[df_insights['brand'].str.lower() != 'other']
+        # Filter meaningful data (>= 200 search volume)
+        df_temp = df_insights[
+            (df_insights['Counts'] >= 200) &
+            (df_insights['Brand'] != 'Other')
+        ].copy()
+        
+        if len(df_temp) > 0:
+            # Group by brand
+            agg = df_temp.groupby('Brand').agg({
+                'search': lambda x: x.nunique(),  # Count unique queries
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
             
-            if len(branded) > 0:
-                agg = branded.groupby('brand').agg({
-                    'search_volume': 'sum',
-                    'clicks': 'sum',
-                    'conversions': 'sum'
-                }).reset_index()
-                
-                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
-                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
-                agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
-                
-                out = agg.nlargest(10, 'loyalty_score').copy()
-                
-                # Format for display
-                display_df = out.copy()
-                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
-                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
-                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-                
-                display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'loyalty_score']]
-                display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Loyalty Score']
-                
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
-                st.download_button("📥 Download Data", out.to_csv(index=False), f"q12_brand_loyalty_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q12_dl")
-                
-                fig = px.bar(out, x='brand', y='loyalty_score', color='loyalty_score',
-                            title='Top 10 Brands by Loyalty Score', color_continuous_scale='Greens')
-                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Loyalty Score")
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("📊 No branded products found")
+            agg.columns = ['brand', 'unique_queries', 'search_volume', 'clicks', 'conversions']
+            
+            # Calculate metrics
+            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0)
+            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0)
+            agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
+            
+            # Sort by loyalty score
+            out = agg.nlargest(20, 'loyalty_score').copy()
+            
+            # Format for display
+            display_df = out.copy()
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
+            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+            display_df['loyalty_score_fmt'] = display_df['loyalty_score'].apply(lambda x: f"{x:.2f}")
+            
+            display_df = display_df[['brand', 'unique_queries', 'search_volume_fmt', 'clicks_fmt', 
+                                    'conversions_fmt', 'ctr_fmt', 'cr_fmt', 'loyalty_score_fmt']]
+            display_df.columns = ['Brand', '# Unique Queries', 'Search Volume', 'Clicks', 
+                                'Conversions', 'CTR', 'CR', 'Loyalty Score']
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            
+            # Insights callout
+            top_brand = out.iloc[0]['brand']
+            top_loyalty = out.iloc[0]['loyalty_score']
+            top_ctr = out.iloc[0]['ctr']
+            top_cr = out.iloc[0]['cr']
+            
+            st.success(f"""
+            🏆 **Top Loyalty Brand: {top_brand}**
+            - Loyalty Score: **{top_loyalty:.2f}**
+            - CTR: **{top_ctr:.2f}%** | CR: **{top_cr:.2f}%**
+            - This brand shows strong customer engagement and conversion behavior
+            """)
+            
+            st.download_button("📥 Download Data", out.to_csv(index=False), 
+                            f"q12_brand_loyalty_{datetime.now().strftime('%Y%m%d')}.csv", 
+                            "text/csv", key="q12_dl")
+            
+            # Visualization 1: Loyalty Score Bar Chart
+            fig = px.bar(out.head(10), x='brand', y='loyalty_score', 
+                        color='loyalty_score',
+                        title='Top 10 Brands by Loyalty Score',
+                        color_continuous_scale='Greens',
+                        hover_data=['unique_queries', 'search_volume', 'ctr', 'cr'])
+            fig.update_layout(
+                xaxis_tickangle=-45, 
+                xaxis_title="Brand", 
+                yaxis_title="Loyalty Score"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Visualization 2: CTR vs CR Scatter (Loyalty Quadrant)
+            fig2 = px.scatter(out, x='ctr', y='cr',
+                            size='search_volume', color='loyalty_score',
+                            hover_data=['brand', 'clicks', 'conversions'],
+                            title='Brand Loyalty Quadrant: CTR vs CR (Size = Search Volume)',
+                            color_continuous_scale='RdYlGn',
+                            labels={'ctr': 'CTR (%)', 'cr': 'CR (%)'})
+            
+            # Add quadrant lines (median CTR and CR)
+            median_ctr = out['ctr'].median()
+            median_cr = out['cr'].median()
+            
+            fig2.add_hline(y=median_cr, line_dash="dash", line_color="gray", 
+                        annotation_text="Median CR", annotation_position="right")
+            fig2.add_vline(x=median_ctr, line_dash="dash", line_color="gray",
+                        annotation_text="Median CTR", annotation_position="top")
+            
+            fig2.update_layout(
+                xaxis_title="Click-Through Rate (CTR %)",
+                yaxis_title="Conversion Rate (CR %)"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+            
+            # Actionable insights
+            st.info("""
+            **💡 How to Use Loyalty Scores:**
+            
+            **High Loyalty (Score > 15):**
+            - ✅ Prioritize for exclusive partnerships
+            - ✅ Implement premium pricing strategies
+            - ✅ Create brand-specific loyalty programs
+            - ✅ Increase inventory investment
+            
+            **Medium Loyalty (Score 5-15):**
+            - 🔄 Test promotional campaigns
+            - 🔄 Optimize product descriptions
+            - 🔄 Improve customer reviews
+            
+            **Low Loyalty (Score < 5):**
+            - ⚠️ Review product quality/pricing
+            - ⚠️ Consider discontinuing or replacing
+            - ⚠️ Analyze competitor offerings
+            """)
+            
         else:
-            st.info("📊 Brand data not available")
-    
+            st.info("📊 No brands found with search volume >= 200")
+
     q_expand(
-        "Q12 — Brand Loyalty Index - Repeat Search Behavior",
-        "Measures brand loyalty through engagement and conversion. High-loyalty brands are ideal for exclusive partnerships, premium pricing, and loyalty programs.",
+        "Q12 — ❤️ Brand Loyalty Index - Repeat Search Behavior",
+        "Measures brand loyalty through engagement (CTR) and conversion (CR). **Filtered: Search Volume >= 200**. High-loyalty brands are ideal for exclusive partnerships, premium pricing, and loyalty programs.",
         q12, "❤️"
     )
+
 
     # Q13: Competitive Gap Analysis - Where Are We Losing?
     def q13():
