@@ -13617,12 +13617,12 @@ with tab_pivot:
                 display_df.columns = ['Brand', 'Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR %', 'CR %', 'Classic CVR %']
                 
                 # Vectorized formatting
-                display_df['Search Volume'] = display_df['Search Volume'].apply(lambda x: f"{int(x):,}")
-                display_df['Clicks'] = display_df['Clicks'].apply(lambda x: f"{int(x):,}")
-                display_df['Conversions'] = display_df['Conversions'].apply(lambda x: f"{int(x):,}")
-                display_df['CTR %'] = display_df['CTR %'].apply(lambda x: f"{x:.2f}%")
-                display_df['CR %'] = display_df['CR %'].apply(lambda x: f"{x:.2f}%")
-                display_df['Classic CVR %'] = display_df['Classic CVR %'].apply(lambda x: f"{x:.2f}%")
+                display_df['Search Volume'] = display_df['Search Volume'].apply(format_number)
+                display_df['Clicks'] = display_df['Clicks'].apply(format_number)
+                display_df['Conversions'] = display_df['Conversions'].apply(format_number)
+                display_df['CTR %'] = display_df['CTR %'].apply(format_percentage)
+                display_df['CR %'] = display_df['CR %'].apply(format_percentage)
+                display_df['Classic CVR %'] = display_df['Classic CVR %'].apply(format_percentage)
                 
                 return display_df
             
