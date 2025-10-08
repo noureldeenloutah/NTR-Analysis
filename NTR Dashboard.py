@@ -11237,17 +11237,21 @@ with tab_class:
                         'Nutraceuticals & Nutrition Class': cls_name,
                         f'Top {num_keywords} Health Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
-                        'Class Total Volume': format_number(actual_class_total),
+                        'Class Total Volume': actual_class_total,  # ✅ Keep as number for sorting
                         'Market Share %': f"{share_percentage:.2f}%",
-                        'Keyword Analysis Volume': format_number(total_keyword_count),
+                        'Keyword Analysis Volume': total_keyword_count,  # ✅ Keep as number for sorting
                         'Avg Keyword Count': f"{avg_keyword_count:.1f}",
                         'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
                 
-                # Sort by actual class total volume (descending)
-                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: float(x['Class Total Volume'].replace('K', '000').replace('M', '000000').replace('B', '000000000')), reverse=True)
+                # ✅ Sort by Class Total Volume (descending) - now using numeric values
+                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: x['Class Total Volume'], reverse=True)
                 summary_df = pd.DataFrame(top_keywords_summary)
+                
+                # ✅ Format numbers AFTER sorting
+                summary_df['Class Total Volume'] = summary_df['Class Total Volume'].apply(format_number)
+                summary_df['Keyword Analysis Volume'] = summary_df['Keyword Analysis Volume'].apply(format_number)
                 
                 # Display the enhanced summary table
                 st.dataframe(summary_df, use_container_width=True, hide_index=True)
@@ -11389,6 +11393,7 @@ with tab_class:
                 )
                 
                 st.plotly_chart(fig_distribution, use_container_width=True)
+
             
             # Download button for keyword analysis
             csv_keywords = df_ckw.to_csv(index=False)
