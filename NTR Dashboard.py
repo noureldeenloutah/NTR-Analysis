@@ -8002,61 +8002,6 @@ with tab_category:
         st.error(f"Error processing health keyword analysis: {str(e)}")
         st.info("Not enough health keyword data per Nutraceuticals & Nutrition category.")
     
-    # Export all category data
-    st.markdown("---")
-    st.subheader("📥 Export Nutraceuticals & Nutrition Category Intelligence")
-    
-    export_col1, export_col2 = st.columns(2)
-    
-    with export_col1:
-        if not cs.empty:
-            # Comprehensive category export
-            export_data = cs.copy()
-            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
-            
-            csv_export = export_data.to_csv(index=False)
-            st.download_button(
-                label="📊 Download Complete Nutraceuticals & Nutrition Category Analysis",
-                data=csv_export,
-                file_name=f"nutraceuticals_category_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                mime="text/csv",
-                key="complete_category_export"
-            )
-    
-    with export_col2:
-        if not cs.empty:
-            # Summary report with format_number
-            # Summary report with format_number
-            summary_report = f"""
-            NUTRACEUTICALS & NUTRITION CATEGORY INTELLIGENCE REPORT
-            Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
-            
-            HEALTH MARKET OVERVIEW:
-            • Total Nutraceuticals & Nutrition Categories Analyzed: {len(cs)}
-            • Total Health Searches: {format_number(cs['Counts'].sum())}
-            • Market Leader: {cs.iloc[0]['category']} ({cs.iloc[0]['share_pct']:.1f}% share)
-            • Average CTR: {cs['ctr'].mean():.2f}%
-            • Average CR: {cs['cr'].mean():.2f}%
-            
-            NUTRACEUTICALS & NUTRITION PERFORMANCE TIERS:
-            • Premium Categories (CTR > 10%): {len(cs[cs['ctr'] > 10])}
-            • Strong Categories (CTR 5-10%): {len(cs[(cs['ctr'] >= 5) & (cs['ctr'] <= 10)])}
-            • Growing Categories (CTR 2-5%): {len(cs[(cs['ctr'] >= 2) & (cs['ctr'] < 5)])}
-            • Emerging Categories (CTR < 2%): {len(cs[cs['ctr'] < 2])}
-            
-            STRATEGIC HEALTH INSIGHTS:
-            • Market concentration is {concentration_status.lower()}
-            • {len(cs[cs['ctr'] > 5])} categories achieve premium performance
-            • Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
-            """
-            
-            st.download_button(
-                label="📝 Download Nutraceuticals & Nutrition Executive Summary Report",
-                data=summary_report,
-                file_name=f"nutraceuticals_category_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
-                mime="text/plain",
-                key="category_executive_summary_export"
-            )
 
 # ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
 # ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
@@ -11153,61 +11098,7 @@ with tab_class:
         st.error(f"Error processing health keyword analysis: {str(e)}")
         st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
     
-    # Export all class data
-    st.markdown("---")
-    st.subheader("📥 Export Class Intelligence")
     
-    export_col1, export_col2 = st.columns(2)
-    
-    with export_col1:
-        if not cls.empty:
-            # Comprehensive class export
-            export_data = cls.copy()
-            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
-            
-            csv_export = export_data.to_csv(index=False)
-            st.download_button(
-                label="📊 Download Complete Class Analysis",
-                data=csv_export,
-                file_name=f"nutraceuticals_class_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                mime="text/csv",
-                key="complete_class_export"
-            )
-    
-    with export_col2:
-        if not cls.empty:
-            # Summary report with format_number
-            summary_report = f"""
-NUTRACEUTICALS & NUTRITION CLASS INTELLIGENCE REPORT
-Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
-
-HEALTH MARKET OVERVIEW:
-• Total Nutraceuticals & Nutrition Classes Analyzed: {len(cls)}
-• Total Health Searches: {format_number(cls['Counts'].sum())}
-• Market Leader: {cls.iloc[0]['class']} ({cls.iloc[0]['share_pct']:.1f}% share)
-• Average CTR: {cls['ctr'].mean():.2f}%
-• Average CR: {cls['cr'].mean():.2f}%
-
-NUTRACEUTICALS & NUTRITION PERFORMANCE TIERS:
-• Premium Classes (CTR > 10%): {len(cls[cls['ctr'] > 10])}
-• Strong Classes (CTR 5-10%): {len(cls[(cls['ctr'] >= 5) & (cls['ctr'] <= 10)])}
-• Growing Classes (CTR 2-5%): {len(cls[(cls['ctr'] >= 2) & (cls['ctr'] < 5)])}
-• Emerging Classes (CTR < 2%): {len(cls[cls['ctr'] < 2])}
-
-STRATEGIC HEALTH INSIGHTS:
-• Market concentration is {concentration_status.lower()}
-• {len(cls[cls['ctr'] > 5])} classes achieve premium performance
-• Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
-"""
-            
-            st.download_button(
-                label="📝 Download Nutraceuticals & Nutrition Executive Summary Report",
-                data=summary_report,
-                file_name=f"nutraceuticals_class_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
-                mime="text/plain",
-                key="class_executive_summary_export"
-            )
-
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
     st.header("🌱 Generic Type Intelligence Hub")
