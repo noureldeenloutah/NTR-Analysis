@@ -13196,7 +13196,8 @@ with tab_insights:
             filtered = df_insights[df_insights['underperforming'] == True]
             
             if len(filtered) > 0:
-                out = filtered.groupby('brand').agg({
+                # Group by both brand and search_query to preserve query information
+                out = filtered.groupby(['brand', 'search_query']).agg({
                     'search_volume': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum',
@@ -13219,15 +13220,16 @@ with tab_insights:
                 display_df['ctr_fmt'] = display_df['ctr_calculated'].apply(lambda x: f"{x:.2f}%")
                 display_df['cr_fmt'] = display_df['cr_calculated'].apply(lambda x: f"{x:.2f}%")
                 
-                display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
-                display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
+                display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
+                display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
                 
                 st.dataframe(display_df, use_container_width=True, hide_index=True)
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), f"q7_underperforming_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q7_dl")
                 
                 fig = px.bar(out, x='brand', y='search_volume', color='cr_calculated',
-                            title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds')
+                            title='Top 10 Underperforming Products (Flagged)', color_continuous_scale='Reds',
+                            hover_data=['search_query'])
                 fig.update_layout(xaxis_tickangle=-45, xaxis_title="Brand", yaxis_title="Search Volume")
                 st.plotly_chart(fig, use_container_width=True)
             else:
@@ -13242,51 +13244,6 @@ with tab_insights:
     )
 
 
-    # Q8: Click Position Analysis - Search Ranking Impact
-    def q8():
-        if 'averageclickposition' in df_insights.columns and df_insights['averageclickposition'].notna().any():
-            df_temp = df_insights[df_insights['averageclickposition'].notna()].copy()
-            df_temp['position_bucket'] = pd.cut(df_temp['averageclickposition'], 
-                                                bins=[0, 3, 6, 10, float('inf')], 
-                                                labels=['Top 3', 'Position 4-6', 'Position 7-10', 'Beyond 10'])
-            
-            agg = df_temp.groupby('position_bucket').agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            }).reset_index()
-            
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
-            
-            out = agg.copy()
-            
-            # Format for display
-            display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
-            display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
-            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-            
-            display_df = display_df[['position_bucket', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
-            display_df.columns = ['Position', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
-            
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q8_position_analysis_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q8_dl")
-            
-            fig = px.bar(out, x='position_bucket', y=['ctr', 'cr'],
-                        title='Click Position Impact on CTR & CR', barmode='group',
-                        color_discrete_sequence=['#4CAF50', '#81C784'])
-            fig.update_layout(xaxis_title="Position", yaxis_title="Percentage (%)")
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.info("📊 Click position data not available")
-    
-    q_expand(
-        "Q8 — Click Position Analysis - Search Ranking Impact",
-        "Shows how search ranking affects CTR and CR. Products in top 3 positions get significantly more clicks. Optimize SEO and paid search to improve rankings for high-value products.",
-        q8, "🎯"
-    )
 
     # Q9: Sub-Category Deep Dive - Granular Performance Insights
     def q9():
