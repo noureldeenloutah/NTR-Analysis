@@ -13631,13 +13631,13 @@ with tab_insights:
         if len(df_temp) > 0:
             # Group by brand
             agg = df_temp.groupby('Brand').agg({
-                'search': lambda x: x.nunique(),  # Count unique queries
+                'search': lambda x: ', '.join(x.unique()[:3]) + ('...' if x.nunique() > 3 else ''),  # Show top 3 queries
                 'Counts': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
             }).reset_index()
             
-            agg.columns = ['brand', 'unique_queries', 'search_volume', 'clicks', 'conversions']
+            agg.columns = ['brand', 'top_queries', 'search_volume', 'clicks', 'conversions']
             
             # Calculate metrics
             agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0)
@@ -13656,9 +13656,9 @@ with tab_insights:
             display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
             display_df['loyalty_score_fmt'] = display_df['loyalty_score'].apply(lambda x: f"{x:.2f}")
             
-            display_df = display_df[['brand', 'unique_queries', 'search_volume_fmt', 'clicks_fmt', 
+            display_df = display_df[['brand', 'top_queries', 'search_volume_fmt', 'clicks_fmt', 
                                     'conversions_fmt', 'ctr_fmt', 'cr_fmt', 'loyalty_score_fmt']]
-            display_df.columns = ['Brand', '# Unique Queries', 'Search Volume', 'Clicks', 
+            display_df.columns = ['Brand', 'Top Queries', 'Search Volume', 'Clicks', 
                                 'Conversions', 'CTR', 'CR', 'Loyalty Score']
             
             st.dataframe(display_df, use_container_width=True, hide_index=True)
@@ -13685,7 +13685,7 @@ with tab_insights:
                         color='loyalty_score',
                         title='Top 10 Brands by Loyalty Score',
                         color_continuous_scale='Greens',
-                        hover_data=['unique_queries', 'search_volume', 'ctr', 'cr'])
+                        hover_data=['search_volume', 'ctr', 'cr'])
             fig.update_layout(
                 xaxis_tickangle=-45, 
                 xaxis_title="Brand", 
@@ -13745,6 +13745,7 @@ with tab_insights:
         "Measures brand loyalty through engagement (CTR) and conversion (CR). **Filtered: Search Volume >= 200**. High-loyalty brands are ideal for exclusive partnerships, premium pricing, and loyalty programs.",
         q12, "❤️"
     )
+
 
 
     # Q13: Competitive Gap Analysis - Where Are We Losing?
