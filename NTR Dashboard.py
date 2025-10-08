@@ -732,6 +732,7 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     df['category'] = df['Category'] if 'Category' in df.columns else None
     df['sub_category'] = df['Sub Category'] if 'Sub Category' in df.columns else None
     df['department'] = df['Department'] if 'Department' in df.columns else None
+    df['class'] = df['Class'] if 'Class' in df.columns else None
 
     # -------------------------
     # Additional optional columns
@@ -746,7 +747,7 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     # -------------------------
     # Keep original columns for reference
     # -------------------------
-    original_cols = ['Department', 'Category', 'Sub Category', 'Brand', 'search', 'count', 
+    original_cols = ['Department', 'Category', 'Sub Category', 'Class', 'Brand', 'search', 'count', 
                      'Click Through Rate', 'Conversion Rate', 'total_impressions over 3m',
                      'averageClickPosition', 'underperforming', 'classical_cr', 'cluster_id',
                      'start_date', 'end_date']
@@ -975,6 +976,7 @@ brand_filter, brand_opts = get_filter_options(st.session_state.original_queries,
 dept_filter, dept_opts = get_filter_options(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
 cat_filter, cat_opts = get_filter_options(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
 subcat_filter, subcat_opts = get_filter_options(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
+class_filter, class_opts = get_filter_options(st.session_state.original_queries, 'Class', 'Class(es)', '🎯')
 
 # Text filter (EXACTLY THE SAME)
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
@@ -1023,7 +1025,11 @@ elif apply_filters:
     # Subcategory filter (YOUR EXACT LOGIC)
     if subcat_filter and len(subcat_filter) < len(subcat_opts):
         queries = queries[queries['sub_category'].astype(str).isin(subcat_filter)]
-    
+
+    # Class filter
+    if class_filter and len(class_filter) < len(class_opts):
+        queries = queries[queries['Class'].astype(str).isin(class_filter)]
+
     # Text filter (YOUR EXACT LOGIC)
     if text_filter:
         queries = queries[queries['normalized_query'].str.contains(re.escape(text_filter), case=False, na=False)]
@@ -1049,8 +1055,8 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
     st.sidebar.write(f"- Dept selected: {len(dept_filter)}/{len(dept_opts)}")
     st.sidebar.write(f"- Cat selected: {len(cat_filter)}/{len(cat_opts)}")
     st.sidebar.write(f"- Subcat selected: {len(subcat_filter)}/{len(subcat_opts)}")
+    st.sidebar.write(f"- Class selected: {len(class_filter)}/{len(class_opts)}")
     st.sidebar.write(f"- Text filter: '{text_filter}'")
-
 
 
 # ----------------- Welcome Message -----------------
@@ -1148,7 +1154,7 @@ with st.sidebar.expander("🔍 Data Debug Info"):
 
 # ----------------- Tabs -----------------
 tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
-    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","💊 Supplement Type",
+    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Supplement Type",
     "⏰ Time Analysis","📊 Pivot Builder","💡 Health Insights","⬇ Export"
 ])
 
@@ -1509,6 +1515,7 @@ with tab_overview:
                     'dept_filter': str(sorted(dept_filter)) if 'dept_filter' in locals() else "",
                     'cat_filter': str(sorted(cat_filter)) if 'cat_filter' in locals() else "",
                     'subcat_filter': str(sorted(subcat_filter)) if 'subcat_filter' in locals() else "",
+                    'class_filter': str(sorted(class_filter)) if 'class_filter' in locals() else "",
                     'text_filter': text_filter if 'text_filter' in locals() else "",
                     'date_range': str(date_range) if 'date_range' in locals() else ""
                 }
@@ -9832,6 +9839,1704 @@ with tab_subcat:
         st.info("💡 Please check your data format and try again.")
 
                     
+
+# ----------------- Class Tab (Enhanced & Health-Focused) -----------------
+with tab_generic:
+    # 🎨 GREEN-THEMED HERO HEADER
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
+        ">
+            🎯 Class Performance Analysis 🎯
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Classification • Performance Analytics • Search Intelligence
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Custom CSS for health-focused green styling
+    st.markdown("""
+    <style>
+    .health-class-metric {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 10px 0;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .class-insight {
+        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+        margin: 15px 0;
+        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+    }
+    
+    .enhanced-health-class-metric {
+        background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        color: white;
+        box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
+        margin: 10px 0;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .enhanced-health-class-metric .icon {
+        font-size: 3em;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .enhanced-health-class-metric .value {
+        font-size: 1.6em;
+        font-weight: bold;
+        margin-bottom: 8px;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.2;
+    }
+    
+    .enhanced-health-class-metric .label {
+        font-size: 1.1em;
+        opacity: 0.95;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    
+    .enhanced-health-class-metric .sub-label {
+        font-size: 1em;
+        opacity: 0.9;
+        font-weight: 500;
+        line-height: 1.2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .class-metric-card {
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        margin: 5px;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .class-metric-value {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #1B5E20;
+        margin-bottom: 5px;
+    }
+    
+    .class-metric-label {
+        color: #2E7D32;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Check for class column with case sensitivity handling
+    class_column = None
+    possible_class_columns = ['Class', 'class', 'CLASS', 'Class Name', 'class_name', 'product_class']
+    
+    for col in possible_class_columns:
+        if col in queries.columns:
+            class_column = col
+            break
+    
+    # Check if class data is available
+    has_class_data = (class_column is not None and 
+                     queries[class_column].notna().any())
+    
+    if not has_class_data:
+        st.error(f"❌ No Nutraceuticals & Nutrition class data available. Available columns: {list(queries.columns)}")
+        st.info("💡 Please ensure your dataset contains a class column (Class, class, or Class Name)")
+        st.stop()
+    
+    # Filter out "Other" class from all analysis
+    class_queries = queries[
+        (queries[class_column].notna()) & 
+        (~queries[class_column].str.lower().isin(['other', 'others']))
+    ]
+    
+    if class_queries.empty:
+        st.error("❌ No valid Nutraceuticals & Nutrition class data available after filtering.")
+        st.stop()
+    
+    st.markdown("---")
+    
+    # Main Class Analysis Layout
+    col_left, col_right = st.columns([3, 2])
+    
+    with col_left:
+        # Enhanced Class Performance Analysis
+        st.subheader("📈 Nutraceuticals & Nutrition Class Performance Matrix")
+        
+        # Calculate comprehensive class metrics
+        cls = class_queries.groupby(class_column).agg({
+            'Counts': 'sum',
+            'clicks': 'sum', 
+            'conversions': 'sum'
+        }).reset_index()
+        
+        # Round to integers for cleaner display
+        cls['clicks'] = cls['clicks'].round().astype(int)
+        cls['conversions'] = cls['conversions'].round().astype(int)
+        
+        # Rename the class column to 'class' for consistency
+        cls = cls.rename(columns={class_column: 'class'})
+        
+        # Calculate performance metrics
+        cls['ctr'] = cls.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
+        cls['cr'] = cls.apply(lambda r: (r['conversions']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
+        cls['classic_cr'] = cls.apply(lambda r: (r['conversions']/r['clicks']*100) if r['clicks']>0 else 0, axis=1)
+        
+        # Calculate share percentage
+        total_class_counts = cls['Counts'].sum()
+        cls['share_pct'] = (cls['Counts'] / total_class_counts * 100).round(2)
+        
+        # Enhanced scatter plot for class performance
+        fig_class_perf = px.scatter(
+            cls.head(30), 
+            x='Counts', 
+            y='ctr',
+            size='clicks',
+            color='cr',
+            hover_name='class',
+            title='<b style="color:#2E7D32; font-size:18px;">🎯 Nutraceuticals & Nutrition Class Performance Matrix: Search Volume vs CTR</b>',
+            labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+            template='plotly_white'
+        )
+        
+        # Format hover with format_number
+        fig_class_perf.update_traces(
+            hovertemplate='<b>%{hovertext}</b><br>' +
+                         'Health Searches: %{customdata[0]}<br>' +
+                         'CTR: %{y:.2f}%<br>' +
+                         'Total Clicks: %{customdata[1]}<br>' +
+                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>',
+            customdata=[[format_number(row['Counts']), format_number(row['clicks'])] 
+                       for _, row in cls.head(30).iterrows()]
+        )
+        
+        fig_class_perf.update_layout(
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            title_x=0,
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
+        )
+        
+        st.plotly_chart(fig_class_perf, use_container_width=True)
+        
+        # Enhanced Class Performance Charts
+        col_chart1, col_chart2 = st.columns(2)
+        
+        with col_chart1:
+            # Counts by Class
+            fig_counts = px.bar(
+                cls.sort_values('Counts', ascending=False).head(15), 
+                x='class', 
+                y='Counts',
+                title='<b style="color:#2E7D32;">🌱 Health Searches by Class</b>',
+                color='Counts',
+                color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                text='Counts'
+            )
+            
+            # Format bar labels with format_number
+            fig_counts.update_traces(
+                texttemplate='%{text}',
+                textposition='outside',
+                text=[format_number(x) for x in cls.sort_values('Counts', ascending=False).head(15)['Counts']]
+            )
+            
+            fig_counts.update_layout(
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                height=400
+            )
+            
+            st.plotly_chart(fig_counts, use_container_width=True)
+        
+        with col_chart2:
+            # Conversion Rate by Class
+            fig_cr = px.bar(
+                cls.sort_values('cr', ascending=False).head(15), 
+                x='class', 
+                y='cr',
+                title='<b style="color:#2E7D32;">💚 Nutraceuticals & Nutrition Conversion Rate by Class (%)</b>',
+                color='cr',
+                color_continuous_scale=['#A5D6A7', '#1B5E20'],
+                text='cr'
+            )
+            
+            fig_cr.update_traces(
+                texttemplate='%{text:.2f}%',
+                textposition='outside'
+            )
+            
+            fig_cr.update_layout(
+                plot_bgcolor='rgba(248,255,248,0.95)',
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                height=400
+            )
+            
+            st.plotly_chart(fig_cr, use_container_width=True)
+        
+        # Top Classes Performance Table
+        st.subheader("🏆 Top Nutraceuticals & Nutrition Class Performance")
+        
+        num_classes = st.slider(
+            "Number of health classes to display:", 
+            min_value=10, 
+            max_value=50, 
+            value=20, 
+            step=5,
+            key="class_count_slider"
+        )
+        
+        # Lazy CSS loading - Only load once per session
+        if 'class_health_css_loaded' not in st.session_state:
+            st.markdown("""
+            <style>
+            .class-health-metric-card {
+                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+                padding: 20px; border-radius: 15px; text-align: center; color: white;
+                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
+                min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+                transition: transform 0.2s ease; width: 100%;
+            }
+            .class-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
+            .class-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+            .class-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
+            .class-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+            .health-class-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
+            .health-class-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
+            .health-class-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
+            .health-class-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+            .health-class-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
+            </style>
+            """, unsafe_allow_html=True)
+            st.session_state.class_health_css_loaded = True
+
+        # Static month names (faster than dynamic lookup)
+        month_names = {
+            '2025-06': 'June 2025',
+            '2025-07': 'July 2025',
+            '2025-08': 'August 2025'
+        }
+
+        # Get data with caching (filter-aware)
+        filter_state = {
+            'filters_applied': st.session_state.get('filters_applied', False),
+            'data_shape': queries.shape,
+            'data_hash': hash(str(cls['class'].tolist()[:10]) if not cls.empty else "empty")
+        }
+        filter_key = str(hash(str(filter_state)))
+
+        @st.cache_data(ttl=1800, show_spinner=False)
+        def compute_class_health_performance_monthly(_df, _cls, month_names_dict, cache_key):
+            """Proper monthly CTR/CR calculations for health classes"""
+            if _df.empty or _cls.empty:
+                return pd.DataFrame(), []
+            
+            # Get top classes by total counts
+            top_classes_list = _cls.nlargest(50, 'Counts')['class'].tolist()
+            
+            # Filter original data for top classes
+            top_data = _df[_df[class_column].isin(top_classes_list)].copy()
+            
+            # Get unique months from the data
+            if 'month' in top_data.columns:
+                unique_months = sorted(top_data['month'].unique())
+            else:
+                unique_months = []
+            
+            # Reorganize columns for easier comparison
+            result_data = []
+            
+            for class_name in top_classes_list:
+                class_data = top_data[top_data[class_column] == class_name]
+                
+                # Skip classes with no data
+                if class_data.empty:
+                    continue
+                
+                # Base information
+                total_counts = int(class_data['Counts'].sum())
+                total_clicks = int(class_data['clicks'].sum())
+                total_conversions = int(class_data['conversions'].sum())
+                
+                # Skip classes with zero volume
+                if total_counts == 0:
+                    continue
+                    
+                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                
+                # Calculate share percentage
+                share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
+                
+                row = {
+                    'Health Class': class_name,
+                    'Total Volume': total_counts,
+                    'Share %': share_pct,
+                    'Overall CTR': overall_ctr,
+                    'Overall CR': overall_cr,
+                    'Total Clicks': total_clicks,
+                    'Total Conversions': total_conversions
+                }
+                
+                # Monthly data calculations with proper month-specific metrics
+                for month in unique_months:
+                    month_data = class_data[class_data['month'] == month]
+                    month_display = month_names_dict.get(month, month)
+                    
+                    if not month_data.empty:
+                        # Calculate month-specific metrics
+                        month_counts = int(month_data['Counts'].sum())
+                        month_clicks = int(month_data['clicks'].sum())
+                        month_conversions = int(month_data['conversions'].sum())
+                        
+                        # Month-specific CTR and CR calculations
+                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                        
+                        row[f'{month_display} Vol'] = month_counts
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
+                    else:
+                        row[f'{month_display} Vol'] = 0
+                        row[f'{month_display} CTR'] = 0
+                        row[f'{month_display} CR'] = 0
+                
+                result_data.append(row)
+            
+            result_df = pd.DataFrame(result_data)
+            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+            
+            # Remove empty rows: Filter out rows with all zero values
+            result_df = result_df[result_df['Total Volume'] > 0]
+            
+            return result_df, unique_months
+
+        top_classes_monthly, unique_months = compute_class_health_performance_monthly(queries, cls, month_names, filter_key)
+        
+        if top_classes_monthly.empty:
+            st.warning("No valid class data after processing.")
+        else:
+            # Clean data: Remove any remaining empty rows and limit to selected number
+            top_classes_monthly = top_classes_monthly.dropna(subset=['Health Class'])
+            top_classes_monthly = top_classes_monthly[top_classes_monthly['Total Volume'] > 0]
+            top_classes_monthly = top_classes_monthly.head(num_classes)
+            
+            # Reorder columns for logical flow
+            base_columns = ['Health Class', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            
+            # Group monthly columns by type for easier comparison
+            volume_columns = []
+            ctr_columns = []
+            cr_columns = []
+            
+            for month in sorted(unique_months):
+                month_display = month_names.get(month, month)
+                volume_columns.append(f'{month_display} Vol')
+                ctr_columns.append(f'{month_display} CTR')
+                cr_columns.append(f'{month_display} CR')
+            
+            # Logical column order: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+            ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+            existing_columns = [col for col in ordered_columns if col in top_classes_monthly.columns]
+            top_classes_monthly = top_classes_monthly[existing_columns]
+
+            # Smart styling with better comparison highlighting
+            classes_hash = hash(str(top_classes_monthly.shape) + str(top_classes_monthly.columns.tolist()) + str(top_classes_monthly.iloc[0].to_dict()) if len(top_classes_monthly) > 0 else "empty")
+            
+            if ('styled_classes_health' not in st.session_state or 
+                st.session_state.get('classes_health_cache_key') != classes_hash):
+                
+                st.session_state.classes_health_cache_key = classes_hash
+                
+                # Apply format_number to numeric columns before styling
+                display_classes = top_classes_monthly.copy()
+                
+                # Format volume columns with format_number
+                volume_cols_to_format = ['Total Volume'] + volume_columns
+                for col in volume_cols_to_format:
+                    if col in display_classes.columns:
+                        display_classes[col] = display_classes[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                
+                # Format clicks and conversions
+                if 'Total Clicks' in display_classes.columns:
+                    display_classes['Total Clicks'] = display_classes['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_classes.columns:
+                    display_classes['Total Conversions'] = display_classes['Total Conversions'].apply(lambda x: format_number(int(x)))
+                
+                # Better performance highlighting with comparison focus
+                def highlight_class_health_performance_with_comparison(df):
+                    """Enhanced highlighting for better health class comparison"""
+                    styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    
+                    if len(unique_months) < 2:
+                        return styles
+                    
+                    sorted_months = sorted(unique_months)
+                    
+                    # Comparison focus: Highlight month-over-month changes
+                    for i in range(1, len(sorted_months)):
+                        current_month = month_names.get(sorted_months[i], sorted_months[i])
+                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                        
+                        current_ctr_col = f'{current_month} CTR'
+                        prev_ctr_col = f'{prev_month} CTR'
+                        current_cr_col = f'{current_month} CR'
+                        prev_cr_col = f'{prev_month} CR'
+                        
+                        # CTR comparison with threshold
+                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
+                            for idx in df.index:
+                                current_ctr = df.loc[idx, current_ctr_col]
+                                prev_ctr = df.loc[idx, prev_ctr_col]
+                                
+                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                    if change_pct > 10:  # 10% improvement
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:  # 10% decline
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:  # 5-10% change
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                        
+                        # CR comparison with threshold
+                        if current_cr_col in df.columns and prev_cr_col in df.columns:
+                            for idx in df.index:
+                                current_cr = df.loc[idx, current_cr_col]
+                                prev_cr = df.loc[idx, prev_cr_col]
+                                
+                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                    if change_pct > 10:  # 10% improvement
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:  # 10% decline
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:  # 5-10% change
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                    
+                    # Section highlighting: Different background for different metric groups
+                    for col in volume_columns:
+                        if col in df.columns:
+                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                    
+                    return styles
+                
+                # Create styled DataFrame from the formatted copy
+                styled_classes = display_classes.style.apply(highlight_class_health_performance_with_comparison, axis=None)
+                
+                styled_classes = styled_classes.set_properties(**{
+                    'text-align': 'center',
+                    'vertical-align': 'middle',
+                    'font-size': '11px',
+                    'padding': '4px',
+                    'line-height': '1.1'
+                }).set_table_styles([
+                    {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                    {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
+                    {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
+                ])
+                
+                # Format dictionary
+                format_dict = {
+                    'Share %': '{:.2f}%',
+                    'Overall CTR': '{:.2f}%',
+                    'Overall CR': '{:.2f}%'
+                }
+                
+                # Add formatting for monthly CTR and CR columns
+                for col in ctr_columns + cr_columns:
+                    if col in display_classes.columns:
+                        format_dict[col] = '{:.2f}%'
+
+                styled_classes = styled_classes.format(format_dict)
+                st.session_state.styled_classes_health = styled_classes
+
+            # Display: Cached styled DataFrame with dynamic height
+            # Calculate proper height: Based on actual number of rows
+            actual_rows = len(top_classes_monthly)
+            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
+            
+            st.dataframe(
+                st.session_state.styled_classes_health, 
+                use_container_width=True, 
+                height=table_height,
+                hide_index=True
+            )
+
+            # Better legend with comparison focus
+            st.markdown("""
+            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Health Class Comparison Guide:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                    <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Column grouping explanation
+            if unique_months:
+                month_list = [month_names.get(m, m) for m in sorted(unique_months)]
+                st.markdown(f"""
+                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Health Class Column Organization:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div><strong>🌱 Base Metrics:</strong> Health Class, Total Volume, Share %, Overall CTR/CR</div>
+                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
+                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
+                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Enhanced download section
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            csv_classes = top_classes_monthly.to_csv(index=False)
+            
+            col_download = st.columns([1, 2, 1])
+            with col_download[1]:
+                st.download_button(
+                    label="📥 Download Nutraceuticals & Nutrition Classes CSV",
+                    data=csv_classes,
+                    file_name=f"top_{num_classes}_health_classes_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    help="Download the health classes table with monthly comparison data",
+                    use_container_width=True
+                )
+
+    
+    with col_right:
+        # Class Market Share Pie Chart
+        st.subheader("🎯 Nutraceuticals & Nutrition Class Market Share")
+        
+        top_classes_pie = cls.nlargest(10, 'Counts')
+        
+        # Health-focused color palette
+        health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
+                        '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
+        
+        fig_pie = px.pie(
+            top_classes_pie, 
+            names='class', 
+            values='Counts',
+            title='<b style="color:#2E7D32;">🎯 Health Market Distribution</b>',
+            color_discrete_sequence=health_colors
+        )
+        
+        fig_pie.update_layout(
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            paper_bgcolor='rgba(232,245,232,0.8)'
+        )
+        
+        st.plotly_chart(fig_pie, use_container_width=True)
+        
+        # Class Performance Categories
+        st.subheader("🎯 Nutraceuticals & Nutrition Class Performance Distribution")
+        
+        # Categorize classes based on performance
+        cls['performance_category'] = pd.cut(
+            cls['ctr'], 
+            bins=[0, 2, 5, 10, float('inf')], 
+            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
+        )
+        
+        class_perf_counts = cls['performance_category'].value_counts().reset_index()
+        class_perf_counts.columns = ['Performance Level', 'Count']
+        
+        fig_class_perf = px.bar(
+            class_perf_counts, 
+            x='Performance Level', 
+            y='Count',
+            title='<b style="color:#2E7D32;">🎯 Health CTR Performance Distribution</b>',
+            color='Count',
+            color_continuous_scale=['#E8F5E8', '#2E7D32'],
+            text='Count'
+        )
+        
+        fig_class_perf.update_traces(
+            texttemplate='%{text}',
+            textposition='outside'
+        )
+        
+        fig_class_perf.update_layout(
+            plot_bgcolor='rgba(248,255,248,0.95)',
+            paper_bgcolor='rgba(232,245,232,0.8)',
+            font=dict(color='#1B5E20', family='Segoe UI'),
+            xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+        )
+        
+        st.plotly_chart(fig_class_perf, use_container_width=True)
+        
+        # Enhanced Class Trend Analysis
+        if 'Date' in queries.columns:
+            st.subheader("📈 Nutraceuticals & Nutrition Class Trend Analysis")
+            
+            # Get top 5 classes for trend analysis
+            top_5_classes = cls.nlargest(5, 'Counts')['class'].tolist()
+            
+            # Filter data for top 5 classes
+            trend_data = queries[
+                (queries[class_column].isin(top_5_classes)) &
+                (queries[class_column].notna())
+            ].copy()
+            
+            if not trend_data.empty:
+                try:
+                    # Better date processing
+                    trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
+                    trend_data = trend_data.dropna(subset=['Date'])
+                    
+                    if not trend_data.empty:
+                        # Create month column if it doesn't exist
+                        if 'month' not in trend_data.columns:
+                            trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
+                        
+                        # Use exact same logic as the table function
+                        monthly_trends_list = []
+                        
+                        for class_name in top_5_classes:
+                            class_data = trend_data[trend_data[class_column] == class_name]
+                            
+                            if class_data.empty:
+                                continue
+                            
+                            # Get unique months for this class
+                            unique_months_trend = sorted(class_data['month'].unique())
+                            
+                            for month in unique_months_trend:
+                                month_data = class_data[class_data['month'] == month]
+                                
+                                if not month_data.empty:
+                                    # Exact same calculation as your table
+                                    month_counts = int(month_data['Counts'].sum())
+                                    month_clicks = int(month_data['clicks'].sum())
+                                    month_conversions = int(month_data['conversions'].sum())
+                                    
+                                    # Month-specific CTR and CR calculations (same as table)
+                                    month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                                    month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                                    
+                                    monthly_trends_list.append({
+                                        'month': month,
+                                        'class': class_name,
+                                        'Counts': month_counts,
+                                        'clicks': month_clicks,
+                                        'conversions': month_conversions,
+                                        'CTR': round(month_ctr, 2),
+                                        'CR': round(month_cr, 2)
+                                    })
+                        
+                        # Convert to DataFrame
+                        monthly_trends = pd.DataFrame(monthly_trends_list)
+                        
+                        if not monthly_trends.empty:
+                            # Convert month to proper datetime for plotting
+                            monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
+                            monthly_trends = monthly_trends.sort_values(['Date', 'class'])
+                            
+                            # Debug: Show the actual data to verify calculations match table
+                            with st.expander("🔍 Debug - Monthly Trends Data (Click to verify calculations)", expanded=False):
+                                debug_df = monthly_trends[['month', 'class', 'Counts', 'clicks', 'conversions', 'CTR', 'CR']].copy()
+                                st.dataframe(debug_df, use_container_width=True)
+                            
+                            # Better metric selector
+                            st.markdown("### 📊 Select Metric to Analyze:")
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                show_volume = st.checkbox("🎯 Search Volume", value=True, key="show_volume_trend_class")
+                            with col2:
+                                show_ctr = st.checkbox("📈 CTR (%)", value=False, key="show_ctr_trend_class")
+                            with col3:
+                                show_cr = st.checkbox("🎯 CR (%)", value=False, key="show_cr_trend_class")
+                            
+                            # Dynamic charts: Create charts based on selection
+                            charts_to_show = []
+                            if show_volume:
+                                charts_to_show.append(('Search Volume', 'Counts', '🎯 Top 5 Health Classes - Monthly Search Volume Trend'))
+                            if show_ctr:
+                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Health Classes - Monthly CTR Trend'))
+                            if show_cr:
+                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Health Classes - Monthly CR Trend'))
+                            
+                            if not charts_to_show:
+                                st.warning("Please select at least one metric to display.")
+                            else:
+                                # Month names: Create month display mapping (same as table)
+                                month_names_display = {
+                                    '2025-06': 'June 2025',
+                                    '2025-07': 'July 2025', 
+                                    '2025-08': 'August 2025'
+                                }
+                                
+                                for metric_name, y_column, chart_title in charts_to_show:
+                                    # Create: Trend chart
+                                    fig_trend = px.line(
+                                        monthly_trends, 
+                                        x='Date', 
+                                        y=y_column, 
+                                        color='class',
+                                        title=f'<b style="color:#2E7D32;">{chart_title}</b>',
+                                        color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
+                                        markers=True,
+                                        line_shape='spline'
+                                    )
+                                    
+                                    # Better layout
+                                    fig_trend.update_layout(
+                                        plot_bgcolor='rgba(248,255,248,0.95)',
+                                        paper_bgcolor='rgba(232,245,232,0.8)',
+                                        font=dict(color='#1B5E20', family='Segoe UI', size=12),
+                                        height=500,
+                                        xaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#C8E6C8',
+                                            title='<b>Month</b>',
+                                            dtick="M1",
+                                            tickformat="%b %Y",
+                                            tickangle=0
+                                        ),
+                                        yaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#C8E6C8',
+                                            title=f'<b>{metric_name}</b>',
+                                            tickformat='.0f' if y_column == 'Counts' else '.2f'
+                                        ),
+                                        hovermode='closest',
+                                        legend=dict(
+                                            orientation="h",
+                                            yanchor="bottom",
+                                            y=1.02,
+                                            xanchor="right",
+                                            x=1,
+                                            bgcolor='rgba(255,255,255,0.8)',
+                                            bordercolor='#2E7D32',
+                                            borderwidth=1
+                                        )
+                                    )
+                                    
+                                    # Create hover data that matches each data point exactly
+                                    fig_trend.update_traces(
+                                        hovertemplate='<b>%{fullData.name}</b><br>' +
+                                                    'Month: %{x|%B %Y}<br>' +
+                                                    'Search Volume: %{customdata[0]}<br>' +
+                                                    'CTR: %{customdata[1]}%<br>' +
+                                                    'CR: %{customdata[2]}%<br>' +
+                                                    'Total Clicks: %{customdata[3]}<br>' +
+                                                    'Total Conversions: %{customdata[4]}<extra></extra>'
+                                    )
+                                    
+                                    # Add custom data for each trace individually
+                                    for i, trace in enumerate(fig_trend.data):
+                                        class_name = trace.name
+                                        class_data = monthly_trends[monthly_trends['class'] == class_name].sort_values('Date')
+                                        
+                                        # Create customdata for this specific class with exact values
+                                        customdata = []
+                                        for _, row in class_data.iterrows():
+                                            customdata.append([
+                                                format_number(int(row['Counts'])),      # Search Volume
+                                                f"{row['CTR']:.2f}",                   # CTR (exact from calculation)
+                                                f"{row['CR']:.2f}",                    # CR (exact from calculation)
+                                                format_number(int(row['clicks'])),     # Total Clicks
+                                                format_number(int(row['conversions'])) # Total Conversions
+                                            ])
+                                        
+                                        fig_trend.data[i].customdata = customdata
+                                        
+                                        # Better line styling
+                                        fig_trend.data[i].line.width = 3
+                                        fig_trend.data[i].marker.size = 8
+                                        fig_trend.data[i].marker.line.width = 2
+                                        fig_trend.data[i].marker.line.color = 'white'
+                                    
+                                    st.plotly_chart(fig_trend, use_container_width=True)
+                                    
+                                    # Insights: Add trend insights below each chart
+                                    if len(monthly_trends['Date'].unique()) >= 2:
+                                        # Calculate month-over-month changes
+                                        latest_month = monthly_trends['Date'].max()
+                                        prev_month_dates = sorted(monthly_trends['Date'].unique())
+                                        prev_month = prev_month_dates[-2] if len(prev_month_dates) >= 2 else None
+                                        
+                                        if prev_month is not None:
+                                            latest_data = monthly_trends[monthly_trends['Date'] == latest_month]
+                                            prev_data = monthly_trends[monthly_trends['Date'] == prev_month]
+                                            
+                                            insights = []
+                                            for class_name in top_5_classes:
+                                                latest_class = latest_data[latest_data['class'] == class_name]
+                                                prev_class = prev_data[prev_data['class'] == class_name]
+                                                
+                                                if not latest_class.empty and not prev_class.empty:
+                                                    latest_val = latest_class[y_column].iloc[0]
+                                                    prev_val = prev_class[y_column].iloc[0]
+                                                    
+                                                    if prev_val > 0:
+                                                        change_pct = ((latest_val - prev_val) / prev_val) * 100
+                                                        trend_icon = "📈" if change_pct > 0 else "📉" if change_pct < 0 else "➡️"
+                                                        insights.append(f"{trend_icon} **{class_name}**: {change_pct:+.1f}%")
+                                            
+                                            if insights:
+                                                st.markdown(f"""
+                                                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                                                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">📊 Month-over-Month {metric_name} Changes:</h4>
+                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                                                        {''.join([f'<div>{insight}</div>' for insight in insights])}
+                                                    </div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                    
+                                    st.markdown("<br>", unsafe_allow_html=True)
+                                
+                                
+                        else:
+                            st.info("No valid trend data available for the top 5 health classes")
+                    else:
+                        st.info("No valid dates found in the health class data")
+                except Exception as e:
+                    st.error(f"Error processing health class trend data: {str(e)}")
+                    st.write("Debug info:", str(e))
+            else:
+                st.info("No health class data available for trend analysis")
+
+        st.markdown("---")
+
+    
+    # Enhanced Class-Keyword Intelligence Matrix
+    st.subheader("🔥 Nutraceuticals & Nutrition Class-Keyword Intelligence Matrix")
+
+    # Create class filter dropdown
+    if 'search' in queries.columns:
+        # Get available classes (excluding null and 'other')
+        available_classes = class_queries[class_column].unique()
+        
+        # Sort classes alphabetically
+        available_classes = sorted(available_classes)
+        
+        # Create dropdown with "All Classes" option
+        class_options = ['All Health Classes'] + list(available_classes)
+        
+        # Enhanced UI for class selection with metrics
+        st.markdown("""
+        <div style="
+            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+            border: 2px solid #4CAF50;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+        ">
+            <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">
+                🎯 Class Analysis Control Center
+            </h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_select, col_metrics = st.columns([2, 3])
+        
+        with col_select:
+            selected_class = st.selectbox(
+                "🎯 Select Health Class to Analyze:",
+                options=class_options,
+                index=0,
+                key="class_selector"
+            )
+        
+        with col_metrics:
+            if selected_class != 'All Health Classes':
+                # Show metrics for selected class
+                class_metrics = cls[cls['class'] == selected_class].iloc[0] if not cls[cls['class'] == selected_class].empty else None
+                
+                if class_metrics is not None:
+                    # Now showing 5 metrics including both CR types with format_number
+                    metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+                    
+                    with metric_col1:
+                        st.markdown(f"""
+                        <div class="class-metric-card">
+                            <div class="class-metric-value">{format_number(class_metrics['Counts'])}</div>
+                            <div class="class-metric-label">📊 Total Searches</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col2:
+                        st.markdown(f"""
+                        <div class="class-metric-card">
+                            <div class="class-metric-value">{class_metrics['ctr']:.2f}%</div>
+                            <div class="class-metric-label">📈 CTR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col3:
+                        st.markdown(f"""
+                        <div class="class-metric-card">
+                            <div class="class-metric-value">{class_metrics['cr']:.2f}%</div>
+                            <div class="class-metric-label">🎯 CR (Search)</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col4:
+                        st.markdown(f"""
+                        <div class="class-metric-card">
+                            <div class="class-metric-value">{class_metrics['classic_cr']:.2f}%</div>
+                            <div class="class-metric-label">🔄 Classic CR</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    with metric_col5:
+                        st.markdown(f"""
+                        <div class="class-metric-card">
+                            <div class="class-metric-value">{class_metrics['share_pct']:.1f}%</div>
+                            <div class="class-metric-label">📈 Market Share</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+            else:
+                # Use the same calculation method as main dashboard cards
+                # Calculate from raw data instead of averaging class metrics
+                total_searches = int(class_queries['Counts'].sum())
+                total_clicks = int(class_queries['clicks'].sum())
+                total_conversions = int(class_queries['conversions'].sum())
+                
+                # Consistent: Same calculation as main dashboard
+                overall_ctr_matrix = (total_clicks / total_searches * 100) if total_searches > 0 else 0
+                overall_cr_matrix = (total_conversions / total_searches * 100) if total_searches > 0 else 0
+                overall_classic_cr_matrix = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                
+                # Now showing 5 metrics with consistent calculations
+                metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+                
+                with metric_col1:
+                    st.markdown(f"""
+                    <div class="class-metric-card">
+                        <div class="class-metric-value">{format_number(total_searches)}</div>
+                        <div class="class-metric-label">📊 Total Market</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col2:
+                    st.markdown(f"""
+                    <div class="class-metric-card">
+                        <div class="class-metric-value">{overall_ctr_matrix:.2f}%</div>
+                        <div class="class-metric-label">📈 Overall CTR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col3:
+                    st.markdown(f"""
+                    <div class="class-metric-card">
+                        <div class="class-metric-value">{overall_cr_matrix:.2f}%</div>
+                        <div class="class-metric-label">🎯 Overall CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col4:
+                    st.markdown(f"""
+                    <div class="class-metric-card">
+                        <div class="class-metric-value">{overall_classic_cr_matrix:.2f}%</div>
+                        <div class="class-metric-label">🔄 Overall Classic CR</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with metric_col5:
+                    st.markdown(f"""
+                    <div class="class-metric-card">
+                        <div class="class-metric-value">{format_number(total_clicks)}</div>
+                        <div class="class-metric-label">🍃 Total Clicks</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Filter data based on selection
+        if selected_class == 'All Health Classes':
+            # Show top 8 classes if "All Classes" is selected
+            top_classes_matrix = cls.nlargest(8, 'Counts')['class'].tolist()
+            filtered_data = class_queries[class_queries[class_column].isin(top_classes_matrix)]
+            matrix_title = "Top Health Classes vs Nutraceuticals & Nutrition Search Terms"
+        else:
+            # Filter for selected class only
+            filtered_data = class_queries[class_queries[class_column] == selected_class]
+            matrix_title = f"{selected_class} - Nutraceuticals & Nutrition Search Terms Analysis"
+        
+        # Remove null values from search terms
+        matrix_data = filtered_data[
+            (filtered_data[class_column].notna()) & 
+            (filtered_data['search'].notna()) &
+            (~filtered_data['search'].str.lower().isin(['other', 'others']))
+        ].copy()
+        
+        if not matrix_data.empty:
+            if selected_class == 'All Health Classes':
+                # Enhanced heatmap with CTR/CR data
+                class_search_matrix = matrix_data.groupby([class_column, 'search']).agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                class_search_matrix = class_search_matrix.rename(columns={class_column: 'class'})
+                
+                # Calculate CTR and CR for each class-search combination
+                class_search_matrix['ctr'] = ((class_search_matrix['clicks'] / class_search_matrix['Counts']) * 100).round(2)
+                class_search_matrix['cr'] = ((class_search_matrix['conversions'] / class_search_matrix['Counts']) * 100).round(2)
+                class_search_matrix['classic_cr'] = ((class_search_matrix['conversions'] / class_search_matrix['clicks']) * 100).fillna(0).round(2)
+                
+                # Get top search terms across all classes
+                top_searches = matrix_data['search'].value_counts().head(12).index.tolist()
+                class_search_matrix = class_search_matrix[class_search_matrix['search'].isin(top_searches)]
+                
+                # Create pivot tables
+                heatmap_data = class_search_matrix.pivot(
+                    index='class', 
+                    columns='search', 
+                    values='Counts'
+                ).fillna(0)
+                
+                # Create pivot tables for CTR, CR, and Classic CR
+                ctr_data = class_search_matrix.pivot(
+                    index='class', 
+                    columns='search', 
+                    values='ctr'
+                ).fillna(0)
+                
+                cr_data = class_search_matrix.pivot(
+                    index='class', 
+                    columns='search', 
+                    values='cr'
+                ).fillna(0)
+                
+                classic_cr_data = class_search_matrix.pivot(
+                    index='class', 
+                    columns='search', 
+                    values='classic_cr'
+                ).fillna(0)
+                
+                if not heatmap_data.empty:
+                    # Create the heatmap
+                    fig_matrix = px.imshow(
+                        heatmap_data.values,
+                        labels=dict(x="Nutraceuticals & Nutrition Search Terms", y="Health Classes", color="Total Counts"),
+                        x=heatmap_data.columns,
+                        y=heatmap_data.index,
+                        color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                        title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
+                        aspect='auto'
+                    )
+                    
+                    # Create custom hover data with CTR, CR, and Classic CR using format_number
+                    hover_text = []
+                    for i, class_name in enumerate(heatmap_data.index):
+                        hover_row = []
+                        for j, search in enumerate(heatmap_data.columns):
+                            counts = heatmap_data.iloc[i, j]
+                            ctr = ctr_data.iloc[i, j]
+                            cr = cr_data.iloc[i, j]
+                            classic_cr = classic_cr_data.iloc[i, j]
+                            hover_row.append(
+                                f"<b>{class_name}</b><br>" +
+                                f"Search Term: {search}<br>" +
+                                f"Total Searches: {format_number(counts)}<br>" +
+                                f"CTR: {ctr:.2f}%<br>" +
+                                f"CR (Search): {cr:.2f}%<br>" +
+                                f"Classic CR: {classic_cr:.2f}%"
+                            )
+                        hover_text.append(hover_row)
+                    
+                    fig_matrix.update_traces(
+                        hovertemplate='%{customdata}<extra></extra>',
+                        customdata=hover_text
+                    )
+                    
+                    fig_matrix.update_layout(
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
+                        xaxis=dict(tickangle=45),
+                        height=500
+                    )
+                    
+                    st.plotly_chart(fig_matrix, use_container_width=True)
+                    
+                    # Show summary statistics
+                    total_interactions = class_search_matrix['Counts'].sum()
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health classes × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {format_number(total_interactions)} total searches")
+            else:
+                # Single class analysis with enhanced bar chart
+                class_search_data = matrix_data.groupby('search').agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                # Calculate CTR and CR
+                class_search_data['ctr'] = ((class_search_data['clicks'] / class_search_data['Counts']) * 100).round(2)
+                class_search_data['cr'] = ((class_search_data['conversions'] / class_search_data['Counts']) * 100).round(2)
+                class_search_data['classic_cr'] = ((class_search_data['conversions'] / class_search_data['clicks']) * 100).fillna(0).round(2)
+                
+                class_search_data = class_search_data.sort_values('Counts', ascending=False).head(15)
+                
+                # Add CR selection for chart coloring
+                st.markdown("#### 📊 Chart Display Options")
+                cr_option = st.radio(
+                    "Color bars by:",
+                    options=['Classic CR (Conversions/Clicks)', 'CR Search-based (Conversions/Searches)'],
+                    index=0,
+                    horizontal=True,
+                    key="class_cr_option_radio"
+                )
+                
+                # Determine which CR to use for coloring
+                color_column = 'classic_cr' if cr_option == 'Classic CR (Conversions/Clicks)' else 'cr'
+                color_label = 'Classic CR (%)' if cr_option == 'Classic CR (Conversions/Clicks)' else 'CR Search-based (%)'
+                
+                fig_class_search = px.bar(
+                    class_search_data,
+                    x='search',
+                    y='Counts',
+                    title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
+                    labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
+                    color=color_column,
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    text='Counts'
+                )
+                
+                # Enhanced hover template with both CR types using format_number
+                fig_class_search.update_traces(
+                    texttemplate='%{text}',
+                    textposition='outside',
+                    hovertemplate='<b>%{x}</b><br>' +
+                                'Search Volume: %{customdata[3]}<br>' +
+                                'CTR: %{customdata[0]:.2f}%<br>' +
+                                'CR (Search): %{customdata[1]:.2f}%<br>' +
+                                'Classic CR: %{customdata[2]:.2f}%<br>' +
+                                f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
+                    customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
+                            for _, row in class_search_data.iterrows()],
+                    text=[format_number(x) for x in class_search_data['Counts']]
+                )
+                
+                fig_class_search.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=500,
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    coloraxis_colorbar=dict(title=color_label)
+                )
+                
+                st.plotly_chart(fig_class_search, use_container_width=True)
+                
+                # Display both CR metrics in a comparison table
+                st.markdown("#### 📋 Search Terms Performance Comparison")
+                
+                display_comparison = class_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
+                display_comparison = display_comparison.rename(columns={
+                    'search': 'Health Search Term',
+                    'Counts': 'Search Volume',
+                    'ctr': 'CTR (%)',
+                    'cr': 'CR Search-based (%)',
+                    'classic_cr': 'Classic CR (%)'
+                })
+                
+                # Format the display using format_number
+                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
+                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
+                
+                st.dataframe(display_comparison, use_container_width=True, hide_index=True)
+        else:
+            st.warning("⚠️ No Nutraceuticals & Nutrition class data available for the selected filter")
+
+    st.markdown("---")
+
+    
+    # Enhanced Top Keywords per Class Analysis
+    st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Class Analysis")
+    
+    # Number of keywords selection option - moved to top
+    num_keywords = st.selectbox(
+        "🔥 Select number of top health keywords to analyze:",
+        options=[10, 15, 20, 25, 30, 50],
+        index=0,
+        key="num_keywords_selector_class"
+    )
+    
+    try:
+        # Calculate keywords per class using the enhanced approach
+        rows = []
+        for cls_name, grp in class_queries.groupby(class_column):
+            # Use the keywords column that was created by prepare_queries_df function
+            keyword_counts = {}
+            
+            for idx, row in grp.iterrows():
+                keywords_list = row['keywords']
+                query_count = row['Counts']
+                
+                if isinstance(keywords_list, list):
+                    # Add the query count to each keyword
+                    for keyword in keywords_list:
+                        if keyword in keyword_counts:
+                            keyword_counts[keyword] += query_count
+                        else:
+                            keyword_counts[keyword] = query_count
+                elif pd.notna(keywords_list):
+                    # Fallback: use normalized_query if keywords is not a list
+                    search_term = row['normalized_query']
+                    if pd.notna(search_term):
+                        keywords = str(search_term).lower().split()
+                        for keyword in keywords:
+                            if keyword in keyword_counts:
+                                keyword_counts[keyword] += query_count
+                            else:
+                                keyword_counts[keyword] = query_count
+            
+            # Get top N keywords for this class based on selection
+            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:num_keywords]
+            
+            for keyword, count in top_keywords:
+                rows.append({'class': cls_name, 'keyword': keyword, 'count': count})
+        
+        df_ckw = pd.DataFrame(rows)
+        
+        if not df_ckw.empty:
+            # Create pivot table for keyword analysis
+            pivot_ckw = df_ckw.pivot_table(index='class', columns='keyword', values='count', fill_value=0)
+            
+            # Display options
+            display_option = st.radio(
+                "Choose Nutraceuticals & Nutrition keyword display format:",
+                ["Top Health Keywords Summary", "Heatmap Visualization"],
+                horizontal=True
+            )
+            
+            if display_option == "Heatmap Visualization":
+                # Create heatmap for keyword-class matrix
+                fig_keyword_heatmap = px.imshow(
+                    pivot_ckw.values,
+                    labels=dict(x="Health Keywords", y="Nutraceuticals & Nutrition Classes", color="Keyword Count"),
+                    x=pivot_ckw.columns,
+                    y=pivot_ckw.index,
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
+                    title=f'<b style="color:#2E7D32;">🎯 Nutraceuticals & Nutrition Class-Health Keyword Frequency Heatmap (Top {num_keywords})</b>',
+                    aspect='auto'
+                )
+                
+                fig_keyword_heatmap.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    xaxis=dict(tickangle=45),
+                    height=600
+                )
+                
+                st.plotly_chart(fig_keyword_heatmap, use_container_width=True)
+            
+            else:  # Top Keywords Summary
+                # Show top keywords summary by class with enhanced accuracy
+                st.subheader(f"🔥 Top {num_keywords} Health Keywords by Nutraceuticals & Nutrition Class")
+                
+                top_keywords_summary = []
+                class_stats = {}
+                
+                # Calculate total volume across all classes for share percentage
+                total_volume_all_classes = cls['Counts'].sum()
+                
+                for cls_name in df_ckw['class'].unique():
+                    cls_data = df_ckw[df_ckw['class'] == cls_name].sort_values('count', ascending=False)
+                    
+                    # Get top N keywords for this class
+                    top_n_keywords = cls_data.head(num_keywords)
+                    
+                    # Create formatted keyword string with counts using format_number
+                    keywords_list = []
+                    for _, row in top_n_keywords.iterrows():
+                        keywords_list.append(f"{row['keyword']} ({format_number(row['count'])})")
+                    
+                    keywords_str = ' | '.join(keywords_list)
+                    
+                    # Calculate class statistics
+                    actual_class_total = cls[cls['class'] == cls_name]['Counts'].iloc[0] if len(cls[cls['class'] == cls_name]) > 0 else cls_data['count'].sum()
+                    share_percentage = (actual_class_total / total_volume_all_classes * 100)
+                    
+                    total_keyword_count = cls_data['count'].sum()
+                    unique_keywords = len(cls_data)
+                    avg_keyword_count = cls_data['count'].mean()
+                    top_keyword_dominance = (top_n_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_n_keywords) > 0 else 0
+                    
+                    # Store class stats for additional insights
+                    class_stats[cls_name] = {
+                        'total_keywords': unique_keywords,
+                        'total_count': actual_class_total,
+                        'keyword_total_count': total_keyword_count,
+                        'avg_count': avg_keyword_count,
+                        'top_keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
+                        'dominance': top_keyword_dominance,
+                        'share_percentage': share_percentage
+                    }
+                    
+                    top_keywords_summary.append({
+                        'Nutraceuticals & Nutrition Class': cls_name,
+                        f'Top {num_keywords} Health Keywords (with counts)': keywords_str,
+                        'Total Keywords': unique_keywords,
+                        'Class Total Volume': format_number(actual_class_total),
+                        'Market Share %': f"{share_percentage:.2f}%",
+                        'Keyword Analysis Volume': format_number(total_keyword_count),
+                        'Avg Keyword Count': f"{avg_keyword_count:.1f}",
+                        'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
+                        'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
+                    })
+                
+                # Sort by actual class total volume (descending)
+                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: float(x['Class Total Volume'].replace('K', '000').replace('M', '000000').replace('B', '000000000')), reverse=True)
+                summary_df = pd.DataFrame(top_keywords_summary)
+                
+                # Display the enhanced summary table
+                st.dataframe(summary_df, use_container_width=True, hide_index=True)
+                
+                # Additional insights section with enhanced font sizes
+                st.markdown("---")
+                st.subheader("📊 Nutraceuticals & Nutrition Class Health Keyword Intelligence")
+                
+                col_insight1, col_insight2, col_insight3 = st.columns(3)
+                
+                with col_insight1:
+                    # Most diverse class (most unique keywords)
+                    most_diverse_cls = max(class_stats.items(), key=lambda x: x[1]['total_keywords'])
+                    class_name = most_diverse_cls[0][:15] + "..." if len(most_diverse_cls[0]) > 15 else most_diverse_cls[0]
+                    st.markdown(f"""
+                    <div class='enhanced-health-class-metric'>
+                        <span class='icon'>🌟</span>
+                        <div class='value'>{class_name}</div>
+                        <div class='label'>Most Diverse Health Class</div>
+                        <div class='sub-label'>{most_diverse_cls[1]['total_keywords']} unique health keywords</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_insight2:
+                    # Highest volume class with correct share percentage
+                    highest_volume_cls = max(class_stats.items(), key=lambda x: x[1]['total_count'])
+                    class_name = highest_volume_cls[0][:15] + "..." if len(highest_volume_cls[0]) > 15 else highest_volume_cls[0]
+                    st.markdown(f"""
+                    <div class='enhanced-health-class-metric'>
+                        <span class='icon'>🚀</span>
+                        <div class='value'>{class_name}</div>
+                        <div class='label'>Highest Volume Nutraceuticals & Nutrition Class</div>
+                        <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total health searches<br>{highest_volume_cls[1]['share_percentage']:.2f}% market share</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_insight3:
+                    # Most concentrated class with correct share percentage
+                    most_concentrated_cls = max(class_stats.items(), key=lambda x: x[1]['share_percentage'])
+                    class_name = most_concentrated_cls[0][:15] + "..." if len(most_concentrated_cls[0]) > 15 else most_concentrated_cls[0]
+                    st.markdown(f"""
+                    <div class='enhanced-health-class-metric'>
+                        <span class='icon'>🎯</span>
+                        <div class='value'>{class_name}</div>
+                        <div class='label'>Most Concentrated Health Class</div>
+                        <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Top keywords across all classes
+                st.markdown("---")
+                st.subheader("🏆 Global Top Health Keywords Across All Nutraceuticals & Nutrition Classes")
+                
+                # Get top keywords globally
+                global_keywords = df_ckw.groupby('keyword')['count'].sum().reset_index()
+                global_keywords = global_keywords.sort_values('count', ascending=False).head(20)
+                
+                # Create a horizontal bar chart for global keywords
+                fig_global_keywords = px.bar(
+                    global_keywords,
+                    x='count',
+                    y='keyword',
+                    orientation='h',
+                    title=f'<b style="color:#2E7D32;">🎯 Top 20 Health Keywords Across All Nutraceuticals & Nutrition Classes</b>',
+                    labels={'count': 'Total Health Search Count', 'keyword': 'Health Keywords'},
+                    color='count',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                    text='count'
+                )
+                
+                # Format bar labels with format_number
+                fig_global_keywords.update_traces(
+                    texttemplate='%{text}',
+                    textposition='outside',
+                    text=[format_number(x) for x in global_keywords['count']]
+                )
+                
+                fig_global_keywords.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=600,
+                    yaxis={'categoryorder': 'total ascending'},
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis_title="Health Keywords",
+                    xaxis_title="Total Health Search Count"
+                )
+                
+                st.plotly_chart(fig_global_keywords, use_container_width=True)
+                
+                # Class keyword distribution analysis
+                st.markdown("---")
+                st.subheader("📈 Nutraceuticals & Nutrition Class Health Keyword Distribution Analysis")
+                
+                # Create distribution data using corrected totals
+                distribution_data = []
+                for cls_name, stats in class_stats.items():
+                    distribution_data.append({
+                        'Nutraceuticals & Nutrition Class': cls_name,
+                        'Unique Health Keywords': stats['total_keywords'],
+                        'Total Health Volume': stats['total_count'],
+                        'Average Keyword Count': stats['avg_count']
+                    })
+                
+                dist_df = pd.DataFrame(distribution_data)
+                
+                # Create scatter plot for keyword distribution
+                fig_distribution = px.scatter(
+                    dist_df,
+                    x='Unique Health Keywords',
+                    y='Total Health Volume',
+                    size='Average Keyword Count',
+                    hover_name='Nutraceuticals & Nutrition Class',
+                    title='<b style="color:#2E7D32;">🎯 Nutraceuticals & Nutrition Class Health Keyword Diversity vs Volume</b>',
+                    labels={
+                        'Unique Health Keywords': 'Number of Unique Health Keywords',
+                        'Total Health Volume': 'Total Health Search Volume',
+                        'Average Keyword Count': 'Average Health Keyword Count'
+                    },
+                    color='Average Keyword Count',
+                    color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32']
+                )
+                
+                fig_distribution.update_layout(
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+                )
+                
+                # Format hover with format_number
+                fig_distribution.update_traces(
+                    hovertemplate='<b>%{hovertext}</b><br>' +
+                                 'Unique Health Keywords: %{x}<br>' +
+                                 'Total Health Volume: %{customdata}<br>' +
+                                 'Avg Keyword Count: %{marker.size:.1f}<extra></extra>',
+                    customdata=[format_number(x) for x in dist_df['Total Health Volume']]
+                )
+                
+                st.plotly_chart(fig_distribution, use_container_width=True)
+            
+            # Download button for keyword analysis
+            csv_keywords = df_ckw.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Nutraceuticals & Nutrition Class Health Keywords CSV",
+                data=csv_keywords,
+                file_name=f"nutraceuticals_class_health_keywords_top_{num_keywords}.csv",
+                mime="text/csv",
+                key="class_keywords_csv_download"
+            )
+        else:
+            st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
+    
+    except Exception as e:
+        st.error(f"Error processing health keyword analysis: {str(e)}")
+        st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
+
+    # Health Class Insights Section
+    st.markdown("---")
+    col_insight1, col_insight2 = st.columns(2)
+    
+    with col_insight1:
+        top_class_share = cls.iloc[0]['share_pct'] if not cls.empty else 0
+        top_class_name = cls.iloc[0]['class'] if not cls.empty else "N/A"
+        high_performers = len(cls[cls['ctr'] > 5]) if not cls.empty else 0
+        avg_conversion_rate = cls['cr'].mean() if not cls.empty else 0
+        classes_above_avg_cr = len(cls[cls['cr'] > avg_conversion_rate]) if not cls.empty else 0
+        
+        st.markdown(f"""
+        <div class='class-insight'>
+            <h4>🎯 Key Nutraceuticals & Nutrition Class Insights</h4>
+            <p>• <strong>{top_class_name}</strong> leads health market with {top_class_share:.1f}% share<br>
+            • {high_performers} Nutraceuticals & Nutrition classes achieve CTR > 5% (premium performance)<br>
+            • {classes_above_avg_cr} classes exceed avg CR of {avg_conversion_rate:.2f}%<br>
+            • Health market shows {"strong" if cls['share_pct'].iloc[0] > 30 else "balanced" if cls['share_pct'].iloc[0] > 15 else "fragmented"} class concentration</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_insight2:
+        low_performers = len(cls[cls['ctr'] < 2]) if not cls.empty else 0
+        opportunity_classes = len(cls[(cls['Counts'] > cls['Counts'].median()) & (cls['ctr'] < 3)]) if not cls.empty else 0
+        
+        st.markdown(f"""
+        <div class='class-insight'>
+            <h4>💚 Health Class Strategy Recommendations</h4>
+            <p>• Optimize {low_performers} underperforming Nutraceuticals & Nutrition classes (CTR < 2%)<br>
+            • {opportunity_classes} high-volume health classes need engagement boost<br>
+            • Focus on Nutraceuticals & Nutrition keywords for leading health classes<br>
+            • {"Diversify" if cls['share_pct'].iloc[0] > 40 else "Strengthen"} health product portfolio strategy</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Final Class Summary Dashboard
+    st.markdown("---")
+    st.subheader("📊 Nutraceuticals & Nutrition Class Performance Dashboard Summary")
+    
+    # Create final summary metrics
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    with summary_col1:
+        total_searches = cls['Counts'].sum() if not cls.empty else 0
+        st.metric(
+            label="🎯 Total Health Searches",
+            value=format_number(total_searches),
+            delta=f"{len(cls)} Nutraceuticals & Nutrition classes analyzed"
+        )
+    
+    with summary_col2:
+        avg_market_ctr = cls['ctr'].mean() if not cls.empty else 0
+        top_ctr = cls['ctr'].max() if not cls.empty else 0
+        st.metric(
+            label="📈 Market Avg CTR",
+            value=f"{avg_market_ctr:.2f}%",
+            delta=f"Best: {top_ctr:.2f}%"
+        )
+    
+    with summary_col3:
+        total_conversions = cls['conversions'].sum() if not cls.empty else 0
+        avg_cr = cls['cr'].mean() if not cls.empty else 0
+        st.metric(
+            label="💚 Total Conversions",
+            value=format_number(total_conversions),
+            delta=f"Avg CR: {avg_cr:.2f}%"
+        )
+    
+    with summary_col4:
+        market_concentration = f"{cls['share_pct'].iloc[0]:.1f}%" if not cls.empty else "0%"
+        concentration_status = "High" if cls['share_pct'].iloc[0] > 30 else "Medium" if cls['share_pct'].iloc[0] > 15 else "Low"
+        st.metric(
+            label="🎯 Market Concentration",
+            value=market_concentration,
+            delta=f"{concentration_status} concentration"
+        )
+    
+    # Export all class data
+    st.markdown("---")
+    st.subheader("📥 Export Nutraceuticals & Nutrition Class Intelligence")
+    
+    export_col1, export_col2 = st.columns(2)
+    
+    with export_col1:
+        if not cls.empty:
+            # Comprehensive class export
+            export_data = cls.copy()
+            export_data['analysis_date'] = pd.Timestamp.now().strftime('%Y-%m-%d')
+            
+            csv_export = export_data.to_csv(index=False)
+            st.download_button(
+                label="📊 Download Complete Nutraceuticals & Nutrition Class Analysis",
+                data=csv_export,
+                file_name=f"nutraceuticals_class_intelligence_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                mime="text/csv",
+                key="complete_class_export"
+            )
+    
+    with export_col2:
+        if not cls.empty:
+            # Summary report with format_number
+            summary_report = f"""
+NUTRACEUTICALS & NUTRITION CLASS INTELLIGENCE REPORT
+Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
+
+HEALTH MARKET OVERVIEW:
+• Total Nutraceuticals & Nutrition Classes Analyzed: {len(cls)}
+• Total Health Searches: {format_number(cls['Counts'].sum())}
+• Market Leader: {cls.iloc[0]['class']} ({cls.iloc[0]['share_pct']:.1f}% share)
+• Average CTR: {cls['ctr'].mean():.2f}%
+• Average CR: {cls['cr'].mean():.2f}%
+
+NUTRACEUTICALS & NUTRITION PERFORMANCE TIERS:
+• Premium Classes (CTR > 10%): {len(cls[cls['ctr'] > 10])}
+• Strong Classes (CTR 5-10%): {len(cls[(cls['ctr'] >= 5) & (cls['ctr'] <= 10)])}
+• Growing Classes (CTR 2-5%): {len(cls[(cls['ctr'] >= 2) & (cls['ctr'] < 5)])}
+• Emerging Classes (CTR < 2%): {len(cls[cls['ctr'] < 2])}
+
+STRATEGIC HEALTH INSIGHTS:
+• Market concentration is {concentration_status.lower()}
+• {len(cls[cls['ctr'] > 5])} classes achieve premium performance
+• Growth opportunities exist in Nutraceuticals & Nutrition engagement optimization
+"""
+            
+            st.download_button(
+                label="📝 Download Nutraceuticals & Nutrition Executive Summary Report",
+                data=summary_report,
+                file_name=f"nutraceuticals_class_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                key="class_executive_summary_export"
+            )
+
+
 
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
