@@ -13522,14 +13522,17 @@ with tab_insights:
                     brand_analysis['query_fragmentation']
                 )
                 
-                out = brand_analysis.nlargest(20, 'cannibalization_score').copy()
+                # Sort by total search volume (descending) - DEFAULT SORT
+                out = brand_analysis.sort_values('total_search_volume', ascending=False).head(20).copy()
                 
-                # Get detailed breakdown for top cannibalizing brand
+                # Get detailed breakdown for top brand by search volume
                 top_brand = out.iloc[0]['brand']
                 top_brand_details = df_temp[df_temp['Brand'] == top_brand].copy()
                 top_brand_details['ctr'] = (top_brand_details['clicks'] / top_brand_details['Counts'] * 100).fillna(0)
                 top_brand_details['cr'] = (top_brand_details['conversions'] / top_brand_details['Counts'] * 100).fillna(0)
-                top_brand_details = top_brand_details.nlargest(30, 'Counts')[['search', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']]
+                
+                # Sort detailed breakdown by search volume (descending)
+                top_brand_details = top_brand_details.sort_values('Counts', ascending=False).head(30)[['search', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']]
                 
                 # Format for display - Main table
                 display_df = out.copy()
@@ -13554,8 +13557,8 @@ with tab_insights:
                                 f"q11_cannibalization_{datetime.now().strftime('%Y%m%d')}.csv", 
                                 "text/csv", key="q11_dl")
                 
-                # Detailed breakdown of top cannibalizing brand
-                st.subheader(f"🔍 Detailed Query Breakdown: {top_brand} (Top 30 by Volume)")
+                # Detailed breakdown of top brand by search volume
+                st.subheader(f"🔍 Detailed Query Breakdown: {top_brand} (Top 30 by Search Volume)")
                 
                 detail_display = top_brand_details.copy()
                 detail_display['Counts_fmt'] = detail_display['Counts'].apply(lambda x: format_number(int(x)))
@@ -13579,28 +13582,28 @@ with tab_insights:
                 5. **Expected impact:** Potential CTR increase of 20-40% through consolidation
                 """)
                 
-                # Visualization: Cannibalization Risk by Brand
-                fig = px.bar(out.head(10), x='brand', y='unique_queries',
-                            title='Top 10 Brands: Query Fragmentation (# of Unique Queries)',
-                            color='cannibalization_score', color_continuous_scale='Reds',
-                            hover_data=['total_search_volume', 'avg_ctr', 'avg_cr'])
+                # Visualization: Top brands by search volume with query count overlay
+                fig = px.bar(out.head(10), x='brand', y='total_search_volume',
+                            title='Top 10 Brands by Search Volume (Color = Query Fragmentation)',
+                            color='unique_queries', color_continuous_scale='Reds',
+                            hover_data=['unique_queries', 'avg_ctr', 'avg_cr'])
                 fig.update_layout(
                     xaxis_title="Brand",
-                    yaxis_title="Number of Unique Search Queries",
+                    yaxis_title="Total Search Volume",
                     xaxis_tickangle=-45
                 )
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Scatter: Query Count vs CTR
-                fig2 = px.scatter(out, x='unique_queries', y='avg_ctr',
-                                size='total_search_volume', color='avg_cr',
-                                hover_data=['brand', 'total_clicks', 'total_conversions'],
-                                title='Cannibalization Impact: More Queries = Lower CTR?',
+                # Scatter: Search Volume vs Query Fragmentation
+                fig2 = px.scatter(out, x='total_search_volume', y='unique_queries',
+                                size='total_conversions', color='avg_ctr',
+                                hover_data=['brand', 'total_clicks', 'avg_cr'],
+                                title='Search Volume vs Query Fragmentation (Size = Conversions, Color = CTR)',
                                 color_continuous_scale='RdYlGn',
-                                labels={'unique_queries': '# of Unique Queries', 'avg_ctr': 'Average CTR (%)'})
+                                labels={'total_search_volume': 'Total Search Volume', 'unique_queries': '# of Unique Queries'})
                 fig2.update_layout(
-                    xaxis_title="Number of Unique Search Queries",
-                    yaxis_title="Average CTR (%)"
+                    xaxis_title="Total Search Volume",
+                    yaxis_title="Number of Unique Search Queries"
                 )
                 st.plotly_chart(fig2, use_container_width=True)
                 
@@ -13611,7 +13614,7 @@ with tab_insights:
 
     q_expand(
         "Q11 — 🔄 Brand Cannibalization - Competing Products Analysis",
-        "Identifies brands with excessive query fragmentation (multiple search variations competing). **Action:** Consolidate listings, redirect misspellings, optimize primary keywords, and create clear product hierarchy.",
+        "Identifies brands with excessive query fragmentation (multiple search variations competing). **Sorted by Search Volume** to prioritize high-impact brands. **Action:** Consolidate listings, redirect misspellings, optimize primary keywords, and create clear product hierarchy.",
         q11, "🔄"
     )
 
