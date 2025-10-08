@@ -11428,7 +11428,7 @@ with tab_time:
         }
         
         # Key Metrics Section with cached cards
-        st.subheader("🌿 Monthly Health Performance Overview")
+        st.subheader("🌿 Monthly Performance Overview")
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -11446,7 +11446,7 @@ with tab_time:
             <div class='time-metric-card'>
                 <span class='icon'>🔍</span>
                 <div class='value'>{format_number(summary_metrics['total_searches'])}</div>
-                <div class='label'>Total Health Searches</div>
+                <div class='label'>Total Searches</div>
                 <div class='sub-label'>Across all months</div>
             </div>
             """, unsafe_allow_html=True)
@@ -11484,16 +11484,16 @@ with tab_time:
         
         # Interactive Analysis Section
         st.markdown("---")
-        st.subheader("🎯 Interactive Temporal Health Analysis")
+        st.subheader("🎯 Interactive Temporal Analysis")
         
         analysis_type = st.radio(
             "Choose Analysis Type:",
-            ["📊 Health Trends Overview", "🔍 Detailed Month Health Analysis", "🏷 Brand Health Comparison", "📊 Nutraceuticals & Nutrition Distribution Analysis"],
+            ["📊 Trends Overview", "🔍 Detailed Month Analysis", "🏷 Brand Comparison", "📊 Distribution Analysis"],
             horizontal=True
         )
         
-        if analysis_type == "📊 Health Trends Overview":
-            st.subheader("📈 Monthly Health Trends")
+        if analysis_type == "📊 Trends Overview":
+            st.subheader("📈 Monthly Trends")
             
             # 🚀 OPTIMIZED: Cached chart creation
             @st.cache_data(ttl=1800, show_spinner=False)
@@ -11537,8 +11537,8 @@ with tab_time:
             st.plotly_chart(fig_counts, use_container_width=True)
             st.plotly_chart(fig_metrics, use_container_width=True)
         
-        elif analysis_type == "🔍 Detailed Month Health Analysis":
-            st.subheader("🔬 Detailed Monthly Health Performance")
+        elif analysis_type == "🔍 Detailed Month Analysis":
+            st.subheader("🔬 Detailed Monthly Performance")
             
             selected_month = st.selectbox(
                 "Select a month for detailed Nutraceuticals & Nutrition analysis:",
@@ -11618,8 +11618,8 @@ with tab_time:
                 st.dataframe(metrics_df, use_container_width=True, hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
         
-        elif analysis_type == "🏷 Brand Health Comparison":
-            st.subheader("🏷 Top Brands Health Performance by Month")
+        elif analysis_type == "🏷 Brand Comparison":
+            st.subheader("🏷 Top Brands Performance by Month")
             
             if 'brand' in queries_clean.columns and queries_clean['brand'].notna().any():
                 # 🚀 OPTIMIZED: Cached brand analysis
@@ -11695,8 +11695,8 @@ with tab_time:
             else:
                 st.info("Brand or month data not available for brand-month health analysis.")
         
-        elif analysis_type == "📊 Nutraceuticals & Nutrition Distribution Analysis":
-            st.subheader("📊 Monthly Nutraceuticals & Nutrition Distribution Analysis")
+        elif analysis_type == "📊 Distribution Analysis":
+            st.subheader("📊 Monthly Distribution Analysis")
             
             # 🚀 OPTIMIZED: Cached pie chart
             @st.cache_data(ttl=1800, show_spinner=False)
