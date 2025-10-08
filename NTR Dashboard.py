@@ -12803,85 +12803,63 @@ with tab_insights:
     </style>
     """, unsafe_allow_html=True)
 
-    # Cache data processing for performance
+    # Preprocess data for insights
     @st.cache_data
     def preprocess_insights_data():
         df = queries.copy()
         
-        # Clean column names - handle spaces and case
-        df.columns = df.columns.str.strip()
-        
-        # Create a mapping for common column name variations
-        column_mapping = {}
-        for col in df.columns:
-            col_lower = col.lower().replace(' ', '_')
-            if 'search' in col_lower or col_lower in ['count', 'counts']:
-                column_mapping[col] = 'search_volume'
-            elif 'click' in col_lower and 'through' not in col_lower and 'position' not in col_lower:
-                column_mapping[col] = 'clicks'
-            elif 'conversion' in col_lower and 'rate' not in col_lower:
-                column_mapping[col] = 'conversions'
-            elif 'ctr' in col_lower or 'click_through_rate' in col_lower or 'click through rate' in col_lower:
-                column_mapping[col] = 'ctr_original'
-            elif ('cr' in col_lower or 'conversion_rate' in col_lower or 'converion_rate' in col_lower) and 'click' not in col_lower:
-                column_mapping[col] = 'cr_original'
-            elif 'position' in col_lower:
-                column_mapping[col] = 'averageclickposition'
-            elif 'brand' in col_lower:
-                column_mapping[col] = 'brand'
-            elif 'category' in col_lower and 'sub' not in col_lower:
-                column_mapping[col] = 'category'
-            elif 'sub' in col_lower and 'category' in col_lower:
-                column_mapping[col] = 'sub_category'
-            elif 'class' in col_lower:
-                column_mapping[col] = 'class'
-            elif 'department' in col_lower:
-                column_mapping[col] = 'department'
-            elif 'underperform' in col_lower:
-                column_mapping[col] = 'underperforming'
-            elif 'start' in col_lower and 'date' in col_lower:
-                column_mapping[col] = 'start_date'
-            elif 'end' in col_lower and 'date' in col_lower:
-                column_mapping[col] = 'end_date'
-        
-        df.rename(columns=column_mapping, inplace=True)
-        
-        # Ensure required columns exist
-        required_cols = ['search_volume', 'clicks', 'conversions']
-        for col in required_cols:
-            if col not in df.columns:
-                st.error(f"❌ Missing required column: {col}")
-                st.stop()
-        
-        # Convert to numeric
-        df['search_volume'] = pd.to_numeric(df['search_volume'], errors='coerce').fillna(0)
+        # Use existing columns directly (they're already cleaned)
+        # Map to standard names for insights code
+        df['search_volume'] = pd.to_numeric(df['Counts'], errors='coerce').fillna(0)
         df['clicks'] = pd.to_numeric(df['clicks'], errors='coerce').fillna(0)
         df['conversions'] = pd.to_numeric(df['conversions'], errors='coerce').fillna(0)
         
-        # Recalculate CR correctly: conversions / search_volume
-        df['cr_calculated'] = df.apply(
-            lambda r: (r['conversions'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
-            axis=1
-        )
+        # Handle CTR - already in percentage format
+        if 'Click Through Rate' in df.columns:
+            df['ctr_calculated'] = pd.to_numeric(df['Click Through Rate'], errors='coerce').fillna(0)
+        else:
+            df['ctr_calculated'] = df.apply(
+                lambda r: (r['clicks'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
+                axis=1
+            )
         
-        # Recalculate CTR: clicks / search_volume
-        df['ctr_calculated'] = df.apply(
-            lambda r: (r['clicks'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
-            axis=1
-        )
+        # Handle CR - note the typo 'Converion Rate' in your data
+        if 'Converion Rate' in df.columns:
+            df['cr_calculated'] = pd.to_numeric(df['Converion Rate'], errors='coerce').fillna(0)
+        elif 'Conversion Rate' in df.columns:
+            df['cr_calculated'] = pd.to_numeric(df['Conversion Rate'], errors='coerce').fillna(0)
+        else:
+            df['cr_calculated'] = df.apply(
+                lambda r: (r['conversions'] / r['search_volume'] * 100) if r['search_volume'] > 0 else 0, 
+                axis=1
+            )
         
         # Clean brand column
-        if 'brand' in df.columns:
-            df['brand'] = df['brand'].astype(str).replace(['nan', 'None', ''], 'Other').str.strip()
+        if 'Brand' in df.columns:
+            df['brand'] = df['Brand'].astype(str).replace(['nan', 'None', ''], 'Other').str.strip()
         else:
             df['brand'] = 'Other'
         
         # Clean category columns
-        for col in ['department', 'category', 'sub_category', 'class']:
-            if col in df.columns:
-                df[col] = df[col].astype(str).replace(['nan', 'None'], '').str.strip()
-            else:
-                df[col] = ''
+        if 'Category' in df.columns:
+            df['category'] = df['Category'].astype(str).replace(['nan', 'None'], '').str.strip()
+        else:
+            df['category'] = ''
+        
+        if 'Sub Category' in df.columns:
+            df['sub_category'] = df['Sub Category'].astype(str).replace(['nan', 'None'], '').str.strip()
+        else:
+            df['sub_category'] = ''
+        
+        if 'Department' in df.columns:
+            df['department'] = df['Department'].astype(str).replace(['nan', 'None'], '').str.strip()
+        else:
+            df['department'] = ''
+        
+        if 'Class' in df.columns:
+            df['class'] = df['Class'].astype(str).replace(['nan', 'None'], '').str.strip()
+        else:
+            df['class'] = ''
         
         # Handle underperforming flag
         if 'underperforming' in df.columns:
@@ -12889,18 +12867,27 @@ with tab_insights:
         else:
             df['underperforming'] = False
         
+        # Handle position
+        if 'averageClickPosition' in df.columns:
+            df['averageclickposition'] = pd.to_numeric(df['averageClickPosition'], errors='coerce')
+        
         # Handle date columns
-        for date_col in ['start_date', 'end_date']:
-            if date_col in df.columns:
-                df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+        if 'start_date' in df.columns:
+            df['start_date'] = pd.to_datetime(df['start_date'], errors='coerce')
+        
+        if 'end_date' in df.columns:
+            df['end_date'] = pd.to_datetime(df['end_date'], errors='coerce')
         
         return df
 
     # Load preprocessed data
     try:
         df_insights = preprocess_insights_data()
+        st.sidebar.success(f"✅ Insights data loaded: {len(df_insights):,} rows")
     except Exception as e:
         st.error(f"⚠️ Data preprocessing error: {e}")
+        import traceback
+        st.code(traceback.format_exc())
         st.stop()
 
     # Overall Performance Summary
@@ -12964,7 +12951,7 @@ with tab_insights:
             try:
                 render_fn()
             except Exception as e:
-                st.error(f"⚠️ Rendering error: {e}")
+                st.error(f"⚠️ Error: {str(e)}")
                 import traceback
                 st.code(traceback.format_exc())
 
@@ -12972,23 +12959,23 @@ with tab_insights:
 
     # Q1: Top 10 Products by Search Volume & Conversion Efficiency
     def q1():
-        agg = df_insights.groupby('brand', as_index=False).agg({
+        agg = df_insights.groupby('brand').agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        })
+        }).reset_index()
         
         agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
         agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
         agg['conversion_efficiency'] = (agg['cr'] * agg['ctr']).fillna(0).round(2)
         
-        out = agg.sort_values('search_volume', ascending=False).head(10).copy()
+        out = agg.nlargest(10, 'search_volume').copy()
         
         # Format for display
         display_df = out.copy()
-        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+        display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+        display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
         
         display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'conversion_efficiency']]
         display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Efficiency Score']
@@ -13010,40 +12997,45 @@ with tab_insights:
         q1, "🏆"
     )
 
-    # Q2: Category Performance Analysis - Which Categories Drive Revenue?
+    # Q2: Category Performance Analysis
     def q2():
-        if 'category' in df_insights.columns and df_insights['category'].notna().any():
-            agg = df_insights[df_insights['category'] != ''].groupby('category', as_index=False).agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            })
+        if 'category' in df_insights.columns:
+            filtered = df_insights[df_insights['category'].notna() & (df_insights['category'] != '')]
             
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
-            total_sv = agg['search_volume'].sum()
-            agg['search_share'] = (agg['search_volume'] / total_sv * 100).fillna(0).round(2) if total_sv > 0 else 0
-            
-            out = agg.sort_values('conversions', ascending=False).head(10).copy()
-            
-            # Format for display
-            display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
-            
-            display_df = display_df[['category', 'search_volume_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
-            display_df.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
-            
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q2_category_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q2_dl")
-            
-            fig = px.bar(out, x='category', y='conversions', color='cr',
-                        title='Top 10 Categories by Conversions', color_continuous_scale='Greens')
-            fig.update_layout(xaxis_tickangle=-45, xaxis_title="Category", yaxis_title="Conversions")
-            st.plotly_chart(fig, use_container_width=True)
+            if len(filtered) > 0:
+                agg = filtered.groupby('category').agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+                total_sv = agg['search_volume'].sum()
+                agg['search_share'] = (agg['search_volume'] / total_sv * 100).fillna(0).round(2) if total_sv > 0 else 0
+                
+                out = agg.nlargest(10, 'conversions').copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+                
+                display_df = display_df[['category', 'search_volume_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
+                display_df.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q2_category_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q2_dl")
+                
+                fig = px.bar(out, x='category', y='conversions', color='cr',
+                            title='Top 10 Categories by Conversions', color_continuous_scale='Greens')
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Category", yaxis_title="Conversions")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No category data available")
         else:
-            st.info("📊 Category data not available")
+            st.info("📊 Category column not found")
     
     q_expand(
         "Q2 — Category Performance Analysis - Revenue Drivers",
@@ -13062,24 +13054,24 @@ with tab_insights:
         ]
         
         if len(filtered) > 0:
-            out = filtered.groupby('brand', as_index=False).agg({
+            out = filtered.groupby('brand').agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum',
                 'cr_calculated': 'mean'
-            })
+            }).reset_index()
             
             out['potential_conversions'] = (out['search_volume'] * median_cr / 100).round(0)
             out['conversion_gap'] = (out['potential_conversions'] - out['conversions']).round(0)
             
-            out = out.sort_values('conversion_gap', ascending=False).head(10).copy()
+            out = out.nlargest(10, 'conversion_gap').copy()
             
             # Format for display
             display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
-            display_df['potential_conversions_fmt'] = display_df['potential_conversions'].apply(format_number)
-            display_df['conversion_gap_fmt'] = display_df['conversion_gap'].apply(format_number)
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+            display_df['potential_conversions_fmt'] = display_df['potential_conversions'].apply(lambda x: format_number(int(x)))
+            display_df['conversion_gap_fmt'] = display_df['conversion_gap'].apply(lambda x: format_number(int(x)))
             
             display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'potential_conversions_fmt', 'conversion_gap_fmt']]
             display_df.columns = ['Brand', 'Search Volume', 'Current Conversions', 'Current CR (%)', 'Potential Conversions', 'Conversion Gap']
@@ -13097,7 +13089,7 @@ with tab_insights:
     
     q_expand(
         "Q3 — High Search Volume, Low CR - Optimization Opportunities",
-        "Identifies products with high traffic but poor conversion. Optimize product pages, pricing, reviews, and checkout flow to capture lost revenue. Prioritize by conversion gap.",
+        "Identifies products with high traffic but poor conversion. Optimize product pages, pricing, reviews, and checkout flow to capture lost revenue.",
         q3, "⚠️"
     )
 
@@ -13113,23 +13105,23 @@ with tab_insights:
         ]
         
         if len(filtered) > 0:
-            out = filtered.groupby('brand', as_index=False).agg({
+            out = filtered.groupby('brand').agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum',
                 'ctr_calculated': 'mean',
                 'cr_calculated': 'mean'
-            })
+            }).reset_index()
             
             out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
             
-            out = out.sort_values('bounce_indicator', ascending=False).head(10).copy()
+            out = out.nlargest(10, 'bounce_indicator').copy()
             
             # Format for display
             display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
             
             display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
             display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
@@ -13149,22 +13141,22 @@ with tab_insights:
     
     q_expand(
         "Q4 — High CTR, Low CR - Post-Click Experience Issues",
-        "Products attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Audit product pages, improve descriptions, add reviews, and optimize checkout.",
+        "Products attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Audit product pages and optimize checkout.",
         q4, "🚨"
     )
 
-    # Q5: Brand Performance Comparison - Branded vs Generic
+    # Q5: Brand Performance Comparison
     def q5():
         df_temp = df_insights.copy()
         df_temp['brand_type'] = df_temp['brand'].apply(
             lambda x: 'Generic' if str(x).lower() == 'other' else 'Branded'
         )
         
-        agg = df_temp.groupby('brand_type', as_index=False).agg({
+        agg = df_temp.groupby('brand_type').agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        })
+        }).reset_index()
         
         agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
         agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
@@ -13175,9 +13167,9 @@ with tab_insights:
         
         # Format for display
         display_df = out.copy()
-        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+        display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+        display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
         
         display_df = display_df[['brand_type', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
         display_df.columns = ['Brand Type', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
@@ -13194,75 +13186,80 @@ with tab_insights:
     
     q_expand(
         "Q5 — Brand Performance: Branded vs Generic Search Intent",
-        "Compares branded vs generic search behavior. High generic searches indicate discovery opportunities; high branded searches show brand strength. Balance SEO and brand marketing accordingly.",
+        "Compares branded vs generic search behavior. Balance SEO and brand marketing strategies accordingly.",
         q5, "🏷️"
     )
 
-    # Q6: Seasonal Trends - Month-over-Month Performance
+    # Q6: Seasonal Trends
     def q6():
-        if 'start_date' in df_insights.columns and df_insights['start_date'].notna().any():
-            df_temp = df_insights.copy()
-            df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
+        if 'start_date' in df_insights.columns:
+            filtered = df_insights[df_insights['start_date'].notna()]
             
-            agg = df_temp.groupby('month', as_index=False).agg({
-                'search_volume': 'sum',
-                'clicks': 'sum',
-                'conversions': 'sum'
-            })
-            
-            agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
-            agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
-            
-            out = agg.sort_values('month').copy()
-            
-            # Format for display
-            display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
-            
-            display_df = display_df[['month', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
-            display_df.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
-            
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
-            st.download_button("📥 Download Data", out.to_csv(index=False), f"q6_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q6_dl")
-            
-            fig = px.line(out, x='month', y=['search_volume', 'clicks', 'conversions'],
-                         title='Month-over-Month Performance Trends', markers=True)
-            fig.update_layout(xaxis_title="Month", yaxis_title="Count")
-            st.plotly_chart(fig, use_container_width=True)
+            if len(filtered) > 0:
+                df_temp = filtered.copy()
+                df_temp['month'] = pd.to_datetime(df_temp['start_date']).dt.to_period('M').astype(str)
+                
+                agg = df_temp.groupby('month').agg({
+                    'search_volume': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                }).reset_index()
+                
+                agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
+                agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
+                
+                out = agg.sort_values('month').copy()
+                
+                # Format for display
+                display_df = out.copy()
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+                
+                display_df = display_df[['month', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
+                display_df.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
+                
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                
+                st.download_button("📥 Download Data", out.to_csv(index=False), f"q6_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q6_dl")
+                
+                fig = px.line(out, x='month', y=['search_volume', 'clicks', 'conversions'],
+                             title='Month-over-Month Performance Trends', markers=True)
+                fig.update_layout(xaxis_title="Month", yaxis_title="Count")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("📊 No date data available")
         else:
-            st.info("📊 Date data not available")
+            st.info("📊 Date column not found")
     
     q_expand(
         "Q6 — Seasonal Trends - Month-over-Month Performance",
-        "Identifies seasonal patterns to optimize inventory, promotions, and ad spend. Plan campaigns around peak months and prepare for low-demand periods.",
+        "Identifies seasonal patterns to optimize inventory, promotions, and ad spend.",
         q6, "📅"
     )
 
-    # Q7: Top 10 Underperforming Products (Flagged)
-    # Q7: Top 10 Underperforming Products (Flagged)
+    # Q7: Underperforming Products
+    # Q7: Underperforming Products
     def q7():
         if 'underperforming' in df_insights.columns:
             filtered = df_insights[df_insights['underperforming'] == True]
             
             if len(filtered) > 0:
-                out = filtered.groupby('brand', as_index=False).agg({
+                out = filtered.groupby('brand').agg({
                     'search_volume': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum',
                     'ctr_calculated': 'mean',
                     'cr_calculated': 'mean'
-                })
+                }).reset_index()
                 
-                out = out.sort_values('search_volume', ascending=False).head(10).copy()
+                out = out.nlargest(10, 'search_volume').copy()
                 
                 # Format for display
                 display_df = out.copy()
-                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated']]
                 display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
@@ -13294,11 +13291,11 @@ with tab_insights:
                                                 bins=[0, 3, 6, 10, float('inf')], 
                                                 labels=['Top 3', 'Position 4-6', 'Position 7-10', 'Beyond 10'])
             
-            agg = df_temp.groupby('position_bucket', as_index=False).agg({
+            agg = df_temp.groupby('position_bucket').agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
-            })
+            }).reset_index()
             
             agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
             agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
@@ -13307,9 +13304,9 @@ with tab_insights:
             
             # Format for display
             display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
             
             display_df = display_df[['position_bucket', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
             display_df.columns = ['Position', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
@@ -13338,23 +13335,23 @@ with tab_insights:
             filtered = df_insights[df_insights['sub_category'] != '']
             
             if len(filtered) > 0:
-                agg = filtered.groupby('sub_category', as_index=False).agg({
+                agg = filtered.groupby('sub_category').agg({
                     'search_volume': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
-                })
+                }).reset_index()
                 
                 agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['revenue_potential'] = (agg['conversions'] * agg['cr']).fillna(0).round(2)
                 
-                out = agg.sort_values('conversions', ascending=False).head(10).copy()
+                out = agg.nlargest(10, 'conversions').copy()
                 
                 # Format for display
                 display_df = out.copy()
-                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['sub_category', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_potential']]
                 display_df.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
@@ -13379,24 +13376,24 @@ with tab_insights:
 
     # Q10: Conversion Funnel Efficiency - Full Journey Analysis
     def q10():
-        agg = df_insights.groupby('brand', as_index=False).agg({
+        agg = df_insights.groupby('brand').agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum'
-        })
+        }).reset_index()
         
         agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
         agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
         agg['click_to_conversion'] = (agg['conversions'] / agg['clicks'] * 100).fillna(0).round(2)
         agg['funnel_efficiency'] = ((agg['conversions'] / agg['search_volume']) * 100).fillna(0).round(2)
         
-        out = agg.sort_values('funnel_efficiency', ascending=False).head(10).copy()
+        out = agg.nlargest(10, 'funnel_efficiency').copy()
         
         # Format for display
         display_df = out.copy()
-        display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-        display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-        display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+        display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+        display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+        display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
         
         display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'click_to_conversion', 'funnel_efficiency']]
         display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'Click-to-Conv (%)', 'Funnel Efficiency (%)']
@@ -13437,24 +13434,24 @@ with tab_insights:
         ]
         
         if len(filtered) > 0:
-            out = filtered.groupby('brand', as_index=False).agg({
+            out = filtered.groupby('brand').agg({
                 'search_volume': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum',
                 'cr_calculated': 'mean'
-            })
+            }).reset_index()
             
             out['growth_potential'] = (out['search_volume'] * 3).round(0)  # 3x growth scenario
             out['projected_conversions'] = (out['growth_potential'] * out['cr_calculated'] / 100).round(0)
             
-            out = out.sort_values('cr_calculated', ascending=False).head(10).copy()
+            out = out.nlargest(10, 'cr_calculated').copy()
             
             # Format for display
             display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-            display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
-            display_df['growth_potential_fmt'] = display_df['growth_potential'].apply(format_number)
-            display_df['projected_conversions_fmt'] = display_df['projected_conversions'].apply(format_number)
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+            display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
+            display_df['growth_potential_fmt'] = display_df['growth_potential'].apply(lambda x: format_number(int(x)))
+            display_df['projected_conversions_fmt'] = display_df['projected_conversions'].apply(lambda x: format_number(int(x)))
             
             display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'growth_potential_fmt', 'projected_conversions_fmt']]
             display_df.columns = ['Brand', 'Current Search Volume', 'Current Conversions', 'CR (%)', 'Growth Potential (3x)', 'Projected Conversions']
@@ -13485,23 +13482,23 @@ with tab_insights:
             branded = df_insights[df_insights['brand'].str.lower() != 'other']
             
             if len(branded) > 0:
-                agg = branded.groupby('brand', as_index=False).agg({
+                agg = branded.groupby('brand').agg({
                     'search_volume': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
-                })
+                }).reset_index()
                 
                 agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['loyalty_score'] = (agg['ctr'] * 0.4 + agg['cr'] * 0.6).round(2)  # Weighted score
                 
-                out = agg.sort_values('loyalty_score', ascending=False).head(10).copy()
+                out = agg.nlargest(10, 'loyalty_score').copy()
                 
                 # Format for display
                 display_df = out.copy()
-                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'loyalty_score']]
                 display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Loyalty Score']
@@ -13530,24 +13527,24 @@ with tab_insights:
         median_ctr = df_insights['ctr_calculated'].median()
         median_cr = df_insights['cr_calculated'].median()
         
-        out = df_insights.groupby('brand', as_index=False).agg({
+        out = df_insights.groupby('brand').agg({
             'search_volume': 'sum',
             'clicks': 'sum',
             'conversions': 'sum',
             'ctr_calculated': 'mean',
             'cr_calculated': 'mean'
-        })
+        }).reset_index()
         
         out['ctr_gap'] = (median_ctr - out['ctr_calculated']).round(2)
         out['cr_gap'] = (median_cr - out['cr_calculated']).round(2)
         out['total_gap'] = (out['ctr_gap'] + out['cr_gap']).round(2)
         
-        out = out[out['total_gap'] > 0].sort_values('total_gap', ascending=False).head(10).copy()
+        out = out[out['total_gap'] > 0].nlargest(10, 'total_gap').copy()
         
         if len(out) > 0:
             # Format for display
             display_df = out.copy()
-            display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
+            display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
             
             display_df = display_df[['brand', 'search_volume_fmt', 'ctr_calculated', 'cr_calculated', 'ctr_gap', 'cr_gap', 'total_gap']]
             display_df.columns = ['Brand', 'Search Volume', 'Current CTR (%)', 'Current CR (%)', 'CTR Gap', 'CR Gap', 'Total Gap']
@@ -13579,23 +13576,23 @@ with tab_insights:
             filtered = df_temp[df_temp['keyword'] != ' - ']
             
             if len(filtered) > 0:
-                agg = filtered.groupby('keyword', as_index=False).agg({
+                agg = filtered.groupby('keyword').agg({
                     'search_volume': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
-                })
+                }).reset_index()
                 
                 agg['ctr'] = (agg['clicks'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['cr'] = (agg['conversions'] / agg['search_volume'] * 100).fillna(0).round(2)
                 agg['revenue_score'] = (agg['conversions'] * agg['cr']).fillna(0).round(2)
                 
-                out = agg.sort_values('revenue_score', ascending=False).head(10).copy()
+                out = agg.nlargest(10, 'revenue_score').copy()
                 
                 # Format for display
                 display_df = out.copy()
-                display_df['search_volume_fmt'] = display_df['search_volume'].apply(format_number)
-                display_df['clicks_fmt'] = display_df['clicks'].apply(format_number)
-                display_df['conversions_fmt'] = display_df['conversions'].apply(format_number)
+                display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
+                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
+                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['keyword', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_score']]
                 display_df.columns = ['Keyword', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
@@ -13635,13 +13632,13 @@ with tab_insights:
             brand_stats['cv'] = (brand_stats['std_search'] / brand_stats['avg_search'] * 100).fillna(0).round(2)
             brand_stats['stability_score'] = (100 - brand_stats['cv']).clip(lower=0).round(2)
             
-            out = brand_stats[brand_stats['total_conversions'] >= 10].sort_values('stability_score', ascending=False).head(10).copy()
+            out = brand_stats[brand_stats['total_conversions'] >= 10].nlargest(10, 'stability_score').copy()
             
             if len(out) > 0:
                 # Format for display
                 display_df = out.copy()
-                display_df['avg_search_fmt'] = display_df['avg_search'].apply(format_number)
-                display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(format_number)
+                display_df['avg_search_fmt'] = display_df['avg_search'].apply(lambda x: format_number(int(x)))
+                display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['brand', 'avg_search_fmt', 'total_conversions_fmt', 'cv', 'stability_score']]
                 display_df.columns = ['Brand', 'Avg Search Volume', 'Total Conversions', 'Volatility (%)', 'Stability Score']
