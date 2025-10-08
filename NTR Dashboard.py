@@ -12355,30 +12355,116 @@ with tab_pivot:
             st.info("Brand or normalized_query column missing for this pivot.")
             
         # Custom Pivot Builder
+        # Custom Pivot Builder
         st.markdown("---")
         st.subheader("🔧 Custom Pivot Builder")
-        
+
+        # Add custom CSS for pivot builder styling
+        st.markdown("""
+        <style>
+        /* Pivot Configuration Styling */
+        .stMultiSelect [data-baseweb="tag"] {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+
+        .stMultiSelect [data-baseweb="tag"] span[role="button"] {
+            color: white !important;
+        }
+
+        /* Selectbox styling */
+        .stSelectbox > div > div {
+            border-color: #4CAF50 !important;
+        }
+
+        /* Preview box styling */
+        .pivot-preview-box {
+            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #4CAF50;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .pivot-preview-box h4 {
+            color: #2E7D32;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .pivot-preview-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid #66BB6A;
+            color: #1B5E20;
+            font-weight: 500;
+        }
+
+        .pivot-preview-label {
+            color: #2E7D32;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .pivot-preview-value {
+            color: #388E3C;
+            font-weight: 500;
+        }
+
+        /* Button styling */
+        .stButton > button {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3) !important;
+        }
+
+        .stButton > button:hover {
+            background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%) !important;
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* Reset button specific styling */
+        .stButton > button[kind="secondary"] {
+            background: linear-gradient(135deg, #81C784 0%, #A5D6A7 100%) !important;
+            color: #1B5E20 !important;
+        }
+
+        .stButton > button[kind="secondary"]:hover {
+            background: linear-gradient(135deg, #66BB6A 0%, #81C784 100%) !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
         # 🚀 OPTIMIZED: Get available columns
         @st.cache_data(ttl=3600, show_spinner=False)
         def get_pivot_columns(df):
             """Get available columns for pivot"""
             return df.columns.tolist()
-        
+
         columns = get_pivot_columns(queries)
-        
+
         with st.expander("🎛️ Pivot Configuration", expanded=True):
             col_pivot1, col_pivot2 = st.columns(2)
             
             with col_pivot1:
                 idx = st.multiselect(
-                    "Rows (Index)",
+                    "📊 Rows (Index)",
                     options=columns,
                     default=['normalized_query'] if 'normalized_query' in columns else [],
                     help="Select one or more columns to group as rows.",
                     key="pivot_idx"
                 )
                 cols = st.multiselect(
-                    "Columns",
+                    "📋 Columns",
                     options=[c for c in columns if c not in idx],
                     default=['brand'] if 'brand' in columns else [],
                     help="Select one or more columns to group as columns.",
@@ -12387,47 +12473,76 @@ with tab_pivot:
             
             with col_pivot2:
                 val = st.selectbox(
-                    "Value (Measure)",
+                    "📈 Value (Measure)",
                     options=['Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate'],
                     index=0,
                     help="Select the metric to aggregate (CTR and CR are calculated post-aggregation).",
                     key="pivot_val"
                 )
                 aggfunc = st.selectbox(
-                    "Aggregation",
+                    "🔢 Aggregation Function",
                     options=['sum', 'mean', 'count', 'max', 'min'],
                     index=0,
                     help="Choose how to aggregate the selected value.",
                     key="pivot_aggfunc"
                 )
             
-            # Preview pivot structure
+            # Preview pivot structure with enhanced styling
             if idx and cols and val:
-                st.markdown("**Preview Pivot Structure**")
-                st.write(f"**Rows:** {', '.join(idx)}")
-                st.write(f"**Columns:** {', '.join(cols)}")
-                st.write(f"**Value:** {val} ({aggfunc})")
+                st.markdown("""
+                <div class='pivot-preview-box'>
+                    <h4>👁️ Preview Pivot Structure</h4>
+                    <div class='pivot-preview-item'>
+                        <span class='pivot-preview-label'>📊 Rows:</span>
+                        <span class='pivot-preview-value'>{}</span>
+                    </div>
+                    <div class='pivot-preview-item'>
+                        <span class='pivot-preview-label'>📋 Columns:</span>
+                        <span class='pivot-preview-value'>{}</span>
+                    </div>
+                    <div class='pivot-preview-item'>
+                        <span class='pivot-preview-label'>📈 Value:</span>
+                        <span class='pivot-preview-value'>{} ({})</span>
+                    </div>
+                </div>
+                """.format(', '.join(idx), ', '.join(cols), val, aggfunc), unsafe_allow_html=True)
             else:
-                st.warning("⚠️ Please select at least one row, one column, and a value to generate the pivot.")
-        
+                st.markdown("""
+                <div style='background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%); 
+                            padding: 15px; 
+                            border-radius: 10px; 
+                            border-left: 4px solid #FBC02D; 
+                            margin: 15px 0;'>
+                    <span style='color: #F57F17; font-weight: 600;'>⚠️ Please select at least one row, one column, and a value to generate the pivot.</span>
+                </div>
+                """, unsafe_allow_html=True)
+
         col_btn1, col_btn2 = st.columns(2)
-        
+
         with col_btn1:
-            generate_pivot = st.button("🔄 Generate Pivot", use_container_width=True)
-        
+            generate_pivot = st.button("🔄 Generate Pivot", use_container_width=True, type="primary")
+
         with col_btn2:
             reset_pivot = st.button("🔃 Reset Selections", use_container_width=True)
-        
+
         if reset_pivot:
             # Clear session state
             for key in ['pivot_idx', 'pivot_cols', 'pivot_val', 'pivot_aggfunc', 'pivot_sort_col', 'pivot_sort_order', 'pivot_min_counts', 'pivot_min_ctr']:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
-        
+
         if generate_pivot:
             if not idx or not cols or not val:
-                st.error("❌ Please select at least one row, one column, and a value.")
+                st.markdown("""
+                <div style='background: linear-gradient(135deg, #FFCDD2 0%, #EF9A9A 100%); 
+                            padding: 15px; 
+                            border-radius: 10px; 
+                            border-left: 4px solid #E53935; 
+                            margin: 15px 0;'>
+                    <span style='color: #B71C1C; font-weight: 600;'>❌ Please select at least one row, one column, and a value.</span>
+                </div>
+                """, unsafe_allow_html=True)
             else:
                 try:
                     with st.spinner("🔄 Generating custom pivot..."):
@@ -12470,7 +12585,16 @@ with tab_pivot:
                         custom_pivot_key = pivot_cache_key + str(idx) + str(cols) + str(val) + str(aggfunc)
                         pivot = generate_custom_pivot(queries, idx, cols, val, aggfunc, custom_pivot_key)
                         
-                        st.success(f"✅ Custom pivot generated successfully! Shape: {pivot.shape[0]} rows × {pivot.shape[1]} columns")
+                        # Success message with green theme
+                        st.markdown(f"""
+                        <div style='background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%); 
+                                    padding: 15px; 
+                                    border-radius: 10px; 
+                                    border-left: 4px solid #4CAF50; 
+                                    margin: 15px 0;'>
+                            <span style='color: #1B5E20; font-weight: 600;'>✅ Custom pivot generated successfully! Shape: {pivot.shape[0]:,} rows × {pivot.shape[1]:,} columns</span>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         st.markdown("<div class='pivot-table-container'>", unsafe_allow_html=True)
                         if AGGRID_OK:
@@ -12494,8 +12618,26 @@ with tab_pivot:
                         )
                         
                 except Exception as e:
-                    st.error(f"❌ Pivot generation error: {e}")
-                    st.info("💡 Ensure selected columns and values are valid and contain data.")
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #FFCDD2 0%, #EF9A9A 100%); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #E53935; 
+                                margin: 15px 0;'>
+                        <span style='color: #B71C1C; font-weight: 600;'>❌ Pivot generation error: {e}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.markdown("""
+                    <div style='background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                border-left: 4px solid #2196F3; 
+                                margin: 15px 0;'>
+                        <span style='color: #0D47A1; font-weight: 600;'>💡 Ensure selected columns and values are valid and contain data.</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
         
         # Pivot Insights Section
         st.markdown("---")
@@ -12530,43 +12672,6 @@ with tab_pivot:
                 </p>
             </div>
             """, unsafe_allow_html=True)
-
-        # Final Pivot Summary Dashboard
-        st.markdown("---")
-        st.subheader("📊 Pivot Performance Dashboard Summary")
-        
-        if pv_top is not None and len(pv_top) > 0:
-            summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
-            
-            with summary_col1:
-                st.metric(
-                    label="📋 Total Pivot Rows",
-                    value=f"{pivot_metrics['total_rows']:,}",
-                    delta="Top 300 analyzed"
-                )
-            
-            with summary_col2:
-                st.metric(
-                    label="📈 Avg CTR",
-                    value=f"{pivot_metrics['avg_ctr']:.2f}%",
-                    delta="Across pairs"
-                )
-            
-            with summary_col3:
-                st.metric(
-                    label="💚 Total Conversions",
-                    value=f"{int(pivot_metrics['total_conversions']):,}",
-                    delta=f"Avg CR: {pivot_metrics['avg_cr']:.2f}%"
-                )
-            
-            with summary_col4:
-                concentration = pivot_metrics['top5_concentration']
-                status = "High" if concentration > 60 else "Medium" if concentration > 40 else "Low"
-                st.metric(
-                    label="🎯 Pivot Concentration",
-                    value=f"{concentration:.1f}%",
-                    delta=f"{status} in top 5"
-                )
         
     except Exception as e:
         st.error(f"❌ Unexpected error in Pivot Builder: {e}")
