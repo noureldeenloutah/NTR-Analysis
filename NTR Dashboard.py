@@ -13064,7 +13064,7 @@ with tab_insights:
         
         if len(filtered) > 0:
             # Keep individual search queries
-            out = filtered[['search_query', 'brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated']].copy()
+            out = filtered[['search', 'brand', 'search_volume', 'clicks', 'conversions', 'ctr_calculated', 'cr_calculated']].copy()
             out['bounce_indicator'] = (out['ctr_calculated'] - out['cr_calculated']).round(2)
             out = out.nlargest(20, 'bounce_indicator')
             
@@ -13074,7 +13074,7 @@ with tab_insights:
             display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
             display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
             
-            display_df = display_df[['search_query', 'brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
+            display_df = display_df[['search', 'brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
             display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
             
             st.dataframe(display_df, use_container_width=True, hide_index=True)
@@ -13082,8 +13082,8 @@ with tab_insights:
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q4a_experience_issues_by_query_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4a_dl")
             
             fig = px.scatter(out, x='ctr_calculated', y='cr_calculated', size='search_volume', color='bounce_indicator',
-                            hover_data=['search_query', 'brand'], title='High CTR, Low CR: Experience Issues by Search Query',
-                            color_continuous_scale='Oranges', text='search_query')
+                            hover_data=['search', 'brand'], title='High CTR, Low CR: Experience Issues by Search Query',
+                            color_continuous_scale='Oranges', text='search')
             fig.update_traces(textposition='top center', textfont_size=8)
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
@@ -13151,6 +13151,7 @@ with tab_insights:
         "Brands attracting clicks but failing to convert indicate landing page, pricing, or trust issues. Aggregates all search terms per brand. Filters: Search volume ≥200, excludes generic items.",
         q4b, "🚨"
     )
+
 
     # Q5: Brand Performance Comparison
     def q5():
