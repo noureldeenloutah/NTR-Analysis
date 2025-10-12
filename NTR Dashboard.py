@@ -1158,21 +1158,21 @@ with st.sidebar.expander("🔍 Data Debug Info"):
 
 # ----------------- Tabs -----------------
 tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
-    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Supplement Type",
-    "⏰ Time Analysis","📊 Pivot Builder","💡 Health Insights","⬇ Export"
+    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
+    "⏰ Time Analysis","📊 Pivot Builder","💡 Insights","⬇ Export"
 ])
 
 # ----------------- Overview -----------------
 with tab_overview:
-    st.header("🌿 Nutraceuticals & Nutrition Overview & Health Insights")
-    st.markdown("Discover nutritional trends and supplement performance patterns. 🌱 Based on **nutraceuticals data** (e.g., millions of health-conscious searches across Nutraceuticals & Nutrition categories).")
+    st.header("🌿 Overview & Insights")
+    st.markdown("Discover performance patterns. 🌱 Based on **data** (e.g., millions of conscious searches across categories).")
 
     # Accuracy Fix: Ensure Date conversion (Excel serial)
     if not queries['Date'].dtype == 'datetime64[ns]':
         queries['Date'] = pd.to_datetime(queries['start_date'], unit='D', origin='1899-12-30', errors='coerce')
 
     # Refresh Button (User-Friendly)
-    if st.button("🔄 Refresh Health Data & Filters"):
+    if st.button("🔄 Refresh Data & Filters"):
         st.rerun()
 
     # 🎨 GREEN-THEMED HERO HEADER
@@ -1211,11 +1211,11 @@ with tab_overview:
 
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
-    st.markdown("## 🌱 Monthly Nutraceuticals & Nutrition Analysis Overview")
+    st.markdown("## 🌱 Monthly Analysis Overview")
     col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
-        st.markdown("### 📋 Monthly Health Searches Table")
+        st.markdown("### 📋 Monthly Searches Table")
         monthly_counts = queries.groupby(queries['Date'].dt.strftime('%B %Y'))['Counts'].sum().reset_index()
         
         if not monthly_counts.empty:
@@ -1263,7 +1263,7 @@ with tab_overview:
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
                         padding: 15px; border-radius: 10px; color: white; margin: 10px 0; text-align: center;">
-                <strong>🌱 Total: {format_number(int(total_all_months))} health searches across {len(monthly_counts)} months</strong>
+                <strong>🌱 Total: {format_number(int(total_all_months))} searches across {len(monthly_counts)} months</strong>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -1271,13 +1271,13 @@ with tab_overview:
 
 
     with col_chart:
-        st.markdown("### 📈 Monthly Nutraceuticals & Nutrition Trends Visualization")
+        st.markdown("### 📈 Monthly Trends Visualization")
         
         if not monthly_counts.empty and len(monthly_counts) >= 2:
             try:
                 fig = px.bar(monthly_counts, x='Date', y='Counts',
-                            title='<b style="color:#2E7D32; font-size:16px;">Monthly Health Search Trends 🌿</b>',
-                            labels={'Date': '<i>Month</i>', 'Counts': '<b>Health Searches</b>'},
+                            title='<b style="color:#2E7D32; font-size:16px;">Monthly Search Trends 🌿</b>',
+                            labels={'Date': '<i>Month</i>', 'Counts': '<b>Searches</b>'},
                             color='Counts',
                             color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                             template='plotly_white',
@@ -1311,7 +1311,7 @@ with tab_overview:
                 peak_value = monthly_counts['Counts'].max()
                 fig.add_annotation(
                     x=peak_month, y=peak_value,
-                    text=f"🏆 Peak Nutraceuticals & Nutrition: {peak_value:,.0f}",
+                    text=f"🏆 Peak: {peak_value:,.0f}",
                     showarrow=True,
                     arrowhead=3,
                     arrowcolor='#2E7D32',
@@ -1387,7 +1387,7 @@ with tab_overview:
 
         # 🚀 FAST: Batch column operations
         column_renames = {
-            'search': 'Health Query',
+            'search': 'Query',
             'Counts': 'Total Search Volume',
             'clicks': 'Clicks',
             'conversions': 'Conversions'
@@ -1407,7 +1407,7 @@ with tab_overview:
                 top50[month_display_name] = top50[month_display_name].astype('int32')
 
         # 🚀 OPTIMIZED: Column ordering
-        column_order = ['Health Query', 'Total Search Volume', 'Share %']
+        column_order = ['Query', 'Total Search Volume', 'Share %']
         column_order.extend([_month_names.get(month, month) for month in unique_months 
                         if _month_names.get(month, month) in top50.columns])
         column_order.extend(['Clicks', 'Conversions', 'Conversion Rate'])
@@ -1436,8 +1436,8 @@ with tab_overview:
                 (top10_for_analysis[month2_name] - top10_for_analysis[month1_name]) / month1_vals * 100
             ).round(1)
             
-            gainers = top10_for_analysis.nlargest(3, 'MoM Change')[['Health Query', 'MoM Change']]
-            losers = top10_for_analysis.nsmallest(3, 'MoM Change')[['Health Query', 'MoM Change']]
+            gainers = top10_for_analysis.nlargest(3, 'MoM Change')[['Query', 'MoM Change']]
+            losers = top10_for_analysis.nsmallest(3, 'MoM Change')[['Query', 'MoM Change']]
             
             return gainers, losers
         
@@ -1450,7 +1450,7 @@ with tab_overview:
 
     # NOW START THE ACTUAL SECTION
     # NOW START THE ACTUAL SECTION
-    st.markdown("## 🔍 Top 50 Health Queries Analysis")
+    st.markdown("## 🔍 Top 50 Queries Analysis")
 
     if queries.empty or 'Counts' not in queries.columns or queries['Counts'].isna().all():
         st.warning("No valid data available for top 50 health queries.")
@@ -1567,7 +1567,7 @@ with tab_overview:
                     overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                     
                     row = {
-                        'Health Query': query,
+                        'Query': query,
                         'Total Volume': total_counts,
                         'Share %': (total_counts / _df['Counts'].sum()) * 100,
                         'Overall CTR': overall_ctr,
@@ -1619,7 +1619,7 @@ with tab_overview:
                     st.info(f"📊 **All Data**: Showing Top 50 from {len(queries):,} total health queries")
 
                 # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-                base_columns = ['Health Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+                base_columns = ['Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
                 
                 # Group monthly columns by type for easier comparison
                 volume_columns = []
@@ -1761,7 +1761,7 @@ with tab_overview:
                 # 🔄 ENHANCED: Better legend with comparison focus
                 st.markdown("""
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Comparison Guide:</h4>
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Comparison Guide:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                         <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
                         <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
@@ -1777,9 +1777,9 @@ with tab_overview:
                     month_list = [month_names.get(m, m) for m in sorted(unique_months)]
                     st.markdown(f"""
                     <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                        <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Column Organization:</h4>
+                        <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Column Organization:</h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                            <div><strong>🌱 Base Metrics:</strong> Health Query, Total Volume, Share %, Overall CTR/CR</div>
+                            <div><strong>🌱 Base Metrics:</strong> Query, Total Volume, Share %, Overall CTR/CR</div>
                             <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
                             <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
                             <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
@@ -1802,7 +1802,7 @@ with tab_overview:
                 
                 # 🚀 OPTIMIZED: Batch metric rendering
                 metric_configs = [
-                    (col1, "🌿", metrics['total_queries'], "Total Health Queries"),
+                    (col1, "🌿", metrics['total_queries'], "Total Queries"),
                     (col2, "🔍", format_number(metrics['total_search_volume']), "Total Search Volume"),
                     (col3, "🍃", format_number(metrics['total_clicks']), "Total Clicks"),
                     (col4, "💚", format_number(metrics['total_conversions']), "Total Conversions")
@@ -1821,7 +1821,7 @@ with tab_overview:
                 # 🚀 MONTHLY BREAKDOWN WITH PERFORMANCE TRENDS
                 if unique_months:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    st.markdown("### 📅 Monthly Nutraceuticals & Nutrition Performance Trends")
+                    st.markdown("### 📅 Monthly Performance Trends")
                     
                     # Calculate average CTR and CR for each month
                     monthly_performance = {}
@@ -1889,7 +1889,7 @@ with tab_overview:
                     filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
                     
                     st.download_button(
-                        label="📥 Download Health Queries CSV",
+                        label="📥 Download Queries CSV",
                         data=csv,
                         file_name=f"top_50_health_queries{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
@@ -1898,11 +1898,11 @@ with tab_overview:
                     )
                 
                 # 🚀 OPTIMIZED MONTHLY INSIGHTS WITH PERFORMANCE ANALYSIS
-                with st.expander("📊 Monthly Nutraceuticals & Nutrition Performance Analysis", expanded=False):
+                with st.expander("📊 Monthly Performance Analysis", expanded=False):
                     if unique_months and len(unique_months) >= 2:
                         st.markdown("""
                         <div class="insights-health-section">
-                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Nutraceuticals & Nutrition Performance Trend Analysis</h3>
+                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Performance Trend Analysis</h3>
                         </div>
                         """, unsafe_allow_html=True)
                         
@@ -1910,7 +1910,7 @@ with tab_overview:
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            st.markdown("#### 🚀 Health CTR Performance Leaders")
+                            st.markdown("#### 🚀 CTR Performance Leaders")
                             # Find queries with best CTR improvement
                             ctr_improvements = []
                             for _, row in top50.iterrows():
@@ -1924,7 +1924,7 @@ with tab_overview:
                                     if prev_ctr > 0:
                                         improvement = ((latest_ctr - prev_ctr) / prev_ctr) * 100
                                         ctr_improvements.append({
-                                            'query': row['Health Query'],
+                                            'query': row['Query'],
                                             'improvement': improvement,
                                             'latest_ctr': latest_ctr
                                         })
@@ -1956,7 +1956,7 @@ with tab_overview:
                                     if prev_cr > 0:
                                         improvement = ((latest_cr - prev_cr) / prev_cr) * 100
                                         cr_improvements.append({
-                                            'query': row['Health Query'],
+                                            'query': row['Query'],
                                             'improvement': improvement,
                                             'latest_cr': latest_cr
                                         })
@@ -2212,7 +2212,7 @@ with tab_overview:
 
 
 # ----------------- Performance Snapshot -----------------
-    st.subheader("🌱 Nutraceuticals & Nutrition Performance Snapshot")
+    st.subheader("🌱 Performance Snapshot")
 
     # Mini-Metrics Row (Data-Driven: From Analysis with Share)
     colM1, colM2, colM3, colM4 = st.columns(4)
@@ -2222,7 +2222,7 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>🌿</span>
             <div class='value'>{avg_ctr:.2f}%</div>
-            <div class='label'>Avg CTR (All Health)</div>
+            <div class='label'>Avg CTR (All)</div>
         </div>
         """, unsafe_allow_html=True)
     with colM2:
@@ -2231,7 +2231,7 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>💚</span>
             <div class='value'>{avg_cr:.2f}%</div>
-            <div class='label'>Avg CR (Nutraceuticals & Nutrition)</div>
+            <div class='label'>Avg CR (ALL)</div>
         </div>
         """, unsafe_allow_html=True)
     with colM3:
@@ -2242,7 +2242,7 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>🔍</span>
             <div class='value'>{format_number(unique_queries)}</div>
-            <div class='label'>Unique Health Queries</div>
+            <div class='label'>Unique Queries</div>
         </div>
         """, unsafe_allow_html=True)
     with colM4:
@@ -2253,14 +2253,14 @@ with tab_overview:
         <div class='mini-metric'>
             <span class='icon'>🧴</span>
             <div class='value'>{format_number(int(cat_counts.max()))} ({top_cat_share:.2f}%)</div>
-            <div class='label'>Top Health Category ({top_cat})</div>
+            <div class='label'>Top Category ({top_cat})</div>
         </div>
         """, unsafe_allow_html=True)
 
 
     st.markdown("---")
 
-    st.subheader("🏷 Brand & Health Category Snapshot")
+    st.subheader("🏷 Brand & Category Snapshot")
     g1, g2 = st.columns(2)
     with g1:
         if 'Brand' in queries.columns:
@@ -2297,8 +2297,8 @@ with tab_overview:
                     # Create a beautiful bar chart with text labels
                     fig = px.bar(brand_perf.sort_values('Counts', ascending=False).head(10), 
                                 x='Brand', y='Counts',
-                                title='<b style="color:#2E7D32; font-size:18px; text-shadow: 2px 2px 4px #00000055;">Top Health Brands by Search Volume</b>',
-                                labels={'Brand': '<i>Health Brand</i>', 'Counts': '<b>Search Volume</b>'},
+                                title='<b style="color:#2E7D32; font-size:18px; text-shadow: 2px 2px 4px #00000055;">Top Brands by Search Volume</b>',
+                                labels={'Brand': '<i>Brand</i>', 'Counts': '<b>Search Volume</b>'},
                                 color=color_column,
                                 color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                                 template='plotly_white',
@@ -2322,7 +2322,7 @@ with tab_overview:
                         title_x=0,  # Left alignment for title
                         title_font_size=16,
                         xaxis=dict(
-                            title='Health Brand',
+                            title='Brand',
                             showgrid=True, 
                             gridcolor='#E8F5E8', 
                             linecolor='#2E7D32', 
@@ -2341,7 +2341,7 @@ with tab_overview:
                         annotations=[
                             dict(
                                 x=0.5, y=1.05, xref='paper', yref='paper',
-                                text='🌿 Hover for Nutraceuticals & Nutrition details | Top health brand highlighted below 🌿',
+                                text='🌿 Hover for details | Top brands highlighted below 🌿',
                                 showarrow=False,
                                 font=dict(size=10, color='#2E7D32', family='Segoe UI'),
                                 align='center'
@@ -2354,7 +2354,7 @@ with tab_overview:
                     top_count = brand_perf['Counts'].max()
                     fig.add_annotation(
                         x=top_brand, y=top_count,
-                        text=f"🏆 Peak Health: {top_count:,.0f}",
+                        text=f"🏆 Peak: {top_count:,.0f}",
                         showarrow=True,
                         arrowhead=3,
                         arrowcolor='#2E7D32',
@@ -2364,11 +2364,11 @@ with tab_overview:
 
                     st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.info("No health brand data available after filtering or missing required columns.")
+                    st.info("No brand data available after filtering or missing required columns.")
             else:
                 st.warning("No valid aggregation columns found for brand analysis.")
         else:
-            st.info("🏷 Health Brand column not found in the dataset.")
+            st.info("🏷 Brand column not found in the dataset.")
 
     with g2:
         if 'Category' in queries.columns:
@@ -2407,7 +2407,7 @@ with tab_overview:
                 else:
                     cat_perf['cr'] = 0
                 
-                st.markdown("**Top Health Categories by Search Volume**")
+                st.markdown("**Top Categories by Search Volume**")
                 
                 # Prepare display columns based on what's available
                 display_columns = ['Category']
@@ -2435,7 +2435,7 @@ with tab_overview:
                 # Rename columns for better display
                 display_cat_perf = cat_perf[display_columns].copy()
                 column_rename = {
-                    'Category': 'Health Category',
+                    'Category': 'Category',
                     'Counts': 'Search Volume',
                     'share': 'Market Share %',
                     'clicks': 'Total Clicks',
@@ -2490,9 +2490,9 @@ with tab_overview:
                             # Add download button for health categories
                             csv_cat = sorted_cat_perf.to_csv(index=False)
                             st.download_button(
-                                label="📥 Download Health Categories CSV",
+                                label="📥 Download Categories CSV",
                                 data=csv_cat,
-                                file_name="health_categories_performance.csv",
+                                file_name="categories_performance.csv",
                                 mime="text/csv"
                             )
                     except NameError:
@@ -2532,7 +2532,7 @@ with tab_overview:
 
     # Add Nutraceuticals & Nutrition insights section
     st.markdown("---")
-    st.subheader("🌿 Nutraceuticals & Nutrition Insights & Recommendations")
+    st.subheader("🌿 Insights & Recommendations")
     
     # Create insight boxes with health-themed content
     insight_col1, insight_col2 = st.columns(2)
@@ -2540,15 +2540,15 @@ with tab_overview:
     with insight_col1:
         st.markdown("""
         <div class="insight-box">
-            <h4>🌱 Top Performing Health Categories</h4>
-            <p>Focus on high-conversion Nutraceuticals & Nutrition categories like supplements, vitamins, and natural health products for optimal ROI.</p>
+            <h4>🌱 Top Performing Categories</h4>
+            <p>Focus on high-conversion categories like supplements, vitamins, and natural health products for optimal ROI.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="insight-box">
-            <h4>💚 Seasonal Health Trends</h4>
-            <p>Monitor seasonal patterns in immune support, weight management, and Nutraceuticals & Nutrition supplements to optimize inventory and marketing.</p>
+            <h4>💚 Seasonal Trends</h4>
+            <p>Monitor seasonal patterns in immune support, weight management, and supplements to optimize inventory and marketing.</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -2563,7 +2563,7 @@ with tab_overview:
         st.markdown("""
         <div class="insight-box">
             <h4>🔍 Search Optimization</h4>
-            <p>Leverage high-volume health queries to improve product descriptions and SEO for better organic discovery.</p>
+            <p>Leverage high-volume queries to improve product descriptions and SEO for better organic discovery.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -5162,7 +5162,7 @@ with tab_search:
 
             # Rename columns for display and format
             top_queries = top_queries.rename(columns={
-                'search': 'Health Query',
+                'search': 'Query',
                 'Counts': 'Search Volume',
                 'clicks': 'Clicks',
                 'conversions': 'Conversions'
@@ -5177,7 +5177,7 @@ with tab_search:
             top_queries['Query Length'] = top_queries['Query Length'].apply(lambda x: f"{x}")
 
             # Reorder columns to include Query Length after Query
-            column_order = ['Health Query', 'Query Length', 'Search Volume', 'Share %', 'Clicks', 'Conversions', 'Conversion Rate']
+            column_order = ['Query', 'Query Length', 'Search Volume', 'Share %', 'Clicks', 'Conversions', 'Conversion Rate']
             top_queries = top_queries[column_order]
 
             # Reset index to remove it
@@ -6910,7 +6910,7 @@ with tab_category:
                 share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
                 
                 row = {
-                    'Health Category': category,
+                    'Category': category,
                     'Total Volume': total_counts,
                     'Share %': share_pct,
                     'Overall CTR': overall_ctr,
@@ -6958,12 +6958,12 @@ with tab_category:
             st.warning("No valid category data after processing.")
         else:
             # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
-            top_categories_monthly = top_categories_monthly.dropna(subset=['Health Category'])
+            top_categories_monthly = top_categories_monthly.dropna(subset=['Category'])
             top_categories_monthly = top_categories_monthly[top_categories_monthly['Total Volume'] > 0]
             top_categories_monthly = top_categories_monthly.head(num_categories)
             
             # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-            base_columns = ['Health Category', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            base_columns = ['Category', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
             
             # Group monthly columns by type for easier comparison
             volume_columns = []
@@ -15588,6 +15588,6 @@ with tab_export:
 # ----------------- Footer -----------------
 st.markdown(f"""
 <div class="footer">
-✨ Lady Care Search Analytics — Noureldeen Mohamed
+✨ Nutraceuticals & Nutrition Search Analytics — Noureldeen Mohamed
 </div>
 """, unsafe_allow_html=True)
