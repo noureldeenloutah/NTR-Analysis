@@ -7,7 +7,7 @@ from collections import Counter
 import re, os, logging
 from datetime import datetime
 import pytz
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from fuzzywuzzy import fuzz
 from plotly.subplots import make_subplots
 from uuid import uuid4
@@ -1501,11 +1501,11 @@ with tab_overview:
                 st.sidebar.write("**Available columns in health queries:**", list(queries.columns))
 
             # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
-            month_names = {
-                '2025-06': 'June 2025',
-                '2025-07': 'July 2025',
-                '2025-08': 'August 2025'
-            }
+            month_names = OrderedDict([
+                ('2025-06', 'June 2025'),
+                ('2025-07', 'July 2025'),
+                ('2025-08', 'August 2025')
+            ])
 
             # ✅ FIXED: Create filter-aware cache key that updates when filters change
             def create_filter_cache_key():
@@ -1610,13 +1610,13 @@ with tab_overview:
             top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key)
 
             if top50.empty:
-                st.warning("No valid data after processing top 50 health queries.")
+                st.warning("No valid data after processing top 50 queries.")
             else:
                 # ✅ FIXED: Show filter status for this section
                 if st.session_state.get('filters_applied', False):
-                    st.info(f"🔍 **Filtered Results**: Showing Top 50 from {len(queries):,} filtered health queries")
+                    st.info(f"🔍 **Filtered Results**: Showing Top 50 from {len(queries):,} filtered queries")
                 else:
-                    st.info(f"📊 **All Data**: Showing Top 50 from {len(queries):,} total health queries")
+                    st.info(f"📊 **All Data**: Showing Top 50 from {len(queries):,} total queries")
 
                 # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
                 base_columns = ['Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
@@ -1626,7 +1626,9 @@ with tab_overview:
                 ctr_columns = []
                 cr_columns = []
                 
-                for month in sorted(unique_months):
+                sorted_months = sorted(unique_months)  # Sorts as '2025-06', '2025-07', '2025-08'
+
+                for month in sorted_months:
                     month_display = month_names.get(month, month)
                     volume_columns.append(f'{month_display} Vol')
                     ctr_columns.append(f'{month_display} CTR')
@@ -1842,9 +1844,11 @@ with tab_overview:
                                 'avg_cr': avg_cr
                             }
                     
-                    month_cols = st.columns(len(unique_months))
-                    
-                    for i, month in enumerate(unique_months):
+                    # ✅ FIXED: Display months in chronological order
+                    sorted_months_display = sorted(unique_months)
+                    month_cols = st.columns(len(sorted_months_display))
+
+                    for i, month in enumerate(sorted_months_display):
                         month_display_name = month_names.get(month, month)
                         if month_display_name in monthly_performance:
                             with month_cols[i]:
@@ -1942,7 +1946,7 @@ with tab_overview:
                                 """, unsafe_allow_html=True)
                         
                         with col2:
-                            st.markdown("#### 🎯 Health CR Performance Leaders")
+                            st.markdown("#### 🎯 CR Performance Leaders")
                             # Find queries with best CR improvement
                             cr_improvements = []
                             for _, row in top50.iterrows():
@@ -2080,7 +2084,7 @@ with tab_overview:
                                     else:
                                         st.markdown("""
                                         <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
-                                            <strong>✅ CTR Performance Healthy</strong><br>
+                                            <strong>✅ CTR Performance</strong><br>
                                             <small>No significant declines or low performers</small>
                                         </div>
                                         """, unsafe_allow_html=True)
@@ -2131,7 +2135,7 @@ with tab_overview:
                                     else:
                                         st.markdown("""
                                         <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
-                                            <strong>✅ CR Performance Healthy</strong><br>
+                                            <strong>✅ CR Performance</strong><br>
                                             <small>No significant declines or low performers</small>
                                         </div>
                                         """, unsafe_allow_html=True)
