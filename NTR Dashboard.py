@@ -1506,8 +1506,6 @@ with tab_overview:
                 ('2025-07', 'July 2025'),
                 ('2025-08', 'August 2025')
             ])
-            # ✅ Chronological month order for sorting
-            month_order = ['2025-06', '2025-07', '2025-08']
 
             # ✅ FIXED: Create filter-aware cache key that updates when filters change
             def create_filter_cache_key():
@@ -1530,10 +1528,9 @@ with tab_overview:
             filter_cache_key = create_filter_cache_key()
 
             # ✅ FIXED: Updated cache function with filter awareness
-            # ✅ FIXED: Updated cache function with PROPER chronological ordering
-            @st.cache_data(ttl=300, show_spinner=False)
-            def compute_top50_health_queries_filter_aware(_df, month_names_dict, month_order_list, cache_key):
-                """🔄 FIXED: Filter-aware computation with GUARANTEED chronological order"""
+            @st.cache_data(ttl=300, show_spinner=False)  # Reduced TTL for more responsive filtering
+            def compute_top50_health_queries_filter_aware(_df, month_names_dict, cache_key):
+                """🔄 FIXED: Filter-aware computation of top 50 health queries"""
                 if _df.empty:
                     return pd.DataFrame(), []
                 
@@ -1550,15 +1547,13 @@ with tab_overview:
                 # Filter original data for top 50 queries
                 top50_data = _df[_df['search'].isin(top50_queries)].copy()
                 
-                # ✅ CRITICAL FIX: Get unique months and sort using PREDEFINED chronological order
+                # Get unique months from the data
                 if 'month' in top50_data.columns:
-                    available_months = top50_data['month'].unique()
-                    # Sort using the predefined chronological order
-                    unique_months = [m for m in month_order_list if m in available_months]
+                    unique_months = sorted(top50_data['month'].unique(), key=lambda x: pd.to_datetime(x))
                 else:
                     unique_months = []
                 
-                # 🔄 Build result data with GUARANTEED column order
+                # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
                 result_data = []
                 
                 for query in top50_queries:
@@ -1571,38 +1566,34 @@ with tab_overview:
                     overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                     overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                     
-                    # ✅ CRITICAL: Use OrderedDict to maintain column order
-                    from collections import OrderedDict
-                    row = OrderedDict()
+                    row = {
+                        'Query': query,
+                        'Total Volume': total_counts,
+                        'Share %': (total_counts / _df['Counts'].sum()) * 100,
+                        'Overall CTR': overall_ctr,
+                        'Overall CR': overall_cr,
+                        'Total Clicks': total_clicks,
+                        'Total Conversions': total_conversions
+                    }
                     
-                    # Add base columns first
-                    row['Query'] = query
-                    row['Total Volume'] = total_counts
-                    row['Share %'] = (total_counts / _df['Counts'].sum()) * 100
-                    row['Overall CTR'] = overall_ctr
-                    row['Overall CR'] = overall_cr
-                    row['Total Clicks'] = total_clicks
-                    row['Total Conversions'] = total_conversions
-                    
-                    # ✅ CRITICAL FIX: Add monthly columns in CHRONOLOGICAL order
-                    # Add Vol, CTR, CR for EACH month before moving to next month
+                    # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
                     for month in unique_months:
                         month_data = query_data[query_data['month'] == month]
                         month_display = month_names_dict.get(month, month)
                         
                         if not month_data.empty:
+                            # ✅ FIXED: Calculate month-specific metrics
                             month_counts = int(month_data['Counts'].sum())
                             month_clicks = int(month_data['clicks'].sum())
                             month_conversions = int(month_data['conversions'].sum())
                             
-                            # Calculate month-specific metrics
+                            # ✅ FIXED: Month-specific CTR and CR calculations
                             month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
                             month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                             
-                            # Add all three metrics for this month
                             row[f'{month_display} Vol'] = month_counts
-                            row[f'{month_display} CTR'] = month_ctr
-                            row[f'{month_display} CR'] = month_cr
+                            row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
+                            row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
                         else:
                             row[f'{month_display} Vol'] = 0
                             row[f'{month_display} CTR'] = 0
@@ -1615,9 +1606,8 @@ with tab_overview:
                 
                 return result_df, unique_months
 
-
             # ✅ FIXED: Use filter-aware cache key
-            top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, month_order, filter_cache_key)
+            top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key)
 
             if top50.empty:
                 st.warning("No valid data after processing top 50 queries.")
