@@ -1549,7 +1549,7 @@ with tab_overview:
                 
                 # Get unique months from the data
                 if 'month' in top50_data.columns:
-                    unique_months = sorted(top50_data['month'].unique())
+                    unique_months = sorted(top50_data['month'].unique(), key=lambda x: pd.to_datetime(x))
                 else:
                     unique_months = []
                 
