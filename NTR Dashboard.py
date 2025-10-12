@@ -1506,6 +1506,8 @@ with tab_overview:
                 ('2025-07', 'July 2025'),
                 ('2025-08', 'August 2025')
             ])
+            # ✅ Chronological month order for sorting
+            month_order = ['2025-06', '2025-07', '2025-08']
 
             # ✅ FIXED: Create filter-aware cache key that updates when filters change
             def create_filter_cache_key():
