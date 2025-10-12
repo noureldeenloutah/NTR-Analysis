@@ -1500,14 +1500,12 @@ with tab_overview:
             if st.sidebar.checkbox("Show Health Debug Info", value=False):
                 st.sidebar.write("**Available columns in health queries:**", list(queries.columns))
 
-            # 🚀 ENHANCED: Static month names (MUST BE IN CHRONOLOGICAL ORDER)
-            # ✅ CRITICAL FIX: Define months in chronological order as a LIST, not dict
-            month_order = ['2025-06', '2025-07', '2025-08']  # Chronological order
-            month_names = {
-                '2025-06': 'June 2025',
-                '2025-07': 'July 2025',
-                '2025-08': 'August 2025'
-            }
+            # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
+            month_names = OrderedDict([
+                ('2025-06', 'June 2025'),
+                ('2025-07', 'July 2025'),
+                ('2025-08', 'August 2025')
+            ])
 
             # ✅ FIXED: Create filter-aware cache key that updates when filters change
             def create_filter_cache_key():
@@ -1516,15 +1514,23 @@ with tab_overview:
                     'filters_applied': st.session_state.get('filters_applied', False),
                     'data_shape': queries.shape,
                     'data_hash': hash(str(queries['search'].tolist()[:10]) if not queries.empty else "empty"),
+                    # Include actual filter values to ensure cache updates
+                    'brand_filter': str(sorted(brand_filter)) if 'brand_filter' in locals() else "",
+                    'dept_filter': str(sorted(dept_filter)) if 'dept_filter' in locals() else "",
+                    'cat_filter': str(sorted(cat_filter)) if 'cat_filter' in locals() else "",
+                    'subcat_filter': str(sorted(subcat_filter)) if 'subcat_filter' in locals() else "",
+                    'class_filter': str(sorted(class_filter)) if 'class_filter' in locals() else "",
+                    'text_filter': text_filter if 'text_filter' in locals() else "",
+                    'date_range': str(date_range) if 'date_range' in locals() else ""
                 }
                 return str(hash(str(filter_state)))
 
             filter_cache_key = create_filter_cache_key()
 
-            # ✅ FIXED: Updated cache function with PROPER chronological ordering
-            @st.cache_data(ttl=300, show_spinner=False)
-            def compute_top50_health_queries_filter_aware(_df, month_names_dict, month_order_list, cache_key):
-                """🔄 FIXED: Filter-aware computation with GUARANTEED chronological order"""
+            # ✅ FIXED: Updated cache function with filter awareness
+            @st.cache_data(ttl=300, show_spinner=False)  # Reduced TTL for more responsive filtering
+            def compute_top50_health_queries_filter_aware(_df, month_names_dict, cache_key):
+                """🔄 FIXED: Filter-aware computation of top 50 health queries"""
                 if _df.empty:
                     return pd.DataFrame(), []
                 
@@ -1541,15 +1547,13 @@ with tab_overview:
                 # Filter original data for top 50 queries
                 top50_data = _df[_df['search'].isin(top50_queries)].copy()
                 
-                # ✅ CRITICAL FIX: Get unique months and sort using PREDEFINED chronological order
+                # Get unique months from the data
                 if 'month' in top50_data.columns:
-                    available_months = top50_data['month'].unique()
-                    # Sort using the predefined chronological order
-                    unique_months = [m for m in month_order_list if m in available_months]
+                    unique_months = sorted(top50_data['month'].unique(), key=lambda x: pd.to_datetime(x))
                 else:
                     unique_months = []
                 
-                # 🔄 Build result data with GUARANTEED column order
+                # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
                 result_data = []
                 
                 for query in top50_queries:
@@ -1562,55 +1566,37 @@ with tab_overview:
                     overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                     overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                     
-                    # ✅ CRITICAL: Use OrderedDict or build in specific order
-                    from collections import OrderedDict
-                    row = OrderedDict()
+                    row = {
+                        'Query': query,
+                        'Total Volume': total_counts,
+                        'Share %': (total_counts / _df['Counts'].sum()) * 100,
+                        'Overall CTR': overall_ctr,
+                        'Overall CR': overall_cr,
+                        'Total Clicks': total_clicks,
+                        'Total Conversions': total_conversions
+                    }
                     
-                    # Add base columns first
-                    row['Query'] = query
-                    row['Total Volume'] = total_counts
-                    row['Share %'] = (total_counts / _df['Counts'].sum()) * 100
-                    row['Overall CTR'] = overall_ctr
-                    row['Overall CR'] = overall_cr
-                    row['Total Clicks'] = total_clicks
-                    row['Total Conversions'] = total_conversions
-                    
-                    # ✅ CRITICAL FIX: Add monthly columns in CHRONOLOGICAL order
-                    # First, add all volume columns
+                    # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
                     for month in unique_months:
                         month_data = query_data[query_data['month'] == month]
                         month_display = month_names_dict.get(month, month)
                         
                         if not month_data.empty:
-                            month_counts = int(month_data['Counts'].sum())
-                            row[f'{month_display} Vol'] = month_counts
-                        else:
-                            row[f'{month_display} Vol'] = 0
-                    
-                    # Then, add all CTR columns
-                    for month in unique_months:
-                        month_data = query_data[query_data['month'] == month]
-                        month_display = month_names_dict.get(month, month)
-                        
-                        if not month_data.empty:
+                            # ✅ FIXED: Calculate month-specific metrics
                             month_counts = int(month_data['Counts'].sum())
                             month_clicks = int(month_data['clicks'].sum())
-                            month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                            row[f'{month_display} CTR'] = month_ctr
-                        else:
-                            row[f'{month_display} CTR'] = 0
-                    
-                    # Finally, add all CR columns
-                    for month in unique_months:
-                        month_data = query_data[query_data['month'] == month]
-                        month_display = month_names_dict.get(month, month)
-                        
-                        if not month_data.empty:
-                            month_counts = int(month_data['Counts'].sum())
                             month_conversions = int(month_data['conversions'].sum())
+                            
+                            # ✅ FIXED: Month-specific CTR and CR calculations
+                            month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
                             month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                            row[f'{month_display} CR'] = month_cr
+                            
+                            row[f'{month_display} Vol'] = month_counts
+                            row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
+                            row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
                         else:
+                            row[f'{month_display} Vol'] = 0
+                            row[f'{month_display} CTR'] = 0
                             row[f'{month_display} CR'] = 0
                     
                     result_data.append(row)
@@ -1620,8 +1606,8 @@ with tab_overview:
                 
                 return result_df, unique_months
 
-            # ✅ FIXED: Pass month_order to the function
-            top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, month_order, filter_cache_key)
+            # ✅ FIXED: Use filter-aware cache key
+            top50, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key)
 
             if top50.empty:
                 st.warning("No valid data after processing top 50 queries.")
@@ -1632,8 +1618,26 @@ with tab_overview:
                 else:
                     st.info(f"📊 **All Data**: Showing Top 50 from {len(queries):,} total queries")
 
-                # ✅ DataFrame is already in correct column order from the function!
-                # No need to reorder columns here
+                # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
+                base_columns = ['Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+                
+                # Group monthly columns by type for easier comparison
+                volume_columns = []
+                ctr_columns = []
+                cr_columns = []
+                
+                sorted_months = sorted(unique_months)  # Sorts as '2025-06', '2025-07', '2025-08'
+
+                for month in sorted_months:
+                    month_display = month_names.get(month, month)
+                    volume_columns.append(f'{month_display} Vol')
+                    ctr_columns.append(f'{month_display} CTR')
+                    cr_columns.append(f'{month_display} CR')
+                
+                # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+                ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+                existing_columns = [col for col in ordered_columns if col in top50.columns]
+                top50 = top50[existing_columns]
 
                 # ✅ FIXED: Filter-aware styling cache
                 top50_hash = hash(str(top50.shape) + str(top50.columns.tolist()) + str(top50.iloc[0].to_dict()) if len(top50) > 0 else "empty")
@@ -1648,9 +1652,16 @@ with tab_overview:
                     display_top50 = top50.copy()
                     
                     # Format volume columns with format_number
-                    for col in display_top50.columns:
-                        if 'Vol' in col or col in ['Total Volume', 'Total Clicks', 'Total Conversions']:
+                    volume_cols_to_format = ['Total Volume'] + volume_columns
+                    for col in volume_cols_to_format:
+                        if col in display_top50.columns:
                             display_top50[col] = display_top50[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                    
+                    # Format clicks and conversions
+                    if 'Total Clicks' in display_top50.columns:
+                        display_top50['Total Clicks'] = display_top50['Total Clicks'].apply(lambda x: format_number(int(x)))
+                    if 'Total Conversions' in display_top50.columns:
+                        display_top50['Total Conversions'] = display_top50['Total Conversions'].apply(lambda x: format_number(int(x)))
                     
                     # 🔄 ENHANCED: Better performance highlighting with comparison focus
                     def highlight_health_performance_with_comparison(df):
@@ -1660,10 +1671,12 @@ with tab_overview:
                         if len(unique_months) < 2:
                             return styles
                         
+                        sorted_months = sorted(unique_months)
+                        
                         # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
-                        for i in range(1, len(unique_months)):
-                            current_month = month_names.get(unique_months[i], unique_months[i])
-                            prev_month = month_names.get(unique_months[i-1], unique_months[i-1])
+                        for i in range(1, len(sorted_months)):
+                            current_month = month_names.get(sorted_months[i], sorted_months[i])
+                            prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
                             
                             current_ctr_col = f'{current_month} CTR'
                             prev_ctr_col = f'{prev_month} CTR'
@@ -1678,11 +1691,11 @@ with tab_overview:
                                     
                                     if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
                                         change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                        if change_pct > 10:
+                                        if change_pct > 10:  # 10% improvement
                                             styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:
+                                        elif change_pct < -10:  # 10% decline
                                             styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:
+                                        elif abs(change_pct) > 5:  # 5-10% change
                                             color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                             styles.loc[idx, current_ctr_col] = f'background-color: {color};'
                             
@@ -1694,17 +1707,17 @@ with tab_overview:
                                     
                                     if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
                                         change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                        if change_pct > 10:
+                                        if change_pct > 10:  # 10% improvement
                                             styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:
+                                        elif change_pct < -10:  # 10% decline
                                             styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:
+                                        elif abs(change_pct) > 5:  # 5-10% change
                                             color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                             styles.loc[idx, current_cr_col] = f'background-color: {color};'
                         
-                        # 🔄 SECTION HIGHLIGHTING: Different background for volume columns
-                        for col in display_top50.columns:
-                            if 'Vol' in col:
+                        # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                        for col in volume_columns:
+                            if col in df.columns:
                                 styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
                         
                         return styles
@@ -1732,10 +1745,9 @@ with tab_overview:
                     }
                     
                     # Add formatting for monthly CTR and CR columns
-                    for col in display_top50.columns:
-                        if 'CTR' in col or 'CR' in col:
-                            if col not in ['Overall CTR', 'Overall CR']:
-                                format_dict[col] = '{:.2f}%'
+                    for col in ctr_columns + cr_columns:
+                        if col in display_top50.columns:
+                            format_dict[col] = '{:.2f}%'
 
                     styled_top50 = styled_top50.format(format_dict)
                     st.session_state.styled_top50_health = styled_top50
@@ -1747,15 +1759,6 @@ with tab_overview:
                     height=600,
                     hide_index=True
                 )
-
-                # Display column order for debugging
-                if st.sidebar.checkbox("Show Column Order", value=False):
-                    st.sidebar.write("**Current column order:**")
-                    for i, col in enumerate(top50.columns):
-                        st.sidebar.write(f"{i+1}. {col}")
-
-                # Rest of your code continues here...
-
 
                 # 🔄 ENHANCED: Better legend with comparison focus
                 st.markdown("""
