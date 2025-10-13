@@ -6339,14 +6339,6 @@ with tab_brand:
                         else:
                             st.info("📅 Monthly performance analysis requires data from at least 2 months.")
 
-                except Exception as e:
-                    st.error(f"Error processing top brands: {e}")
-                    st.write("**Debug info:**")
-                    st.write(f"Brands shape: {bs.shape}")
-                    st.write(f"Available columns: {list(bs.columns)}")
-                    if 'top_brands_df' in locals() and not top_brands_df.empty:
-                        st.write(f"Top brands shape: {top_brands_df.shape}")
-
         # ADDED BACK: Brand Summary Data Table
         st.subheader("📋 Brand Summary Data")
         
