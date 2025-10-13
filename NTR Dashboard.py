@@ -5459,19 +5459,8 @@ with tab_brand:
         st.subheader("📈 Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
-        # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
-        bs_raw = brand_queries.groupby(brand_column).agg({
-            'Counts': 'sum',
-            'clicks': 'sum', 
-            'conversions': 'sum'
-        }).reset_index()
-
-        # Round to integers for cleaner display
-        bs_raw['clicks'] = bs_raw['clicks'].round().astype(int)
-        bs_raw['conversions'] = bs_raw['conversions'].round().astype(int)
-
-        # Rename the brand column to 'brand' for consistency
-        bs_raw = bs_raw.rename(columns={brand_column: 'brand'})
+        # Rename the brand column to 'Brand' for consistency
+        bs_raw = bs_raw.rename(columns={brand_column: 'Brand'})
         bs = bs_raw.copy()
 
         # ✅ ADD MONTH COLUMN: Extract from brand_queries and merge
@@ -5479,13 +5468,13 @@ with tab_brand:
             # Create a temporary dataframe with brand and month
             brand_month_map = brand_queries[[brand_column, 'start_date']].copy()
             brand_month_map['month'] = pd.to_datetime(brand_month_map['start_date'], errors='coerce').dt.to_period('M').astype(str)
-            brand_month_map = brand_month_map.rename(columns={brand_column: 'brand'})
+            brand_month_map = brand_month_map.rename(columns={brand_column: 'Brand'})
             
             # Get the first month for each brand (or you can use mode/most common)
-            brand_month_map = brand_month_map.groupby('brand')['month'].first().reset_index()
+            brand_month_map = brand_month_map.groupby('Brand')['month'].first().reset_index()
             
             # Merge month column into bs
-            bs = bs.merge(brand_month_map, on='brand', how='left')
+            bs = bs.merge(brand_month_map, on='Brand', how='left')
             st.sidebar.success(f"✅ Month column added to brands dataframe")
 
 
