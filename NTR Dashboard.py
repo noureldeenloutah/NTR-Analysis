@@ -1626,7 +1626,7 @@ with tab_overview:
                 ctr_columns = []
                 cr_columns = []
                 
-                sorted_months = sorted(unique_months)  # Sorts as '2025-06', '2025-07', '2025-08'
+                sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))  # Sorts as '2025-06', '2025-07', '2025-08'
 
                 for month in sorted_months:
                     month_display = month_names.get(month, month)
@@ -1845,7 +1845,7 @@ with tab_overview:
                             }
                     
                     # ✅ FIXED: Display months in chronological order
-                    sorted_months_display = sorted(unique_months)
+                    sorted_months_display = sorted(unique_months, key=lambda x: pd.to_datetime(x))
                     month_cols = st.columns(len(sorted_months_display))
 
                     for i, month in enumerate(sorted_months_display):
