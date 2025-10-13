@@ -5469,13 +5469,27 @@ with tab_brand:
         bs_raw['clicks'] = bs_raw['clicks'].round().astype(int)
         bs_raw['conversions'] = bs_raw['conversions'].round().astype(int)
 
-        # Rename the brand column to 'brand' for consistency
-        bs_raw = bs_raw.rename(columns={brand_column: 'brand'})
+        # Rename the brand column to 'Brand' for consistency
+        bs_raw = bs_raw.rename(columns={brand_column: 'Brand'})
         bs = bs_raw.copy()
+
+        # ✅ ADD MONTH COLUMN: Extract from brand_queries and merge
+        if 'start_date' in brand_queries.columns:
+            # Create a temporary dataframe with brand and month
+            brand_month_map = brand_queries[[brand_column, 'start_date']].copy()
+            brand_month_map['month'] = pd.to_datetime(brand_month_map['start_date'], errors='coerce').dt.to_period('M').astype(str)
+            brand_month_map = brand_month_map.rename(columns={brand_column: 'Brand'})
+            
+            # Get the first month for each brand (or you can use mode/most common)
+            brand_month_map = brand_month_map.groupby('Brand')['month'].first().reset_index()
+            
+            # Merge month column into bs
+            bs = bs.merge(brand_month_map, on='Brand', how='left')
 
         # Calculate Share % based on filtered data
         total_counts = bs['Counts'].sum()
         bs['share_pct'] = (bs['Counts'] / total_counts * 100).round(2)
+
 
         # CORRECTED CR CALCULATIONS
         bs['ctr'] = ((bs['clicks'] / bs['Counts']) * 100).round(2)
