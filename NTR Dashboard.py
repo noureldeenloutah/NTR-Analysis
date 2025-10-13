@@ -3429,7 +3429,26 @@ with tab_search:
         </div>
         """, unsafe_allow_html=True)
         
+        # Performance monitoring
+        start_time = datetime.now()
         
+        # 🔧 GREEN-THEMED LOADING EXPERIENCE
+        with st.spinner(""):
+            # Custom loading container
+            loading_container = st.container()
+            with loading_container:
+                st.markdown("""
+                <div style="
+                    background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
+                    padding: 2rem;
+                    border-radius: 15px;
+                    text-align: center;
+                    margin: 1rem 0;
+                    border: 1px solid #C8E6C9;
+                ">
+                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Nutraceuticals & Nutrition Keywords Analysis</h4>
+                </div>
+                """, unsafe_allow_html=True)
                 
                 # Enhanced progress tracking
                 progress_col1, progress_col2, progress_col3 = st.columns([1, 2, 1])
