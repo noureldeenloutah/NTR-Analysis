@@ -5459,43 +5459,79 @@ with tab_brand:
         st.subheader("📈 Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
-        bs_raw = brand_queries.groupby(brand_column).agg({
+        # ✅ CRITICAL FIX: Create month column FIRST before aggregation
+        brand_queries_with_month = brand_queries.copy()
+        
+        # Extract month from start_date
+        if 'start_date' in brand_queries_with_month.columns:
+            brand_queries_with_month['month'] = pd.to_datetime(
+                brand_queries_with_month['start_date'], 
+                errors='coerce'
+            ).dt.to_period('M').astype(str)
+        else:
+            st.error("❌ 'start_date' column not found in data. Cannot create monthly breakdown.")
+            st.stop()
+
+        # ✅ FIXED: Aggregate by BOTH brand AND month to preserve monthly data
+        bs = brand_queries_with_month.groupby([brand_column, 'month']).agg({
             'Counts': 'sum',
             'clicks': 'sum', 
             'conversions': 'sum'
         }).reset_index()
 
         # Round to integers for cleaner display
-        bs_raw['clicks'] = bs_raw['clicks'].round().astype(int)
-        bs_raw['conversions'] = bs_raw['conversions'].round().astype(int)
+        bs['clicks'] = bs['clicks'].round().astype(int)
+        bs['conversions'] = bs['conversions'].round().astype(int)
 
         # Rename the brand column to 'brand' for consistency
-        # Rename the brand column to 'brand' for consistency
-        bs_raw = bs_raw.rename(columns={brand_column: 'brand'})
-        bs = bs_raw.copy()
+        bs = bs.rename(columns={brand_column: 'brand'})
 
-        # ✅ ADD MONTH COLUMN: Extract from brand_queries and merge
-        if 'start_date' in brand_queries.columns:
-            # Create a temporary dataframe with brand and month
-            brand_month_map = brand_queries[[brand_column, 'start_date']].copy()
-            brand_month_map['month'] = pd.to_datetime(brand_month_map['start_date'], errors='coerce').dt.to_period('M').astype(str)
-            brand_month_map = brand_month_map.rename(columns={brand_column: 'brand'})
-            
-            # Get the first month for each brand (or you can use mode/most common)
-            brand_month_map = brand_month_map.groupby('brand')['month'].first().reset_index()
-            
-            # Merge month column into bs
-            bs = bs.merge(brand_month_map, on='brand', how='left')
+        # ✅ VERIFY: Check if we have monthly data
+        if 'month' not in bs.columns or bs['month'].isna().all():
+            st.error("❌ Failed to create monthly breakdown. Check your 'start_date' column.")
+            st.stop()
 
-        # Calculate Share % based on filtered data
-        total_counts = bs['Counts'].sum()
-        bs['share_pct'] = (bs['Counts'] / total_counts * 100).round(2)
-
-
-        # CORRECTED CR CALCULATIONS
+        # Calculate metrics (these are now per brand-month combination)
         bs['ctr'] = ((bs['clicks'] / bs['Counts']) * 100).round(2)
-        bs['cr'] = ((bs['conversions'] / bs['Counts']) * 100).round(2)  # CR = conversions/search volume
-        bs['classic_cr'] = ((bs['conversions'] / bs['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
+        bs['cr'] = ((bs['conversions'] / bs['Counts']) * 100).round(2)
+        bs['classic_cr'] = ((bs['conversions'] / bs['clicks']) * 100).fillna(0).round(2)
+
+        # ✅ CREATE SUMMARY DataFrame for overall metrics (without month)
+        bs_summary = bs.groupby('brand').agg({
+            'Counts': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).reset_index()
+
+        # Calculate Share % based on total filtered data
+        total_counts = bs_summary['Counts'].sum()
+        bs_summary['share_pct'] = (bs_summary['Counts'] / total_counts * 100).round(2)
+        bs_summary['ctr'] = ((bs_summary['clicks'] / bs_summary['Counts']) * 100).round(2)
+        bs_summary['cr'] = ((bs_summary['conversions'] / bs_summary['Counts']) * 100).round(2)
+        bs_summary['classic_cr'] = ((bs_summary['conversions'] / bs_summary['clicks']) * 100).fillna(0).round(2)
+
+        # ✅ DEBUG OUTPUT: Show what we have
+        st.markdown("### 🔍 Debug: Brand Data Structure")
+        
+        col_debug1, col_debug2 = st.columns(2)
+        
+        with col_debug1:
+            st.markdown("**📊 Monthly Brand Data (bs):**")
+            st.write(f"- Shape: {bs.shape}")
+            st.write(f"- Columns: {list(bs.columns)}")
+            st.write(f"- Unique Brands: {bs['brand'].nunique()}")
+            st.write(f"- Unique Months: {bs['month'].nunique()}")
+            st.dataframe(bs.head(10), use_container_width=True)
+        
+        with col_debug2:
+            st.markdown("**📈 Summary Brand Data (bs_summary):**")
+            st.write(f"- Shape: {bs_summary.shape}")
+            st.write(f"- Columns: {list(bs_summary.columns)}")
+            st.write(f"- Unique Brands: {bs_summary['brand'].nunique()}")
+            st.dataframe(bs_summary.head(10), use_container_width=True)
+
+        st.markdown("---")
+
 
         # Enhanced scatter plot for brand performance
         num_scatter_brands = st.slider(
