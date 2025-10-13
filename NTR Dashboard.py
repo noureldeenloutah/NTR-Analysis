@@ -5695,7 +5695,7 @@ with tab_brand:
                 # ✅ FIXED: Updated cache function with filter awareness
                 @st.cache_data(ttl=300, show_spinner=False)
                 def compute_top_brands_filter_aware(_df, month_names_dict, num_brands, cache_key):
-                    """🔄 FIXED: Filter-aware computation of top brands"""
+                    """🔄 FIXED: Filter-aware computation of top brands WITH KEYWORD DATA"""
                     if _df.empty:
                         return pd.DataFrame(), []
                     
@@ -5733,6 +5733,39 @@ with tab_brand:
                         overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                         classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
                         
+                        # ✅ NEW: Calculate keyword metrics
+                        unique_keywords_set = set()
+                        keyword_counts = {}
+                        
+                        for idx, row_data in brand_data.iterrows():
+                            keywords_list = row_data.get('keywords', [])
+                            query_count = row_data.get('Counts', 0)
+                            
+                            if isinstance(keywords_list, list):
+                                unique_keywords_set.update(keywords_list)
+                                for keyword in keywords_list:
+                                    if keyword in keyword_counts:
+                                        keyword_counts[keyword] += query_count
+                                    else:
+                                        keyword_counts[keyword] = query_count
+                            elif pd.notna(keywords_list):
+                                # Fallback: use normalized_query if keywords is not a list
+                                search_term = row_data.get('normalized_query', '')
+                                if pd.notna(search_term):
+                                    keywords = str(search_term).lower().split()
+                                    unique_keywords_set.update(keywords)
+                                    for keyword in keywords:
+                                        if keyword in keyword_counts:
+                                            keyword_counts[keyword] += query_count
+                                        else:
+                                            keyword_counts[keyword] = query_count
+                        
+                        unique_keywords_count = len(unique_keywords_set)
+                        
+                        # Get top 5 keywords by total counts
+                        top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                        top_keywords_str = ', '.join([f"{kw}({x[1]:,})" for kw, x in [(k, v) for k, v in top_keywords]])
+                        
                         row = {
                             'brand': brand,
                             'Total Volume': total_counts,
@@ -5741,13 +5774,15 @@ with tab_brand:
                             'Overall CR': overall_cr,
                             'Classic CR': classic_cr,
                             'Total Clicks': total_clicks,
-                            'Total Conversions': total_conversions
+                            'Total Conversions': total_conversions,
+                            'Unique Keywords': unique_keywords_count,  # ✅ NEW
+                            'Top Health Keywords': top_keywords_str     # ✅ NEW
                         }
                         
                         # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
                         for month in unique_months:
-                            month_data = brand_data[brand_data['month'] == month]
                             month_display = month_names_dict.get(month, month)
+                            month_data = brand_data[brand_data['month'] == month]
                             
                             if not month_data.empty:
                                 # ✅ FIXED: Calculate month-specific metrics
@@ -5774,6 +5809,7 @@ with tab_brand:
                     
                     return result_df, unique_months
 
+
                 # ✅ FIXED: Use filter-aware cache key
                 top_brands_df, unique_months = compute_top_brands_filter_aware(bs, month_names, num_brands, brands_filter_cache_key)
 
@@ -5787,7 +5823,7 @@ with tab_brand:
                         st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {len(bs):,} total records")
 
                     # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-                    base_columns = ['brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions']
+                    base_columns = ['brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions', 'Unique Keywords', 'Top Health Keywords']
                     
                     # Group monthly columns by type for easier comparison
                     volume_columns = []
