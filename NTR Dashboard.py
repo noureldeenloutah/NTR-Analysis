@@ -6555,28 +6555,30 @@ with tab_brand:
 
     
     # Strategic Brand Intelligence Dashboard (3 Tabs)
-    st.subheader("🧠 Strategic Brand Intelligence Dashboard")
-
-    # ✅ CRITICAL FIX: Ensure all required columns exist in bs dataframe
+    # ✅ AGGREGATE bs BY BRAND (Sum across all months)
     if not bs.empty:
-        # Calculate share_pct if it doesn't exist
-        if 'share_pct' not in bs.columns:
-            total_counts = bs['Counts'].sum()
-            bs['share_pct'] = (bs['Counts'] / total_counts * 100) if total_counts > 0 else 0
+        # Group by brand and sum all numeric columns
+        bs = bs.groupby('brand', as_index=False).agg({
+            'Counts': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        })
         
-        # Calculate CTR if it doesn't exist
-        if 'ctr' not in bs.columns:
-            bs['ctr'] = (bs['clicks'] / bs['Counts'] * 100).fillna(0) if 'clicks' in bs.columns else 0
+        # Recalculate all metrics after aggregation
+        total_counts = bs['Counts'].sum()
+        bs['share_pct'] = (bs['Counts'] / total_counts * 100) if total_counts > 0 else 0
+        bs['ctr'] = (bs['clicks'] / bs['Counts'] * 100).fillna(0)
+        bs['classic_cr'] = (bs['conversions'] / bs['Counts'] * 100).fillna(0)
         
-        # Calculate classic_cr if it doesn't exist
-        if 'classic_cr' not in bs.columns:
-            bs['classic_cr'] = (bs['conversions'] / bs['Counts'] * 100).fillna(0) if 'conversions' in bs.columns else 0
-        
-        # Ensure numeric columns are actually numeric
+        # Ensure numeric types
         bs['share_pct'] = pd.to_numeric(bs['share_pct'], errors='coerce').fillna(0)
         bs['ctr'] = pd.to_numeric(bs['ctr'], errors='coerce').fillna(0)
         bs['classic_cr'] = pd.to_numeric(bs['classic_cr'], errors='coerce').fillna(0)
 
+    # Strategic Brand Intelligence Dashboard (3 Tabs)
+    st.subheader("🧠 Strategic Brand Intelligence Dashboard")
+
+    # Remove the old column check section since we're doing it above
     strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs([
         "🎯 Market Position Analysis", 
         "🚀 Growth Opportunities", 
@@ -6616,7 +6618,7 @@ with tab_brand:
                     size='Counts',
                     color='position_category',
                     hover_name='brand',
-                    title='<b style="color:#2E7D32;">🎯 Brand Market Position Quadrant Analysis</b>',
+                    title='<b style="color:#2E7D32;">🎯 Brand Market Position Quadrant Analysis (All Months Aggregated)</b>',
                     labels={
                         'market_strength': 'Market Strength (Share × CTR)',
                         'efficiency_score': 'Conversion Efficiency (per 1000 searches)'
@@ -6650,6 +6652,9 @@ with tab_brand:
                 )
                 
                 st.plotly_chart(fig_quadrant, use_container_width=True)
+                
+                # Debug info to verify aggregation
+                st.info(f"📊 Showing {len(bs)} unique brands (aggregated across all months)")
                 
                 # Position category distribution
                 position_dist = bs['position_category'].value_counts().reset_index()
@@ -6696,6 +6701,8 @@ with tab_brand:
                 st.write("**Debug Info:**")
                 st.write(f"Available columns: {bs.columns.tolist()}")
                 st.write(f"DataFrame shape: {bs.shape}")
+                st.write(f"Sample data:")
+                st.dataframe(bs.head())
         else:
             st.info("No brand data available for market position analysis")
 
@@ -6988,6 +6995,7 @@ with tab_brand:
                 )
             except Exception as e:
                 st.error(f"Export error: {str(e)}")
+
 
 
 
