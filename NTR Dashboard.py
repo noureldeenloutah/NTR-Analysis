@@ -5587,7 +5587,7 @@ with tab_brand:
             
             # Rename columns for display
             display_brands = display_brands.rename(columns={
-                'Brand': 'Nutraceuticals & Nutrition Brand',
+                'brand': 'Brand',
                 'Counts': 'Search Counts',
                 'share_pct': 'Market Share %',
                 'clicks': 'Total Clicks',
@@ -5607,7 +5607,7 @@ with tab_brand:
             display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
             
             # Reorder columns - only use columns that exist
-            column_order = ['Nutraceuticals & Nutrition Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
+            column_order = ['Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
             existing_columns = [col for col in column_order if col in display_brands.columns]
             display_brands = display_brands[existing_columns]
             
@@ -5615,9 +5615,9 @@ with tab_brand:
             
             csv_brands = top_brands.to_csv(index=False)
             st.download_button(
-                label="📥 Download Nutraceuticals & Nutrition Brands CSV",
+                label="📥 Download Brands CSV",
                 data=csv_brands,
-                file_name=f"top_{num_brands}_nutraceuticals_brands.csv",
+                file_name=f"top_{num_brands}_brands.csv",
                 mime="text/csv",
                 key="brand_csv_download"
             )
