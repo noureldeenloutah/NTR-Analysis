@@ -6079,67 +6079,82 @@ with tab_brand:
             help="Select how many top brands to show in the market share pie chart"
         )
 
-        # ✅ UPDATED: Use the slider value instead of hardcoded 10
-        top_brands_pie = bs.nlargest(num_brands_pie, 'Counts')
+        # ✅ FIXED: Calculate brand totals directly from brand_queries (filter-aware)
+        @st.cache_data(ttl=300, show_spinner=False)
+        def compute_brand_pie_data(_queries_df, brand_col, num_brands, cache_key):
+            """Calculate brand totals for pie chart from queries dataframe"""
+            if _queries_df.empty:
+                return pd.DataFrame()
+            
+            # Group by brand and sum counts
+            brand_totals = _queries_df.groupby(brand_col)['Counts'].sum().reset_index()
+            brand_totals.columns = ['brand', 'Counts']
+            
+            # Get top N brands
+            top_brands = brand_totals.nlargest(num_brands, 'Counts')
+            
+            return top_brands
 
-        # Health-focused color palette (extended to support up to 20 brands)
-        health_colors = [
-            '#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
-            '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A',
-            '#7CB342', '#9CCC65', '#AED581', '#C5E1A5', '#DCEDC8',
-            '#1B5E20', '#33691E', '#558B2F', '#827717', '#9E9D24'
-        ]
+        # Create cache key based on current filter state
+        pie_cache_key = f"{brand_queries.shape}_{st.session_state.get('filters_applied', False)}_{num_brands_pie}"
 
-        # ✅ UPDATED: Dynamic title showing the number of brands
-        fig_pie = px.pie(
-            top_brands_pie, 
-            names='brand', 
-            values='Counts',
-            title=f'<b style="color:#2E7D32;">🌿 Health Market Distribution (Top {num_brands_pie} Brands)</b>',
-            color_discrete_sequence=health_colors
+        # ✅ COMPUTE: Get top brands from brand_queries
+        top_brands_pie = compute_brand_pie_data(
+            brand_queries, 
+            brand_column, 
+            num_brands_pie,
+            pie_cache_key
         )
 
-        fig_pie.update_layout(
-            font=dict(color='#1B5E20', family='Segoe UI'),
-            paper_bgcolor='rgba(232,245,232,0.8)'
-        )
-
-        # ✅ OPTIONAL: Add hover information showing percentage and counts
-        fig_pie.update_traces(
-            textposition='inside',
-            textinfo='percent+label',
-            hovertemplate='<b>%{label}</b><br>Count: %{value:,}<br>Share: %{percent}<extra></extra>'
-        )
-
-        st.plotly_chart(fig_pie, use_container_width=True)
-
-        # ✅ OPTIONAL: Show summary statistics below the chart
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            total_shown = top_brands_pie['Counts'].sum()
-            st.metric(
-                "🔍 Shown Volume", 
-                format_number(total_shown),
-                help=f"Total search volume for top {num_brands_pie} brands"
+        if top_brands_pie.empty or len(top_brands_pie) == 0:
+            st.warning(f"⚠️ No brand data available. Please check your filters.")
+        else:
+            # Show how many brands are actually available
+            total_brands_available = brand_queries[brand_column].nunique()
+            actual_brands_shown = len(top_brands_pie)
+            
+            if actual_brands_shown < num_brands_pie:
+                st.info(f"ℹ️ Only {actual_brands_shown} brands available (requested {num_brands_pie}). Total brands in dataset: {total_brands_available}")
+            
+            # Health-focused color palette (extended to support up to 20 brands)
+            health_colors = [
+                '#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
+                '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A',
+                '#7CB342', '#9CCC65', '#AED581', '#C5E1A5', '#DCEDC8',
+                '#1B5E20', '#33691E', '#558B2F', '#827717', '#9E9D24'
+            ]
+            
+            # ✅ UPDATED: Dynamic title showing actual number of brands
+            fig_pie = px.pie(
+                top_brands_pie, 
+                names='brand', 
+                values='Counts',
+                title=f'<b style="color:#2E7D32;">🌿 Health Market Distribution (Top {actual_brands_shown} Brands)</b>',
+                color_discrete_sequence=health_colors
             )
-
-        with col2:
-            total_all = bs['Counts'].sum()
-            coverage_pct = (total_shown / total_all * 100) if total_all > 0 else 0
-            st.metric(
-                "📊 Market Coverage", 
-                f"{coverage_pct:.1f}%",
-                help=f"Percentage of total market covered by top {num_brands_pie} brands"
+            
+            fig_pie.update_layout(
+                font=dict(color='#1B5E20', family='Segoe UI'),
+                paper_bgcolor='rgba(232,245,232,0.8)',
+                showlegend=True,
+                legend=dict(
+                    orientation="v",
+                    yanchor="middle",
+                    y=0.5,
+                    xanchor="left",
+                    x=1.05
+                )
             )
-
-        with col3:
-            remaining_brands = bs['brand'].nunique() - num_brands_pie
-            st.metric(
-                "🏢 Other Brands", 
-                f"{remaining_brands:,}",
-                help=f"Number of brands not shown in the chart"
+            
+            # ✅ UPDATED: Better hover and text display
+            fig_pie.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                hovertemplate='<b>%{label}</b><br>Count: %{value:,}<br>Share: %{percent}<extra></extra>',
+                textfont_size=10
             )
+            
+            st.plotly_chart(fig_pie, use_container_width=True)
         
         # Brand Performance Categories
         st.subheader("🎯 Brand Performance Categories")
