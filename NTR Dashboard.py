@@ -3938,7 +3938,7 @@ with tab_search:
             # Enhanced metrics display with better styling
             st.markdown("""
             <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Health Categories Performance</h4>
+                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Categories Performance</h4>
             </div>
             """, unsafe_allow_html=True)
             
