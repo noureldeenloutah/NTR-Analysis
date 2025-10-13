@@ -5459,6 +5459,17 @@ with tab_brand:
         st.subheader("📈 Brand Performance Matrix")
 
         # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
+        # Calculate comprehensive brand metrics with CORRECTED CR CALCULATION
+        bs_raw = brand_queries.groupby(brand_column).agg({
+            'Counts': 'sum',
+            'clicks': 'sum', 
+            'conversions': 'sum'
+        }).reset_index()
+
+        # Round to integers for cleaner display
+        bs_raw['clicks'] = bs_raw['clicks'].round().astype(int)
+        bs_raw['conversions'] = bs_raw['conversions'].round().astype(int)
+
         # Rename the brand column to 'Brand' for consistency
         bs_raw = bs_raw.rename(columns={brand_column: 'Brand'})
         bs = bs_raw.copy()
