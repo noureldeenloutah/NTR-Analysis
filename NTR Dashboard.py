@@ -6217,7 +6217,7 @@ with tab_brand:
         
         st.plotly_chart(fig_cat, use_container_width=True)
 
-st.markdown("---")
+    st.markdown("---")
     
     # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
     st.subheader("🔥 Brand-Keyword Intelligence Matrix")
