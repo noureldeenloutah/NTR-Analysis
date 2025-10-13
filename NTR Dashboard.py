@@ -5638,430 +5638,430 @@ with tab_brand:
                     st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
             else:
                 st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")     
-                   
+
         st.markdown("---")
 
-        # Top Brands Performance Table
-        # Top Brands Performance Table
-        st.subheader("🏆 Top Brands Performance & Summary")
+    # Top Brands Performance Table
+    # Top Brands Performance Table
+    st.subheader("🏆 Top Brands Performance & Summary")
 
-        num_brands = st.slider(
-            "Number of Nutraceuticals & Nutrition brands to display:", 
-            min_value=10, 
-            max_value=50, 
-            value=20, 
-            step=5,
-            key="brand_count_slider"
-        )
+    num_brands = st.slider(
+        "Number of Nutraceuticals & Nutrition brands to display:", 
+        min_value=10, 
+        max_value=50, 
+        value=20, 
+        step=5,
+        key="brand_count_slider"
+    )
 
-        # 🚀 LAZY CSS LOADING - Only load once per session
-        if 'top_brands_css_loaded' not in st.session_state:
-            st.markdown("""
-            <style>
-            .top-brands-metric-card {
-                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-                padding: 20px; border-radius: 15px; text-align: center; color: white;
-                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-                min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-                transition: transform 0.2s ease; width: 100%;
+    # 🚀 LAZY CSS LOADING - Only load once per session
+    if 'top_brands_css_loaded' not in st.session_state:
+        st.markdown("""
+        <style>
+        .top-brands-metric-card {
+            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+            padding: 20px; border-radius: 15px; text-align: center; color: white;
+            box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
+            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+            transition: transform 0.2s ease; width: 100%;
+        }
+        .top-brands-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
+        .top-brands-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+        .top-brands-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
+        .top-brands-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+        .monthly-brands-metric-card {
+            background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
+            padding: 18px; border-radius: 12px; text-align: center; color: white;
+            box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
+            min-height: 100px; display: flex; flex-direction: column; justify-content: center;
+            transition: transform 0.2s ease; width: 100%;
+        }
+        .monthly-brands-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
+        .monthly-brands-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
+        .monthly-brands-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
+        .monthly-brands-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+        .download-brands-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
+        .brands-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+        .mom-brands-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .brands-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
+        .brands-decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
+        </style>
+        """, unsafe_allow_html=True)
+        st.session_state.top_brands_css_loaded = True
+
+    try:
+        # ✅ FIXED: Create month column from start_date if needed
+        queries_with_month = brand_queries.copy()
+        if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+            queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+        
+        # 🚀 ENHANCED: Static month names
+        month_names = OrderedDict([
+            ('2025-06', 'June 2025'),
+            ('2025-07', 'July 2025'),
+            ('2025-08', 'August 2025')
+        ])
+        
+        # ✅ FIXED: Create filter-aware cache key
+        def create_brands_filter_cache_key():
+            """Create a cache key that includes filter state"""
+            filter_state = {
+                'filters_applied': st.session_state.get('filters_applied', False),
+                'data_shape': queries_with_month.shape,
+                'data_hash': hash(str(queries_with_month[brand_column].tolist()[:10]) if not queries_with_month.empty else "empty"),
+                'num_brands': num_brands
             }
-            .top-brands-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-            .top-brands-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-            .top-brands-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-            .top-brands-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-            .monthly-brands-metric-card {
-                background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
-                padding: 18px; border-radius: 12px; text-align: center; color: white;
-                box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
-                min-height: 100px; display: flex; flex-direction: column; justify-content: center;
-                transition: transform 0.2s ease; width: 100%;
-            }
-            .monthly-brands-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
-            .monthly-brands-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
-            .monthly-brands-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
-            .monthly-brands-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-            .download-brands-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
-            .brands-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
-            .mom-brands-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
-            .brands-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
-            .brands-decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
-            </style>
-            """, unsafe_allow_html=True)
-            st.session_state.top_brands_css_loaded = True
-
-        try:
-            # ✅ FIXED: Create month column from start_date if needed
-            queries_with_month = brand_queries.copy()
-            if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
-                queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+            return str(hash(str(filter_state)))
+        
+        brands_filter_cache_key = create_brands_filter_cache_key()
+        
+        # ✅ NEW: Single unified cache function that builds everything from queries
+        @st.cache_data(ttl=300, show_spinner=False)
+        def compute_unified_brands_table(_queries_df, brand_col, month_names_dict, num_brands, cache_key):
+            """🔄 UNIFIED: Build complete brands table directly from queries dataframe"""
+            if _queries_df.empty:
+                return pd.DataFrame(), []
             
-            # 🚀 ENHANCED: Static month names
-            month_names = OrderedDict([
-                ('2025-06', 'June 2025'),
-                ('2025-07', 'July 2025'),
-                ('2025-08', 'August 2025')
-            ])
+            # Step 1: Calculate total counts per brand to get top N
+            brand_totals = _queries_df.groupby(brand_col)['Counts'].sum().reset_index()
+            top_brands_list = brand_totals.nlargest(num_brands, 'Counts')[brand_col].tolist()
             
-            # ✅ FIXED: Create filter-aware cache key
-            def create_brands_filter_cache_key():
-                """Create a cache key that includes filter state"""
-                filter_state = {
-                    'filters_applied': st.session_state.get('filters_applied', False),
-                    'data_shape': queries_with_month.shape,
-                    'data_hash': hash(str(queries_with_month[brand_column].tolist()[:10]) if not queries_with_month.empty else "empty"),
-                    'num_brands': num_brands
-                }
-                return str(hash(str(filter_state)))
+            # Step 2: Filter queries for top brands only
+            top_brands_queries = _queries_df[_queries_df[brand_col].isin(top_brands_list)].copy()
             
-            brands_filter_cache_key = create_brands_filter_cache_key()
+            # Step 3: Get unique months
+            if 'month' in top_brands_queries.columns:
+                unique_months = sorted(top_brands_queries['month'].unique(), key=lambda x: pd.to_datetime(x))
+            else:
+                unique_months = []
             
-            # ✅ NEW: Single unified cache function that builds everything from queries
-            @st.cache_data(ttl=300, show_spinner=False)
-            def compute_unified_brands_table(_queries_df, brand_col, month_names_dict, num_brands, cache_key):
-                """🔄 UNIFIED: Build complete brands table directly from queries dataframe"""
-                if _queries_df.empty:
-                    return pd.DataFrame(), []
+            # Step 4: Build comprehensive brand data
+            result_data = []
+            
+            for brand in top_brands_list:
+                brand_data = top_brands_queries[top_brands_queries[brand_col] == brand]
                 
-                # Step 1: Calculate total counts per brand to get top N
-                brand_totals = _queries_df.groupby(brand_col)['Counts'].sum().reset_index()
-                top_brands_list = brand_totals.nlargest(num_brands, 'Counts')[brand_col].tolist()
+                # ✅ CALCULATE: Base metrics
+                total_counts = int(brand_data['Counts'].sum())
+                total_clicks = int(brand_data['clicks'].sum())
+                total_conversions = int(brand_data['conversions'].sum())
                 
-                # Step 2: Filter queries for top brands only
-                top_brands_queries = _queries_df[_queries_df[brand_col].isin(top_brands_list)].copy()
+                # Calculate total dataset counts for market share
+                dataset_total_counts = _queries_df['Counts'].sum()
+                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
                 
-                # Step 3: Get unique months
-                if 'month' in top_brands_queries.columns:
-                    unique_months = sorted(top_brands_queries['month'].unique(), key=lambda x: pd.to_datetime(x))
-                else:
-                    unique_months = []
+                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
                 
-                # Step 4: Build comprehensive brand data
-                result_data = []
+                # ✅ CALCULATE: Keyword metrics
+                unique_keywords_set = set()
+                keyword_counts = {}
                 
-                for brand in top_brands_list:
-                    brand_data = top_brands_queries[top_brands_queries[brand_col] == brand]
+                for idx, row_data in brand_data.iterrows():
+                    keywords_list = row_data.get('keywords', [])
+                    query_count = row_data.get('Counts', 0)
                     
-                    # ✅ CALCULATE: Base metrics
-                    total_counts = int(brand_data['Counts'].sum())
-                    total_clicks = int(brand_data['clicks'].sum())
-                    total_conversions = int(brand_data['conversions'].sum())
-                    
-                    # Calculate total dataset counts for market share
-                    dataset_total_counts = _queries_df['Counts'].sum()
-                    share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
-                    
-                    overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                    overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-                    classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
-                    
-                    # ✅ CALCULATE: Keyword metrics
-                    unique_keywords_set = set()
-                    keyword_counts = {}
-                    
-                    for idx, row_data in brand_data.iterrows():
-                        keywords_list = row_data.get('keywords', [])
-                        query_count = row_data.get('Counts', 0)
-                        
-                        if isinstance(keywords_list, list) and len(keywords_list) > 0:
-                            unique_keywords_set.update(keywords_list)
-                            for keyword in keywords_list:
+                    if isinstance(keywords_list, list) and len(keywords_list) > 0:
+                        unique_keywords_set.update(keywords_list)
+                        for keyword in keywords_list:
+                            if keyword in keyword_counts:
+                                keyword_counts[keyword] += query_count
+                            else:
+                                keyword_counts[keyword] = query_count
+                    elif pd.notna(keywords_list):
+                        # Fallback: use normalized_query
+                        search_term = row_data.get('normalized_query', '')
+                        if pd.notna(search_term) and str(search_term).strip():
+                            keywords = str(search_term).lower().split()
+                            unique_keywords_set.update(keywords)
+                            for keyword in keywords:
                                 if keyword in keyword_counts:
                                     keyword_counts[keyword] += query_count
                                 else:
                                     keyword_counts[keyword] = query_count
-                        elif pd.notna(keywords_list):
-                            # Fallback: use normalized_query
-                            search_term = row_data.get('normalized_query', '')
-                            if pd.notna(search_term) and str(search_term).strip():
-                                keywords = str(search_term).lower().split()
-                                unique_keywords_set.update(keywords)
-                                for keyword in keywords:
-                                    if keyword in keyword_counts:
-                                        keyword_counts[keyword] += query_count
-                                    else:
-                                        keyword_counts[keyword] = query_count
-                    
-                    unique_keywords_count = len(unique_keywords_set)
-                    
-                    # Get top 5 keywords by total counts
-                    if keyword_counts:
-                        top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-                        top_keywords_str = ', '.join([f"{kw}({v:,})" for kw, v in top_keywords])
-                    else:
-                        top_keywords_str = "No keywords"
-                    
-                    # ✅ BUILD: Row data
-                    row = {
-                        'Brand': brand,
-                        'Total Volume': total_counts,
-                        'Market Share %': share_pct,
-                        'Overall CTR': overall_ctr,
-                        'Overall CR': overall_cr,
-                        'Classic CR': classic_cr,
-                        'Total Clicks': total_clicks,
-                        'Total Conversions': total_conversions,
-                        'Unique Keywords': unique_keywords_count,
-                        'Top Health Keywords': top_keywords_str
-                    }
-                    
-                    # ✅ CALCULATE: Monthly metrics
-                    for month in unique_months:
-                        month_display = month_names_dict.get(month, month)
-                        month_data = brand_data[brand_data['month'] == month]
-                        
-                        if not month_data.empty:
-                            month_counts = int(month_data['Counts'].sum())
-                            month_clicks = int(month_data['clicks'].sum())
-                            month_conversions = int(month_data['conversions'].sum())
-                            
-                            month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                            month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                            
-                            row[f'{month_display} Vol'] = month_counts
-                            row[f'{month_display} CTR'] = month_ctr
-                            row[f'{month_display} CR'] = month_cr
-                        else:
-                            row[f'{month_display} Vol'] = 0
-                            row[f'{month_display} CTR'] = 0
-                            row[f'{month_display} CR'] = 0
-                    
-                    result_data.append(row)
                 
-                result_df = pd.DataFrame(result_data)
-                result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+                unique_keywords_count = len(unique_keywords_set)
                 
-                return result_df, unique_months
-            
-            # ✅ COMPUTE: Unified table
-            top_brands_df, unique_months = compute_unified_brands_table(
-                queries_with_month, 
-                brand_column, 
-                month_names, 
-                num_brands, 
-                brands_filter_cache_key
-            )
-            
-            if top_brands_df.empty:
-                st.warning("No valid data after processing top brands.")
-            else:
-                # ✅ SHOW: Filter status with correct brand count
-                unique_brands_count = queries_with_month[brand_column].nunique()
-                
-                if st.session_state.get('filters_applied', False):
-                    st.info(f"🔍 **Filtered Results**: Showing Top {num_brands} brands from {unique_brands_count:,} total brands")
+                # Get top 5 keywords by total counts
+                if keyword_counts:
+                    top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+                    top_keywords_str = ', '.join([f"{kw}({v:,})" for kw, v in top_keywords])
                 else:
-                    st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {unique_brands_count:,} total brands")
+                    top_keywords_str = "No keywords"
                 
-                # ✅ ORGANIZE: Column order
-                base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions', 'Unique Keywords', 'Top Health Keywords']
+                # ✅ BUILD: Row data
+                row = {
+                    'Brand': brand,
+                    'Total Volume': total_counts,
+                    'Market Share %': share_pct,
+                    'Overall CTR': overall_ctr,
+                    'Overall CR': overall_cr,
+                    'Classic CR': classic_cr,
+                    'Total Clicks': total_clicks,
+                    'Total Conversions': total_conversions,
+                    'Unique Keywords': unique_keywords_count,
+                    'Top Health Keywords': top_keywords_str
+                }
                 
-                volume_columns = []
-                ctr_columns = []
-                cr_columns = []
-                
-                sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))
-                
-                for month in sorted_months:
-                    month_display = month_names.get(month, month)
-                    volume_columns.append(f'{month_display} Vol')
-                    ctr_columns.append(f'{month_display} CTR')
-                    cr_columns.append(f'{month_display} CR')
-                
-                ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
-                existing_columns = [col for col in ordered_columns if col in top_brands_df.columns]
-                top_brands_df = top_brands_df[existing_columns]
-                
-                # ✅ FORMAT & STYLE
-                brands_hash = hash(str(top_brands_df.shape) + str(top_brands_df.columns.tolist()) + str(top_brands_df.iloc[0].to_dict()) if len(top_brands_df) > 0 else "empty")
-                styling_cache_key = f"{brands_hash}_{brands_filter_cache_key}"
-                
-                if ('styled_top_brands' not in st.session_state or 
-                    st.session_state.get('top_brands_cache_key') != styling_cache_key):
+                # ✅ CALCULATE: Monthly metrics
+                for month in unique_months:
+                    month_display = month_names_dict.get(month, month)
+                    month_data = brand_data[brand_data['month'] == month]
                     
-                    st.session_state.top_brands_cache_key = styling_cache_key
-                    
-                    display_brands = top_brands_df.copy()
-                    
-                    # Format volume columns
-                    volume_cols_to_format = ['Total Volume'] + volume_columns
-                    for col in volume_cols_to_format:
-                        if col in display_brands.columns:
-                            display_brands[col] = display_brands[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
-                    
-                    # Format clicks and conversions
-                    if 'Total Clicks' in display_brands.columns:
-                        display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(lambda x: format_number(int(x)))
-                    if 'Total Conversions' in display_brands.columns:
-                        display_brands['Total Conversions'] = display_brands['Total Conversions'].apply(lambda x: format_number(int(x)))
-                    
-                    # Format keyword count
-                    if 'Unique Keywords' in display_brands.columns:
-                        display_brands['Unique Keywords'] = display_brands['Unique Keywords'].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else '0')
-                    
-                    # Styling function
-                    def highlight_brands_performance(df):
-                        styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    if not month_data.empty:
+                        month_counts = int(month_data['Counts'].sum())
+                        month_clicks = int(month_data['clicks'].sum())
+                        month_conversions = int(month_data['conversions'].sum())
                         
-                        if len(unique_months) < 2:
-                            return styles
+                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                         
-                        sorted_months_local = sorted(unique_months, key=lambda x: pd.to_datetime(x))
-                        
-                        for i in range(1, len(sorted_months_local)):
-                            current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
-                            prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
-                            
-                            current_ctr_col = f'{current_month} CTR'
-                            prev_ctr_col = f'{prev_month} CTR'
-                            current_cr_col = f'{current_month} CR'
-                            prev_cr_col = f'{prev_month} CR'
-                            
-                            # CTR comparison
-                            if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                                for idx in df.index:
-                                    current_ctr = df.loc[idx, current_ctr_col]
-                                    prev_ctr = df.loc[idx, prev_ctr_col]
-                                    
-                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                        if change_pct > 10:
-                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:
-                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:
-                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                            
-                            # CR comparison
-                            if current_cr_col in df.columns and prev_cr_col in df.columns:
-                                for idx in df.index:
-                                    current_cr = df.loc[idx, current_cr_col]
-                                    prev_cr = df.loc[idx, prev_cr_col]
-                                    
-                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                        if change_pct > 10:
-                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:
-                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:
-                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
-                        
-                        # Volume column highlighting
-                        for col in volume_columns:
-                            if col in df.columns:
-                                styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
-                        
+                        row[f'{month_display} Vol'] = month_counts
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
+                    else:
+                        row[f'{month_display} Vol'] = 0
+                        row[f'{month_display} CTR'] = 0
+                        row[f'{month_display} CR'] = 0
+                
+                result_data.append(row)
+            
+            result_df = pd.DataFrame(result_data)
+            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+            
+            return result_df, unique_months
+        
+        # ✅ COMPUTE: Unified table
+        top_brands_df, unique_months = compute_unified_brands_table(
+            queries_with_month, 
+            brand_column, 
+            month_names, 
+            num_brands, 
+            brands_filter_cache_key
+        )
+        
+        if top_brands_df.empty:
+            st.warning("No valid data after processing top brands.")
+        else:
+            # ✅ SHOW: Filter status with correct brand count
+            unique_brands_count = queries_with_month[brand_column].nunique()
+            
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered Results**: Showing Top {num_brands} brands from {unique_brands_count:,} total brands")
+            else:
+                st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {unique_brands_count:,} total brands")
+            
+            # ✅ ORGANIZE: Column order
+            base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions', 'Unique Keywords', 'Top Health Keywords']
+            
+            volume_columns = []
+            ctr_columns = []
+            cr_columns = []
+            
+            sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+            
+            for month in sorted_months:
+                month_display = month_names.get(month, month)
+                volume_columns.append(f'{month_display} Vol')
+                ctr_columns.append(f'{month_display} CTR')
+                cr_columns.append(f'{month_display} CR')
+            
+            ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+            existing_columns = [col for col in ordered_columns if col in top_brands_df.columns]
+            top_brands_df = top_brands_df[existing_columns]
+            
+            # ✅ FORMAT & STYLE
+            brands_hash = hash(str(top_brands_df.shape) + str(top_brands_df.columns.tolist()) + str(top_brands_df.iloc[0].to_dict()) if len(top_brands_df) > 0 else "empty")
+            styling_cache_key = f"{brands_hash}_{brands_filter_cache_key}"
+            
+            if ('styled_top_brands' not in st.session_state or 
+                st.session_state.get('top_brands_cache_key') != styling_cache_key):
+                
+                st.session_state.top_brands_cache_key = styling_cache_key
+                
+                display_brands = top_brands_df.copy()
+                
+                # Format volume columns
+                volume_cols_to_format = ['Total Volume'] + volume_columns
+                for col in volume_cols_to_format:
+                    if col in display_brands.columns:
+                        display_brands[col] = display_brands[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                
+                # Format clicks and conversions
+                if 'Total Clicks' in display_brands.columns:
+                    display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_brands.columns:
+                    display_brands['Total Conversions'] = display_brands['Total Conversions'].apply(lambda x: format_number(int(x)))
+                
+                # Format keyword count
+                if 'Unique Keywords' in display_brands.columns:
+                    display_brands['Unique Keywords'] = display_brands['Unique Keywords'].apply(lambda x: f"{int(x):,}" if pd.notnull(x) else '0')
+                
+                # Styling function
+                def highlight_brands_performance(df):
+                    styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    
+                    if len(unique_months) < 2:
                         return styles
                     
-                    styled_brands = display_brands.style.apply(highlight_brands_performance, axis=None)
+                    sorted_months_local = sorted(unique_months, key=lambda x: pd.to_datetime(x))
                     
-                    styled_brands = styled_brands.set_properties(**{
-                        'text-align': 'center',
-                        'vertical-align': 'middle',
-                        'font-size': '11px',
-                        'padding': '4px',
-                        'line-height': '1.1'
-                    }).set_table_styles([
-                        {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
-                        {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
-                        {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
-                    ])
+                    for i in range(1, len(sorted_months_local)):
+                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
+                        
+                        current_ctr_col = f'{current_month} CTR'
+                        prev_ctr_col = f'{prev_month} CTR'
+                        current_cr_col = f'{current_month} CR'
+                        prev_cr_col = f'{prev_month} CR'
+                        
+                        # CTR comparison
+                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
+                            for idx in df.index:
+                                current_ctr = df.loc[idx, current_ctr_col]
+                                prev_ctr = df.loc[idx, prev_ctr_col]
+                                
+                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                        
+                        # CR comparison
+                        if current_cr_col in df.columns and prev_cr_col in df.columns:
+                            for idx in df.index:
+                                current_cr = df.loc[idx, current_cr_col]
+                                prev_cr = df.loc[idx, prev_cr_col]
+                                
+                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
                     
-                    format_dict = {
-                        'Market Share %': '{:.2f}%',
-                        'Overall CTR': '{:.2f}%',
-                        'Overall CR': '{:.2f}%',
-                        'Classic CR': '{:.2f}%'
-                    }
+                    # Volume column highlighting
+                    for col in volume_columns:
+                        if col in df.columns:
+                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
                     
-                    for col in ctr_columns + cr_columns:
-                        if col in display_brands.columns:
-                            format_dict[col] = '{:.2f}%'
-                    
-                    styled_brands = styled_brands.format(format_dict)
-                    st.session_state.styled_top_brands = styled_brands
+                    return styles
                 
-                # Display table
-                st.dataframe(
-                    st.session_state.styled_top_brands, 
-                    use_container_width=True, 
-                    height=600,
-                    hide_index=True
-                )
+                styled_brands = display_brands.style.apply(highlight_brands_performance, axis=None)
                 
-                # Legend
-                st.markdown("""
-                <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🏆 Performance Guide:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
-                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
-                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
-                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                styled_brands = styled_brands.set_properties(**{
+                    'text-align': 'center',
+                    'vertical-align': 'middle',
+                    'font-size': '11px',
+                    'padding': '4px',
+                    'line-height': '1.1'
+                }).set_table_styles([
+                    {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                    {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
+                    {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
+                ])
+                
+                format_dict = {
+                    'Market Share %': '{:.2f}%',
+                    'Overall CTR': '{:.2f}%',
+                    'Overall CR': '{:.2f}%',
+                    'Classic CR': '{:.2f}%'
+                }
+                
+                for col in ctr_columns + cr_columns:
+                    if col in display_brands.columns:
+                        format_dict[col] = '{:.2f}%'
+                
+                styled_brands = styled_brands.format(format_dict)
+                st.session_state.styled_top_brands = styled_brands
+            
+            # Display table
+            st.dataframe(
+                st.session_state.styled_top_brands, 
+                use_container_width=True, 
+                height=600,
+                hide_index=True
+            )
+            
+            # Legend
+            st.markdown("""
+            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🏆 Performance Guide:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Summary metrics
+            st.markdown("---")
+            
+            metrics = {
+                'total_brands': len(top_brands_df),
+                'total_search_volume': int(pd.to_numeric(top_brands_df['Total Volume'], errors='coerce').sum()),
+                'total_clicks': int(top_brands_df['Total Clicks'].sum()),
+                'total_conversions': int(top_brands_df['Total Conversions'].sum())
+            }
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            metric_configs = [
+                (col1, "🏆", metrics['total_brands'], "Total Brands"),
+                (col2, "🔍", format_number(metrics['total_search_volume']), "Total Search Volume"),
+                (col3, "🍃", format_number(metrics['total_clicks']), "Total Clicks"),
+                (col4, "💚", format_number(metrics['total_conversions']), "Total Conversions")
+            ]
+            
+            for col, icon, value, label in metric_configs:
+                with col:
+                    st.markdown(f"""
+                    <div class="top-brands-metric-card">
+                        <div class="icon">{icon}</div>
+                        <div class="value">{value}</div>
+                        <div class="label">{label}</div>
                     </div>
+                    """, unsafe_allow_html=True)
+            
+            # Download section
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            csv = generate_csv_ultra(top_brands_df)
+            
+            col_download = st.columns([1, 2, 1])
+            with col_download[1]:
+                st.markdown("""
+                <div class="download-brands-section">
+                    <h4 style="color: white; margin-bottom: 15px;">📥 Export Brands Data</h4>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Summary metrics
-                st.markdown("---")
+                filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
                 
-                metrics = {
-                    'total_brands': len(top_brands_df),
-                    'total_search_volume': int(pd.to_numeric(top_brands_df['Total Volume'], errors='coerce').sum()),
-                    'total_clicks': int(top_brands_df['Total Clicks'].sum()),
-                    'total_conversions': int(top_brands_df['Total Conversions'].sum())
-                }
-                
-                col1, col2, col3, col4 = st.columns(4)
-                
-                metric_configs = [
-                    (col1, "🏆", metrics['total_brands'], "Total Brands"),
-                    (col2, "🔍", format_number(metrics['total_search_volume']), "Total Search Volume"),
-                    (col3, "🍃", format_number(metrics['total_clicks']), "Total Clicks"),
-                    (col4, "💚", format_number(metrics['total_conversions']), "Total Conversions")
-                ]
-                
-                for col, icon, value, label in metric_configs:
-                    with col:
-                        st.markdown(f"""
-                        <div class="top-brands-metric-card">
-                            <div class="icon">{icon}</div>
-                            <div class="value">{value}</div>
-                            <div class="label">{label}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                # Download section
-                st.markdown("<br>", unsafe_allow_html=True)
-                
-                csv = generate_csv_ultra(top_brands_df)
-                
-                col_download = st.columns([1, 2, 1])
-                with col_download[1]:
-                    st.markdown("""
-                    <div class="download-brands-section">
-                        <h4 style="color: white; margin-bottom: 15px;">📥 Export Brands Data</h4>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
-                    
-                    st.download_button(
-                        label="📥 Download Brands CSV",
-                        data=csv,
-                        file_name=f"top_{num_brands}_brands{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv",
-                        help="Download the brands table with current filter settings applied",
-                        use_container_width=True
-                    )
+                st.download_button(
+                    label="📥 Download Brands CSV",
+                    data=csv,
+                    file_name=f"top_{num_brands}_brands{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    help="Download the brands table with current filter settings applied",
+                    use_container_width=True
+                )
 
-        except Exception as e:
-            st.error(f"Error processing brands table: {e}")
-            st.write("**Debug info:**")
-            st.write(f"Queries shape: {brand_queries.shape}")
-            st.write(f"Available columns: {list(brand_queries.columns)}")
+    except Exception as e:
+        st.error(f"Error processing brands table: {e}")
+        st.write("**Debug info:**")
+        st.write(f"Queries shape: {brand_queries.shape}")
+        st.write(f"Available columns: {list(brand_queries.columns)}")
 
     
     with col_right:
