@@ -5562,8 +5562,6 @@ with tab_brand:
             # ✅ FIXED: Get top 5 brands from brand_queries (filter-aware)
             top_5_brands_trend = brand_queries.groupby(brand_column)['Counts'].sum().nlargest(5).index.tolist()
             
-            # Debug info (optional - remove after testing)
-            st.write(f"**Top 5 brands selected for trend:** {', '.join(top_5_brands_trend)}")
             
             # Use the already filtered 'brand_queries' data
             trend_data = brand_queries[
@@ -5593,13 +5591,6 @@ with tab_brand:
                         
                         # ✅ NEW: Check how many brands actually have data
                         brands_with_data = monthly_trends['brand'].nunique()
-                        st.write(f"**Brands with trend data:** {brands_with_data}")
-                        
-                        # Debug: Show data summary
-                        st.write("**Monthly data summary:**")
-                        summary = monthly_trends.groupby('brand')['Counts'].agg(['count', 'sum']).reset_index()
-                        summary.columns = ['Brand', 'Months', 'Total Searches']
-                        st.dataframe(summary, use_container_width=True)
                         
                         if len(monthly_trends) > 0:
                             # ✅ UPDATED: Dynamic title based on actual brand count
