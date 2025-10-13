@@ -3430,6 +3430,39 @@ with tab_search:
         """, unsafe_allow_html=True)
         
         
+                
+                # Enhanced progress tracking
+                progress_col1, progress_col2, progress_col3 = st.columns([1, 2, 1])
+                with progress_col2:
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
+                
+                # Step-by-step progress
+                steps = [
+                    ("🔍 Loading data...", 20),
+                    ("🧠 Processing keywords...", 50),
+                    ("🔗 Applying fuzzy matching...", 80),
+                    ("✅ Analysis complete!", 100)
+                ]
+                
+                for step_text, progress in steps:
+                    status_text.markdown(f"**{step_text}**")
+                    progress_bar.progress(progress)
+                    
+                    if progress < 100:
+                        import time
+                        time.sleep(0.3)
+                
+                # Calculate keyword performance ONCE
+                kw_perf_df = calculate_enhanced_keyword_performance(queries)
+                
+                # Clean up loading UI
+                time.sleep(0.3)
+                loading_container.empty()
+        
+        # Calculate processing time
+        processing_time = (datetime.now() - start_time).total_seconds()
+        
         # ✅ GREEN-THEMED METRICS DASHBOARD
         if not kw_perf_df.empty:
             
@@ -3580,10 +3613,10 @@ with tab_search:
                 ">
                     <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🎯 Query Analysis</h5>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        Average <strong>{avg_words:.2f} words</strong> per query
+                        Average <strong>{avg_words:.1f} words</strong> per query
                     </p>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        <strong>{long_tail_pct:.2f}%</strong> long-tail queries
+                        <strong>{long_tail_pct:.1f}%</strong> long-tail queries
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
                         {complexity_status}
