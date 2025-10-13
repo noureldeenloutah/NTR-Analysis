@@ -5510,26 +5510,6 @@ with tab_brand:
         bs_summary['cr'] = ((bs_summary['conversions'] / bs_summary['Counts']) * 100).round(2)
         bs_summary['classic_cr'] = ((bs_summary['conversions'] / bs_summary['clicks']) * 100).fillna(0).round(2)
 
-        # ✅ DEBUG OUTPUT: Show what we have
-        st.markdown("### 🔍 Debug: Brand Data Structure")
-        
-        col_debug1, col_debug2 = st.columns(2)
-        
-        with col_debug1:
-            st.markdown("**📊 Monthly Brand Data (bs):**")
-            st.write(f"- Shape: {bs.shape}")
-            st.write(f"- Columns: {list(bs.columns)}")
-            st.write(f"- Unique Brands: {bs['brand'].nunique()}")
-            st.write(f"- Unique Months: {bs['month'].nunique()}")
-            st.dataframe(bs.head(10), use_container_width=True)
-        
-        with col_debug2:
-            st.markdown("**📈 Summary Brand Data (bs_summary):**")
-            st.write(f"- Shape: {bs_summary.shape}")
-            st.write(f"- Columns: {list(bs_summary.columns)}")
-            st.write(f"- Unique Brands: {bs_summary['brand'].nunique()}")
-            st.dataframe(bs_summary.head(10), use_container_width=True)
-
         st.markdown("---")
 
 
