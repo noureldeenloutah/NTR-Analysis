@@ -5551,6 +5551,26 @@ with tab_brand:
             top_brands = bs.sort_values('Counts', ascending=False).head(num_brands)
             
             display_brands = top_brands.copy()
+            
+            # ✅ FIXED: Use actual column names from your data
+            # Calculate share_pct, ctr, cr if they don't exist
+            if 'share_pct' not in display_brands.columns:
+                display_brands['share_pct'] = (display_brands['Counts'] / display_brands['Counts'].sum()) * 100
+            
+            if 'Click Through Rate' in display_brands.columns:
+                display_brands['ctr'] = display_brands['Click Through Rate']
+            else:
+                display_brands['ctr'] = (display_brands['clicks'] / display_brands['Counts'] * 100).fillna(0)
+            
+            if 'Converion Rate' in display_brands.columns:
+                display_brands['cr'] = display_brands['Converion Rate']
+            else:
+                display_brands['cr'] = (display_brands['conversions'] / display_brands['Counts'] * 100).fillna(0)
+            
+            # Calculate classic CR (conversions/clicks)
+            display_brands['classic_cr'] = (display_brands['conversions'] / display_brands['clicks'] * 100).fillna(0)
+            
+            # Rename columns for display
             display_brands = display_brands.rename(columns={
                 'Brand': 'Nutraceuticals & Nutrition Brand',
                 'Counts': 'Search Counts',
@@ -5562,6 +5582,7 @@ with tab_brand:
                 'classic_cr': 'Classic CR'
             })
             
+            # Format numbers
             display_brands['Search Counts'] = display_brands['Search Counts'].apply(format_number)
             display_brands['Market Share %'] = display_brands['Market Share %'].apply(lambda x: f"{x:.2f}%")
             display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(format_number)
@@ -5570,8 +5591,10 @@ with tab_brand:
             display_brands['CR'] = display_brands['CR'].apply(lambda x: f"{x:.2f}%")
             display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
             
+            # Reorder columns - only use columns that exist
             column_order = ['Nutraceuticals & Nutrition Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
-            display_brands = display_brands[column_order]
+            existing_columns = [col for col in column_order if col in display_brands.columns]
+            display_brands = display_brands[existing_columns]
             
             st.dataframe(display_brands, use_container_width=True, hide_index=True)
             
