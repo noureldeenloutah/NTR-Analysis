@@ -5559,15 +5559,18 @@ with tab_brand:
         if 'Date' in queries.columns:
             st.subheader("📈 Brand Trend Analysis")
             
-            # Get top 5 brands for trend analysis
-            top_5_brands = bs.nlargest(5, 'Counts')['brand'].tolist()
+            # ✅ FIXED: Get top 5 brands from brand_queries (filter-aware)
+            top_5_brands_trend = brand_queries.groupby(brand_column)['Counts'].sum().nlargest(5).index.tolist()
             
-            # Use the already filtered 'queries' data instead of 'brand_queries'
-            trend_data = queries[
-                (queries[brand_column].notna()) & 
-                (queries[brand_column].str.lower() != 'other') &
-                (queries[brand_column].str.lower() != 'others') &
-                (queries[brand_column].isin(top_5_brands))
+            # Debug info (optional - remove after testing)
+            st.write(f"**Top 5 brands selected for trend:** {', '.join(top_5_brands_trend)}")
+            
+            # Use the already filtered 'brand_queries' data
+            trend_data = brand_queries[
+                (brand_queries[brand_column].notna()) & 
+                (brand_queries[brand_column].str.lower() != 'other') &
+                (brand_queries[brand_column].str.lower() != 'others') &
+                (brand_queries[brand_column].isin(top_5_brands_trend))
             ].copy()
             
             if not trend_data.empty:
@@ -5588,16 +5591,26 @@ with tab_brand:
                         # Convert month display back to datetime for proper plotting
                         monthly_trends['Date'] = pd.to_datetime(monthly_trends['Month_Display'] + '-01')
                         
-                        # Debug: Check if we have monthly data
-                        unique_months = monthly_trends['Month_Display'].unique()
+                        # ✅ NEW: Check how many brands actually have data
+                        brands_with_data = monthly_trends['brand'].nunique()
+                        st.write(f"**Brands with trend data:** {brands_with_data}")
+                        
+                        # Debug: Show data summary
+                        st.write("**Monthly data summary:**")
+                        summary = monthly_trends.groupby('brand')['Counts'].agg(['count', 'sum']).reset_index()
+                        summary.columns = ['Brand', 'Months', 'Total Searches']
+                        st.dataframe(summary, use_container_width=True)
                         
                         if len(monthly_trends) > 0:
+                            # ✅ UPDATED: Dynamic title based on actual brand count
+                            actual_brand_count = brands_with_data
+                            
                             fig_trend = px.line(
                                 monthly_trends, 
                                 x='Date', 
                                 y='Counts', 
                                 color='brand',
-                                title='<b style="color:#2E7D32;">🌿 Top 5 Nutraceuticals & Nutrition Brands Monthly Trend</b>',
+                                title=f'<b style="color:#2E7D32;">🌿 Top {actual_brand_count} Nutraceuticals & Nutrition Brands Monthly Trend</b>',
                                 color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                 markers=True
                             )
@@ -5619,13 +5632,22 @@ with tab_brand:
                                     gridcolor='#C8E6C8',
                                     title='Search Counts'
                                 ),
-                                hovermode='x unified'
+                                hovermode='x unified',
+                                legend=dict(
+                                    title="Brand",
+                                    orientation="v",
+                                    yanchor="top",
+                                    y=1,
+                                    xanchor="left",
+                                    x=1.02
+                                )
                             )
                             
                             fig_trend.update_traces(
                                 hovertemplate='<b>%{fullData.name}</b><br>' +
                                             'Month: %{x|%B %Y}<br>' +
-                                            'Searches: %{y:,.0f}<extra></extra>'
+                                            'Searches: %{y:,.0f}<extra></extra>',
+                                line=dict(width=3)
                             )
                             
                             st.plotly_chart(fig_trend, use_container_width=True)
@@ -5635,10 +5657,11 @@ with tab_brand:
                         st.info("No valid dates found in the filtered Nutraceuticals & Nutrition data")
                 except Exception as e:
                     st.error(f"Error processing Nutraceuticals & Nutrition trend data: {str(e)}")
+                    st.write("**Error details:**", e)
             else:
                 st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")     
 
-        st.markdown("---")
+st.markdown("---")
 
     # Top Brands Performance Table
     # Top Brands Performance Table
@@ -6194,8 +6217,7 @@ with tab_brand:
         
         st.plotly_chart(fig_cat, use_container_width=True)
 
-
-    st.markdown("---")
+st.markdown("---")
     
     # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
     st.subheader("🔥 Brand-Keyword Intelligence Matrix")
