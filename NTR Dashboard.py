@@ -5661,7 +5661,7 @@ with tab_brand:
             else:
                 st.info("No Nutraceuticals & Nutrition brand data available for the selected date range")     
 
-st.markdown("---")
+    st.markdown("---")
 
     # Top Brands Performance Table
     # Top Brands Performance Table
