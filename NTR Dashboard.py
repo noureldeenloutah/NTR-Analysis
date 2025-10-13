@@ -5510,8 +5510,6 @@ with tab_brand:
         bs_summary['cr'] = ((bs_summary['conversions'] / bs_summary['Counts']) * 100).round(2)
         bs_summary['classic_cr'] = ((bs_summary['conversions'] / bs_summary['clicks']) * 100).fillna(0).round(2)
 
-        st.markdown("---")
-
 
         # Enhanced scatter plot for brand performance
         num_scatter_brands = st.slider(
@@ -5523,7 +5521,7 @@ with tab_brand:
             key="scatter_brand_count"
         )
 
-        bs_for_scatter = bs.sort_values('Counts', ascending=False).head(num_scatter_brands)
+        bs_for_scatter = bs_summary.sort_values('Counts', ascending=False).head(num_scatter_brands)
 
         fig_brand_perf = px.scatter(
             bs_for_scatter,
