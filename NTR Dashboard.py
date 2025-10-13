@@ -5539,9 +5539,12 @@ with tab_brand:
             key="brand_count_slider"
         )
 
-        # ✅ Create month column from start_date if it doesn't exist
-        if 'month' not in bs.columns and 'start_date' in bs.columns:
-            bs['month'] = pd.to_datetime(bs['start_date']).dt.to_period('M').astype(str)
+        # ✅ FIXED: Create month column from start_date if it doesn't exist
+        if 'month' not in bs.columns:
+            if 'start_date' in bs.columns:
+                bs['month'] = pd.to_datetime(bs['start_date'], errors='coerce').dt.to_period('M').astype(str)
+            else:
+                st.warning("⚠️ No 'start_date' column found. Cannot create monthly breakdown.")
 
         # Check if we have month data
         if 'month' not in bs.columns:
