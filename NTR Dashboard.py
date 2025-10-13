@@ -5513,7 +5513,7 @@ with tab_brand:
 
         # Enhanced scatter plot for brand performance
         num_scatter_brands = st.slider(
-            "Number of Nutraceuticals & Nutrition brands in scatter plot:", 
+            "Number of brands in scatter plot:", 
             min_value=20, 
             max_value=100, 
             value=50, 
@@ -5528,10 +5528,10 @@ with tab_brand:
             x='Counts', 
             y='ctr',
             size='clicks',
-            color='classic_cr',  # Use classic_cr for color
+            color='cr',  # Use classic_cr for color
             hover_name='brand',
-            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Nutraceuticals & Nutrition Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
-            labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'classic_cr': 'Classic CR (%)'},
+            title=f'<b style="color:#2E7D32; font-size:18px;">🌿 Brand Performance Matrix: Top {num_scatter_brands} Brands</b>',
+            labels={'Counts': 'Total Search Counts', 'ctr': 'Click-Through Rate (%)', 'cr': 'CR (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
@@ -5541,7 +5541,7 @@ with tab_brand:
                          'Search Counts: %{x:,.0f}<br>' +
                          'CTR: %{y:.2f}%<br>' +
                          'Total Clicks: %{marker.size:,.0f}<br>' +
-                         'Classic CR: %{marker.color:.2f}%<extra></extra>'
+                         'CR: %{marker.color:.2f}%<extra></extra>'
         )
         
         fig_brand_perf.update_layout(
