@@ -3209,7 +3209,7 @@ with tab_search:
             _df, 
             x='query_length', 
             nbins=30,
-            title='<b style="color:#2E7D32;">Nutraceuticals & Nutrition Query Length Distribution</b>',
+            title='<b style="color:#2E7D32;">Query Length Distribution</b>',
             labels={'query_length': 'Character Length', 'count': 'Number of Health Queries'},
             color_discrete_sequence=['#66BB6A']
         )
@@ -5097,7 +5097,7 @@ with tab_search:
                 density_analysis, 
                 names='query_length', 
                 values='Counts',
-                title='Health Query Length Distribution',
+                title='Query Length Distribution',
                 color_discrete_sequence=['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
             )
             
