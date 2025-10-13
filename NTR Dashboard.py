@@ -5585,7 +5585,7 @@ with tab_brand:
             # Calculate classic CR (conversions/clicks)
             display_brands['classic_cr'] = (display_brands['conversions'] / display_brands['clicks'] * 100).fillna(0)
             
-            # Rename columns for display
+            # Rename columns for display - ✅ FIXED: Use lowercase 'brand'
             display_brands = display_brands.rename(columns={
                 'brand': 'Brand',
                 'Counts': 'Search Counts',
@@ -5671,7 +5671,7 @@ with tab_brand:
                     filter_state = {
                         'filters_applied': st.session_state.get('filters_applied', False),
                         'data_shape': bs.shape,
-                        'data_hash': hash(str(bs['Brand'].tolist()[:10]) if not bs.empty else "empty"),
+                        'data_hash': hash(str(bs['brand'].tolist()[:10]) if not bs.empty else "empty"),
                         'num_brands': num_brands
                     }
                     return str(hash(str(filter_state)))
@@ -5686,17 +5686,17 @@ with tab_brand:
                         return pd.DataFrame(), []
                     
                     # Group by brand and sum counts
-                    grouped = _df.groupby('Brand').agg({
+                    grouped = _df.groupby('brand').agg({
                         'Counts': 'sum',
                         'clicks': 'sum', 
                         'conversions': 'sum'
                     }).reset_index()
                     
                     # Get top N by total counts
-                    top_brands_list = grouped.nlargest(num_brands, 'Counts')['Brand'].tolist()
+                    top_brands_list = grouped.nlargest(num_brands, 'Counts')['brand'].tolist()
                     
                     # Filter original data for top brands
-                    top_brands_data = _df[_df['Brand'].isin(top_brands_list)].copy()
+                    top_brands_data = _df[_df['brand'].isin(top_brands_list)].copy()
                     
                     # Get unique months from the data
                     if 'month' in top_brands_data.columns:
@@ -5708,7 +5708,7 @@ with tab_brand:
                     result_data = []
                     
                     for brand in top_brands_list:
-                        brand_data = top_brands_data[top_brands_data['Brand'] == brand]
+                        brand_data = top_brands_data[top_brands_data['brand'] == brand]
                         
                         # Base information
                         total_counts = int(brand_data['Counts'].sum())
@@ -5720,7 +5720,7 @@ with tab_brand:
                         classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
                         
                         row = {
-                            'Brand': brand,
+                            'brand': brand,
                             'Total Volume': total_counts,
                             'Market Share %': share_pct,
                             'Overall CTR': overall_ctr,
@@ -5773,7 +5773,7 @@ with tab_brand:
                         st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {len(bs):,} total records")
 
                     # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-                    base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions']
+                    base_columns = ['brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions']
                     
                     # Group monthly columns by type for easier comparison
                     volume_columns = []
@@ -6084,7 +6084,7 @@ with tab_brand:
                                         if prev_ctr > 0:
                                             improvement = ((latest_ctr - prev_ctr) / prev_ctr) * 100
                                             ctr_improvements.append({
-                                                'brand': row['Brand'],
+                                                'brand': row['brand'],  # ✅ FIXED: Use lowercase 'brand'
                                                 'improvement': improvement,
                                                 'latest_ctr': latest_ctr
                                             })
@@ -6116,7 +6116,7 @@ with tab_brand:
                                         if prev_cr > 0:
                                             improvement = ((latest_cr - prev_cr) / prev_cr) * 100
                                             cr_improvements.append({
-                                                'brand': row['Brand'],
+                                                'brand': row['brand'],  # ✅ FIXED: Use lowercase 'brand'
                                                 'improvement': improvement,
                                                 'latest_cr': latest_cr
                                             })
@@ -6363,6 +6363,8 @@ with tab_brand:
                 st.write(f"Available columns: {list(bs.columns)}")
                 if 'top_brands_df' in locals() and not top_brands_df.empty:
                     st.write(f"Top brands shape: {top_brands_df.shape}")
+
+
 
         # ADDED BACK: Brand Summary Data Table
         st.subheader("📋 Brand Summary Data")
