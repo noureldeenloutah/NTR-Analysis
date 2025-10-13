@@ -6339,8 +6339,6 @@ with tab_brand:
                         else:
                             st.info("📅 Monthly performance analysis requires data from at least 2 months.")
 
-                except KeyError as e:
-                    st.error(f"Column error: {e}. Check column names in your data.")
                 except Exception as e:
                     st.error(f"Error processing top brands: {e}")
                     st.write("**Debug info:**")
