@@ -5527,8 +5527,9 @@ with tab_brand:
         st.plotly_chart(fig_brand_perf, use_container_width=True)
         
         # Top Brands Performance Table
+        # Top Brands Performance Table
         st.subheader("🏆 Top Brands Performance")
-        
+
         num_brands = st.slider(
             "Number of Nutraceuticals & Nutrition brands to display:", 
             min_value=10, 
@@ -5537,46 +5538,302 @@ with tab_brand:
             step=5,
             key="brand_count_slider"
         )
-        
-        top_brands = bs.sort_values('Counts', ascending=False).head(num_brands)
-        
-        # Create display version
-        display_brands = top_brands.copy()
-        display_brands = display_brands.rename(columns={
-            'brand': 'Nutraceuticals & Nutrition Brand',
-            'Counts': 'Search Counts',
-            'share_pct': 'Market Share %',
-            'clicks': 'Total Clicks',
-            'conversions': 'Conversions',
-            'ctr': 'CTR',
-            'cr': 'CR',
-            'classic_cr': 'Classic CR'
-        })
-        
-        # Format numbers
-        display_brands['Search Counts'] = display_brands['Search Counts'].apply(format_number)
-        display_brands['Market Share %'] = display_brands['Market Share %'].apply(lambda x: f"{x:.2f}%")
-        display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(format_number)
-        display_brands['Conversions'] = display_brands['Conversions'].apply(format_number)
-        display_brands['CTR'] = display_brands['CTR'].apply(lambda x: f"{x:.2f}%")
-        display_brands['CR'] = display_brands['CR'].apply(lambda x: f"{x:.2f}%")
-        display_brands['Classic CR'] = display_brands['Classic CR'].apply(lambda x: f"{x:.2f}%")
-        
-        # Reorder columns
-        column_order = ['Nutraceuticals & Nutrition Brand', 'Search Counts', 'Market Share %', 'Total Clicks', 'Conversions', 'CTR', 'CR', 'Classic CR']
-        display_brands = display_brands[column_order]
-        
-        st.dataframe(display_brands, use_container_width=True, hide_index=True)
-        
-        # Download button
-        csv_brands = top_brands.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Nutraceuticals & Nutrition Brands CSV",
-            data=csv_brands,
-            file_name=f"top_{num_brands}_nutraceuticals_brands.csv",
-            mime="text/csv",
-            key="brand_csv_download"
+
+        # ✅ ENHANCED: Filter-aware cache key for brands
+        def create_brand_filter_cache_key():
+            """Create a cache key that includes filter state for brands"""
+            filter_state = {
+                'filters_applied': st.session_state.get('filters_applied', False),
+                'data_shape': bs.shape,
+                'data_hash': hash(str(bs['brand'].tolist()[:10]) if not bs.empty else "empty"),
+                'num_brands': num_brands
+            }
+            return str(hash(str(filter_state)))
+
+        brand_filter_cache_key = create_brand_filter_cache_key()
+
+        # ✅ ENHANCED: Compute brands with monthly breakdown
+        @st.cache_data(ttl=300, show_spinner=False)
+        def compute_top_brands_with_months(_df, month_names_dict, num_brands, cache_key):
+            """Compute top brands with monthly performance breakdown"""
+            if _df.empty:
+                return pd.DataFrame(), []
+            
+            # Group by brand and sum metrics
+            grouped = _df.groupby('brand').agg({
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            # Calculate overall metrics
+            grouped['share_pct'] = (grouped['Counts'] / grouped['Counts'].sum()) * 100
+            grouped['ctr'] = (grouped['clicks'] / grouped['Counts'] * 100).fillna(0)
+            grouped['cr'] = (grouped['conversions'] / grouped['Counts'] * 100).fillna(0)
+            grouped['classic_cr'] = (grouped['conversions'] / grouped['clicks'] * 100).fillna(0)
+            
+            # Get top N brands
+            top_brands_list = grouped.nlargest(num_brands, 'Counts')['brand'].tolist()
+            
+            # Filter original data for top brands
+            top_brands_data = _df[_df['brand'].isin(top_brands_list)].copy()
+            
+            # Get unique months
+            if 'month' in top_brands_data.columns:
+                unique_months = sorted(top_brands_data['month'].unique(), key=lambda x: pd.to_datetime(x))
+            else:
+                unique_months = []
+            
+            # Build result with monthly breakdown
+            result_data = []
+            
+            for brand in top_brands_list:
+                brand_data = top_brands_data[top_brands_data['brand'] == brand]
+                
+                # Overall metrics
+                total_counts = int(brand_data['Counts'].sum())
+                total_clicks = int(brand_data['clicks'].sum())
+                total_conversions = int(brand_data['conversions'].sum())
+                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                share_pct = (total_counts / _df['Counts'].sum()) * 100
+                
+                row = {
+                    'Brand': brand,
+                    'Total Volume': total_counts,
+                    'Market Share %': share_pct,
+                    'Overall CTR': overall_ctr,
+                    'Overall CR': overall_cr,
+                    'Classic CR': classic_cr,
+                    'Total Clicks': total_clicks,
+                    'Total Conversions': total_conversions
+                }
+                
+                # Monthly breakdown
+                for month in unique_months:
+                    month_data = brand_data[brand_data['month'] == month]
+                    month_display = month_names_dict.get(month, month)
+                    
+                    if not month_data.empty:
+                        month_counts = int(month_data['Counts'].sum())
+                        month_clicks = int(month_data['clicks'].sum())
+                        month_conversions = int(month_data['conversions'].sum())
+                        
+                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                        
+                        row[f'{month_display} Vol'] = month_counts
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
+                    else:
+                        row[f'{month_display} Vol'] = 0
+                        row[f'{month_display} CTR'] = 0
+                        row[f'{month_display} CR'] = 0
+                
+                result_data.append(row)
+            
+            result_df = pd.DataFrame(result_data)
+            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+            
+            return result_df, unique_months
+
+        # Compute top brands with monthly data
+        top_brands_monthly, brand_unique_months = compute_top_brands_with_months(
+            bs, 
+            month_names, 
+            num_brands, 
+            brand_filter_cache_key
         )
+
+        if top_brands_monthly.empty:
+            st.warning("No brand data available.")
+        else:
+            # ✅ Show filter status
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered Results**: Showing Top {num_brands} brands from {len(bs):,} filtered records")
+            else:
+                st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {len(bs):,} total records")
+            
+            # ✅ Reorder columns logically
+            base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions']
+            
+            volume_columns = []
+            ctr_columns = []
+            cr_columns = []
+            
+            sorted_brand_months = sorted(brand_unique_months, key=lambda x: pd.to_datetime(x))
+            
+            for month in sorted_brand_months:
+                month_display = month_names.get(month, month)
+                volume_columns.append(f'{month_display} Vol')
+                ctr_columns.append(f'{month_display} CTR')
+                cr_columns.append(f'{month_display} CR')
+            
+            ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+            existing_columns = [col for col in ordered_columns if col in top_brands_monthly.columns]
+            top_brands_monthly = top_brands_monthly[existing_columns]
+            
+            # ✅ Styling with comparison highlighting
+            brand_hash = hash(str(top_brands_monthly.shape) + str(top_brands_monthly.columns.tolist()))
+            brand_styling_cache_key = f"{brand_hash}_{brand_filter_cache_key}"
+            
+            if ('styled_top_brands' not in st.session_state or 
+                st.session_state.get('top_brands_cache_key') != brand_styling_cache_key):
+                
+                st.session_state.top_brands_cache_key = brand_styling_cache_key
+                
+                # Format display version
+                display_brands = top_brands_monthly.copy()
+                
+                # Format volume columns
+                volume_cols_to_format = ['Total Volume'] + volume_columns
+                for col in volume_cols_to_format:
+                    if col in display_brands.columns:
+                        display_brands[col] = display_brands[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                
+                # Format clicks and conversions
+                if 'Total Clicks' in display_brands.columns:
+                    display_brands['Total Clicks'] = display_brands['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_brands.columns:
+                    display_brands['Total Conversions'] = display_brands['Total Conversions'].apply(lambda x: format_number(int(x)))
+                
+                # ✅ Performance highlighting function
+                def highlight_brand_performance(df):
+                    """Highlight brand performance changes"""
+                    styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    
+                    if len(brand_unique_months) < 2:
+                        return styles
+                    
+                    sorted_months = sorted(brand_unique_months, key=lambda x: pd.to_datetime(x))
+                    
+                    for i in range(1, len(sorted_months)):
+                        current_month = month_names.get(sorted_months[i], sorted_months[i])
+                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                        
+                        current_ctr_col = f'{current_month} CTR'
+                        prev_ctr_col = f'{prev_month} CTR'
+                        current_cr_col = f'{current_month} CR'
+                        prev_cr_col = f'{prev_month} CR'
+                        
+                        # CTR comparison
+                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
+                            for idx in df.index:
+                                current_ctr = df.loc[idx, current_ctr_col]
+                                prev_ctr = df.loc[idx, prev_ctr_col]
+                                
+                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                        
+                        # CR comparison
+                        if current_cr_col in df.columns and prev_cr_col in df.columns:
+                            for idx in df.index:
+                                current_cr = df.loc[idx, current_cr_col]
+                                prev_cr = df.loc[idx, prev_cr_col]
+                                
+                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                    
+                    # Section highlighting
+                    for col in volume_columns:
+                        if col in df.columns:
+                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                    
+                    return styles
+                
+                styled_brands = display_brands.style.apply(highlight_brand_performance, axis=None)
+                
+                styled_brands = styled_brands.set_properties(**{
+                    'text-align': 'center',
+                    'vertical-align': 'middle',
+                    'font-size': '11px',
+                    'padding': '4px',
+                    'line-height': '1.1'
+                }).set_table_styles([
+                    {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E8F5E8'), ('color', '#1B5E20'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                    {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
+                    {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
+                ])
+                
+                # Format percentages
+                format_dict = {
+                    'Market Share %': '{:.2f}%',
+                    'Overall CTR': '{:.2f}%',
+                    'Overall CR': '{:.2f}%',
+                    'Classic CR': '{:.2f}%'
+                }
+                
+                for col in ctr_columns + cr_columns:
+                    if col in display_brands.columns:
+                        format_dict[col] = '{:.2f}%'
+                
+                styled_brands = styled_brands.format(format_dict)
+                st.session_state.styled_top_brands = styled_brands
+            
+            # Display styled dataframe
+            st.dataframe(
+                st.session_state.styled_top_brands,
+                use_container_width=True,
+                height=600,
+                hide_index=True
+            )
+            
+            # ✅ Legend
+            st.markdown("""
+            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🏆 Brand Comparison Guide:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                    <div>🏆 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # ✅ Column organization info
+            if brand_unique_months:
+                month_list = [month_names.get(m, m) for m in sorted(brand_unique_months, key=lambda x: pd.to_datetime(x))]
+                st.markdown(f"""
+                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🏆 Column Organization:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div><strong>🏅 Base Metrics:</strong> Brand, Total Volume, Market Share %, Overall CTR/CR</div>
+                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
+                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
+                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Download button
+            filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+            csv_brands = top_brands_monthly.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Brands Performance CSV",
+                data=csv_brands,
+                file_name=f"top_{num_brands}_brands_monthly{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+                key="brand_csv_download",
+                use_container_width=True
+            )
+
 
         # ADDED BACK: Brand Summary Data Table
         st.subheader("📋 Brand Summary Data")
