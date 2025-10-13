@@ -3446,7 +3446,7 @@ with tab_search:
                     margin: 1rem 0;
                     border: 1px solid #C8E6C9;
                 ">
-                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Nutraceuticals & Nutrition Keywords Analysis</h4>
+                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Keywords Analysis</h4>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -3632,10 +3632,10 @@ with tab_search:
                 ">
                     <h5 style="color: #2E7D32; margin: 0 0 1rem 0;">🎯 Query Analysis</h5>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        Average <strong>{avg_words:.1f} words</strong> per query
+                        Average <strong>{avg_words:.2f} words</strong> per query
                     </p>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        <strong>{long_tail_pct:.1f}%</strong> long-tail queries
+                        <strong>{long_tail_pct:.2f}%</strong> long-tail queries
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
                         {complexity_status}
@@ -3812,11 +3812,11 @@ with tab_search:
                     size='total_clicks',
                     color='health_cr',
                     hover_name='keyword',
-                    title='<b style="color:#2E7D32; font-size:18px;">Health Keywords Performance Matrix: Volume vs CTR 🌿</b>',
+                    title='<b style="color:#2E7D32; font-size:18px;">Keywords Performance Matrix: Volume vs CTR 🌿</b>',
                     labels={
                         'total_counts': 'Total Search Volume', 
                         'avg_ctr': 'Average CTR (%)', 
-                        'health_cr': 'Health CR (%)'
+                        'health_cr': 'CR (%)'
                     },
                     color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                     template='plotly_white'
@@ -4539,7 +4539,7 @@ with tab_search:
                             labels={
                                 'keyword': 'Health Keywords',
                                 metric_column: chart_metric,
-                                'health_cr': 'Health CR (%)'
+                                'health_cr': 'CR (%)'
                             },
                             color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
                             template='plotly_white'
