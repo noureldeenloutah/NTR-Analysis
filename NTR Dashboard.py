@@ -5263,9 +5263,7 @@ with tab_search:
 
 # ----------------- Brand Tab (Enhanced & Optimized) -----------------
 with tab_brand:
-    st.header("🏷 Nutraceuticals & Nutrition Brand Intelligence Hub")
-    st.markdown("Comprehensive health brand performance analysis with competitive insights and strategic recommendations. 🌿")
-    
+
     # 🎨 GREEN-THEMED HERO HEADER (Replacing hero image and metrics)
     st.markdown("""
     <div style="
@@ -6138,7 +6136,7 @@ with tab_brand:
                 top_brands_pie, 
                 names='brand', 
                 values='Counts',
-                title=f'<b style="color:#2E7D32;">🌿 Health Market Distribution (Top {actual_brands_shown} Brands)</b>',
+                title=f'<b style="color:#2E7D32;">🌿 Market Distribution (Top {actual_brands_shown} Brands)</b>',
                 color_discrete_sequence=health_colors
             )
             
@@ -7628,7 +7626,7 @@ with tab_category:
             top_categories_pie, 
             names='category', 
             values='Counts',
-            title='<b style="color:#2E7D32;">🌿 Health Market Distribution</b>',
+            title='<b style="color:#2E7D32;">🌿 Market Distribution</b>',
             color_discrete_sequence=health_colors
         )
         
@@ -9989,7 +9987,7 @@ with tab_subcat:
                     st.plotly_chart(fig_treemap, use_container_width=True)
                 
                 # Distribution analysis metrics
-                st.markdown("### 📈 Health Market Distribution Analysis")
+                st.markdown("### 📈 Market Distribution Analysis")
                 
                 col_dist1, col_dist2, col_dist3, col_dist4 = st.columns(4)
                 
@@ -10717,7 +10715,7 @@ with tab_class:
             top_classes_pie, 
             names='class', 
             values='Counts',
-            title='<b style="color:#2E7D32;">🎯 Health Market Distribution</b>',
+            title='<b style="color:#2E7D32;">🎯 Market Distribution</b>',
             color_discrete_sequence=health_colors
         )
         
