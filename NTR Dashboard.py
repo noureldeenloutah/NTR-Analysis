@@ -1310,7 +1310,7 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
 st.markdown("""
 <div class="welcome-box">
     <h2>🌿 Welcome to Nutraceuticals & Nutrition Analytics! 💚</h2>
-    <p>Discover Nutraceuticals & Nutrition trends, nutritional insights, and supplement performance data. Navigate through health categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
+    <p>Discover Nutraceuticals & Nutrition trends, nutritional insights, and supplement performance data. Navigate through categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -7200,7 +7200,7 @@ with tab_category:
             size='clicks',
             color='cr',
             hover_name='category',
-            title='<b style="color:#2E7D32; font-size:18px;">🌿 Nutraceuticals & Nutrition Category Performance Matrix: Search Volume vs CTR</b>',
+            title='<b style="color:#2E7D32; font-size:18px;">🌿 Category Performance Matrix: Search Volume vs CTR</b>',
             labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
@@ -7290,10 +7290,10 @@ with tab_category:
             st.plotly_chart(fig_cr, use_container_width=True)
         
         # Top Categories Performance Table
-        st.subheader("🏆 Top Nutraceuticals & Nutrition Category Performance")
+        st.subheader("🏆 Top Category Performance")
         
         num_categories = st.slider(
-            "Number of health categories to display:", 
+            "Number of categories to display:", 
             min_value=10, 
             max_value=50, 
             value=20, 
@@ -7342,7 +7342,7 @@ with tab_category:
 
         @st.cache_data(ttl=1800, show_spinner=False)
         def compute_category_health_performance_monthly(_df, _cs, month_names_dict, cache_key):
-            """🔄 FIXED: Proper monthly CTR/CR calculations for health categories"""
+            """🔄 FIXED: Proper monthly CTR/CR calculations for categories"""
             if _df.empty or _cs.empty:
                 return pd.DataFrame(), []
             
@@ -7585,7 +7585,7 @@ with tab_category:
             # 🔄 ENHANCED: Better legend with comparison focus
             st.markdown("""
             <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Category Comparison Guide:</h4>
+                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Category Comparison Guide:</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                     <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
                     <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
@@ -7601,9 +7601,9 @@ with tab_category:
                 month_list = [month_names.get(m, m) for m in sorted(unique_months)]
                 st.markdown(f"""
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Health Category Column Organization:</h4>
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Category Column Organization:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Health Category, Total Volume, Share %, Overall CTR/CR</div>
+                        <div><strong>🌱 Base Metrics:</strong> Category, Total Volume, Share %, Overall CTR/CR</div>
                         <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
                         <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
                         <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
@@ -7619,7 +7619,7 @@ with tab_category:
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
                 st.download_button(
-                    label="📥 Download Nutraceuticals & Nutrition Categories CSV",
+                    label="📥 Download Categories CSV",
                     data=csv_categories,
                     file_name=f"top_{num_categories}_health_categories_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
@@ -7690,9 +7690,9 @@ with tab_category:
         st.plotly_chart(fig_cat_perf, use_container_width=True)
         
         # Enhanced Category Trend Analysis
-        # 📈 Nutraceuticals & Nutrition Category Trend Analysis
+        # 📈 Category Trend Analysis
         if 'Date' in queries.columns:
-            st.subheader("📈 Nutraceuticals & Nutrition Category Trend Analysis")
+            st.subheader("📈 Category Trend Analysis")
             
             # Get top 5 categories for trend analysis
             top_5_categories = cs.nlargest(5, 'Counts')['category'].tolist()
@@ -8182,7 +8182,7 @@ with tab_category:
                     
                     # Show summary statistics
                     total_interactions = category_search_matrix['Counts'].sum()
-                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health categories × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {format_number(total_interactions)} total searches")
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} categories × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {format_number(total_interactions)} total searches")
             else:
                 # Single category analysis with enhanced bar chart
                 category_search_data = matrix_data.groupby('search').agg({
@@ -8423,7 +8423,14 @@ with tab_category:
                 summary_df = pd.DataFrame(top_keywords_summary)
                 
                 # Display the enhanced summary table
-                st.dataframe(summary_df, use_container_width=True, hide_index=True)
+                # ✅ USE STYLED TABLE FUNCTION
+                display_styled_table(
+                    df=summary_df,
+                    download_filename=f"summary_data_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    scrollable=True,
+                    max_height="400px",
+                    align="center"
+                )
                 
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
