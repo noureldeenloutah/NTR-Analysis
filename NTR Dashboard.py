@@ -6474,7 +6474,7 @@ with tab_brand:
                 st.markdown("#### 📊 Chart Display Options")
                 cr_option = st.radio(
                     "Color bars by:",
-                    options=['Classic CR (Conversions/Clicks)', 'CR Search-based (Conversions/Searches)'],
+                    options=['CR Search-based (Conversions/Searches)', 'Classic CR (Conversions/Clicks)'],
                     index=0,
                     horizontal=True,
                     key="cr_option_radio"
@@ -6523,8 +6523,7 @@ with tab_brand:
                 st.plotly_chart(fig_brand_search, use_container_width=True)
                 
                 # ADDED: Display both CR metrics in a comparison table
-                st.markdown("#### 📋 Search Terms Performance Comparison")
-                
+                # ✅ ENHANCED: Display both CR metrics using styled table function
                 display_comparison = brand_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
                 display_comparison = display_comparison.rename(columns={
                     'search': 'Health Search Term',
@@ -6533,14 +6532,23 @@ with tab_brand:
                     'cr': 'CR Search-based (%)',
                     'classic_cr': 'Classic CR (%)'
                 })
-                
-                # 🚀 UPDATED: Format the display using format_number
+
+                # 🚀 Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
                 display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
-                
-                st.dataframe(display_comparison, use_container_width=True, hide_index=True)
+
+                # ✅ USE STYLED TABLE FUNCTION
+                display_styled_table(
+                    df=display_comparison,
+                    title="📋 Search Terms Performance Comparison",
+                    download_filename=f"search_terms_comparison_{selected_brand.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    scrollable=True,
+                    max_height="500px",
+                    align="center"
+                )
+
         
         else:
             st.warning("⚠️ No data available for the selected Nutraceuticals & Nutrition brand.")
@@ -8194,7 +8202,7 @@ with tab_category:
                 st.markdown("#### 📊 Chart Display Options")
                 cr_option = st.radio(
                     "Color bars by:",
-                    options=['Classic CR (Conversions/Clicks)', 'CR Search-based (Conversions/Searches)'],
+                    options=['CR Search-based (Conversions/Searches)', 'Classic CR (Conversions/Clicks)'],
                     index=0,
                     horizontal=True,
                     key="category_cr_option_radio"
@@ -11280,7 +11288,7 @@ with tab_class:
                 st.markdown("#### 📊 Chart Display Options")
                 cr_option = st.radio(
                     "Color bars by:",
-                    options=['Classic CR (Conversions/Clicks)', 'CR Search-based (Conversions/Searches)'],
+                    options=['CR Search-based (Conversions/Searches)', 'Classic CR (Conversions/Clicks)'],
                     index=0,
                     horizontal=True,
                     key="class_cr_option_radio"
