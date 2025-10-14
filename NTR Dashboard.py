@@ -1270,27 +1270,16 @@ with tab_overview:
             total_all_months = monthly_counts['Counts'].sum()
             monthly_counts['Percentage'] = (monthly_counts['Counts'] / total_all_months * 100).round(1)
             
-            # 🚀 NEW: Create display version with formatted numbers
+            # ✅ Create display version with formatted numbers
             display_monthly = monthly_counts.copy()
             display_monthly['Counts'] = display_monthly['Counts'].apply(lambda x: format_number(int(x)))
+            display_monthly['Percentage'] = display_monthly['Percentage'].apply(lambda x: f"{x}%")  # ✅ Format percentage manually
             
-            # Style the table using the formatted display version
-            # ✅ Remove inline text-align styles - let global CSS handle it
-            styled_monthly = display_monthly.style.set_table_styles([
-                {
-                    'selector': 'th',
-                    'props': [
-                        ('font-weight', 'bold'),
-                        ('background-color', '#2E7D32'),
-                        ('color', 'white'),
-                        ('padding', '12px')
-                    ]
-                }
-            ]).format({
-                'Percentage': '{:.1f}%'
-            })
-
-            st.dataframe(styled_monthly, use_container_width=True, hide_index=True)
+            # ✅ Rename column for better display
+            display_monthly = display_monthly.rename(columns={'Date': 'Month'})
+            
+            # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
+            st.dataframe(display_monthly, use_container_width=True, hide_index=True)
 
             
             # Summary metrics below table
