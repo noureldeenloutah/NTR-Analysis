@@ -8374,7 +8374,7 @@ with tab_category:
                 df_ckw_clean = df_ckw.drop_duplicates(subset=['category', 'keyword'])
 
                 # Calculate total volume across all categories for share percentage
-                total_volume_all_categories = df_ckw_clean['count'].sum()
+                total_volume_all_categories = cs['Counts'].sum()
 
                 for cat in df_ckw_clean['category'].unique():
                     # ✅ FIX 2: Use cleaned data
@@ -8391,7 +8391,7 @@ with tab_category:
                     keywords_str = ' | '.join(keywords_list)
                     
                     # ✅ FIX 3: Use consistent calculation from single source
-                    category_total_volume = cat_data['count'].sum()  # Total for ALL keywords in category
+                    category_total_volume = cs[cs['category'] == cat]['Counts'].iloc[0] if len(cs[cs['category'] == cat]) > 0 else 0  # Total for ALL keywords in category
                     keyword_analysis_volume = top_n_keywords['count'].sum()  # Total for TOP N keywords only
                     
                     # Calculate share percentage
@@ -8489,7 +8489,7 @@ with tab_category:
                     """, unsafe_allow_html=True)
 
                 # Download button for keyword analysis
-                csv_keywords = df_ckw.to_csv(index=False)
+                csv_keywords = df_ckw_clean.to_csv(index=False)
                 st.download_button(
                     label="📥 Download Nutraceuticals & Nutrition Category Keywords CSV",
                     data=csv_keywords,
