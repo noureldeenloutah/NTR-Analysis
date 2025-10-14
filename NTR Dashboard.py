@@ -1327,35 +1327,23 @@ with tab_overview:
             display_monthly['Counts'] = display_monthly['Counts'].apply(lambda x: format_number(int(x)))
             
             # Style the table using the formatted display version
-            styled_monthly = display_monthly.style.set_properties(**{
-                'text-align': 'center',
-                'vertical-align': 'middle',
-                'font-size': '14px',
-                'padding': '10px'
-            }).set_table_styles([
+            # ✅ Remove inline text-align styles - let global CSS handle it
+            styled_monthly = display_monthly.style.set_table_styles([
                 {
                     'selector': 'th',
                     'props': [
-                        ('text-align', 'center'),
                         ('font-weight', 'bold'),
                         ('background-color', '#2E7D32'),
                         ('color', 'white'),
                         ('padding', '12px')
                     ]
-                },
-                {
-                    'selector': 'td',
-                    'props': [
-                        ('text-align', 'center'),
-                        ('padding', '10px'),
-                        ('border', '1px solid #ddd')
-                    ]
                 }
             ]).format({
-                'Percentage': '{:.1f}%'  # Only format percentage since Counts is already formatted
+                'Percentage': '{:.1f}%'
             })
-            
+
             st.dataframe(styled_monthly, use_container_width=True, hide_index=True)
+
             
             # Summary metrics below table
             st.markdown(f"""
