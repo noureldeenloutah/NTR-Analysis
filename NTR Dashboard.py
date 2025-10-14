@@ -577,6 +577,8 @@ div[data-testid="stMarkdownContainer"] table thead th {
     font-weight: 700 !important;
     padding: 12px !important;
     border: none !important;
+    white-space: nowrap !important;  /* ✅ ADDED: Prevent wrapping */
+    vertical-align: middle !important;  /* ✅ ADDED: Center vertically */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td {
@@ -601,6 +603,7 @@ div[data-testid="stMarkdownContainer"] table tbody tr:hover {
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ----------------- Helpers -----------------
 def safe_read_excel(path):
