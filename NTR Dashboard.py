@@ -8250,9 +8250,7 @@ with tab_category:
                 
                 st.plotly_chart(fig_category_search, use_container_width=True)
                 
-                # ADDED: Display both CR metrics in a comparison table
-                st.markdown("#### 📋 Search Terms Performance Comparison")
-                
+                # ✅ ENHANCED: Display both CR metrics using styled table function
                 display_comparison = category_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
                 display_comparison = display_comparison.rename(columns={
                     'search': 'Health Search Term',
@@ -8261,14 +8259,23 @@ with tab_category:
                     'cr': 'CR Search-based (%)',
                     'classic_cr': 'Classic CR (%)'
                 })
-                
-                # Format the display using format_number
+
+                # 🚀 Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
                 display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
                 display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
-                
-                st.dataframe(display_comparison, use_container_width=True, hide_index=True)
+
+                # ✅ USE STYLED TABLE FUNCTION
+                display_styled_table(
+                    df=display_comparison,
+                    title="📋 Search Terms Performance Comparison",
+                    download_filename=f"category_search_terms_{selected_category.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    scrollable=True,
+                    max_height="500px",
+                    align="center"
+                )
+
         else:
             st.warning("⚠️ No Nutraceuticals & Nutrition category data available for the selected filter")
 
