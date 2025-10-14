@@ -25,7 +25,7 @@ def format_number(num):
 # 🚀 ADD PERCENTAGE FORMATTING FUNCTION
 def format_percentage(num):
     """Format percentages with 2 decimal places"""
-    return f"{num:.2f}%"
+    return f"{num:.1f}%"
 
 # 🚀 STREAMLIT PERFORMANCE CONFIG (PUT RIGHT HERE AFTER IMPORTS)
 try:
@@ -4549,13 +4549,13 @@ with tab_search:
                 
                 # Enhanced formatting with better number handling
                 display_df['Total Search Volume'] = display_df['Total Search Volume'].apply(format_number)
-                display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.2f}%")
+                display_df['Market Share %'] = display_df['Market Share %'].apply(lambda x: f"{x:.1f}%")
                 display_df['Total Clicks'] = display_df['Total Clicks'].apply(format_number)
                 display_df['Conversions'] = display_df['Conversions'].apply(format_number)
-                display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
-                display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
-                display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
-                display_df['AVG CR (Conv/Vol)'] = display_df['AVG CR (Conv/Vol)'].apply(lambda x: f"{x:.4f}%")
+                display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.1f}%")
+                display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.1f}%")
+                display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.1f}%")
+                display_df['AVG CR (Conv/Vol)'] = display_df['AVG CR (Conv/Vol)'].apply(lambda x: f"{x:.1f}%")
                 display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
                 display_df['Variations'] = display_df['Variations'].apply(format_number)
                 
