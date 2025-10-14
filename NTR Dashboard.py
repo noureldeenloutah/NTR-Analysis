@@ -1329,6 +1329,7 @@ with tab_overview:
     st.markdown("---")
 
     # SECOND ROW: Top 50 Queries (Full Width)
+    # SECOND ROW: Top 50 Queries (Full Width)
     # 🚀 MOVE THESE FUNCTIONS OUTSIDE - DEFINE THEM BEFORE THE SECTION
     @st.cache_data(ttl=1800, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: hash(str(x.shape) + str(x.columns.tolist()))})
     def compute_top50_queries_ultra(_queries, _month_names, _filter_key=None):
@@ -1449,10 +1450,9 @@ with tab_overview:
         return _df.to_csv(index=False)
 
     # NOW START THE ACTUAL SECTION
-    # NOW START THE ACTUAL SECTION
     st.markdown("## 🔍 Top Queries Analysis")
-
-    # ✅ NEW: Add number of queries selector at the top
+    
+    # ✅ FIX 1: ADD TOP N SELECTOR
     top_n_queries = st.selectbox(
         "📊 Select number of top queries to display:",
         options=[10, 25, 50, 100, 200, 500],
@@ -1495,6 +1495,11 @@ with tab_overview:
                 .mom-health-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
                 .health-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
                 .health-decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
+                .health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
+                .health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
+                .health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
+                .health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+                .health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
                 </style>
                 """, unsafe_allow_html=True)
                 st.session_state.top50_health_css_loaded = True
@@ -1517,7 +1522,7 @@ with tab_overview:
                     'filters_applied': st.session_state.get('filters_applied', False),
                     'data_shape': queries.shape,
                     'data_hash': hash(str(queries['search'].tolist()[:10]) if not queries.empty else "empty"),
-                    'top_n': top_n_queries,  # ✅ Include top_n in cache key
+                    'top_n': top_n_queries,  # ✅ ADDED: Include top_n in cache key
                     # Include actual filter values to ensure cache updates
                     'brand_filter': str(sorted(brand_filter)) if 'brand_filter' in locals() else "",
                     'dept_filter': str(sorted(dept_filter)) if 'dept_filter' in locals() else "",
@@ -1531,9 +1536,9 @@ with tab_overview:
 
             filter_cache_key = create_filter_cache_key()
 
-            # ✅ FIXED: Updated cache function with filter awareness and dynamic top_n
+            # ✅ FIX 2: Updated cache function with filter awareness AND top_n parameter
             @st.cache_data(ttl=300, show_spinner=False)
-            def compute_topN_health_queries_filter_aware(_df, month_names_dict, cache_key, top_n=50):
+            def compute_top50_health_queries_filter_aware(_df, month_names_dict, cache_key, top_n=50):
                 """🔄 FIXED: Filter-aware computation of top N health queries"""
                 if _df.empty:
                     return pd.DataFrame(), []
@@ -1545,7 +1550,7 @@ with tab_overview:
                     'conversions': 'sum'
                 }).reset_index()
                 
-                # ✅ DYNAMIC: Get top N by total counts (not hardcoded 50)
+                # ✅ FIXED: Get top N by total counts (dynamic)
                 topN_queries = grouped.nlargest(top_n, 'Counts')['search'].tolist()
                 
                 # Filter original data for top N queries
@@ -1610,8 +1615,8 @@ with tab_overview:
                 
                 return result_df, unique_months
 
-            # ✅ FIXED: Use filter-aware cache key with dynamic top_n
-            topN, unique_months = compute_topN_health_queries_filter_aware(queries, month_names, filter_cache_key, top_n_queries)
+            # ✅ FIXED: Use filter-aware cache key with top_n parameter
+            topN, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key, top_n_queries)
 
             if topN.empty:
                 st.warning("No valid data after processing top queries.")
@@ -1647,10 +1652,10 @@ with tab_overview:
                 topN_hash = hash(str(topN.shape) + str(topN.columns.tolist()) + str(topN.iloc[0].to_dict()) if len(topN) > 0 else "empty")
                 styling_cache_key = f"{topN_hash}_{filter_cache_key}"
                 
-                if ('styled_topN_health' not in st.session_state or 
-                    st.session_state.get('topN_health_cache_key') != styling_cache_key):
+                if ('styled_top50_health' not in st.session_state or 
+                    st.session_state.get('top50_health_cache_key') != styling_cache_key):
                     
-                    st.session_state.topN_health_cache_key = styling_cache_key
+                    st.session_state.top50_health_cache_key = styling_cache_key
                     
                     # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_topN = topN.copy()
@@ -1667,77 +1672,71 @@ with tab_overview:
                     if 'Total Conversions' in display_topN.columns:
                         display_topN['Total Conversions'] = display_topN['Total Conversions'].apply(lambda x: format_number(int(x)))
                     
-                    # ✅ FIXED: Corrected green/red background logic - comparing current month to PREVIOUS month
-                    def highlight_health_performance_with_comparison(df):
-                        """✅ FIXED: Enhanced highlighting comparing CURRENT to PREVIOUS month"""
-                        styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    # ✅ FIX 3: CORRECTED highlighting logic - compare with ORIGINAL numeric values from topN
+                    def highlight_health_performance_with_comparison(styled_df):
+                        """✅ FIXED: Enhanced highlighting using ORIGINAL numeric values"""
+                        styles = pd.DataFrame('', index=styled_df.index, columns=styled_df.columns)
                         
                         if len(unique_months) < 2:
                             return styles
                         
-                        sorted_months = sorted(unique_months)
+                        sorted_months_list = sorted(unique_months, key=lambda x: pd.to_datetime(x))
                         
-                        # ✅ FIXED: Compare each month to the PREVIOUS month (not next)
-                        for i in range(1, len(sorted_months)):
-                            current_month = month_names.get(sorted_months[i], sorted_months[i])
-                            prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                        # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
+                        for i in range(1, len(sorted_months_list)):
+                            current_month = month_names.get(sorted_months_list[i], sorted_months_list[i])
+                            prev_month = month_names.get(sorted_months_list[i-1], sorted_months_list[i-1])
                             
                             current_ctr_col = f'{current_month} CTR'
                             prev_ctr_col = f'{prev_month} CTR'
                             current_cr_col = f'{current_month} CR'
                             prev_cr_col = f'{prev_month} CR'
                             
-                            # ✅ FIXED: CTR comparison - current vs previous
-                            if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                                for idx in df.index:
-                                    try:
-                                        # Get original numeric values from topN (before formatting)
-                                        current_ctr = topN.loc[idx, current_ctr_col]
-                                        prev_ctr = topN.loc[idx, prev_ctr_col]
-                                        
-                                        if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                            change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                            if change_pct > 10:  # 10% improvement
-                                                styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                            elif change_pct < -10:  # 10% decline
-                                                styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                            elif abs(change_pct) > 5:  # 5-10% change
-                                                color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                                styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                                    except:
-                                        continue
+                            # ✅ FIXED: CTR comparison using ORIGINAL numeric values from topN
+                            if current_ctr_col in topN.columns and prev_ctr_col in topN.columns:
+                                for idx in topN.index:
+                                    current_ctr = topN.loc[idx, current_ctr_col]  # ✅ Use original numeric value
+                                    prev_ctr = topN.loc[idx, prev_ctr_col]        # ✅ Use original numeric value
+                                    
+                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
                             
-                            # ✅ FIXED: CR comparison - current vs previous
-                            if current_cr_col in df.columns and prev_cr_col in df.columns:
-                                for idx in df.index:
-                                    try:
-                                        # Get original numeric values from topN (before formatting)
-                                        current_cr = topN.loc[idx, current_cr_col]
-                                        prev_cr = topN.loc[idx, prev_cr_col]
-                                        
-                                        if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                            change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                            if change_pct > 10:  # 10% improvement
-                                                styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                            elif change_pct < -10:  # 10% decline
-                                                styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                            elif abs(change_pct) > 5:  # 5-10% change
-                                                color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                                styles.loc[idx, current_cr_col] = f'background-color: {color};'
-                                    except:
-                                        continue
+                            # ✅ FIXED: CR comparison using ORIGINAL numeric values from topN
+                            if current_cr_col in topN.columns and prev_cr_col in topN.columns:
+                                for idx in topN.index:
+                                    current_cr = topN.loc[idx, current_cr_col]   # ✅ Use original numeric value
+                                    prev_cr = topN.loc[idx, prev_cr_col]         # ✅ Use original numeric value
+                                    
+                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
                         
                         # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
                         for col in volume_columns:
-                            if col in df.columns:
-                                styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                            if col in styled_df.columns:
+                                for idx in styled_df.index:
+                                    existing_style = styles.loc[idx, col]
+                                    styles.loc[idx, col] = existing_style + 'background-color: rgba(46, 125, 50, 0.05);' if not existing_style else existing_style
                         
                         return styles
                     
                     # Create styled DataFrame from the formatted copy
                     styled_topN = display_topN.style.apply(highlight_health_performance_with_comparison, axis=None)
                     
-                    # ✅ FIXED: Enhanced center alignment with !important
+                    # ✅ FIX 4: STRONGER center alignment with !important
                     styled_topN = styled_topN.set_properties(**{
                         'text-align': 'center !important',
                         'vertical-align': 'middle',
@@ -1745,37 +1744,26 @@ with tab_overview:
                         'padding': '4px',
                         'line-height': '1.1'
                     }).set_table_styles([
-                        {
-                            'selector': 'th', 
-                            'props': [
-                                ('text-align', 'center !important'), 
-                                ('vertical-align', 'middle'), 
-                                ('font-weight', 'bold'), 
-                                ('background-color', '#E8F5E8'), 
-                                ('color', '#1B5E20'), 
-                                ('padding', '6px'), 
-                                ('border', '1px solid #ddd'), 
-                                ('font-size', '10px')
-                            ]
-                        },
-                        {
-                            'selector': 'td', 
-                            'props': [
-                                ('text-align', 'center !important'), 
-                                ('vertical-align', 'middle'), 
-                                ('padding', '4px'), 
-                                ('border', '1px solid #ddd')
-                            ]
-                        },
-                        {
-                            'selector': 'tbody tr:nth-child(even)', 
-                            'props': [('background-color', '#F8FDF8')]
-                        },
-                        # ✅ ADDITIONAL: Force center alignment on all cells
-                        {
-                            'selector': 'table', 
-                            'props': [('text-align', 'center')]
-                        }
+                        {'selector': 'th', 'props': [
+                            ('text-align', 'center !important'), 
+                            ('vertical-align', 'middle'), 
+                            ('font-weight', 'bold'), 
+                            ('background-color', '#E8F5E8'), 
+                            ('color', '#1B5E20'), 
+                            ('padding', '6px'), 
+                            ('border', '1px solid #ddd'), 
+                            ('font-size', '10px')
+                        ]},
+                        {'selector': 'td', 'props': [
+                            ('text-align', 'center !important'), 
+                            ('vertical-align', 'middle'), 
+                            ('padding', '4px'), 
+                            ('border', '1px solid #ddd')
+                        ]},
+                        {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]},
+                        {'selector': '.col_heading', 'props': [('text-align', 'center !important')]},
+                        {'selector': '.row_heading', 'props': [('text-align', 'center !important')]},
+                        {'selector': '.data', 'props': [('text-align', 'center !important')]}
                     ])
                     
                     # 🔄 IMPROVED: Format dictionary
@@ -1791,13 +1779,13 @@ with tab_overview:
                             format_dict[col] = '{:.2f}%'
 
                     styled_topN = styled_topN.format(format_dict)
-                    st.session_state.styled_topN_health = styled_topN
+                    st.session_state.styled_top50_health = styled_topN
 
                 # 🚀 DISPLAY: Cached styled DataFrame
                 st.dataframe(
-                    st.session_state.styled_topN_health, 
+                    st.session_state.styled_top50_health, 
                     use_container_width=True, 
-                    height=min(600, 50 + (top_n_queries * 25)),  # Dynamic height based on rows
+                    height=600,
                     hide_index=True
                 )
 
@@ -1806,15 +1794,14 @@ with tab_overview:
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
                     <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Comparison Guide:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement vs previous month</div>
-                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement vs previous month</div>
-                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline vs previous month</div>
-                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline vs previous month</div>
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
                         <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-
 
                 # 🔄 ENHANCED: Column grouping explanation
                 if unique_months:
@@ -1834,12 +1821,13 @@ with tab_overview:
                 # 🚀 ENHANCED SUMMARY METRICS
                 st.markdown("---")
                 
-                # 🚀 FAST: Pre-calculate all metrics at once
+                # ✅ FIX 5: Fixed metrics calculation to handle formatted strings
+                # Calculate from ORIGINAL numeric data before formatting
                 metrics = {
-                    'total_queries': len(top50),
-                    'total_search_volume': int(pd.to_numeric(top50['Total Volume'], errors='coerce').sum()),
-                    'total_clicks': int(top50['Total Clicks'].sum()),
-                    'total_conversions': int(top50['Total Conversions'].sum())
+                    'total_queries': len(topN),
+                    'total_search_volume': int(topN['Total Volume'].sum()) if 'Total Volume' in topN.columns else 0,
+                    'total_clicks': int(topN['Total Clicks'].sum()) if 'Total Clicks' in topN.columns else 0,
+                    'total_conversions': int(topN['Total Conversions'].sum()) if 'Total Conversions' in topN.columns else 0
                 }
                 
                 col1, col2, col3, col4 = st.columns(4)
@@ -1875,10 +1863,10 @@ with tab_overview:
                         cr_col = f'{month_display} CR'
                         vol_col = f'{month_display} Vol'
                         
-                        if ctr_col in top50.columns and cr_col in top50.columns and vol_col in top50.columns:
-                            avg_ctr = top50[ctr_col].mean()
-                            avg_cr = top50[cr_col].mean()
-                            monthly_total = int(pd.to_numeric(top50[vol_col], errors='coerce').sum())
+                        if ctr_col in topN.columns and cr_col in topN.columns and vol_col in topN.columns:
+                            avg_ctr = topN[ctr_col].mean()
+                            avg_cr = topN[cr_col].mean()
+                            monthly_total = int(topN[vol_col].sum())
                             
                             monthly_performance[month_display] = {
                                 'volume': monthly_total,
@@ -1900,7 +1888,7 @@ with tab_overview:
                                 ctr_trend = ""
                                 cr_trend = ""
                                 if i > 0:
-                                    prev_month_display = month_names.get(unique_months[i-1], unique_months[i-1])
+                                    prev_month_display = month_names.get(sorted_months_display[i-1], sorted_months_display[i-1])
                                     if prev_month_display in monthly_performance:
                                         prev_perf = monthly_performance[prev_month_display]
                                         ctr_trend = "📈" if perf['avg_ctr'] > prev_perf['avg_ctr'] else "📉" if perf['avg_ctr'] < prev_perf['avg_ctr'] else "➡️"
@@ -1921,7 +1909,7 @@ with tab_overview:
                 # 🚀 ENHANCED DOWNLOAD SECTION
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                csv = generate_csv_ultra(top50)
+                csv = generate_csv_ultra(topN)
                 
                 col_download = st.columns([1, 2, 1])
                 with col_download[1]:
@@ -1937,7 +1925,7 @@ with tab_overview:
                     st.download_button(
                         label="📥 Download Queries CSV",
                         data=csv,
-                        file_name=f"top_50_health_queries{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        file_name=f"top_{top_n_queries}_health_queries{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
                         help="Download the health table with current filter settings applied",
                         use_container_width=True
@@ -1959,7 +1947,7 @@ with tab_overview:
                             st.markdown("#### 🚀 CTR Performance Leaders")
                             # Find queries with best CTR improvement
                             ctr_improvements = []
-                            for _, row in top50.iterrows():
+                            for _, row in topN.iterrows():
                                 if len(unique_months) >= 2:
                                     latest_month = month_names.get(unique_months[-1], unique_months[-1])
                                     prev_month = month_names.get(unique_months[-2], unique_months[-2])
@@ -1991,7 +1979,7 @@ with tab_overview:
                             st.markdown("#### 🎯 CR Performance Leaders")
                             # Find queries with best CR improvement
                             cr_improvements = []
-                            for _, row in top50.iterrows():
+                            for _, row in topN.iterrows():
                                 if len(unique_months) >= 2:
                                     latest_month = month_names.get(unique_months[-1], unique_months[-1])
                                     prev_month = month_names.get(unique_months[-2], unique_months[-2])
@@ -2028,14 +2016,14 @@ with tab_overview:
                             prev_month = month_names.get(unique_months[-2], unique_months[-2])
                             
                             # Calculate overall month-over-month changes
-                            latest_total_vol = int(pd.to_numeric(top50[f'{latest_month} Vol'], errors='coerce').sum())
-                            prev_total_vol = int(pd.to_numeric(top50[f'{prev_month} Vol'], errors='coerce').sum())
+                            latest_total_vol = int(topN[f'{latest_month} Vol'].sum())
+                            prev_total_vol = int(topN[f'{prev_month} Vol'].sum())
                             
-                            latest_avg_ctr = top50[f'{latest_month} CTR'].mean()
-                            prev_avg_ctr = top50[f'{prev_month} CTR'].mean()
+                            latest_avg_ctr = topN[f'{latest_month} CTR'].mean()
+                            prev_avg_ctr = topN[f'{prev_month} CTR'].mean()
                             
-                            latest_avg_cr = top50[f'{latest_month} CR'].mean()
-                            prev_avg_cr = top50[f'{prev_month} CR'].mean()
+                            latest_avg_cr = topN[f'{latest_month} CR'].mean()
+                            prev_avg_cr = topN[f'{prev_month} CR'].mean()
                             
                             # Volume change
                             vol_change = ((latest_total_vol - prev_total_vol) / prev_total_vol * 100) if prev_total_vol > 0 else 0
@@ -2243,17 +2231,18 @@ with tab_overview:
         except KeyError as e:
             st.error(f"Column error: {e}. Check column names in your data.")
         except Exception as e:
-            st.error(f"Error processing top 50 health queries: {e}")
+            st.error(f"Error processing top health queries: {e}")
             st.write("**Debug info:**")
             st.write(f"Queries shape: {queries.shape}")
             st.write(f"Available columns: {list(queries.columns)}")
-            if 'top50' in locals() and not top50.empty:
-                st.write(f"Top50 shape: {top50.shape}")
-                if 'Total Volume' in top50.columns:
-                    st.write(f"Total Volume dtype: {top50['Total Volume'].dtype}")
-                    st.write(f"Sample values: {top50['Total Volume'].head()}")
+            if 'topN' in locals() and not topN.empty:
+                st.write(f"TopN shape: {topN.shape}")
+                if 'Total Volume' in topN.columns:
+                    st.write(f"Total Volume dtype: {topN['Total Volume'].dtype}")
+                    st.write(f"Sample values: {topN['Total Volume'].head()}")
 
     st.markdown("---")
+
 
 
 
