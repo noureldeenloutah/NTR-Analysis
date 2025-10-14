@@ -2492,10 +2492,16 @@ with tab_overview:
                     format_dict['share'] = '{:.2f}%'
                 if 'clicks' in cat_perf.columns:
                     display_columns.append('clicks')
-                    format_dict['clicks'] = '{:,.0f}'
+                    # ✅ USE format_number for clicks
+                    def clicks_formatter(x):
+                        return format_number(int(x))
+                    format_dict['clicks'] = clicks_formatter
                 if 'conversions' in cat_perf.columns:
                     display_columns.append('conversions')
-                    format_dict['conversions'] = '{:,.0f}'
+                    # ✅ USE format_number for conversions
+                    def conversions_formatter(x):
+                        return format_number(int(x))
+                    format_dict['conversions'] = conversions_formatter
                 if 'cr' in cat_perf.columns:
                     display_columns.append('cr')
                     format_dict['cr'] = '{:.2f}%'
