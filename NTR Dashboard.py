@@ -659,47 +659,54 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     
     # Show title if provided (with green styling)
     if title:
-        st.markdown(f'<h3 style="color: #2E7D32;">{title}</h3>', unsafe_allow_html=True)
+        st.markdown(f'<h3 style="color: #2E7D32; margin-bottom: 10px;">{title}</h3>', unsafe_allow_html=True)
     
     # Create styled HTML table with health green theme
     def create_styled_table(data):
-        # Scrollable wrapper style
-        wrapper_style = ""
-        if scrollable:
-            wrapper_style = f'''
-            <div style="overflow-x: auto; overflow-y: auto; max-height: {max_height}; border: 2px solid #2E7D32; border-radius: 8px;">
-            '''
-        
+        # CSS Styles
         html = '''
         <style>
+            .health-table-wrapper {
+                margin: 20px 0;
+            }
+            .health-table-scrollable {
+                overflow-x: auto;
+                overflow-y: auto;
+                max-height: ''' + max_height + ''';
+                border: 2px solid #2E7D32;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+                background-color: white;
+            }
             .health-table {
                 width: 100%;
                 border-collapse: collapse;
                 font-size: 14px;
-                margin: 20px 0;
-                box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
-                border-radius: 8px;
-                overflow: hidden;
+                background-color: white;
+                margin: 0;
+            }
+            .health-table thead {
+                position: sticky;
+                top: 0;
+                z-index: 100;
             }
             .health-table thead tr {
                 background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
                 color: #FFFFFF;
                 text-align: center;
                 font-weight: bold;
-                position: sticky;
-                top: 0;
-                z-index: 10;
             }
             .health-table th {
-                padding: 14px;
+                padding: 14px 12px;
                 border: 1px solid #1B5E20;
                 font-size: 15px;
                 letter-spacing: 0.5px;
                 white-space: nowrap;
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
             }
             .health-table tbody tr {
                 border-bottom: 1px solid #C8E6C9;
-                transition: all 0.3s ease;
+                transition: background-color 0.2s ease;
             }
             .health-table tbody tr:nth-child(odd) {
                 background-color: #F1F8E9;
@@ -709,24 +716,27 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             }
             .health-table tbody tr:hover {
                 background-color: #C8E6C9 !important;
-                transform: scale(1.01);
-                box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+                cursor: pointer;
             }
             .health-table td {
                 padding: 12px;
                 text-align: ''' + align + ''';
                 color: #1B5E20;
-                border: 1px solid #C8E6C9;
+                border: 1px solid #E8F5E9;
                 font-size: 14px;
                 white-space: nowrap;
             }
         </style>
         '''
         
-        # Add wrapper if scrollable
-        if scrollable:
-            html += wrapper_style
+        # Start wrapper
+        html += '<div class="health-table-wrapper">'
         
+        # Add scrollable wrapper if enabled
+        if scrollable:
+            html += '<div class="health-table-scrollable">'
+        
+        # Table start
         html += '<table class="health-table">'
         
         # Header
@@ -746,9 +756,12 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             html += '</tr>'
         html += '</tbody></table>'
         
-        # Close wrapper if scrollable
+        # Close scrollable wrapper if enabled
         if scrollable:
             html += '</div>'
+        
+        # Close main wrapper
+        html += '</div>'
         
         return html
     
@@ -761,7 +774,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     
     # Add download button if filename provided (with green styling)
     if download_filename:
-        csv = df.to_csv(index=False)
+        csv = df.to_csv(index=False).encode('utf-8')
         
         # Custom CSS for green button
         st.markdown("""
@@ -778,10 +791,6 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             div.stDownloadButton > button:hover {
                 background-color: #1B5E20 !important;
                 box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3) !important;
-                transform: translateY(-2px) !important;
-            }
-            div.stDownloadButton > button:active {
-                transform: translateY(0) !important;
             }
             </style>
         """, unsafe_allow_html=True)
@@ -793,6 +802,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             mime="text/csv",
             key=f"download_{download_filename}_{id(df)}"
         )
+
 # ========================================
 # 🎨 OPTIONAL: PRE-DEFINED THEME PRESETS
 # ========================================
@@ -4551,7 +4561,9 @@ with tab_search:
                     title=f"📊 Top {num_keywords} Grouped Keywords Performance Table",
                     download_filename=f"Top {num_keywords} Keywords Performance {pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                     max_rows=None,
-                    align="center"
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
                 )
 
                     
