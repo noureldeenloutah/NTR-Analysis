@@ -553,100 +553,48 @@ body {
 """, unsafe_allow_html=True)
 
 # ========================================
-# 🔥 ENHANCED GLOBAL TABLE CSS
+# 🔥 ULTRA-STRONG CSS - FORCE CENTER
 # ========================================
 st.markdown("""
 <style>
-/* ========================================
-   🔥 GLOBAL TABLE CENTER ALIGNMENT
-   ======================================== */
-
-/* CENTER ALIGN ALL TABLES */
-div[data-testid="stDataFrame"] table td,
-div[data-testid="stDataFrame"] table th,
-.dataframe td,
-.dataframe th {
+/* Override ALL Pandas inline styles */
+div[data-testid="stDataFrame"] table tbody td {
     text-align: center !important;
-    vertical-align: middle !important;
-    padding: 10px 8px !important;
-    font-size: 0.95rem !important;
 }
 
-/* Keep first column left-aligned for readability */
+div[data-testid="stDataFrame"] table thead th {
+    text-align: center !important;
+}
+
+/* Force center using attribute selector */
+div[data-testid="stDataFrame"] td[style*="text-align"] {
+    text-align: center !important;
+}
+
+/* Target specific columns by index */
+div[data-testid="stDataFrame"] tbody td:nth-child(2),
+div[data-testid="stDataFrame"] tbody td:nth-child(3) {
+    text-align: center !important;
+}
+
+/* Keep first column left-aligned (Date) */
 div[data-testid="stDataFrame"] tbody td:first-child {
     text-align: left !important;
     padding-left: 15px !important;
-    font-weight: 500;
-    color: #1B5E20;
 }
 
-/* Enhanced header styling */
+/* Header styling */
 div[data-testid="stDataFrame"] thead th {
-    background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%) !important;
-    color: #1B5E20 !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    font-size: 0.85rem !important;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #4CAF50 !important;
-    padding: 12px 8px !important;
+    background-color: #2E7D32 !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    padding: 12px !important;
 }
 
-/* Alternating row colors */
-div[data-testid="stDataFrame"] tbody tr:nth-child(even) {
-    background-color: #F8FDF8 !important;
-}
-
-div[data-testid="stDataFrame"] tbody tr:nth-child(odd) {
-    background-color: #FFFFFF !important;
-}
-
-/* Row hover effect (green theme) */
+/* Hover effect */
 div[data-testid="stDataFrame"] tbody tr:hover {
-    background-color: #E8F5E8 !important;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
-}
-
-/* Cell borders */
-div[data-testid="stDataFrame"] td,
-div[data-testid="stDataFrame"] th {
-    border: 1px solid #E8F5E8 !important;
-}
-
-/* Table container enhancement */
-div[data-testid="stDataFrame"] {
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.1);
-    border: 1px solid rgba(76, 175, 80, 0.1);
-}
-
-/* Numeric columns - bold styling */
-div[data-testid="stDataFrame"] tbody td:not(:first-child) {
-    font-weight: 500;
-    color: #2E7D32;
-}
-
-/* Scrollbar for tables */
-div[data-testid="stDataFrame"]::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-div[data-testid="stDataFrame"]::-webkit-scrollbar-track {
-    background: #E8F5E8;
-    border-radius: 10px;
-}
-
-div[data-testid="stDataFrame"]::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4CAF50, #66BB6A);
-    border-radius: 10px;
-}
-
-div[data-testid="stDataFrame"]::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #388E3C, #4CAF50);
+    background-color: #E8F5E9 !important;
 }
 </style>
 """, unsafe_allow_html=True)
