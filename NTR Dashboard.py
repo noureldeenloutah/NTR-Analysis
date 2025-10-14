@@ -2554,7 +2554,7 @@ with tab_overview:
                                     ('text-align', 'center')
                                 ]}
                             ])
-                            st.dataframe(styled_cat_perf, use_container_width=True, hide_index=True)
+                            st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
                             
                             # Add download button for health categories
                             csv_cat = sorted_cat_perf.to_csv(index=False)
