@@ -663,7 +663,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     
     # Create styled HTML table with health green theme
     def create_styled_table(data):
-        # CSS Styles
+        # Base CSS styles with enhanced interactivity
         html = '''
         <style>
             .health-table-wrapper {
@@ -684,6 +684,9 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 font-size: 14px;
                 background-color: white;
                 margin: 0;
+                box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
+                border-radius: 8px;
+                overflow: hidden;
             }
             .health-table thead {
                 position: sticky;
@@ -697,7 +700,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 font-weight: bold;
             }
             .health-table th {
-                padding: 14px 12px;
+                padding: 14px;
                 border: 1px solid #1B5E20;
                 font-size: 15px;
                 letter-spacing: 0.5px;
@@ -706,7 +709,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             }
             .health-table tbody tr {
                 border-bottom: 1px solid #C8E6C9;
-                transition: background-color 0.2s ease;
+                transition: all 0.3s ease;
             }
             .health-table tbody tr:nth-child(odd) {
                 background-color: #F1F8E9;
@@ -716,13 +719,15 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             }
             .health-table tbody tr:hover {
                 background-color: #C8E6C9 !important;
+                transform: scale(1.01);
+                box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
                 cursor: pointer;
             }
             .health-table td {
                 padding: 12px;
                 text-align: ''' + align + ''';
                 color: #1B5E20;
-                border: 1px solid #E8F5E9;
+                border: 1px solid #C8E6C9;
                 font-size: 14px;
                 white-space: nowrap;
             }
@@ -791,6 +796,10 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             div.stDownloadButton > button:hover {
                 background-color: #1B5E20 !important;
                 box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3) !important;
+                transform: translateY(-2px) !important;
+            }
+            div.stDownloadButton > button:active {
+                transform: translateY(0) !important;
             }
             </style>
         """, unsafe_allow_html=True)
