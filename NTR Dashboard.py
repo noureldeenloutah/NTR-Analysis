@@ -1804,20 +1804,20 @@ with tab_overview:
                         if col in display_topN.columns:
                             format_dict[col] = '{:.2f}%'
 
-                    styled_topN = styled_topN.format(format_dict)
+                   # Reset index to remove the index column
+                    display_topN = display_topN.reset_index(drop=True)
+
+                    # Apply formatting
+                    styled_topN = display_topN.style.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
 
                 # 🚀 DISPLAY: Styled DataFrame with CSS
-                try:
-                    # If it's a styled DataFrame, convert to HTML directly
-                    html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
-                except AttributeError:
-                    # If it's already HTML or has .data attribute
-                    html_content = st.session_state.styled_top50_health.data.to_html(index=False, escape=False)
+                # 🚀 DISPLAY: Scrollable table without index
+                html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
 
                 st.markdown(
                     f"""
-                    <div style="height: 600px; overflow-y: auto;">
+                    <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
                         {html_content}
                     </div>
                     """,
