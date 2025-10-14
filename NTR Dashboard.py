@@ -2476,8 +2476,6 @@ with tab_overview:
                 else:
                     cat_perf['cr'] = 0
                 
-                
-                st.markdown("**Top Categories by Search Volume**")
 
                 # Prepare display columns based on what's available
                 display_columns = ['Category']
