@@ -740,15 +740,37 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     # Add download button if filename provided (with green styling)
     if download_filename:
         csv = df.to_csv(index=False)
+        
+        # Custom CSS for green button
+        st.markdown("""
+            <style>
+            div.stDownloadButton > button {
+                background-color: #2E7D32 !important;
+                color: white !important;
+                border: none !important;
+                padding: 0.5rem 1rem !important;
+                border-radius: 0.5rem !important;
+                font-weight: 500 !important;
+                transition: all 0.3s ease !important;
+            }
+            div.stDownloadButton > button:hover {
+                background-color: #1B5E20 !important;
+                box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3) !important;
+                transform: translateY(-2px) !important;
+            }
+            div.stDownloadButton > button:active {
+                transform: translateY(0) !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        
         st.download_button(
             label=f"📥 Download {download_filename}",
             data=csv,
             file_name=download_filename,
             mime="text/csv",
-            key=f"download_{download_filename}_{id(df)}",
-            type="primary"  # Green button in Streamlit
+            key=f"download_{download_filename}_{id(df)}"
         )
-
 # ========================================
 # 🎨 OPTIONAL: PRE-DEFINED THEME PRESETS
 # ========================================
@@ -2701,7 +2723,6 @@ with tab_overview:
                     # 🎯 USE NEW STYLED TABLE FUNCTION
                     display_styled_table(
                         df=final_display_df,
-                        title="🏥 Top 10 Health Categories Performance",
                         download_filename="health_categories_performance.csv",
                         max_rows=10,
                         align="center"
