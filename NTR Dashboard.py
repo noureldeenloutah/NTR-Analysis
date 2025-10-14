@@ -1804,16 +1804,15 @@ with tab_overview:
                         if col in display_topN.columns:
                             format_dict[col] = '{:.2f}%'
 
-                   # Reset index to remove the index column
-                    display_topN = display_topN.reset_index(drop=True)
-
-                    # Apply formatting
-                    styled_topN = display_topN.style.format(format_dict)
+                    styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
 
                 # 🚀 DISPLAY: Styled DataFrame with CSS
-                # 🚀 DISPLAY: Scrollable table without index
+                # 🚀 DISPLAY: Styled DataFrame with scrollable container (FIXED)
                 html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
+
+                # Clean up any duplicate closing tags
+                html_content = html_content.strip()
 
                 st.markdown(
                     f"""
@@ -1823,7 +1822,6 @@ with tab_overview:
                     """,
                     unsafe_allow_html=True
                 )
-
 
                 # 🔄 ENHANCED: Better legend with comparison focus
                 st.markdown("""
