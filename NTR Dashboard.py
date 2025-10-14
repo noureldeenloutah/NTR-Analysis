@@ -4546,6 +4546,7 @@ with tab_search:
                 display_df = display_df[column_order].reset_index(drop=True)
                 
                 # ✅ USE REUSABLE FUNCTION - Clean and consistent
+                # ✅ USE REUSABLE FUNCTION - Clean and consistent with scrollable feature
                 display_styled_table(
                     df=display_df,
                     title=f"📊 Top {num_keywords} Grouped Keywords Performance Table",
