@@ -1807,13 +1807,23 @@ with tab_overview:
                     styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
 
-                # 🚀 DISPLAY: Cached styled DataFrame
-                st.dataframe(
-                    st.session_state.styled_top50_health, 
-                    use_container_width=True, 
-                    height=600,
-                    hide_index=True
+                # 🚀 DISPLAY: Styled DataFrame with CSS
+                try:
+                    # If it's a styled DataFrame, convert to HTML directly
+                    html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
+                except AttributeError:
+                    # If it's already HTML or has .data attribute
+                    html_content = st.session_state.styled_top50_health.data.to_html(index=False, escape=False)
+
+                st.markdown(
+                    f"""
+                    <div style="height: 600px; overflow-y: auto;">
+                        {html_content}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
+
 
                 # 🔄 ENHANCED: Better legend with comparison focus
                 st.markdown("""
