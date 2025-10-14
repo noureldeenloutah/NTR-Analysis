@@ -2525,6 +2525,7 @@ with tab_overview:
                         new_format_dict[new_col] = format_dict[old_col]
 
                 # Display the table with available data
+                # Display the table with available data
                 if len(display_cat_perf.columns) > 1:  # More than just the Category column
                     # Sort by Search Volume in descending order and RESET INDEX
                     if 'Search Volume' in display_cat_perf.columns:
@@ -2537,29 +2538,61 @@ with tab_overview:
                         else:
                             sorted_cat_perf = display_cat_perf.head(10).reset_index(drop=True)
                     
+                    # ✅ FORMAT THE DATA FIRST (like monthly table)
+                    display_sorted = sorted_cat_perf.copy()
+                    
+                    # Apply formatting to each column
+                    if 'Search Volume' in display_sorted.columns:
+                        display_sorted['Search Volume'] = display_sorted['Search Volume'].apply(lambda x: format_number(int(x)))
+                    if 'Market Share %' in display_sorted.columns:
+                        display_sorted['Market Share %'] = display_sorted['Market Share %'].apply(lambda x: f"{x:.2f}%")
+                    if 'Total Clicks' in display_sorted.columns:
+                        display_sorted['Total Clicks'] = display_sorted['Total Clicks'].apply(lambda x: format_number(int(x)))
+                    if 'Conversions' in display_sorted.columns:
+                        display_sorted['Conversions'] = display_sorted['Conversions'].apply(lambda x: format_number(int(x)))
+                    if 'Conversion Rate %' in display_sorted.columns:
+                        display_sorted['Conversion Rate %'] = display_sorted['Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                    
                     try:
                         # Try using AgGrid if available
                         if 'AGGRID_OK' in globals() and AGGRID_OK:
-                            AgGrid(sorted_cat_perf, height=300, enable_enterprise_modules=False)
+                            AgGrid(display_sorted, height=300, enable_enterprise_modules=False)
                         else:
-                            # Fall back to styled DataFrame with health-themed styling
-                            styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
-                                'text-align': 'center',
-                                'font-size': '14px',
-                                'background-color': '#F8FDF8',
-                                'color': '#1B5E20'
-                            }).background_gradient(
-                                subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
-                                cmap='Greens'
-                            ).set_table_styles([
-                                {'selector': 'th', 'props': [
-                                    ('background-color', '#E8F5E8'),
-                                    ('color', '#1B5E20'),
-                                    ('font-weight', 'bold'),
-                                    ('text-align', 'center')
-                                ]}
-                            ])
-                            st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
+                            # ✅ Use styled HTML with gradient (NO .style.format())
+                            # Create a simple styled version
+                            styled_html = display_sorted.to_html(index=False, escape=False)
+                            
+                            # Wrap in styled div
+                            st.markdown(f"""
+                            <style>
+                                .cat-table {{
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    font-size: 14px;
+                                }}
+                                .cat-table th {{
+                                    background-color: #E8F5E8;
+                                    color: #1B5E20;
+                                    font-weight: bold;
+                                    text-align: center;
+                                    padding: 12px;
+                                    border: 1px solid #C8E6C9;
+                                }}
+                                .cat-table td {{
+                                    text-align: center;
+                                    padding: 10px;
+                                    background-color: #F8FDF8;
+                                    color: #1B5E20;
+                                    border: 1px solid #E8F5E8;
+                                }}
+                                .cat-table tr:hover {{
+                                    background-color: #E8F5E8;
+                                }}
+                            </style>
+                            <div class="cat-table">
+                                {styled_html}
+                            </div>
+                            """, unsafe_allow_html=True)
                             
                             # Add download button for health categories
                             csv_cat = sorted_cat_perf.to_csv(index=False)
@@ -2571,23 +2604,38 @@ with tab_overview:
                             )
                     except NameError:
                         # AGGRID_OK not defined, use regular DataFrame
-                        styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
-                            'text-align': 'center',
-                            'font-size': '14px',
-                            'background-color': '#F8FDF8',
-                            'color': '#1B5E20'
-                        }).background_gradient(
-                            subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
-                            cmap='Greens'
-                        ).set_table_styles([
-                            {'selector': 'th', 'props': [
-                                ('background-color', '#E8F5E8'),
-                                ('color', '#1B5E20'),
-                                ('font-weight', 'bold'),
-                                ('text-align', 'center')
-                            ]}
-                        ])
-                        st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
+                        styled_html = display_sorted.to_html(index=False, escape=False)
+                        
+                        st.markdown(f"""
+                        <style>
+                            .cat-table {{
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 14px;
+                            }}
+                            .cat-table th {{
+                                background-color: #E8F5E8;
+                                color: #1B5E20;
+                                font-weight: bold;
+                                text-align: center;
+                                padding: 12px;
+                                border: 1px solid #C8E6C9;
+                            }}
+                            .cat-table td {{
+                                text-align: center;
+                                padding: 10px;
+                                background-color: #F8FDF8;
+                                color: #1B5E20;
+                                border: 1px solid #E8F5E8;
+                            }}
+                            .cat-table tr:hover {{
+                                background-color: #E8F5E8;
+                            }}
+                        </style>
+                        <div class="cat-table">
+                            {styled_html}
+                        </div>
+                        """, unsafe_allow_html=True)
                         
                         # Add download button for health categories
                         csv_cat = sorted_cat_perf.to_csv(index=False)
@@ -2597,6 +2645,7 @@ with tab_overview:
                             file_name="health_categories_performance.csv",
                             mime="text/csv"
                         )
+
 
                 else:
                     st.info("Insufficient data columns available for health category analysis.")
