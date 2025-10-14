@@ -625,10 +625,141 @@ def extract_keywords(text: str):
     tokens = re.findall(r'[\u0600-\u06FF\w%+\-]+', text)
     return [t.strip().lower() for t in tokens if len(t.strip())>0]
 
-import pandas as pd
+# ========================================
+# 🟢 GREEN HEALTH THEME TABLE FUNCTION
+# ========================================
+def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center"):
+    """
+    Display a styled table with health dashboard green theme
+    
+    Args:
+        df: DataFrame to display
+        title: Optional title for the table
+        download_filename: If provided, adds download button with this filename
+        max_rows: Limit number of rows to display (None = show all)
+        align: Text alignment ("center", "left", "right")
+    """
+    # Validation
+    if df is None or df.empty:
+        st.warning("⚠️ No data available to display")
+        return
+    
+    # Handle non-DataFrame inputs
+    if not isinstance(df, pd.DataFrame):
+        try:
+            df = pd.DataFrame(df)
+        except Exception as e:
+            st.error(f"❌ Cannot convert to DataFrame: {e}")
+            return
+    
+    # Limit rows if specified
+    display_df = df.head(max_rows) if max_rows else df.copy()
+    
+    # Show title if provided (with green styling)
+    if title:
+        st.markdown(f'<h3 style="color: #2E7D32;">{title}</h3>', unsafe_allow_html=True)
+    
+    # Create styled HTML table with health green theme
+    def create_styled_table(data):
+        html = '''
+        <style>
+            .health-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+                margin: 20px 0;
+                box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .health-table thead tr {
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+                color: #FFFFFF;
+                text-align: center;
+                font-weight: bold;
+            }
+            .health-table th {
+                padding: 14px;
+                border: 1px solid #1B5E20;
+                font-size: 15px;
+                letter-spacing: 0.5px;
+            }
+            .health-table tbody tr {
+                border-bottom: 1px solid #C8E6C9;
+                transition: all 0.3s ease;
+            }
+            .health-table tbody tr:nth-child(odd) {
+                background-color: #F1F8E9;
+            }
+            .health-table tbody tr:nth-child(even) {
+                background-color: #FFFFFF;
+            }
+            .health-table tbody tr:hover {
+                background-color: #C8E6C9 !important;
+                transform: scale(1.01);
+                box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+            }
+            .health-table td {
+                padding: 12px;
+                text-align: ''' + align + ''';
+                color: #1B5E20;
+                border: 1px solid #C8E6C9;
+                font-size: 14px;
+            }
+        </style>
+        '''
+        
+        html += '<table class="health-table">'
+        
+        # Header
+        html += '<thead><tr>'
+        for col in data.columns:
+            html += f'<th>{col}</th>'
+        html += '</tr></thead>'
+        
+        # Body
+        html += '<tbody>'
+        for idx, row in data.iterrows():
+            html += '<tr>'
+            for val in row:
+                # Handle None/NaN values
+                display_val = val if pd.notna(val) else ""
+                html += f'<td>{display_val}</td>'
+            html += '</tr>'
+        html += '</tbody></table>'
+        
+        return html
+    
+    # Display table
+    st.markdown(create_styled_table(display_df), unsafe_allow_html=True)
+    
+    # Show row count if limited
+    if max_rows and len(df) > max_rows:
+        st.caption(f"📊 Showing {max_rows} of {len(df)} rows")
+    
+    # Add download button if filename provided (with green styling)
+    if download_filename:
+        csv = df.to_csv(index=False)
+        st.download_button(
+            label=f"📥 Download {download_filename}",
+            data=csv,
+            file_name=download_filename,
+            mime="text/csv",
+            key=f"download_{download_filename}_{id(df)}",
+            type="primary"  # Green button in Streamlit
+        )
 
-import pandas as pd
-import streamlit as st
+# ========================================
+# 🎨 OPTIONAL: PRE-DEFINED THEME PRESETS
+# ========================================
+def get_table_theme(theme_name="health"):
+    """Get pre-defined color themes for tables (optional - for future use)"""
+    themes = {
+        "health": {"align": "center"},
+        "blue": {"align": "center"},
+        "dark": {"align": "center"},
+    }
+    return themes.get(theme_name, themes["health"])
 
 def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     """Normalize columns, create derived metrics and time buckets.
@@ -2537,66 +2668,45 @@ with tab_overview:
                         else:
                             sorted_cat_perf = display_cat_perf.head(10).reset_index(drop=True)
                     
-                    try:
-                        # Try using AgGrid if available
-                        if 'AGGRID_OK' in globals() and AGGRID_OK:
-                            AgGrid(sorted_cat_perf, height=300, enable_enterprise_modules=False)
-                        else:
-                            # Fall back to styled DataFrame with health-themed styling
-                            styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
-                                'text-align': 'center',
-                                'font-size': '14px',
-                                'background-color': '#F8FDF8',
-                                'color': '#1B5E20'
-                            }).background_gradient(
-                                subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
-                                cmap='Greens'
-                            ).set_table_styles([
-                                {'selector': 'th', 'props': [
-                                    ('background-color', '#E8F5E8'),
-                                    ('color', '#1B5E20'),
-                                    ('font-weight', 'bold'),
-                                    ('text-align', 'center')
-                                ]}
-                            ])
-                            st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
-                            
-                            # Add download button for health categories
-                            csv_cat = sorted_cat_perf.to_csv(index=False)
-                            st.download_button(
-                                label="📥 Download Categories CSV",
-                                data=csv_cat,
-                                file_name="categories_performance.csv",
-                                mime="text/csv"
-                            )
-                    except NameError:
-                        # AGGRID_OK not defined, use regular DataFrame
-                        styled_cat_perf = sorted_cat_perf.style.format(new_format_dict).set_properties(**{
-                            'text-align': 'center',
-                            'font-size': '14px',
-                            'background-color': '#F8FDF8',
-                            'color': '#1B5E20'
-                        }).background_gradient(
-                            subset=['Conversion Rate %'] if 'Conversion Rate %' in sorted_cat_perf.columns else [], 
-                            cmap='Greens'
-                        ).set_table_styles([
-                            {'selector': 'th', 'props': [
-                                ('background-color', '#E8F5E8'),
-                                ('color', '#1B5E20'),
-                                ('font-weight', 'bold'),
-                                ('text-align', 'center')
-                            ]}
-                        ])
-                        st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
-                        
-                        # Add download button for health categories
-                        csv_cat = sorted_cat_perf.to_csv(index=False)
-                        st.download_button(
-                            label="📥 Download Health Categories CSV",
-                            data=csv_cat,
-                            file_name="health_categories_performance.csv",
-                            mime="text/csv"
-                        )
+                    # 🚀 CREATE FORMATTED DISPLAY DATA
+                    display_data = {'Category': sorted_cat_perf['Category'].tolist()}
+                    
+                    # Add formatted columns
+                    if 'Search Volume' in sorted_cat_perf.columns:
+                        # Extract numeric values and format
+                        numeric_values = sorted_cat_perf['Search Volume'].replace({',': ''}, regex=True).astype(float)
+                        display_data['Search Volume'] = numeric_values.apply(format_number).tolist()
+                    
+                    if 'Market Share %' in sorted_cat_perf.columns:
+                        display_data['Market Share'] = sorted_cat_perf['Market Share %'].apply(
+                            lambda x: f"{float(str(x).replace('%', '')):.1f}%" if pd.notna(x) else "0.0%"
+                        ).tolist()
+                    
+                    if 'Total Clicks' in sorted_cat_perf.columns:
+                        numeric_values = sorted_cat_perf['Total Clicks'].replace({',': ''}, regex=True).astype(float)
+                        display_data['Total Clicks'] = numeric_values.apply(format_number).tolist()
+                    
+                    if 'Conversions' in sorted_cat_perf.columns:
+                        numeric_values = sorted_cat_perf['Conversions'].replace({',': ''}, regex=True).astype(float)
+                        display_data['Conversions'] = numeric_values.apply(format_number).tolist()
+                    
+                    if 'Conversion Rate %' in sorted_cat_perf.columns:
+                        display_data['Conversion Rate'] = sorted_cat_perf['Conversion Rate %'].apply(
+                            lambda x: f"{float(str(x).replace('%', '')):.2f}%" if pd.notna(x) else "0.00%"
+                        ).tolist()
+                    
+                    # Create final display DataFrame
+                    final_display_df = pd.DataFrame(display_data)
+                    
+                    # 🎯 USE NEW STYLED TABLE FUNCTION
+                    display_styled_table(
+                        df=final_display_df,
+                        title="🏥 Top 10 Health Categories Performance",
+                        download_filename="health_categories_performance.csv",
+                        max_rows=10,
+                        align="center"
+                    )
+
 
                 else:
                     st.info("Insufficient data columns available for health category analysis.")
