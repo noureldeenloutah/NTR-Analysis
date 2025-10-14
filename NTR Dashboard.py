@@ -6285,12 +6285,17 @@ with tab_brand:
                         """, unsafe_allow_html=True)
                     
                     with metric_col5:
+                        # ✅ FIXED: Get share_pct from bs_summary instead of bs
+                        brand_summary = bs_summary[bs_summary['brand'] == selected_brand]
+                        share_pct = brand_summary['share_pct'].iloc[0] if not brand_summary.empty else 0
+                        
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['share_pct']:.1f}%</div>
+                            <div class="brand-metric-value">{share_pct:.1f}%</div>
                             <div class="brand-metric-label">📈 Market Share</div>
                         </div>
                         """, unsafe_allow_html=True)
+
             else:
                 # Show overall metrics
                 total_searches = bs['Counts'].sum()
