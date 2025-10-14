@@ -8413,7 +8413,7 @@ with tab_category:
                         'Category Total Volume': format_number(actual_category_total),  # 🚀 UPDATED: format_number
                         'Market Share %': f"{share_percentage:.2f}%",
                         'Keyword Analysis Volume': format_number(total_keyword_count),  # 🚀 UPDATED: format_number
-                        'Avg Keyword Count': f"{avg_keyword_count:.1f}",
+                        'Avg Keyword Count': format_number(avg_keyword_count),
                         'Top Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
@@ -11516,7 +11516,7 @@ with tab_class:
                         'Class Total Volume': actual_class_total,  # ✅ Keep as number for sorting
                         'Market Share %': f"{share_percentage:.2f}%",
                         'Keyword Analysis Volume': total_keyword_count,  # ✅ Keep as number for sorting
-                        'Avg Keyword Count': f"{avg_keyword_count:.1f}",
+                        'Avg Keyword Count': format_number(avg_keyword_count),
                         'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
