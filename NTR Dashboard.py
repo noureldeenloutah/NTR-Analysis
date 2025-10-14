@@ -2476,8 +2476,9 @@ with tab_overview:
                 else:
                     cat_perf['cr'] = 0
                 
-                st.markdown("**Top Categories by Search Volume**")
                 
+                st.markdown("**Top Categories by Search Volume**")
+
                 # Prepare display columns based on what's available
                 display_columns = ['Category']
                 format_dict = {}
@@ -2500,7 +2501,7 @@ with tab_overview:
                 if 'cr' in cat_perf.columns:
                     display_columns.append('cr')
                     format_dict['cr'] = '{:.2f}%'
-                
+
                 # Rename columns for better display
                 display_cat_perf = cat_perf[display_columns].copy()
                 column_rename = {
@@ -2512,25 +2513,25 @@ with tab_overview:
                     'cr': 'Conversion Rate %'
                 }
                 display_cat_perf = display_cat_perf.rename(columns={k: v for k, v in column_rename.items() if k in display_cat_perf.columns})
-                
+
                 # Update format dict with new column names
                 new_format_dict = {}
                 for old_col, new_col in column_rename.items():
                     if old_col in format_dict and new_col in display_cat_perf.columns:
                         new_format_dict[new_col] = format_dict[old_col]
-                
+
                 # Display the table with available data
                 if len(display_cat_perf.columns) > 1:  # More than just the Category column
-                    # Sort by Search Volume in descending order
+                    # Sort by Search Volume in descending order and RESET INDEX
                     if 'Search Volume' in display_cat_perf.columns:
-                        sorted_cat_perf = display_cat_perf.sort_values('Search Volume', ascending=False).head(10)
+                        sorted_cat_perf = display_cat_perf.sort_values('Search Volume', ascending=False).head(10).reset_index(drop=True)
                     else:
                         # Fallback to first numeric column if Search Volume not available
                         numeric_cols = [col for col in display_cat_perf.columns[1:] if col in display_cat_perf.columns]
                         if numeric_cols:
-                            sorted_cat_perf = display_cat_perf.sort_values(numeric_cols[0], ascending=False).head(10)
+                            sorted_cat_perf = display_cat_perf.sort_values(numeric_cols[0], ascending=False).head(10).reset_index(drop=True)
                         else:
-                            sorted_cat_perf = display_cat_perf.head(10)
+                            sorted_cat_perf = display_cat_perf.head(10).reset_index(drop=True)
                     
                     try:
                         # Try using AgGrid if available
@@ -2582,7 +2583,7 @@ with tab_overview:
                                 ('text-align', 'center')
                             ]}
                         ])
-                        st.dataframe(styled_cat_perf, use_container_width=True, hide_index=True)
+                        st.markdown(styled_cat_perf.to_html(index=False, escape=False), unsafe_allow_html=True)
                         
                         # Add download button for health categories
                         csv_cat = sorted_cat_perf.to_csv(index=False)
@@ -2592,6 +2593,7 @@ with tab_overview:
                             file_name="health_categories_performance.csv",
                             mime="text/csv"
                         )
+
                 else:
                     st.info("Insufficient data columns available for health category analysis.")
             else:
