@@ -5588,7 +5588,7 @@ with tab_brand:
                                 x='Date', 
                                 y='Counts', 
                                 color='brand',
-                                title=f'<b style="color:#2E7D32;">🌿 Top {actual_brand_count} Nutraceuticals & Nutrition Brands Monthly Trend</b>',
+                                title=f'<b style="color:#2E7D32;">🌿 Top {actual_brand_count} Brands Monthly Trend</b>',
                                 color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
                                 markers=True
                             )
@@ -5646,7 +5646,7 @@ with tab_brand:
     st.subheader("🏆 Top Brands Performance & Summary")
 
     num_brands = st.slider(
-        "Number of Nutraceuticals & Nutrition brands to display:", 
+        "Number of brands to display:", 
         min_value=10, 
         max_value=50, 
         value=20, 
