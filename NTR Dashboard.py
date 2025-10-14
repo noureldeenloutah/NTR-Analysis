@@ -7567,16 +7567,19 @@ with tab_category:
                 styled_categories = styled_categories.format(format_dict)
                 st.session_state.styled_categories_health = styled_categories
 
-            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
-            # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
-            actual_rows = len(top_categories_monthly)
-            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
-            
-            st.dataframe(
-                st.session_state.styled_categories_health, 
-                use_container_width=True, 
-                height=table_height,  # ✅ DYNAMIC HEIGHT
-                hide_index=True
+            # 🚀 DISPLAY: Styled DataFrame with scrollable container
+            html_content = st.session_state.styled_categories_health.to_html(index=False, escape=False)
+
+            # Clean up any duplicate closing tags
+            html_content = html_content.strip()
+
+            st.markdown(
+                f"""
+                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                    {html_content}
+                </div>
+                """,
+                unsafe_allow_html=True
             )
 
             # 🔄 ENHANCED: Better legend with comparison focus
