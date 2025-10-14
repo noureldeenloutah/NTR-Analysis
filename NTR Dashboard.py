@@ -5259,8 +5259,6 @@ with tab_search:
             st.plotly_chart(fig_density, use_container_width=True)
 
     
-    st.markdown("---")
-    
 
 
 # ----------------- Brand Tab (Enhanced & Optimized) -----------------
