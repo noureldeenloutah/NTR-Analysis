@@ -5986,12 +5986,18 @@ with tab_brand:
                 st.session_state.styled_top_brands = styled_brands
             
             # Display table
-            st.dataframe(
-                st.session_state.styled_top_brands, 
-                use_container_width=True, 
-                height=600,
-                hide_index=True
+            html_content = st.session_state.styled_top_brands.to_html(index=False, escape=False)
+            html_content = html_content.strip()
+
+            st.markdown(
+                f"""
+                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                    {html_content}
+                </div>
+                """,
+                unsafe_allow_html=True
             )
+
             
             # Legend
             st.markdown("""
