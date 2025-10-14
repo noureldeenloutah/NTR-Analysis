@@ -3633,24 +3633,13 @@ with tab_search:
         
         # Performance monitoring
         start_time = datetime.now()
-        
+
         # 🔧 GREEN-THEMED LOADING EXPERIENCE
         with st.spinner(""):
             # Custom loading container
             loading_container = st.container()
             with loading_container:
-                st.markdown("""
-                <div style="
-                    background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
-                    padding: 2rem;
-                    border-radius: 15px;
-                    text-align: center;
-                    margin: 1rem 0;
-                    border: 1px solid #C8E6C9;
-                ">
-                    <h4 style="color: #2E7D32; margin-bottom: 1rem;">🔄 Processing Keywords Analysis</h4>
-                </div>
-                """, unsafe_allow_html=True)
+                # ❌ REMOVED: Green "Processing Keywords Analysis" header
                 
                 # Enhanced progress tracking
                 progress_col1, progress_col2, progress_col3 = st.columns([1, 2, 1])
@@ -3680,40 +3669,14 @@ with tab_search:
                 # Clean up loading UI
                 time.sleep(0.3)
                 loading_container.empty()
-        
+
         # Calculate processing time
         processing_time = (datetime.now() - start_time).total_seconds()
-        
+
         # ✅ GREEN-THEMED METRICS DASHBOARD
         if not kw_perf_df.empty:
             
-            # Green performance header
-            st.markdown(f"""
-            <div style="
-                background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%);
-                padding: 1.5rem;
-                border-radius: 15px;
-                margin: 2rem 0 1rem 0;
-                border-left: 5px solid #4CAF50;
-                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-            ">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="color: #1B5E20; margin: 0; font-size: 1.5rem;">
-                        📊 Performance Dashboard
-                    </h3>
-                    <div style="text-align: right;">
-                        <span style="
-                            background: rgba(255,255,255,0.8);
-                            padding: 0.3rem 0.8rem;
-                            border-radius: 20px;
-                            color: #1B5E20;
-                            font-size: 0.85rem;
-                            font-weight: 500;
-                        ">⚡ Processed in {processing_time:.1f}s</span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            # ❌ REMOVED: Green "Performance Dashboard" header
             
             # 🧠 GREEN-THEMED AI INSIGHTS
             st.markdown("---")
