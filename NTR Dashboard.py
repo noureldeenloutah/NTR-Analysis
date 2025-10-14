@@ -7167,7 +7167,7 @@ with tab_category:
     
     with col_left:
         # Enhanced Category Performance Analysis
-        st.subheader("📈 Nutraceuticals & Nutrition Category Performance Matrix")
+        st.subheader("📈 Category Performance Matrix")
         
         # Calculate comprehensive category metrics
         cs = category_queries.groupby(category_column).agg({
@@ -7623,14 +7623,14 @@ with tab_category:
                     data=csv_categories,
                     file_name=f"top_{num_categories}_health_categories_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the health categories table with monthly comparison data",
+                    help="Download the categories table with monthly comparison data",
                     use_container_width=True
                 )
 
     
     with col_right:
         # Category Market Share Pie Chart
-        st.subheader("🌱 Nutraceuticals & Nutrition Category Market Share")
+        st.subheader("🌱 Category Market Share")
         
         top_categories_pie = cs.nlargest(10, 'Counts')
         
@@ -7653,8 +7653,6 @@ with tab_category:
         
         st.plotly_chart(fig_pie, use_container_width=True)
         
-        # Category Performance Categories
-        st.subheader("🎯 Nutraceuticals & Nutrition Category Performance Distribution")
         
         # Categorize categories based on performance
         cs['performance_category'] = pd.cut(
@@ -7670,7 +7668,7 @@ with tab_category:
             category_perf_counts, 
             x='Performance Level', 
             y='Count',
-            title='<b style="color:#2E7D32;">🌿 Health CTR Performance Distribution</b>',
+            title='<b style="color:#2E7D32;">🌿 CTR Performance Distribution</b>',
             color='Count',
             color_continuous_scale=['#E8F5E8', '#2E7D32'],
             text='Count'
@@ -7779,11 +7777,11 @@ with tab_category:
                             # ✅ DYNAMIC CHARTS: Create charts based on selection
                             charts_to_show = []
                             if show_volume:
-                                charts_to_show.append(('Search Volume', 'Counts', '🌿 Top 5 Health Categories - Monthly Search Volume Trend'))
+                                charts_to_show.append(('Search Volume', 'Counts', '🌿 Top 5 Categories - Monthly Search Volume Trend'))
                             if show_ctr:
-                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Health Categories - Monthly CTR Trend'))
+                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Categories - Monthly CTR Trend'))
                             if show_cr:
-                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Health Categories - Monthly CR Trend'))
+                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Categories - Monthly CR Trend'))
                             
                             if not charts_to_show:
                                 st.warning("Please select at least one metric to display.")
@@ -7917,21 +7915,20 @@ with tab_category:
                                 
                                 
                         else:
-                            st.info("No valid trend data available for the top 5 health categories")
+                            st.info("No valid trend data available for the top 5 categories")
                     else:
-                        st.info("No valid dates found in the health category data")
+                        st.info("No valid dates found in the category data")
                 except Exception as e:
-                    st.error(f"Error processing health category trend data: {str(e)}")
+                    st.error(f"Error processing category trend data: {str(e)}")
                     st.write("Debug info:", str(e))
             else:
-                st.info("No health category data available for trend analysis")
+                st.info("No category data available for trend analysis")
 
         st.markdown("---")
 
     
     # Enhanced Category-Keyword Intelligence Matrix
-    # Enhanced Category-Keyword Intelligence Matrix
-    st.subheader("🔥 Nutraceuticals & Nutrition Category-Keyword Intelligence Matrix")
+    st.subheader("🔥 Category-Keyword Intelligence Matrix")
 
     # Create category filter dropdown
     if 'search' in queries.columns:
@@ -7942,7 +7939,7 @@ with tab_category:
         available_categories = sorted(available_categories)
         
         # Create dropdown with "All Categories" option
-        category_options = ['All Health Categories'] + list(available_categories)
+        category_options = ['All Categories'] + list(available_categories)
         
         # ENHANCED UI for category selection with metrics
         st.markdown("""
@@ -7964,14 +7961,14 @@ with tab_category:
         
         with col_select:
             selected_category = st.selectbox(
-                "🎯 Select Health Category to Analyze:",
+                "🎯 Select Category to Analyze:",
                 options=category_options,
                 index=0,
                 key="category_selector"
             )
         
         with col_metrics:
-            if selected_category != 'All Health Categories':
+            if selected_category != 'All Categories':
                 # Show metrics for selected category
                 category_metrics = cs[cs['category'] == selected_category].iloc[0] if not cs[cs['category'] == selected_category].empty else None
                 
@@ -8074,15 +8071,15 @@ with tab_category:
                     """, unsafe_allow_html=True)
         
         # Filter data based on selection
-        if selected_category == 'All Health Categories':
+        if selected_category == 'All Categories':
             # Show top 8 categories if "All Categories" is selected
             top_categories_matrix = cs.nlargest(8, 'Counts')['category'].tolist()
             filtered_data = category_queries[category_queries[category_column].isin(top_categories_matrix)]
-            matrix_title = "Top Health Categories vs Nutraceuticals & Nutrition Search Terms"
+            matrix_title = "Top Categories vs Search Terms"
         else:
             # Filter for selected category only
             filtered_data = category_queries[category_queries[category_column] == selected_category]
-            matrix_title = f"{selected_category} - Nutraceuticals & Nutrition Search Terms Analysis"
+            matrix_title = f"{selected_category} - Search Terms Analysis"
         
         # Remove null values from search terms
         matrix_data = filtered_data[
@@ -8092,7 +8089,7 @@ with tab_category:
         ].copy()
         
         if not matrix_data.empty:
-            if selected_category == 'All Health Categories':
+            if selected_category == 'All Categories':
                 # Enhanced heatmap with CTR/CR data
                 category_search_matrix = matrix_data.groupby([category_column, 'search']).agg({
                     'Counts': 'sum',
@@ -8141,7 +8138,7 @@ with tab_category:
                     # Create the heatmap
                     fig_matrix = px.imshow(
                         heatmap_data.values,
-                        labels=dict(x="Nutraceuticals & Nutrition Search Terms", y="Health Categories", color="Total Counts"),
+                        labels=dict(x="Search Terms", y="Categories", color="Total Counts"),
                         x=heatmap_data.columns,
                         y=heatmap_data.index,
                         color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
@@ -8220,7 +8217,7 @@ with tab_category:
                     x='search',
                     y='Counts',
                     title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
-                    labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
+                    labels={'search': 'Search Terms', 'Counts': 'Total Search Volume'},
                     color=color_column,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                     text='Counts'
@@ -8256,7 +8253,7 @@ with tab_category:
                 # ✅ ENHANCED: Display both CR metrics using styled table function
                 display_comparison = category_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
                 display_comparison = display_comparison.rename(columns={
-                    'search': 'Health Search Term',
+                    'search': 'Search Term',
                     'Counts': 'Search Volume',
                     'ctr': 'CTR (%)',
                     'cr': 'CR Search-based (%)',
@@ -8286,7 +8283,7 @@ with tab_category:
 
     
     # Enhanced Top Keywords per Category Analysis
-    st.subheader("🔑 Top Health Keywords per Nutraceuticals & Nutrition Category Analysis")
+    st.subheader("🔑 Top Keywords per Category Analysis")
     
     # 🚀 ADDED: Number of keywords selection option - MOVED TO TOP
     num_keywords = st.selectbox(
@@ -8348,11 +8345,11 @@ with tab_category:
                 # Create heatmap for keyword-category matrix
                 fig_keyword_heatmap = px.imshow(
                     pivot_ckw.values,
-                    labels=dict(x="Health Keywords", y="Nutraceuticals & Nutrition Categories", color="Keyword Count"),
+                    labels=dict(x="Keywords", y="Categories", color="Keyword Count"),
                     x=pivot_ckw.columns,
                     y=pivot_ckw.index,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    title=f'<b style="color:#2E7D32;">🌿 Nutraceuticals & Nutrition Category-Health Keyword Frequency Heatmap (Top {num_keywords})</b>',
+                    title=f'<b style="color:#2E7D32;">🌿 Category - Keyword Frequency Heatmap (Top {num_keywords})</b>',
                     aspect='auto'
                 )
                 
@@ -8368,7 +8365,7 @@ with tab_category:
             
             else:  # Top Keywords Summary
                 # Show top keywords summary by category with enhanced accuracy
-                st.subheader(f"🔥 Top {num_keywords} Health Keywords by Nutraceuticals & Nutrition Category")
+                st.subheader(f"🔥 Top {num_keywords} Keywords Category")
                 
                 top_keywords_summary = []
                 category_stats = {}
@@ -8411,13 +8408,13 @@ with tab_category:
                     
                     top_keywords_summary.append({
                         'Nutraceuticals & Nutrition Category': cat,
-                        f'Top {num_keywords} Health Keywords (with counts)': keywords_str,
+                        f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Category Total Volume': format_number(actual_category_total),  # 🚀 UPDATED: format_number
                         'Market Share %': f"{share_percentage:.2f}%",
                         'Keyword Analysis Volume': format_number(total_keyword_count),  # 🚀 UPDATED: format_number
                         'Avg Keyword Count': f"{avg_keyword_count:.1f}",
-                        'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
+                        'Top Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
                 
@@ -8430,7 +8427,7 @@ with tab_category:
                 
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
-                st.subheader("📊 Nutraceuticals & Nutrition Category Health Keyword Intelligence")
+                st.subheader("📊 Nutraceuticals & Nutrition Category Keyword Intelligence")
                 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
                 
@@ -8439,11 +8436,11 @@ with tab_category:
                     most_diverse_cat = max(category_stats.items(), key=lambda x: x[1]['total_keywords'])
                     category_name = most_diverse_cat[0][:15] + "..." if len(most_diverse_cat[0]) > 15 else most_diverse_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-health-metric'>
+                    <div class='enhanced-metric'>
                         <span class='icon'>🌟</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Most Diverse Health Category</div>
-                        <div class='sub-label'>{most_diverse_cat[1]['total_keywords']} unique health keywords</div>
+                        <div class='label'>Most Diverse Category</div>
+                        <div class='sub-label'>{most_diverse_cat[1]['total_keywords']} unique keywords</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -8452,11 +8449,11 @@ with tab_category:
                     highest_volume_cat = max(category_stats.items(), key=lambda x: x[1]['total_count'])
                     category_name = highest_volume_cat[0][:15] + "..." if len(highest_volume_cat[0]) > 15 else highest_volume_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-health-metric'>
+                    <div class='enhanced-metric'>
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
                         <div class='label'>Highest Volume Nutraceuticals & Nutrition Category</div>
-                        <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total health searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
+                        <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -8465,10 +8462,10 @@ with tab_category:
                     most_concentrated_cat = max(category_stats.items(), key=lambda x: x[1]['share_percentage'])
                     category_name = most_concentrated_cat[0][:15] + "..." if len(most_concentrated_cat[0]) > 15 else most_concentrated_cat[0]
                     st.markdown(f"""
-                    <div class='enhanced-health-metric'>
+                    <div class='enhanced-metric'>
                         <span class='icon'>🎯</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Most Concentrated Health Category</div>
+                        <div class='label'>Most Concentrated Category</div>
                         <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -8477,18 +8474,18 @@ with tab_category:
             # Download button for keyword analysis
             csv_keywords = df_ckw.to_csv(index=False)
             st.download_button(
-                label="📥 Download Nutraceuticals & Nutrition Category Health Keywords CSV",
+                label="📥 Download Nutraceuticals & Nutrition Category Keywords CSV",
                 data=csv_keywords,
-                file_name=f"nutraceuticals_category_health_keywords_top_{num_keywords}.csv",
+                file_name=f"nutraceuticals_category_keywords_top_{num_keywords}.csv",
                 mime="text/csv",
                 key="category_keywords_csv_download"
             )
         else:
-            st.info("Not enough health keyword data per Nutraceuticals & Nutrition category.")
+            st.info("Not enough keyword data per Nutraceuticals & Nutrition category.")
     
     except Exception as e:
-        st.error(f"Error processing health keyword analysis: {str(e)}")
-        st.info("Not enough health keyword data per Nutraceuticals & Nutrition category.")
+        st.error(f"Error processing keyword analysis: {str(e)}")
+        st.info("Not enough keyword data per Nutraceuticals & Nutrition category.")
     
 
 # ----------------- Subcategory Tab (Enhanced & Health-Focused) -----------------
@@ -8522,7 +8519,7 @@ with tab_subcat:
             font-weight: 300;
             opacity: 0.9;
         ">
-            Deep dive into Nutraceuticals & Nutrition subcategory performance and health search trends
+            Deep dive into subcategory performance and search trends
         </p>
     </div>
     """, unsafe_allow_html=True)
