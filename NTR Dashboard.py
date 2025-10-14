@@ -1804,25 +1804,16 @@ with tab_overview:
                         if col in display_topN.columns:
                             format_dict[col] = '{:.2f}%'
 
-                    # Reset index BEFORE styling
-                    display_topN = display_topN.reset_index(drop=True)
-
-                    # Apply formatting
-                    styled_topN = display_topN.style.format(format_dict)
+                    styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
 
-                    # 🚀 DISPLAY: Scrollable with no index
-                    html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
-
-                    st.markdown(
-                        f"""
-                        <div style="height: 600px; overflow-y: auto; overflow-x: auto;">
-                            {html_content}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
+                # 🚀 DISPLAY: Cached styled DataFrame
+                st.dataframe(
+                    st.session_state.styled_top50_health, 
+                    use_container_width=True, 
+                    height=600,
+                    hide_index=True
+                )
 
                 # 🔄 ENHANCED: Better legend with comparison focus
                 st.markdown("""
