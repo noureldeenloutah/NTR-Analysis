@@ -5788,7 +5788,7 @@ with tab_brand:
                 # Get top 5 keywords by total counts
                 if keyword_counts:
                     top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-                    top_keywords_str = ', '.join([f"{kw}({v:,})" for kw, v in top_keywords])
+                    top_keywords_str = ', '.join([f"{kw}({format_number(v)})" for kw, v in top_keywords])  # ✅ FIXED
                 else:
                     top_keywords_str = "No keywords"
                 
