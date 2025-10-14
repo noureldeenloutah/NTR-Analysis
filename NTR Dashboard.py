@@ -2559,40 +2559,53 @@ with tab_overview:
                             AgGrid(display_sorted, height=300, enable_enterprise_modules=False)
                         else:
                             # ✅ Use styled HTML with gradient (NO .style.format())
-                            # Create a simple styled version
-                            styled_html = display_sorted.to_html(index=False, escape=False)
-                            
-                            # Wrap in styled div
+                            # ✅ Use styled HTML with proper CSS (NO index column)
+                            styled_html = display_sorted.to_html(index=False, escape=False, classes='cat-table')
+
+                            # Wrap in styled div with FIXED CSS
                             st.markdown(f"""
                             <style>
                                 .cat-table {{
                                     width: 100%;
                                     border-collapse: collapse;
                                     font-size: 14px;
+                                    margin: 20px 0;
+                                }}
+                                .cat-table thead tr {{
+                                    background-color: #2E7D32 !important;
                                 }}
                                 .cat-table th {{
-                                    background-color: #E8F5E8;
-                                    color: #1B5E20;
+                                    background-color: #2E7D32 !important;
+                                    color: white !important;
                                     font-weight: bold;
-                                    text-align: center;
-                                    padding: 12px;
-                                    border: 1px solid #C8E6C9;
+                                    text-align: center !important;
+                                    padding: 12px 8px;
+                                    border: 1px solid #1B5E20;
+                                }}
+                                .cat-table tbody tr {{
+                                    background-color: #F1F8E9;
+                                }}
+                                .cat-table tbody tr:nth-child(even) {{
+                                    background-color: #FFFFFF;
                                 }}
                                 .cat-table td {{
-                                    text-align: center;
-                                    padding: 10px;
-                                    background-color: #F8FDF8;
+                                    text-align: center !important;
+                                    padding: 10px 8px;
                                     color: #1B5E20;
-                                    border: 1px solid #E8F5E8;
+                                    border: 1px solid #C8E6C9;
                                 }}
-                                .cat-table tr:hover {{
-                                    background-color: #E8F5E8;
+                                .cat-table tbody tr:hover {{
+                                    background-color: #C8E6C9 !important;
+                                    transition: background-color 0.3s ease;
+                                }}
+                                /* Highlight high conversion rates */
+                                .cat-table tbody tr td:last-child {{
+                                    font-weight: bold;
                                 }}
                             </style>
-                            <div class="cat-table">
-                                {styled_html}
-                            </div>
+                            {styled_html}
                             """, unsafe_allow_html=True)
+
                             
                             # Add download button for health categories
                             csv_cat = sorted_cat_perf.to_csv(index=False)
