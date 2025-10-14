@@ -555,46 +555,49 @@ body {
 # ========================================
 # 🔥 ULTRA-STRONG CSS - FORCE CENTER
 # ========================================
+# ✅ ADD ONCE at top of file (after existing CSS, around line 400)
 st.markdown("""
 <style>
-/* Override ALL Pandas inline styles */
-div[data-testid="stDataFrame"] table tbody td {
+/* Existing CSS... */
+
+/* ✅ Efficient table styling - applies to ALL tables */
+div[data-testid="stMarkdownContainer"] table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+div[data-testid="stMarkdownContainer"] table thead th {
     text-align: center !important;
-}
-
-div[data-testid="stDataFrame"] table thead th {
-    text-align: center !important;
-}
-
-/* Force center using attribute selector */
-div[data-testid="stDataFrame"] td[style*="text-align"] {
-    text-align: center !important;
-}
-
-/* Target specific columns by index */
-div[data-testid="stDataFrame"] tbody td:nth-child(2),
-div[data-testid="stDataFrame"] tbody td:nth-child(3) {
-    text-align: center !important;
-}
-
-/* Keep first column left-aligned (Date) */
-div[data-testid="stDataFrame"] tbody td:first-child {
-    text-align: left !important;
-    padding-left: 15px !important;
-}
-
-/* Header styling */
-div[data-testid="stDataFrame"] thead th {
-    background-color: #2E7D32 !important;
+    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
     color: white !important;
-    font-weight: bold !important;
-    text-align: center !important;
+    font-weight: 700 !important;
     padding: 12px !important;
+    border: none !important;
 }
 
-/* Hover effect */
-div[data-testid="stDataFrame"] tbody tr:hover {
+div[data-testid="stMarkdownContainer"] table tbody td {
+    text-align: center !important;
+    padding: 10px 12px !important;
+    border: 1px solid #E0E0E0 !important;
+}
+
+div[data-testid="stMarkdownContainer"] table tbody td:first-child {
+    text-align: left !important;
+    font-weight: 500 !important;
+    color: #2E7D32 !important;
+}
+
+div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
+    background-color: #F8FDF8 !important;
+}
+
+div[data-testid="stMarkdownContainer"] table tbody tr:hover {
     background-color: #E8F5E9 !important;
+    transition: background-color 0.2s;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1279,7 +1282,7 @@ with tab_overview:
             display_monthly = display_monthly.rename(columns={'Date': 'Month'})
             
             # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
-            st.dataframe(display_monthly, use_container_width=True, hide_index=True)
+            st.markdown(display_monthly.to_html(index=False, escape=False), unsafe_allow_html=True)
 
             
             # Summary metrics below table
