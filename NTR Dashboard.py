@@ -8366,15 +8366,19 @@ with tab_category:
             else:  # Top Keywords Summary
                 # Show top keywords summary by category with enhanced accuracy
                 st.subheader(f"🔥 Top {num_keywords} Keywords Category")
-                
+
                 top_keywords_summary = []
                 category_stats = {}
-                
+
+                # ✅ FIX 1: Remove duplicates and use consistent data source
+                df_ckw_clean = df_ckw.drop_duplicates(subset=['category', 'keyword'])
+
                 # Calculate total volume across all categories for share percentage
-                total_volume_all_categories = cs['Counts'].sum()
-                
-                for cat in df_ckw['category'].unique():
-                    cat_data = df_ckw[df_ckw['category'] == cat].sort_values('count', ascending=False)
+                total_volume_all_categories = df_ckw_clean['count'].sum()
+
+                for cat in df_ckw_clean['category'].unique():
+                    # ✅ FIX 2: Use cleaned data
+                    cat_data = df_ckw_clean[df_ckw_clean['category'] == cat].sort_values('count', ascending=False)
                     
                     # Get top N keywords for this category
                     top_n_keywords = cat_data.head(num_keywords)
@@ -8386,44 +8390,51 @@ with tab_category:
                     
                     keywords_str = ' | '.join(keywords_list)
                     
-                    # Calculate category statistics
-                    actual_category_total = cs[cs['category'] == cat]['Counts'].iloc[0] if len(cs[cs['category'] == cat]) > 0 else cat_data['count'].sum()
-                    share_percentage = (actual_category_total / total_volume_all_categories * 100)
+                    # ✅ FIX 3: Use consistent calculation from single source
+                    category_total_volume = cat_data['count'].sum()  # Total for ALL keywords in category
+                    keyword_analysis_volume = top_n_keywords['count'].sum()  # Total for TOP N keywords only
                     
-                    total_keyword_count = cat_data['count'].sum()
+                    # Calculate share percentage
+                    share_percentage = (category_total_volume / total_volume_all_categories * 100) if total_volume_all_categories > 0 else 0
+                    
+                    # Other statistics
                     unique_keywords = len(cat_data)
                     avg_keyword_count = cat_data['count'].mean()
-                    top_keyword_dominance = (top_n_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_n_keywords) > 0 else 0
+                    top_keyword_dominance = (top_n_keywords.iloc[0]['count'] / category_total_volume * 100) if len(top_n_keywords) > 0 and category_total_volume > 0 else 0
                     
                     # Store category stats for additional insights
                     category_stats[cat] = {
                         'total_keywords': unique_keywords,
-                        'total_count': actual_category_total,
-                        'keyword_total_count': total_keyword_count,
+                        'total_count': category_total_volume,
+                        'keyword_analysis_volume': keyword_analysis_volume,
                         'avg_count': avg_keyword_count,
                         'top_keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
                         'dominance': top_keyword_dominance,
-                        'share_percentage': share_percentage
+                        'share_percentage': share_percentage,
+                        '_sort_value': category_total_volume  # ✅ For proper sorting
                     }
                     
                     top_keywords_summary.append({
                         'Nutraceuticals & Nutrition Category': cat,
                         f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
-                        'Category Total Volume': format_number(actual_category_total),  # 🚀 UPDATED: format_number
+                        'Category Total Volume': format_number(category_total_volume),
                         'Market Share %': f"{share_percentage:.2f}%",
-                        'Keyword Analysis Volume': format_number(total_keyword_count),  # 🚀 UPDATED: format_number
+                        'Keyword Analysis Volume': format_number(keyword_analysis_volume),
                         'Avg Keyword Count': format_number(avg_keyword_count),
                         'Top Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
-                        'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
+                        'Keyword Dominance %': f"{top_keyword_dominance:.1f}%",
+                        '_sort_value': category_total_volume  # ✅ Hidden column for sorting
                     })
-                
-                # Sort by actual category total volume (descending)
-                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: float(x['Category Total Volume'].replace('K', '000').replace('M', '000000').replace('B', '000000000')), reverse=True)
+
+                # ✅ FIX 4: Sort by numeric value instead of formatted string
+                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: x['_sort_value'], reverse=True)
+
+                # Create DataFrame and remove sorting column
                 summary_df = pd.DataFrame(top_keywords_summary)
-                
+                summary_df = summary_df.drop('_sort_value', axis=1)
+
                 # Display the enhanced summary table
-                # ✅ USE STYLED TABLE FUNCTION
                 display_styled_table(
                     df=summary_df,
                     download_filename=f"summary_data_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
@@ -8431,13 +8442,13 @@ with tab_category:
                     max_height="400px",
                     align="center"
                 )
-                
+
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
                 st.subheader("📊 Nutraceuticals & Nutrition Category Keyword Intelligence")
-                
+
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
-                
+
                 with col_insight1:
                     # Most diverse category (most unique keywords)
                     most_diverse_cat = max(category_stats.items(), key=lambda x: x[1]['total_keywords'])
@@ -8450,43 +8461,43 @@ with tab_category:
                         <div class='sub-label'>{most_diverse_cat[1]['total_keywords']} unique keywords</div>
                     </div>
                     """, unsafe_allow_html=True)
-                
+
                 with col_insight2:
-                    # Highest volume category with CORRECT SHARE PERCENTAGE
+                    # Highest volume category
                     highest_volume_cat = max(category_stats.items(), key=lambda x: x[1]['total_count'])
                     category_name = highest_volume_cat[0][:15] + "..." if len(highest_volume_cat[0]) > 15 else highest_volume_cat[0]
                     st.markdown(f"""
                     <div class='enhanced-metric'>
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
-                        <div class='label'>Highest Volume Nutraceuticals & Nutrition Category</div>
+                        <div class='label'>Highest Volume Category</div>
                         <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
-                
+
                 with col_insight3:
-                    # Most concentrated category with CORRECT SHARE PERCENTAGE
-                    most_concentrated_cat = max(category_stats.items(), key=lambda x: x[1]['share_percentage'])
+                    # Most concentrated category (by top keyword dominance)
+                    most_concentrated_cat = max(category_stats.items(), key=lambda x: x[1]['dominance'])
                     category_name = most_concentrated_cat[0][:15] + "..." if len(most_concentrated_cat[0]) > 15 else most_concentrated_cat[0]
                     st.markdown(f"""
                     <div class='enhanced-metric'>
                         <span class='icon'>🎯</span>
                         <div class='value'>{category_name}</div>
                         <div class='label'>Most Concentrated Category</div>
-                        <div class='sub-label'>{most_concentrated_cat[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
+                        <div class='sub-label'>Top keyword: {most_concentrated_cat[1]['dominance']:.1f}% dominance</div>
                     </div>
                     """, unsafe_allow_html=True)
-                
-            
-            # Download button for keyword analysis
-            csv_keywords = df_ckw.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Nutraceuticals & Nutrition Category Keywords CSV",
-                data=csv_keywords,
-                file_name=f"nutraceuticals_category_keywords_top_{num_keywords}.csv",
-                mime="text/csv",
-                key="category_keywords_csv_download"
-            )
+
+                # Download button for keyword analysis
+                csv_keywords = df_ckw.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Nutraceuticals & Nutrition Category Keywords CSV",
+                    data=csv_keywords,
+                    file_name=f"nutraceuticals_category_keywords_top_{num_keywords}.csv",
+                    mime="text/csv",
+                    key="category_keywords_csv_download"
+                )
+
         else:
             st.info("Not enough keyword data per Nutraceuticals & Nutrition category.")
     
