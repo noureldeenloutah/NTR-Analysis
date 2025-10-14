@@ -4476,6 +4476,10 @@ with tab_search:
             # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
             # ================================================================================================
 
+            # ================================================================================================
+            # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
+            # ================================================================================================
+
             # Calculate market share for enhanced insights
             total_all_counts = queries['Counts'].sum()
             top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
@@ -4484,14 +4488,6 @@ with tab_search:
             top_keywords['avg_cr_volume'] = ((top_keywords['total_conversions'] / top_keywords['total_counts']) * 100).fillna(0).round(4)
 
             if not top_keywords.empty:
-                # Enhanced table header
-                st.markdown(f"""
-                <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; text-align: center;">
-                    <h2 style="margin: 0; font-size: 2rem;">📊 Top {num_keywords} Grouped Keywords Performance Table</h2>
-                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Comprehensive Analysis with Market Share & Performance Metrics</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
                 # Create enhanced display version
                 display_df = top_keywords.copy()
                 
@@ -4505,7 +4501,7 @@ with tab_search:
                     'avg_ctr': 'Avg CTR',
                     'health_cr': 'Health CR',
                     'classic_cr': 'Classic CR',
-                    'avg_cr_volume': 'AVG CR (Conv/Vol)',  # ✅ Added new column
+                    'avg_cr_volume': 'AVG CR (Conv/Vol)',
                     'unique_queries': 'Unique Queries',
                     'variations_count': 'Variations'
                 })
@@ -4518,79 +4514,25 @@ with tab_search:
                 display_df['Avg CTR'] = display_df['Avg CTR'].apply(lambda x: f"{x:.2f}%")
                 display_df['Health CR'] = display_df['Health CR'].apply(lambda x: f"{x:.2f}%")
                 display_df['Classic CR'] = display_df['Classic CR'].apply(lambda x: f"{x:.2f}%")
-                display_df['AVG CR (Conv/Vol)'] = display_df['AVG CR (Conv/Vol)'].apply(lambda x: f"{x:.4f}%")  # ✅ Format new column
+                display_df['AVG CR (Conv/Vol)'] = display_df['AVG CR (Conv/Vol)'].apply(lambda x: f"{x:.4f}%")
                 display_df['Unique Queries'] = display_df['Unique Queries'].apply(format_number)
                 display_df['Variations'] = display_df['Variations'].apply(format_number)
                 
-                # Enhanced column configuration - ✅ UPDATED ORDER
+                # Enhanced column configuration
                 column_order = ['Health Keyword', 'Total Search Volume', 'Market Share %', 'Total Clicks', 
                             'Conversions', 'Avg CTR', 'Health CR', 'Classic CR', 'AVG CR (Conv/Vol)', 'Unique Queries', 'Variations']
                 display_df = display_df[column_order].reset_index(drop=True)
                 
-                # Enhanced dataframe display with better configuration
-                st.dataframe(
-                    display_df, 
-                    use_container_width=True,
-                    hide_index=True,
-                    column_config={
-                        "Health Keyword": st.column_config.TextColumn(
-                            "Health Keyword",
-                            help="Fuzzy-matched Nutraceuticals & Nutrition search keyword group",
-                            width="large"
-                        ),
-                        "Total Search Volume": st.column_config.TextColumn(
-                            "Total Search Volume",
-                            help="Total health search volume (fuzzy-grouped)",
-                            width="medium"
-                        ),
-                        "Market Share %": st.column_config.TextColumn(
-                            "Market Share %",
-                            help="Percentage of total health searches",
-                            width="small"
-                        ),
-                        "Total Clicks": st.column_config.TextColumn(
-                            "Total Clicks",
-                            help="Total clicks received across all variations",
-                            width="medium"
-                        ),
-                        "Conversions": st.column_config.TextColumn(
-                            "Conversions",
-                            help="Total conversions achieved",
-                            width="medium"
-                        ),
-                        "Avg CTR": st.column_config.TextColumn(
-                            "Avg CTR",
-                            help="Average Click-Through Rate across all variations",
-                            width="small"
-                        ),
-                        "Health CR": st.column_config.TextColumn(
-                            "Health CR",
-                            help="Health Conversion Rate (Conversions/Volume) - Key Performance Indicator",
-                            width="small"
-                        ),
-                        "Classic CR": st.column_config.TextColumn(
-                            "Classic CR",
-                            help="Classic Conversion Rate (Conversions/Clicks)",
-                            width="small"
-                        ),
-                        "AVG CR (Conv/Vol)": st.column_config.TextColumn(  # ✅ Added new column config
-                            "AVG CR (Conv/Vol)",
-                            help="Average Conversion Rate: Conversions divided by Search Volume - Direct conversion efficiency metric",
-                            width="small"
-                        ),
-                        "Unique Queries": st.column_config.TextColumn(
-                            "Unique Queries",
-                            help="Number of unique search queries for this keyword group",
-                            width="medium"
-                        ),
-                        "Variations": st.column_config.TextColumn(
-                            "Variations",
-                            help="Number of keyword variations grouped together through fuzzy matching",
-                            width="small"
-                        )
-                    }
+                # ✅ USE REUSABLE FUNCTION - Clean and consistent
+                display_styled_table(
+                    df=display_df,
+                    title=f"📊 Top {num_keywords} Grouped Keywords Performance Table",
+                    download_filename=f"top_{num_keywords}_keywords_performance_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    max_rows=None,
+                    align="center"
                 )
-                
+
+                    
                 # ================================================================================================
                 # 📊 INTERACTIVE BAR CHART SECTION WITH AVG CR
                 # ================================================================================================
