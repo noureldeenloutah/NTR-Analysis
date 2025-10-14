@@ -1803,11 +1803,11 @@ with tab_overview:
                     for col in ctr_columns + cr_columns:
                         if col in display_topN.columns:
                             format_dict[col] = '{:.2f}%'
-
+                            
+                    display_topN = display_topN.reset_index(drop=True)
                     styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
 
-                # 🚀 DISPLAY: Cached styled DataFrame
                 # 🚀 DISPLAY: Styled DataFrame with CSS
                 try:
                     # If it's a styled DataFrame, convert to HTML directly
