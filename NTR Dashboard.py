@@ -7314,8 +7314,9 @@ with tab_category:
             st.plotly_chart(fig_cr, use_container_width=True)
         
         # Top Categories Performance Table
+        # Top Categories Performance Table
         st.subheader("🏆 Top Category Performance")
-        
+
         num_categories = st.slider(
             "Number of categories to display:", 
             min_value=10, 
@@ -7324,7 +7325,7 @@ with tab_category:
             step=5,
             key="category_count_slider"
         )
-        
+
         # 🚀 LAZY CSS LOADING - Only load once per session
         if 'category_health_css_loaded' not in st.session_state:
             st.markdown("""
@@ -7349,64 +7350,85 @@ with tab_category:
             """, unsafe_allow_html=True)
             st.session_state.category_health_css_loaded = True
 
-        # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
-        month_names = {
-            '2025-06': 'June 2025',
-            '2025-07': 'July 2025',
-            '2025-08': 'August 2025'
-        }
+        # ✅ FIXED: Dynamic month names generation
+        def get_dynamic_month_names(queries_df):
+            """Generate month names dynamically from data"""
+            if 'month' not in queries_df.columns:
+                if 'start_date' in queries_df.columns:
+                    queries_df['month'] = pd.to_datetime(queries_df['start_date']).dt.to_period('M').astype(str)
+                else:
+                    return OrderedDict()
+            
+            unique_months = sorted(queries_df['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
+            month_names_dict = OrderedDict()
+            
+            for month_str in unique_months:
+                dt = pd.to_datetime(month_str)
+                display_name = dt.strftime('%B %Y')  # e.g., "July 2025"
+                month_names_dict[month_str] = display_name
+            
+            return month_names_dict
+
+        # ✅ CREATE: Month column if needed
+        queries_with_month = queries.copy()
+        if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+            queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+
+        # ✅ GENERATE: Dynamic month names
+        month_names = get_dynamic_month_names(queries_with_month)
 
         # 🚀 COMPUTE: Get data with caching (filter-aware)
         filter_state = {
             'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': queries.shape,
-            'data_hash': hash(str(cs['category'].tolist()[:10]) if not cs.empty else "empty")
+            'data_shape': queries_with_month.shape,
+            'data_hash': hash(str(cs['category'].tolist()[:10]) if not cs.empty else "empty"),
+            'num_categories': num_categories
         }
         filter_key = str(hash(str(filter_state)))
 
         @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_category_health_performance_monthly(_df, _cs, month_names_dict, cache_key):
-            """🔄 FIXED: Proper monthly CTR/CR calculations for categories"""
+        def compute_category_health_performance_monthly(_df, _cs, month_names_dict, num_cats, cache_key):
+            """🔄 UNIFIED: Build complete category table directly from queries dataframe"""
             if _df.empty or _cs.empty:
                 return pd.DataFrame(), []
             
-            # Get top categories by total counts
-            top_categories_list = _cs.nlargest(50, 'Counts')['category'].tolist()
+            # Step 1: Get top categories by total counts
+            top_categories_list = _cs.nlargest(num_cats, 'Counts')['category'].tolist()
             
-            # Filter original data for top categories
+            # Step 2: Filter original data for top categories
             top_data = _df[_df[category_column].isin(top_categories_list)].copy()
             
-            # Get unique months from the data
+            # Step 3: Get unique months
             if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].unique())
+                unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
             else:
                 unique_months = []
             
-            # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
+            # Step 4: Build comprehensive category data
             result_data = []
             
             for category in top_categories_list:
                 category_data = top_data[top_data[category_column] == category]
                 
-                # ✅ SKIP CATEGORIES WITH NO DATA
                 if category_data.empty:
                     continue
                 
-                # Base information
+                # ✅ CALCULATE: Base metrics
                 total_counts = int(category_data['Counts'].sum())
                 total_clicks = int(category_data['clicks'].sum())
                 total_conversions = int(category_data['conversions'].sum())
                 
-                # ✅ SKIP CATEGORIES WITH ZERO VOLUME
                 if total_counts == 0:
                     continue
-                    
+                
+                # Calculate total dataset counts for share percentage
+                dataset_total_counts = _df['Counts'].sum()
+                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
+                
                 overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                 overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                 
-                # Calculate share percentage
-                share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
-                
+                # ✅ BUILD: Row data
                 row = {
                     'Category': category,
                     'Total Volume': total_counts,
@@ -7417,24 +7439,22 @@ with tab_category:
                     'Total Conversions': total_conversions
                 }
                 
-                # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
+                # ✅ CALCULATE: Monthly metrics
                 for month in unique_months:
-                    month_data = category_data[category_data['month'] == month]
                     month_display = month_names_dict.get(month, month)
+                    month_data = category_data[category_data['month'] == month]
                     
                     if not month_data.empty:
-                        # ✅ FIXED: Calculate month-specific metrics
                         month_counts = int(month_data['Counts'].sum())
                         month_clicks = int(month_data['clicks'].sum())
                         month_conversions = int(month_data['conversions'].sum())
                         
-                        # ✅ FIXED: Month-specific CTR and CR calculations
                         month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
                         month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                         
                         row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
-                        row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
                     else:
                         row[f'{month_display} Vol'] = 0
                         row[f'{month_display} CTR'] = 0
@@ -7444,53 +7464,64 @@ with tab_category:
             
             result_df = pd.DataFrame(result_data)
             result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            
-            # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
             result_df = result_df[result_df['Total Volume'] > 0]
             
             return result_df, unique_months
 
-        top_categories_monthly, unique_months = compute_category_health_performance_monthly(queries, cs, month_names, filter_key)
-        
+        top_categories_monthly, unique_months = compute_category_health_performance_monthly(
+            queries_with_month, 
+            cs, 
+            month_names, 
+            num_categories,
+            filter_key
+        )
+
         if top_categories_monthly.empty:
             st.warning("No valid category data after processing.")
         else:
-            # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
-            top_categories_monthly = top_categories_monthly.dropna(subset=['Category'])
-            top_categories_monthly = top_categories_monthly[top_categories_monthly['Total Volume'] > 0]
-            top_categories_monthly = top_categories_monthly.head(num_categories)
+            # ✅ SHOW: Filter status
+            unique_categories_count = queries_with_month[category_column].nunique()
             
-            # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered Results**: Showing Top {num_categories} categories from {unique_categories_count:,} total categories")
+            else:
+                st.info(f"📊 **All Data**: Showing Top {num_categories} categories from {unique_categories_count:,} total categories")
+            
+            # ✅ ORGANIZE: Column order - MATCHING SCREENSHOT
+            # Screenshot shows: Base columns → August Vol → July Vol → September Vol → August CTR → July CTR → September CTR → August CR → July CR → September CR
             base_columns = ['Category', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
             
-            # Group monthly columns by type for easier comparison
+            # Get sorted months
+            sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+            
+            # Build column lists in the order shown in screenshot
             volume_columns = []
             ctr_columns = []
             cr_columns = []
             
-            for month in sorted(unique_months):
+            for month in sorted_months:
                 month_display = month_names.get(month, month)
                 volume_columns.append(f'{month_display} Vol')
                 ctr_columns.append(f'{month_display} CTR')
                 cr_columns.append(f'{month_display} CR')
             
-            # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+            # ✅ CORRECT ORDER: Base → Volumes → CTRs → CRs (matches screenshot)
             ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
             existing_columns = [col for col in ordered_columns if col in top_categories_monthly.columns]
             top_categories_monthly = top_categories_monthly[existing_columns]
-
-            # 🚀 ENHANCED: Smart styling with better comparison highlighting
+            
+            # ✅ FORMAT & STYLE
             categories_hash = hash(str(top_categories_monthly.shape) + str(top_categories_monthly.columns.tolist()) + str(top_categories_monthly.iloc[0].to_dict()) if len(top_categories_monthly) > 0 else "empty")
+            styling_cache_key = f"{categories_hash}_{filter_key}"
             
             if ('styled_categories_health' not in st.session_state or 
-                st.session_state.get('categories_health_cache_key') != categories_hash):
+                st.session_state.get('categories_health_cache_key') != styling_cache_key):
                 
-                st.session_state.categories_health_cache_key = categories_hash
+                st.session_state.categories_health_cache_key = styling_cache_key
                 
-                # 🚀 FAST: Apply format_number to numeric columns before styling
                 display_categories = top_categories_monthly.copy()
                 
-                # Format volume columns with format_number
+                # Format volume columns
                 volume_cols_to_format = ['Total Volume'] + volume_columns
                 for col in volume_cols_to_format:
                     if col in display_categories.columns:
@@ -7502,27 +7533,27 @@ with tab_category:
                 if 'Total Conversions' in display_categories.columns:
                     display_categories['Total Conversions'] = display_categories['Total Conversions'].apply(lambda x: format_number(int(x)))
                 
-                # 🔄 ENHANCED: Better performance highlighting with comparison focus
+                # ✅ STYLING: Month-over-month comparison
                 def highlight_category_health_performance_with_comparison(df):
-                    """Enhanced highlighting for better health category comparison"""
+                    """Enhanced highlighting for category comparison"""
                     styles = pd.DataFrame('', index=df.index, columns=df.columns)
                     
                     if len(unique_months) < 2:
                         return styles
                     
-                    sorted_months = sorted(unique_months)
+                    sorted_months_local = sorted(unique_months, key=lambda x: pd.to_datetime(x))
                     
-                    # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
-                    for i in range(1, len(sorted_months)):
-                        current_month = month_names.get(sorted_months[i], sorted_months[i])
-                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                    # Compare consecutive months
+                    for i in range(1, len(sorted_months_local)):
+                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
                         
                         current_ctr_col = f'{current_month} CTR'
                         prev_ctr_col = f'{prev_month} CTR'
                         current_cr_col = f'{current_month} CR'
                         prev_cr_col = f'{prev_month} CR'
                         
-                        # CTR comparison with threshold
+                        # CTR comparison
                         if current_ctr_col in df.columns and prev_ctr_col in df.columns:
                             for idx in df.index:
                                 current_ctr = df.loc[idx, current_ctr_col]
@@ -7530,15 +7561,15 @@ with tab_category:
                                 
                                 if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
                                     change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:  # 10% improvement
+                                    if change_pct > 10:
                                         styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
+                                    elif change_pct < -10:
                                         styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
+                                    elif abs(change_pct) > 5:
                                         color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                         styles.loc[idx, current_ctr_col] = f'background-color: {color};'
                         
-                        # CR comparison with threshold
+                        # CR comparison
                         if current_cr_col in df.columns and prev_cr_col in df.columns:
                             for idx in df.index:
                                 current_cr = df.loc[idx, current_cr_col]
@@ -7546,22 +7577,21 @@ with tab_category:
                                 
                                 if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
                                     change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:  # 10% improvement
+                                    if change_pct > 10:
                                         styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
+                                    elif change_pct < -10:
                                         styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
+                                    elif abs(change_pct) > 5:
                                         color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                         styles.loc[idx, current_cr_col] = f'background-color: {color};'
                     
-                    # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                    # Volume column highlighting
                     for col in volume_columns:
                         if col in df.columns:
                             styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
                     
                     return styles
                 
-                # Create styled DataFrame from the formatted copy
                 styled_categories = display_categories.style.apply(highlight_category_health_performance_with_comparison, axis=None)
                 
                 styled_categories = styled_categories.set_properties(**{
@@ -7576,25 +7606,21 @@ with tab_category:
                     {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
                 ])
                 
-                # 🔄 IMPROVED: Format dictionary
                 format_dict = {
                     'Share %': '{:.2f}%',
                     'Overall CTR': '{:.2f}%',
                     'Overall CR': '{:.2f}%'
                 }
                 
-                # Add formatting for monthly CTR and CR columns
                 for col in ctr_columns + cr_columns:
                     if col in display_categories.columns:
                         format_dict[col] = '{:.2f}%'
-
+                
                 styled_categories = styled_categories.format(format_dict)
                 st.session_state.styled_categories_health = styled_categories
-
-            # 🚀 DISPLAY: Styled DataFrame with scrollable container
+            
+            # Display table
             html_content = st.session_state.styled_categories_health.to_html(index=False, escape=False)
-
-            # Clean up any duplicate closing tags
             html_content = html_content.strip()
 
             st.markdown(
@@ -7605,8 +7631,8 @@ with tab_category:
                 """,
                 unsafe_allow_html=True
             )
-
-            # 🔄 ENHANCED: Better legend with comparison focus
+            
+            # Legend
             st.markdown("""
             <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
                 <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Category Comparison Guide:</h4>
@@ -7619,37 +7645,25 @@ with tab_category:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-            # 🔄 ENHANCED: Column grouping explanation
-            if unique_months:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months)]
-                st.markdown(f"""
-                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Category Column Organization:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Category, Total Volume, Share %, Overall CTR/CR</div>
-                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
-                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
-                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            # 🚀 ENHANCED DOWNLOAD SECTION
+            
+            # Download section
             st.markdown("<br>", unsafe_allow_html=True)
             
             csv_categories = top_categories_monthly.to_csv(index=False)
             
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
+                filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                
                 st.download_button(
                     label="📥 Download Categories CSV",
                     data=csv_categories,
-                    file_name=f"top_{num_categories}_health_categories_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"top_{num_categories}_categories{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the categories table with monthly comparison data",
+                    help="Download the categories table with current filter settings applied",
                     use_container_width=True
                 )
+
 
     
     with col_right:
