@@ -1477,46 +1477,42 @@ with tab_overview:
     """, unsafe_allow_html=True)
 
 
-
     # FIRST ROW: Monthly Counts Table and Chart side by side
     st.markdown("## 🌱 Monthly Analysis Overview")
-    col_table, col_chart = st.columns([1, 2])  # Equal width columns
+    col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
         st.markdown("### 📋 Monthly Searches Table")
-        
-        # ✅ FIX: Create month period for proper sorting
+
+        # ✅ FIX: Add sorting column before grouping
         queries_temp = queries.copy()
-        queries_temp['month_period'] = queries_temp['Date'].dt.to_period('M')
-        queries_temp['month_str'] = queries_temp['Date'].dt.strftime('%B %Y')
-        
-        # Group and sort
-        monthly_counts = queries_temp.groupby(['month_period', 'month_str'])['Counts'].sum().reset_index()
-        
+        queries_temp['month_sort'] = queries_temp['Date'].dt.to_period('M')
+        queries_temp['month_display'] = queries_temp['Date'].dt.strftime('%B %Y')
+
+        # Group by both sort key and display string
+        monthly_counts = queries_temp.groupby(['month_sort', 'month_display'])['Counts'].sum().reset_index()
+
+        # ✅ SORT by period, then drop it
+        monthly_counts = monthly_counts.sort_values('month_sort').reset_index(drop=True)
+        monthly_counts = monthly_counts.drop(columns=['month_sort']).rename(columns={'month_display': 'Date'})
+
         if not monthly_counts.empty:
-            # ✅ SORT: Chronologically by period
-            monthly_counts = monthly_counts.sort_values('month_period')
-            
             # Ensure 'Counts' is numeric and handle NaN
             monthly_counts['Counts'] = pd.to_numeric(monthly_counts['Counts'], errors='coerce').fillna(0)
             total_all_months = monthly_counts['Counts'].sum()
             monthly_counts['Percentage'] = (monthly_counts['Counts'] / total_all_months * 100).round(1)
             
             # ✅ Create display version with formatted numbers
-            display_monthly = monthly_counts[['month_str', 'Counts', 'Percentage']].copy()
+            display_monthly = monthly_counts.copy()
             display_monthly['Counts'] = display_monthly['Counts'].apply(lambda x: format_number(int(x)))
             display_monthly['Percentage'] = display_monthly['Percentage'].apply(lambda x: f"{x}%")
             
             # ✅ Rename column for better display
-            display_monthly = display_monthly.rename(columns={'month_str': 'Month'})
+            display_monthly = display_monthly.rename(columns={'Date': 'Month'})
             
-            # ✅ NO STYLING - Display raw dataframe
-            display_styled_table(
-                df=display_monthly,
-                align="center",
-                scrollable=True,
-                max_height="600px"
-            )
+            # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
+            st.markdown(display_monthly.to_html(index=False, escape=False), unsafe_allow_html=True)
+
             
             # Summary metrics below table
             st.markdown(f"""
