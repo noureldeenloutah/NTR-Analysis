@@ -1511,8 +1511,12 @@ with tab_overview:
             display_monthly = display_monthly.rename(columns={'Date': 'Month'})
             
             # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
-            st.markdown(display_monthly.to_html(index=False, escape=False), unsafe_allow_html=True)
-
+            display_styled_table(
+                df=display_monthly,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )
             
             # Summary metrics below table
             st.markdown(f"""
