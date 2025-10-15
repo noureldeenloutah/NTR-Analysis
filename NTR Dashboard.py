@@ -9761,7 +9761,7 @@ with tab_subcat:
                             keyword_display.columns = ['Keyword', 'Search Volume', 'Clicks', 
                                                      'Conversions', 'Health CTR %', 'CR %']
                             
-                            display_styled_table(df=keyword_display, title=f"🔍 Top Keywords Performance in {selected_subcategory}", align="center")
+                            display_styled_table(df=keyword_display, title=f"🔍 Top Keywords Performance in {selected_subcategory}", align="left")
                         else:
                             st.info("No health keyword data available for this subcategory.")
                     
