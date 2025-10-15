@@ -12542,9 +12542,7 @@ with tab_generic:
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # Performance breakdown table
-                st.markdown("### 📈 Performance Breakdown")
-                
+                # Performance breakdown table                
                 # Pre-calculate medians for performance comparison
                 medians = {
                     'count': gt_agg['count'].median(),
@@ -12585,6 +12583,7 @@ with tab_generic:
                 
                 display_styled_table(
                     df=pd.DataFrame(metrics_data),
+                    title="📈 Performance Breakdown",
                     align="center"
                 )
                                 
