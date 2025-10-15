@@ -12282,7 +12282,7 @@ with tab_generic:
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
                 st.download_button(
-                    label="📥 Download Generic Health Terms CSV",
+                    label="📥 Download Generic Terms CSV",
                     data=csv_generics,
                     file_name=f"top_{num_generic_terms}_generic_health_terms_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
@@ -12583,8 +12583,11 @@ with tab_generic:
                     ]
                 }
                 
-                st.dataframe(pd.DataFrame(metrics_data), use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=pd.DataFrame(metrics_data),
+                    align="center"
+                )
+                                
                 # Optimized radar chart
                 st.markdown("### 📊 Performance Radar Chart")
                 
