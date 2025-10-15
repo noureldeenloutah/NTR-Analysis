@@ -1477,31 +1477,46 @@ with tab_overview:
     """, unsafe_allow_html=True)
 
 
+
     # FIRST ROW: Monthly Counts Table and Chart side by side
     st.markdown("## 🌱 Monthly Analysis Overview")
-    col_table, col_chart = st.columns([1,2])  # Equal width columns
+    col_table, col_chart = st.columns([1, 2])  # Equal width columns
 
     with col_table:
         st.markdown("### 📋 Monthly Searches Table")
-        monthly_counts = queries.groupby(queries['Date'].dt.strftime('%B %Y'))['Counts'].sum().reset_index()
+        
+        # ✅ FIX: Create month period for proper sorting
+        queries_temp = queries.copy()
+        queries_temp['month_period'] = queries_temp['Date'].dt.to_period('M')
+        queries_temp['month_str'] = queries_temp['Date'].dt.strftime('%B %Y')
+        
+        # Group and sort
+        monthly_counts = queries_temp.groupby(['month_period', 'month_str'])['Counts'].sum().reset_index()
         
         if not monthly_counts.empty:
+            # ✅ SORT: Chronologically by period
+            monthly_counts = monthly_counts.sort_values('month_period')
+            
             # Ensure 'Counts' is numeric and handle NaN
             monthly_counts['Counts'] = pd.to_numeric(monthly_counts['Counts'], errors='coerce').fillna(0)
             total_all_months = monthly_counts['Counts'].sum()
             monthly_counts['Percentage'] = (monthly_counts['Counts'] / total_all_months * 100).round(1)
             
             # ✅ Create display version with formatted numbers
-            display_monthly = monthly_counts.copy()
+            display_monthly = monthly_counts[['month_str', 'Counts', 'Percentage']].copy()
             display_monthly['Counts'] = display_monthly['Counts'].apply(lambda x: format_number(int(x)))
-            display_monthly['Percentage'] = display_monthly['Percentage'].apply(lambda x: f"{x}%")  # ✅ Format percentage manually
+            display_monthly['Percentage'] = display_monthly['Percentage'].apply(lambda x: f"{x}%")
             
             # ✅ Rename column for better display
-            display_monthly = display_monthly.rename(columns={'Date': 'Month'})
+            display_monthly = display_monthly.rename(columns={'month_str': 'Month'})
             
-            # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
-            st.markdown(display_monthly.to_html(index=False, escape=False), unsafe_allow_html=True)
-
+            # ✅ NO STYLING - Display raw dataframe
+            display_styled_table(
+                df=display_monthly,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )
             
             # Summary metrics below table
             st.markdown(f"""
@@ -1512,6 +1527,7 @@ with tab_overview:
             """, unsafe_allow_html=True)
         else:
             st.info("No monthly Nutraceuticals & Nutrition data available")
+
 
 
     with col_chart:
