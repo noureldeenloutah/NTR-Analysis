@@ -9350,14 +9350,14 @@ with tab_subcat:
         st.subheader("🎯 Interactive Subcategories Analysis")
 
         analysis_type = st.radio(
-            "Choose Nutraceuticals & Nutrition Analysis Type:",
-            ["📊 Top Health Performers Overview", "🔍 Detailed Subcategories Deep Dive", 
-             "📈 Health Performance Comparison", "📊 Nutraceuticals & Nutrition Market Share Analysis"],
+            "Choose Analysis Type:",
+            ["📊 Top Performers Overview", "🔍 Detailed Subcategories Deep Dive", 
+             "📈 Performance Comparison", "📊 Market Share Analysis"],
             horizontal=True,
             key="subcategory_analysis_type"
         )
 
-        if analysis_type == "📊 Top Health Performers Overview":
+        if analysis_type == "📊 Top Performers Overview":
             with st.spinner('📊 Generating top performers overview...'):
                 st.subheader("🏆 Top 20 Subcategories Performance")
                 
@@ -9421,7 +9421,7 @@ with tab_subcat:
                 
                 # Update layout
                 fig_combined.update_layout(
-                    title='<b style="color:#2E7D32;">🌿 Health Search Volume vs CTR & Conversion Performance</b>',
+                    title='<b style="color:#2E7D32;">🌿 Search Volume vs CTR & Conversion Performance</b>',
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
@@ -9462,8 +9462,8 @@ with tab_subcat:
                     top_sc,
                     x='sub_category',
                     y='Counts',
-                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Subcategories by Search Volume</b>',
-                    labels={'Counts': 'Health Search Volume', 'sub_category': 'Health Subcategories'},
+                    title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Subcategories by Search Volume</b>',
+                    labels={'Counts': 'Health Search Volume', 'sub_category': 'Subcategories'},
                     color='Counts',
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                     text='Counts'
@@ -9503,7 +9503,7 @@ with tab_subcat:
                 ))
                 
                 fig_metrics_comparison.add_trace(go.Bar(
-                    name='Nutraceuticals & Nutrition Conversion Rate %',
+                    name='Conversion Rate %',
                     x=top_sc['sub_category'],
                     y=top_sc['conversion_rate'],
                     marker_color='#81C784',
@@ -9512,7 +9512,7 @@ with tab_subcat:
                 ))
                 
                 fig_metrics_comparison.update_layout(
-                    title='<b style="color:#2E7D32;">🌿 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Comparison</b>',
+                    title='<b style="color:#2E7D32;">🌿 CTR vs Conversion Rate Comparison</b>',
                     barmode='group',
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
@@ -9525,11 +9525,11 @@ with tab_subcat:
                 st.plotly_chart(fig_metrics_comparison, use_container_width=True)
 
 
-        elif analysis_type == "🔍 Detailed Health Subcategory Deep Dive":
-            st.subheader("🔬 Health Subcategory Deep Dive Analysis")
+        elif analysis_type == "🔍 Detailed Subcategories Deep Dive":
+            st.subheader("🔬 Subcategory Deep Dive Analysis")
             
             selected_subcategory = st.selectbox(
-                "Select a health subcategory for detailed Nutraceuticals & Nutrition analysis:",
+                "Select a subcategory for detailed analysis:",
                 options=sc['sub_category'].tolist(),
                 index=0,
                 key="detailed_subcategory_selector"
@@ -9553,7 +9553,7 @@ with tab_subcat:
                             <span class='icon'>🏆</span>
                             <div class='value'>#{subcat_rank} <span class='health-performance-badge {rank_performance}'>{rank_text}</span></div>
                             <div class='label'>Health Market Rank</div>
-                            <div class='sub-label'>Out of {total_subcategories} Nutraceuticals & Nutrition subcategories</div>
+                            <div class='sub-label'>Out of {total_subcategories} subcategories</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
@@ -9566,7 +9566,7 @@ with tab_subcat:
                             <span class='icon'>📊</span>
                             <div class='value'>{market_share:.2f}% <span class='health-performance-badge {share_performance}'>{share_text}</span></div>
                             <div class='label'>Nutraceuticals & Nutrition Market Share</div>
-                            <div class='sub-label'>Of total health search volume</div>
+                            <div class='sub-label'>Of total search volume</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
@@ -9578,7 +9578,7 @@ with tab_subcat:
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>⭐</span>
                             <div class='value'>{performance_score:.1f} <span class='health-performance-badge {score_performance}'>{score_text}</span></div>
-                            <div class='label'>Health Performance Score</div>
+                            <div class='label'>Performance Score</div>
                             <div class='sub-label'>Combined CTR & CR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -9591,18 +9591,18 @@ with tab_subcat:
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>⚡</span>
                             <div class='value'>{conversion_efficiency:.1f}% <span class='health-performance-badge {efficiency_performance}'>{efficiency_text}</span></div>
-                            <div class='label'>Nutraceuticals & Nutrition Conversion Efficiency</div>
+                            <div class='label'>Conversion Efficiency</div>
                             <div class='sub-label'>CR as % of CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     # Performance breakdown table
-                    st.markdown("### 📈 Health Performance Breakdown")
+                    st.markdown("### 📈 Performance Breakdown")
 
                     metrics_data = {
                         'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
                                 'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
-                                'Nutraceuticals & Nutrition Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
+                                'Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
                         'Value': [
                             format_number(int(subcat_data['Counts'])),
                             format_number(int(subcat_data['clicks'])),
@@ -9629,7 +9629,7 @@ with tab_subcat:
                     st.dataframe(metrics_df, use_container_width=True, hide_index=True)
                     
                     # Performance radar chart
-                    st.markdown("### 📊 Health Performance Radar Chart")
+                    st.markdown("### 📊 Performance Radar Chart")
                     
                     # Normalize values for radar chart (avoid division by zero)
                     max_counts = float(sc['Counts'].max()) if float(sc['Counts'].max()) > 0 else 1
@@ -9639,11 +9639,11 @@ with tab_subcat:
                     max_conv_share = float(sc['conversion_share'].max()) if float(sc['conversion_share'].max()) > 0 else 1
                     
                     normalized_data = {
-                        'Health Search Volume': float(subcat_data['Counts']) / max_counts * 100,
-                        'Health CTR': float(subcat_data['ctr']) / max_ctr * 100,
-                        'Nutraceuticals & Nutrition Conversion Rate': float(subcat_data['conversion_rate']) / max_cr * 100,
-                        'Health Click Share': float(subcat_data['click_share']) / max_click_share * 100,
-                        'Nutraceuticals & Nutrition Conversion Share': float(subcat_data['conversion_share']) / max_conv_share * 100
+                        'Search Volume': float(subcat_data['Counts']) / max_counts * 100,
+                        'CTR': float(subcat_data['ctr']) / max_ctr * 100,
+                        'Conversion Rate': float(subcat_data['conversion_rate']) / max_cr * 100,
+                        'Click Share': float(subcat_data['click_share']) / max_click_share * 100,
+                        'Conversion Share': float(subcat_data['conversion_share']) / max_conv_share * 100
                     }
                     
                     fig_radar = go.Figure()
@@ -9668,7 +9668,7 @@ with tab_subcat:
                                 gridcolor='#C8E6C8'
                             )),
                         showlegend=True,
-                        title=f'<b style="color:#2E7D32;">🌿 Health Performance Radar - {selected_subcategory}</b>',
+                        title=f'<b style="color:#2E7D32;">🌿 Performance Radar - {selected_subcategory}</b>',
                         height=400,
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
@@ -9679,7 +9679,7 @@ with tab_subcat:
                     
                     # Keyword analysis for selected subcategory
                     if 'keyword' in queries.columns or 'search' in queries.columns:
-                        st.markdown("### 🔍 Top Health Keywords for Selected Subcategory")
+                        st.markdown("### 🔍 Top Keywords for Selected Subcategory")
                         
                         keyword_col = 'keyword' if 'keyword' in queries.columns else 'search'
                         subcat_keywords = subcategory_queries[subcategory_queries[subcategory_column] == selected_subcategory].copy()
@@ -9716,8 +9716,8 @@ with tab_subcat:
                                 keyword_analysis,
                                 x=keyword_col,
                                 y='Counts',
-                                title=f'<b style="color:#2E7D32;">🌿 Top 15 Health Keywords in {selected_subcategory}</b>',
-                                labels={'Counts': 'Health Search Volume', keyword_col: 'Health Keywords'},
+                                title=f'<b style="color:#2E7D32;">🌿 Top 15 Keywords in {selected_subcategory}</b>',
+                                labels={'Counts': 'Search Volume', keyword_col: 'Keywords'},
                                 color='keyword_ctr',
                                 color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                                 text='Counts'
@@ -9749,15 +9749,15 @@ with tab_subcat:
                             keyword_display['keyword_ctr'] = keyword_display['keyword_ctr'].apply(lambda x: f"{x:.2f}%")
                             keyword_display['keyword_cr'] = keyword_display['keyword_cr'].apply(lambda x: f"{x:.2f}%")
                             
-                            keyword_display.columns = ['Health Keyword', 'Health Search Volume', 'Health Clicks', 
-                                                     'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition CR %']
+                            keyword_display.columns = ['Keyword', 'Search Volume', 'Clicks', 
+                                                     'Conversions', 'Health CTR %', 'CR %']
                             
                             st.dataframe(keyword_display, use_container_width=True, hide_index=True)
                         else:
                             st.info("No health keyword data available for this subcategory.")
                     
                     # Competitive analysis
-                    st.markdown("### 📈 Health Subcategory Competitive Analysis")
+                    st.markdown("### 📈 Subcategory Competitive Analysis")
                     
                     # Compare with similar performing subcategories
                     similar_volume_range = 0.3  # 30% range
@@ -9791,13 +9791,13 @@ with tab_subcat:
                                 opacity=0.8,
                                 line=dict(width=2, color='white')
                             ),
-                            name='Health Subcategories'
+                            name='Subcategories'
                         ))
                         
                         fig_competitive.update_layout(
-                            title=f'<b style="color:#2E7D32;">🌿 Health Competitive Analysis - {selected_subcategory} vs Similar Volume Subcategories</b>',
+                            title=f'<b style="color:#2E7D32;">🌿 Competitive Analysis - {selected_subcategory} vs Similar Volume Subcategories</b>',
                             xaxis_title='Health CTR (%)',
-                            yaxis_title='Nutraceuticals & Nutrition Conversion Rate (%)',
+                            yaxis_title='Conversion Rate (%)',
                             plot_bgcolor='rgba(248,255,248,0.95)',
                             paper_bgcolor='rgba(232,245,232,0.8)',
                             font=dict(color='#1B5E20', family='Segoe UI'),
@@ -9829,21 +9829,21 @@ with tab_subcat:
                     detailed_df = pd.DataFrame(detailed_analysis_data)
                     csv_detailed = detailed_df.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Detailed Health Analysis CSV",
+                        label="📥 Download Detailed Analysis CSV",
                         data=csv_detailed,
                         file_name=f"detailed_health_analysis_{selected_subcategory.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
                         key="detailed_health_analysis_download"
                     )
 
-        elif analysis_type == "📈 Health Performance Comparison":
-            st.subheader("⚖️ Health Subcategory Performance Comparison")
+        elif analysis_type == "📈 Performance Comparison":
+            st.subheader("⚖️ Subcategory Performance Comparison")
             
             max_selections = min(10, len(sc))
             default_selections = min(5, len(sc))
             
             selected_subcategories = st.multiselect(
-                f"Select health subcategories to compare (max {max_selections}):",
+                f"Select subcategories to compare (max {max_selections}):",
                 options=sc['sub_category'].tolist(),
                 default=sc['sub_category'].head(default_selections).tolist(),
                 max_selections=max_selections,
@@ -9851,7 +9851,7 @@ with tab_subcat:
             )
             
             if selected_subcategories:
-                with st.spinner('⚖️ Comparing selected health subcategories...'):
+                with st.spinner('⚖️ Comparing selected subcategories...'):
                     comparison_data = sc[sc['sub_category'].isin(selected_subcategories)].copy()
                     
                     # Performance metrics comparison
@@ -9870,7 +9870,7 @@ with tab_subcat:
                         ))
                     
                     fig_comparison.update_layout(
-                        title='<b style="color:#2E7D32;">🌿 Health Performance Metrics Comparison</b>',
+                        title='<b style="color:#2E7D32;">🌿 Performance Metrics Comparison</b>',
                         barmode='group',
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
@@ -9883,7 +9883,7 @@ with tab_subcat:
                     st.plotly_chart(fig_comparison, use_container_width=True)
                     
                     # CTR vs Conversion Rate scatter plot
-                    st.markdown("### 📊 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Scatter Analysis")
+                    st.markdown("### 📊 CTR vs Conversion Rate Scatter Analysis")
                     
                     fig_scatter = px.scatter(
                         comparison_data,
@@ -9891,10 +9891,10 @@ with tab_subcat:
                         y='conversion_rate',
                         size='Counts',
                         color='sub_category',
-                        title='<b style="color:#2E7D32;">🌿 Health Performance Matrix - CTR vs Conversion Rate</b>',
+                        title='<b style="color:#2E7D32;">🌿 Performance Matrix - CTR vs Conversion Rate</b>',
                         labels={
                             'ctr': 'Health CTR (%)',
-                            'conversion_rate': 'Nutraceuticals & Nutrition Conversion Rate (%)',
+                            'conversion_rate': 'Conversion Rate (%)',
                             'Counts': 'Health Search Volume'
                         },
                         color_discrete_sequence=px.colors.qualitative.Set2
@@ -9919,7 +9919,7 @@ with tab_subcat:
                     st.plotly_chart(fig_scatter, use_container_width=True)
                     
                     # Detailed comparison table
-                    st.markdown("### 📊 Detailed Health Comparison Table")
+                    st.markdown("### 📊 Detailed Comparison Table")
                     
                     comparison_table = comparison_data[['sub_category', 'Counts', 'clicks', 'conversions', 
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
@@ -9927,18 +9927,18 @@ with tab_subcat:
                                             'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %', 'Health Click Share %', 'Nutraceuticals & Nutrition Conversion Share %']
                     
                     # Format numeric columns with format_number
-                    comparison_table['Health Search Volume'] = comparison_table['Health Search Volume'].apply(lambda x: format_number(int(x)))
-                    comparison_table['Health Clicks'] = comparison_table['Health Clicks'].apply(lambda x: format_number(int(x)))
-                    comparison_table['Nutraceuticals & Nutrition Conversions'] = comparison_table['Nutraceuticals & Nutrition Conversions'].apply(lambda x: format_number(int(x)))
-                    comparison_table['Health CTR %'] = comparison_table['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Nutraceuticals & Nutrition Conversion Rate %'] = comparison_table['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Health Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Nutraceuticals & Nutrition Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Search Volume'] = comparison_table['Health Search Volume'].apply(lambda x: format_number(int(x)))
+                    comparison_table['Clicks'] = comparison_table['Health Clicks'].apply(lambda x: format_number(int(x)))
+                    comparison_table['Conversions'] = comparison_table['Nutraceuticals & Nutrition Conversions'].apply(lambda x: format_number(int(x)))
+                    comparison_table['CTR %'] = comparison_table['Health CTR %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Conversion Rate %'] = comparison_table['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
+                    comparison_table['Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
                     st.dataframe(comparison_table, use_container_width=True, hide_index=True)
                     
                     # Performance ranking
-                    st.markdown("### 🏆 Health Performance Ranking")
+                    st.markdown("### 🏆 Performance Ranking")
                     
                     comparison_data['health_performance_score'] = (
                         comparison_data['ctr'] * 0.4 + 
@@ -9953,8 +9953,8 @@ with tab_subcat:
                         ranking_data,
                         x='sub_category',
                         y='health_performance_score',
-                        title='<b style="color:#2E7D32;">🌿 Health Performance Score Ranking</b>',
-                        labels={'health_performance_score': 'Health Performance Score', 'sub_category': 'Health Subcategories'},
+                        title='<b style="color:#2E7D32;">🌿 Performance Score Ranking</b>',
+                        labels={'health_performance_score': 'Performance Score', 'sub_category': 'Subcategories'},
                         color='health_performance_score',
                         color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                         text='rank'
@@ -9979,7 +9979,7 @@ with tab_subcat:
                     # Download comparison data
                     csv_comparison = comparison_data.to_csv(index=False)
                     st.download_button(
-                        label="📥 Download Health Comparison Data CSV",
+                        label="📥 Download Comparison Data CSV",
                         data=csv_comparison,
                         file_name=f"health_subcategory_comparison_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                         mime="text/csv",
@@ -9988,9 +9988,9 @@ with tab_subcat:
             else:
                 st.info("Please select health subcategories to compare.")
 
-        elif analysis_type == "📊 Nutraceuticals & Nutrition Market Share Analysis":
+        elif analysis_type == "📊 Market Share Analysis":
             with st.spinner('📊 Generating market share analysis...'):
-                st.subheader("📊 Nutraceuticals & Nutrition Market Share & Distribution Analysis")
+                st.subheader("📊 Market Share & Distribution Analysis")
                 
                 # Market share visualization
                 col_pie, col_treemap = st.columns(2)
@@ -10014,7 +10014,7 @@ with tab_subcat:
                         pie_data,
                         values='Counts',
                         names='sub_category',
-                        title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Subcategories Market Share</b>',
+                        title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Market Share</b>',
                         color_discrete_sequence=['#2E7D32', '#388E3C', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C8', '#E8F5E8', '#F1F8E9', '#F9FBE7', '#DCEDC8']
                     )
                     
@@ -10035,7 +10035,7 @@ with tab_subcat:
                         sc.head(treemap_count),
                         path=['sub_category'],
                         values='Counts',
-                        title=f'<b style="color:#2E7D32;">🌿 Health Subcategory Volume Distribution (Top {treemap_count})</b>',
+                        title=f'<b style="color:#2E7D32;">🌿 Subcategory Volume Distribution (Top {treemap_count})</b>',
                         color='ctr',
                         color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                         hover_data={'Counts': ':,', 'ctr': ':.2f'}
@@ -10060,7 +10060,7 @@ with tab_subcat:
                         <span class='icon'>📊</span>
                         <div class='value'>{gini_coefficient:.3f}</div>
                         <div class='label'>Health Gini Coefficient</div>
-                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
+                        <div class='sub-label'>Market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -10069,8 +10069,8 @@ with tab_subcat:
                     <div class='health-subcat-metric-card'>
                         <span class='icon'>📈</span>
                         <div class='value'>{herfindahl_index:.4f}</div>
-                        <div class='label'>Health Herfindahl Index</div>
-                        <div class='sub-label'>Nutraceuticals & Nutrition market dominance</div>
+                        <div class='label'>Herfindahl Index</div>
+                        <div class='sub-label'>Market dominance</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -10079,8 +10079,8 @@ with tab_subcat:
                     <div class='health-subcat-metric-card'>
                         <span class='icon'>🔝</span>
                         <div class='value'>{top_5_concentration:.1f}%</div>
-                        <div class='label'>Top 5 Health Share</div>
-                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
+                        <div class='label'>Top 5 Share</div>
+                        <div class='sub-label'>Market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -10089,13 +10089,13 @@ with tab_subcat:
                     <div class='health-subcat-metric-card'>
                         <span class='icon'>💯</span>
                         <div class='value'>{top_10_concentration:.1f}%</div>
-                        <div class='label'>Top 10 Health Share</div>
-                        <div class='sub-label'>Nutraceuticals & Nutrition market concentration</div>
+                        <div class='label'>Top 10 Share</div>
+                        <div class='sub-label'>Market concentration</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 # Lorenz curve for market concentration
-                st.markdown("### 📉 Health Market Concentration - Lorenz Curve")
+                st.markdown("### 📉 Market Concentration - Lorenz Curve")
                 
                 if len(sc) > 1:
                     sorted_counts = sc['Counts'].sort_values()
@@ -10109,7 +10109,7 @@ with tab_subcat:
                         x=cumulative_subcategories,
                         y=cumulative_counts,
                         mode='lines',
-                        name='Actual Health Distribution',
+                        name='Actual Distribution',
                         line=dict(color='#4CAF50', width=3)
                     ))
                     
@@ -10118,14 +10118,14 @@ with tab_subcat:
                         x=[0, 1],
                         y=[0, 1],
                         mode='lines',
-                        name='Perfect Health Equality',
+                        name='Perfect Equality',
                         line=dict(color='#81C784', width=2, dash='dash')
                     ))
                     
                     fig_lorenz.update_layout(
-                        title='<b style="color:#2E7D32;">🌿 Lorenz Curve - Health Subcategory Search Volume Distribution</b>',
-                        xaxis_title='Cumulative % of Health Subcategories',
-                        yaxis_title='Cumulative % of Health Search Volume',
+                        title='<b style="color:#2E7D32;">🌿 Lorenz Curve - Subcategory Search Volume Distribution</b>',
+                        xaxis_title='Cumulative % of Subcategories',
+                        yaxis_title='Cumulative % of Search Volume',
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
                         font=dict(color='#1B5E20', family='Segoe UI'),
