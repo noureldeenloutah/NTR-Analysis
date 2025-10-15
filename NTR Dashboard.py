@@ -11530,7 +11530,7 @@ with tab_class:
             
             else:  # Top Keywords Summary
                 # Show top keywords summary by class with enhanced accuracy
-                st.subheader(f"🔥 Top {num_keywords} Health Keywords by Nutraceuticals & Nutrition Class")
+                st.subheader(f"🔥 Top {num_keywords} Keywords by Class")
                 
                 top_keywords_summary = []
                 class_stats = {}
@@ -11592,8 +11592,12 @@ with tab_class:
                 summary_df['Keyword Analysis Volume'] = summary_df['Keyword Analysis Volume'].apply(format_number)
                 
                 # Display the enhanced summary table
-                st.dataframe(summary_df, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=summary_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )                
                 # Additional insights section with enhanced font sizes
                 st.markdown("---")
                 st.subheader("📊 Class Keyword Intelligence")
