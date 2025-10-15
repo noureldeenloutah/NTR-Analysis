@@ -628,7 +628,8 @@ def extract_keywords(text: str):
 # ========================================
 # 🟢 GREEN HEALTH THEME TABLE FUNCTION
 # ========================================
-def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center", scrollable=False, max_height="600px"):
+def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center", 
+                        scrollable=False, max_height="600px", wrap_text=True, max_cell_width="300px"):
     """
     Display a styled table with health dashboard green theme
     
@@ -640,6 +641,8 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
         align: Text alignment ("center", "left", "right")
         scrollable: Enable vertical/horizontal scrolling (default: False)
         max_height: Maximum height for scrollable table (default: "600px")
+        wrap_text: Enable text wrapping for wide cells (default: True)
+        max_cell_width: Maximum width for cells before wrapping (default: "300px")
     """
     # Validation
     if df is None or df.empty:
@@ -663,7 +666,11 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     
     # Create styled HTML table with health green theme
     def create_styled_table(data):
-        # Base CSS styles with enhanced interactivity
+        # Determine white-space and max-width based on wrap_text
+        white_space = "normal" if wrap_text else "nowrap"
+        cell_max_width = max_cell_width if wrap_text else "none"
+        
+        # Base CSS styles with enhanced interactivity and text wrapping
         html = '''
         <style>
             .health-table-wrapper {
@@ -687,6 +694,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
                 border-radius: 8px;
                 overflow: hidden;
+                table-layout: auto;
             }
             .health-table thead {
                 position: sticky;
@@ -704,8 +712,11 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 border: 1px solid #1B5E20;
                 font-size: 15px;
                 letter-spacing: 0.5px;
-                white-space: nowrap;
+                white-space: ''' + white_space + ''';
                 background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+                max-width: ''' + cell_max_width + ''';
+                word-wrap: break-word;
+                overflow-wrap: break-word;
             }
             .health-table tbody tr {
                 border-bottom: 1px solid #C8E6C9;
@@ -729,7 +740,12 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 color: #1B5E20;
                 border: 1px solid #C8E6C9;
                 font-size: 14px;
-                white-space: nowrap;
+                white-space: ''' + white_space + ''';
+                max-width: ''' + cell_max_width + ''';
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.5;
+                vertical-align: top;
             }
         </style>
         '''
