@@ -8445,7 +8445,7 @@ with tab_category:
 
                 # Additional insights section with ENHANCED FONT SIZES
                 st.markdown("---")
-                st.subheader("📊 Nutraceuticals & Nutrition Category Keyword Intelligence")
+                st.subheader("📊 Category Keyword Intelligence")
 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
 
@@ -8764,7 +8764,7 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>🌿</span>
                 <div class='value'>{format_number(total_subcategories)}</div>
-                <div class='label'>Total Health Subcategories</div>
+                <div class='label'>Total Subcategories</div>
                 <div class='sub-label'>Active Nutraceuticals & Nutrition segments</div>
             </div>
             """, unsafe_allow_html=True)
@@ -8774,7 +8774,7 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>🔍</span>
                 <div class='value'>{format_number(total_searches)}</div>
-                <div class='label'>Total Health Searches</div>
+                <div class='label'>Total Searches</div>
                 <div class='sub-label'>Across all Nutraceuticals & Nutrition subcategories</div>
             </div>
             """, unsafe_allow_html=True)
@@ -8786,7 +8786,7 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>📈</span>
                 <div class='value'>{avg_ctr:.2f}% <span class='health-performance-badge {performance_class}'>{performance_text}</span></div>
-                <div class='label'>Average Health CTR</div>
+                <div class='label'>Average CTR</div>
                 <div class='sub-label'>Click-through rate</div>
             </div>
             """, unsafe_allow_html=True)
@@ -8798,8 +8798,8 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>👑</span>
                 <div class='value'>{top_subcat_display}</div>
-                <div class='label'>Top Health Subcategory</div>
-                <div class='sub-label'>{market_share:.1f}% Nutraceuticals & Nutrition market share</div>
+                <div class='label'>Top Subcategory</div>
+                <div class='sub-label'>{market_share:.1f}% market share</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -8811,8 +8811,8 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>💚</span>
                 <div class='value'>{avg_cr:.2f}%</div>
-                <div class='label'>Avg Nutraceuticals & Nutrition Conversion Rate</div>
-                <div class='sub-label'>Overall health performance</div>
+                <div class='label'>Avg Conversion Rate</div>
+                <div class='sub-label'>Overall performance</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -8821,8 +8821,8 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>🖱️</span>
                 <div class='value'>{format_number(total_clicks)}</div>
-                <div class='label'>Total Health Clicks</div>
-                <div class='sub-label'>Across all Nutraceuticals & Nutrition subcategories</div>
+                <div class='label'>Total Clicks</div>
+                <div class='sub-label'>Across all subcategories</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -8831,8 +8831,8 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>✅</span>
                 <div class='value'>{format_number(total_conversions)}</div>
-                <div class='label'>Total Nutraceuticals & Nutrition Conversions</div>
-                <div class='sub-label'>Successful health outcomes</div>
+                <div class='label'>Total Conversions</div>
+                <div class='sub-label'>Successful outcomes</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -8843,8 +8843,8 @@ with tab_subcat:
             <div class='health-subcat-metric-card'>
                 <span class='icon'>🏆</span>
                 <div class='value'>{top_conversion_display}</div>
-                <div class='label'>Nutraceuticals & Nutrition Conversion Leader</div>
-                <div class='sub-label'>Most health conversions</div>
+                <div class='label'> Conversion Leader</div>
+                <div class='sub-label'>Most conversions</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -8854,7 +8854,7 @@ with tab_subcat:
         if 'keyword' in queries.columns or 'search' in queries.columns:
             keyword_col = 'keyword' if 'keyword' in queries.columns else 'search'
             
-            with st.spinner('🔥 Analyzing top health keywords by subcategory...'):
+            with st.spinner('🔥 Analyzing top keywords by subcategory...'):
                 @st.cache_data(ttl=1800, show_spinner=False)
                 def analyze_subcategory_keywords(df, subcat_col, kw_col, top_n=10):
                     """Analyze keywords by subcategory with caching and proper data type handling"""
@@ -8970,8 +8970,15 @@ with tab_subcat:
                     st.subheader("🔥 Top 10 Keywords by Subcategories")
                     
                     # Display table with proper height
-                    table_height = min(max(len(summary_df) * 35 + 50, 200), 500)
-                    st.dataframe(summary_df, use_container_width=True, height=table_height, hide_index=True)
+                    # Display the enhanced summary table with styled function
+                    display_styled_table(
+                        df=summary_df,
+                        download_filename=f"nutraceuticals_category_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                        scrollable=True,
+                        max_height="500px",
+                        align="center"
+                    )
+
                     
                     # Download button
                     csv_keywords_summary = summary_df.to_csv(index=False)
