@@ -14493,7 +14493,12 @@ with tab_pivot:
                             gb.configure_grid_options(enableRangeSelection=True, pagination=True, paginationPageSize=20)
                             AgGrid(pivot_display, gridOptions=gb.build(), height=500, theme='material', fit_columns_on_grid_load=True)
                         else:
-                            st.dataframe(pivot, use_container_width=True, height=500)
+                            display_styled_table(
+                                df=pivot,
+                                align="left",
+                                scrollable=True,
+                                max_height="500px"
+                            )
                         st.markdown("</div>", unsafe_allow_html=True)
                         
                         # Download button
