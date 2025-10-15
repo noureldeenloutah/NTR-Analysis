@@ -9928,28 +9928,35 @@ with tab_subcat:
                     st.plotly_chart(fig_scatter, use_container_width=True)
                     
                     # Detailed comparison table
+                    # Detailed comparison table
                     st.markdown("### 📊 Detailed Comparison Table")
-                    
+
                     comparison_table = comparison_data[['sub_category', 'Counts', 'clicks', 'conversions', 
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
-                    comparison_table.columns = ['Health Subcategory', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 
-                                            'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %', 'Health Click Share %', 'Nutraceuticals & Nutrition Conversion Share %']
-                    
-                    # Format numeric columns with format_number
-                    comparison_table['Search Volume'] = comparison_table['Health Search Volume'].apply(lambda x: format_number(int(x)))
-                    comparison_table['Clicks'] = comparison_table['Health Clicks'].apply(lambda x: format_number(int(x)))
-                    comparison_table['Conversions'] = comparison_table['Nutraceuticals & Nutrition Conversions'].apply(lambda x: format_number(int(x)))
-                    comparison_table['CTR %'] = comparison_table['Health CTR %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Conversion Rate %'] = comparison_table['Nutraceuticals & Nutrition Conversion Rate %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
-                    comparison_table['Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
+
+                    # Rename to temporary working names
+                    comparison_table.columns = ['Subcategory', 'search_vol', 'clicks_raw', 'conv_raw', 
+                                            'ctr_raw', 'conv_rate_raw', 'click_share_raw', 'conv_share_raw']
+
+                    # Create final formatted columns
+                    final_table = pd.DataFrame({
+                        'Subcategory': comparison_table['Subcategory'],
+                        'Search Volume': comparison_table['search_vol'].apply(lambda x: format_number(int(x))),
+                        'Clicks': comparison_table['clicks_raw'].apply(lambda x: format_number(int(x))),
+                        'Conversions': comparison_table['conv_raw'].apply(lambda x: format_number(int(x))),
+                        'CTR %': comparison_table['ctr_raw'].apply(lambda x: f"{x:.2f}%"),
+                        'Conversion Rate %': comparison_table['conv_rate_raw'].apply(lambda x: f"{x:.2f}%"),
+                        'Click Share %': comparison_table['click_share_raw'].apply(lambda x: f"{x:.2f}%"),
+                        'Conversion Share %': comparison_table['conv_share_raw'].apply(lambda x: f"{x:.2f}%")
+                    })
 
                     display_styled_table(
-                        df=comparison_table,
+                        df=final_table,
                         align="center",
                         scrollable=True,
                         max_height="500px"
                     )
+
                     
                     # Performance ranking
                     st.markdown("### 🏆 Performance Ranking")
