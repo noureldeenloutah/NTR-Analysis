@@ -717,6 +717,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 max-width: ''' + cell_max_width + ''';
                 word-wrap: break-word;
                 overflow-wrap: break-word;
+                text-align: center;
             }
             .health-table tbody tr {
                 border-bottom: 1px solid #C8E6C9;
@@ -736,7 +737,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             }
             .health-table td {
                 padding: 12px;
-                text-align: ''' + align + ''';
+                text-align: ''' + align + ''' !important;
                 color: #1B5E20;
                 border: 1px solid #C8E6C9;
                 font-size: 14px;
@@ -746,6 +747,12 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 overflow-wrap: break-word;
                 line-height: 1.5;
                 vertical-align: middle;
+            }
+            .health-table td:first-child {
+                text-align: ''' + align + ''' !important;
+            }
+            .health-table tbody td {
+                text-align: ''' + align + ''' !important;
             }
         </style>
         '''
@@ -773,7 +780,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             for val in row:
                 # Handle None/NaN values
                 display_val = val if pd.notna(val) else ""
-                html += f'<td>{display_val}</td>'
+                html += f'<td style="text-align: {align} !important;">{display_val}</td>'
             html += '</tr>'
         html += '</tbody></table>'
         
@@ -827,6 +834,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             mime="text/csv",
             key=f"download_{download_filename}_{id(df)}"
         )
+
 
 # ========================================
 # 🎨 OPTIONAL: PRE-DEFINED THEME PRESETS
@@ -9629,7 +9637,7 @@ with tab_subcat:
                     # ✅ USE STYLED TABLE FUNCTION
                     display_styled_table(
                         df=metrics_df,
-                        title="Performance Breakdown",
+                        title="📈 Performance Breakdown",
                         align="center"
                     )
                     
