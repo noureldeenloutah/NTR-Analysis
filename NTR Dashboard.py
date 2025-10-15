@@ -1384,9 +1384,9 @@ def display_kpi_cards(df):
         with c3:
             st.markdown(f"<div class='kpi'><div class='value'>{format_number(conversions)}</div><div class='label'>💚 Total Conversions</div></div>", unsafe_allow_html=True)
         with c4:
-            st.markdown(f"<div class='kpi'><div class='value'>{ctr:.2f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='kpi'><div class='value'>{ctr:.1f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
         with c5:
-            st.markdown(f"<div class='kpi'><div class='value'>{cr:.2f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='kpi'><div class='value'>{cr:.1f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
     
     return counts, clicks, conversions, ctr, cr
 
@@ -2012,15 +2012,15 @@ with tab_overview:
                     
                     # 🔄 IMPROVED: Format dictionary
                     format_dict = {
-                        'Share %': '{:.2f}%',
-                        'Overall CTR': '{:.2f}%',
-                        'Overall CR': '{:.2f}%'
+                        'Share %': '{:.1f}%',
+                        'Overall CTR': '{:.1f}%',
+                        'Overall CR': '{:.1f}%'
                     }
                     
                     # Add formatting for monthly CTR and CR columns
                     for col in ctr_columns + cr_columns:
                         if col in display_topN.columns:
-                            format_dict[col] = '{:.2f}%'
+                            format_dict[col] = '{:.1f}%'
 
                     styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
@@ -2152,8 +2152,8 @@ with tab_overview:
                                     <div class="value">{format_number(perf['volume'])}</div>
                                     <div class="label">{month_display_name}</div>
                                     <div style="font-size: 0.8em; margin-top: 5px;">
-                                        CTR: {perf['avg_ctr']:.2f}% {ctr_trend}<br>
-                                        CR: {perf['avg_cr']:.2f}% {cr_trend}
+                                        CTR: {perf['avg_ctr']:.1f}% {ctr_trend}<br>
+                                        CR: {perf['avg_cr']:.1f}% {cr_trend}
                                     </div>
                                 </div>
                                 """, unsafe_allow_html=True)
@@ -2223,7 +2223,7 @@ with tab_overview:
                                 st.markdown(f"""
                                 <div class="health-gainer-item">
                                     <strong>{item['query'][:30]}...</strong><br>
-                                    <small>CTR: {item['latest_ctr']:.2f}% ({sign}{item['improvement']:.1f}%)</small>
+                                    <small>CTR: {item['latest_ctr']:.1f}% ({sign}{item['improvement']:.1f}%)</small>
                                 </div>
                                 """, unsafe_allow_html=True)
                         
@@ -2255,7 +2255,7 @@ with tab_overview:
                                 st.markdown(f"""
                                 <div class="health-gainer-item">
                                     <strong>{item['query'][:30]}...</strong><br>
-                                    <small>CR: {item['latest_cr']:.2f}% ({sign}{item['improvement']:.1f}%)</small>
+                                    <small>CR: {item['latest_cr']:.1f}% ({sign}{item['improvement']:.1f}%)</small>
                                 </div>
                                 """, unsafe_allow_html=True)
                         
@@ -2305,8 +2305,8 @@ with tab_overview:
                                 st.markdown(f"""
                                 <div class="mom-health-analysis">
                                     <h4>🎯 CTR Trend</h4>
-                                    <p><strong>{prev_month}:</strong> {prev_avg_ctr:.2f}%</p>
-                                    <p><strong>{latest_month}:</strong> {latest_avg_ctr:.2f}%</p>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_ctr:.1f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_ctr:.1f}%</p>
                                     <p><strong>Change:</strong> {ctr_change:+.1f}% {ctr_trend}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
@@ -2315,8 +2315,8 @@ with tab_overview:
                                 st.markdown(f"""
                                 <div class="mom-health-analysis">
                                     <h4>💚 CR Trend</h4>
-                                    <p><strong>{prev_month}:</strong> {prev_avg_cr:.2f}%</p>
-                                    <p><strong>{latest_month}:</strong> {latest_avg_cr:.2f}%</p>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_cr:.1f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_cr:.1f}%</p>
                                     <p><strong>Change:</strong> {cr_change:+.1f}% {cr_trend}</p>
                                 </div>
                                 """, unsafe_allow_html=True)
@@ -2345,7 +2345,7 @@ with tab_overview:
                                     st.markdown(f"""
                                     <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
                                         {decline_severity} <strong>{item['query'][:40]}...</strong><br>
-                                        <small>CTR: {item['latest_ctr']:.2f}% ({item['improvement']:.1f}%)</small>
+                                        <small>CTR: {item['latest_ctr']:.1f}% ({item['improvement']:.1f}%)</small>
                                     </div>
                                     """, unsafe_allow_html=True)
                             else:
@@ -2360,7 +2360,7 @@ with tab_overview:
                                             st.markdown(f"""
                                             <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
                                                 ⚠️ <strong>{item['query'][:40]}...</strong><br>
-                                                <small>CTR: {item['latest_ctr']:.2f}% (Below average)</small>
+                                                <small>CTR: {item['latest_ctr']:.1f}% (Below average)</small>
                                             </div>
                                             """, unsafe_allow_html=True)
                                     else:
@@ -2396,7 +2396,7 @@ with tab_overview:
                                     st.markdown(f"""
                                     <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
                                         {decline_severity} <strong>{item['query'][:40]}...</strong><br>
-                                        <small>CR: {item['latest_cr']:.2f}% ({item['improvement']:.1f}%)</small>
+                                        <small>CR: {item['latest_cr']:.1f}% ({item['improvement']:.1f}%)</small>
                                     </div>
                                     """, unsafe_allow_html=True)
                             else:
@@ -2411,7 +2411,7 @@ with tab_overview:
                                             st.markdown(f"""
                                             <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
                                                 ⚠️ <strong>{item['query'][:40]}...</strong><br>
-                                                <small>CR: {item['latest_cr']:.2f}% (Below average)</small>
+                                                <small>CR: {item['latest_cr']:.1f}% (Below average)</small>
                                             </div>
                                             """, unsafe_allow_html=True)
                                     else:
@@ -2508,7 +2508,7 @@ with tab_overview:
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🌿</span>
-            <div class='value'>{avg_ctr:.2f}%</div>
+            <div class='value'>{avg_ctr:.1f}%</div>
             <div class='label'>Avg CTR (All)</div>
         </div>
         """, unsafe_allow_html=True)
@@ -2517,7 +2517,7 @@ with tab_overview:
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>💚</span>
-            <div class='value'>{avg_cr:.2f}%</div>
+            <div class='value'>{avg_cr:.1f}%</div>
             <div class='label'>Avg CR (ALL)</div>
         </div>
         """, unsafe_allow_html=True)
@@ -2539,7 +2539,7 @@ with tab_overview:
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🧴</span>
-            <div class='value'>{format_number(int(cat_counts.max()))} ({top_cat_share:.2f}%)</div>
+            <div class='value'>{format_number(int(cat_counts.max()))} ({top_cat_share:.1f}%)</div>
             <div class='label'>Top Category ({top_cat})</div>
         </div>
         """, unsafe_allow_html=True)
@@ -2596,7 +2596,7 @@ with tab_overview:
                         texttemplate='%{y:,.0f}',
                         textposition='outside',
                         hovertemplate='<b>%{x}</b><br>Volume: %{y:,.0f}' + 
-                                    ('<br>Share: %{customdata[0]:.2f}%' if 'share' in hover_columns else '') +
+                                    ('<br>Share: %{customdata[0]:.1f}%' if 'share' in hover_columns else '') +
                                     ('<br>Conversions: %{customdata[1]:,.0f}' if 'conversions' in hover_columns and len(hover_columns) > 1 else '') +
                                     '<extra></extra>'
                     )
@@ -2707,7 +2707,7 @@ with tab_overview:
                     format_dict['Counts'] = counts_formatter
                 if 'share' in cat_perf.columns:
                     display_columns.append('share')
-                    format_dict['share'] = '{:.2f}%'
+                    format_dict['share'] = '{:.1f}%'
                 if 'clicks' in cat_perf.columns:
                     display_columns.append('clicks')
                     # ✅ USE format_number for clicks
@@ -2722,7 +2722,7 @@ with tab_overview:
                     format_dict['conversions'] = conversions_formatter
                 if 'cr' in cat_perf.columns:
                     display_columns.append('cr')
-                    format_dict['cr'] = '{:.2f}%'
+                    format_dict['cr'] = '{:.1f}%'
 
                 # Rename columns for better display
                 display_cat_perf = cat_perf[display_columns].copy()
@@ -2779,7 +2779,7 @@ with tab_overview:
                     
                     if 'Conversion Rate %' in sorted_cat_perf.columns:
                         display_data['Conversion Rate'] = sorted_cat_perf['Conversion Rate %'].apply(
-                            lambda x: f"{float(str(x).replace('%', '')):.2f}%" if pd.notna(x) else "0.00%"
+                            lambda x: f"{float(str(x).replace('%', '')):.1f}%" if pd.notna(x) else "0.00%"
                         ).tolist()
                     
                     # Create final display DataFrame
@@ -3865,7 +3865,7 @@ with tab_search:
                         Average <strong>{avg_words:.2f} words</strong> per query
                     </p>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        <strong>{long_tail_pct:.2f}%</strong> long-tail queries
+                        <strong>{long_tail_pct:.1f}%</strong> long-tail queries
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #4CAF50;">
                         {complexity_status}
@@ -3891,7 +3891,7 @@ with tab_search:
                         <strong>{high_perf_pct:.1f}%</strong> above-average CTR
                     </p>
                     <p style="margin: 0 0 0.5rem 0; color: #555;">
-                        <strong>{avg_ctr:.2f}%</strong> average CTR
+                        <strong>{avg_ctr:.1f}%</strong> average CTR
                     </p>
                     <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #66BB6A;">
                         {performance_status}
@@ -4024,7 +4024,7 @@ with tab_search:
                             <div style="color: #1B5E20;">Total Volume</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{avg_ctr:.2f}%</div>
+                            <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{avg_ctr:.1f}%</div>
                             <div style="color: #1B5E20;">Avg CTR</div>
                         </div>
                     </div>
@@ -4056,9 +4056,9 @@ with tab_search:
                 fig_kw.update_traces(
                     hovertemplate='<b>%{hovertext}</b><br>' +
                                 'Total Volume: %{x:,.0f}<br>' +
-                                'CTR: %{y:.2f}%<br>' +
+                                'CTR: %{y:.1f}%<br>' +
                                 'Total Clicks: %{marker.size:,.0f}<br>' +
-                                'Health CR: %{marker.color:.2f}%<br>' +
+                                'Health CR: %{marker.color:.1f}%<br>' +
                                 'Variations: %{customdata}<extra></extra>',
                     customdata=chart_data['variations_count']
                 )
@@ -4398,7 +4398,7 @@ with tab_search:
                     with col3:
                         st.markdown(f"""
                         <div style="background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #FF9800;">
-                            <div style="font-size: 2.5rem; color: #E65100; font-weight: bold;">{keyword_data['avg_ctr']:.2f}%</div>
+                            <div style="font-size: 2.5rem; color: #E65100; font-weight: bold;">{keyword_data['avg_ctr']:.1f}%</div>
                             <div style="color: #F57C00; font-weight: bold; margin-top: 0.5rem;">Avg CTR</div>
                             <div style="color: #FF9800; font-size: 0.9rem; margin-top: 0.3rem;">Click-Through Rate</div>
                         </div>
@@ -4407,7 +4407,7 @@ with tab_search:
                     with col4:
                         st.markdown(f"""
                         <div style="background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%); padding: 1.5rem; border-radius: 12px; text-align: center; border: 2px solid #9C27B0;">
-                            <div style="font-size: 2.5rem; color: #4A148C; font-weight: bold;">{keyword_data['health_cr']:.2f}%</div>
+                            <div style="font-size: 2.5rem; color: #4A148C; font-weight: bold;">{keyword_data['health_cr']:.1f}%</div>
                             <div style="color: #6A1B9A; font-weight: bold; margin-top: 0.5rem;">Health CR</div>
                             <div style="color: #8E24AA; font-size: 0.9rem; margin-top: 0.3rem;">Conversion Rate</div>
                         </div>
@@ -4497,7 +4497,7 @@ with tab_search:
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📊 Total Clicks:</strong> {format_number(keyword_data['total_clicks'])}</p>
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🎯 Conversions:</strong> {format_number(keyword_data['total_conversions'])}</p>
                                 <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>🔍 Unique Queries:</strong> {format_number(keyword_data['unique_queries'])}</p>
-                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Classic CR:</strong> {keyword_data['classic_cr']:.2f}%</p>
+                                <p style="margin: 0.3rem 0; color: #2E7D32;"><strong>📈 Classic CR:</strong> {keyword_data['classic_cr']:.1f}%</p>
                             </div>
                             """, unsafe_allow_html=True)
                         
@@ -4522,7 +4522,7 @@ with tab_search:
                                 <h5 style="color: #0D47A1; margin: 0 0 1rem 0;">🎯 Market Intelligence</h5>
                                 <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📊 Avg Searches/Variation:</strong> {avg_searches:.1f}</p>
                                 <p style="margin: 0.3rem 0; color: #1565C0;"><strong>🎲 Diversity Score:</strong> {diversity_score:.2f}</p>
-                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📈 Market Share:</strong> {market_share:.2f}%</p>
+                                <p style="margin: 0.3rem 0; color: #1565C0;"><strong>📈 Market Share:</strong> {market_share:.1f}%</p>
                                 <p style="margin: 0.3rem 0; color: #1565C0;"><strong>⭐ Performance:</strong> {performance_rating}</p>
                             </div>
                             """, unsafe_allow_html=True)
@@ -4721,7 +4721,7 @@ with tab_search:
                         
                         # ✅ ENHANCED HOVER FOR HORIZONTAL BARS
                         hover_template = '<b>%{y}</b><br>' + f'{chart_metric}: %{{x:,.4f}}<br>' if chart_metric == "AVG CR (Conv/Vol)" else '<b>%{y}</b><br>' + f'{chart_metric}: %{{x:,.0f}}<br>'
-                        hover_template += 'Health CR: %{marker.color:.2f}%<br>Variations: %{customdata}<extra></extra>'
+                        hover_template += 'Health CR: %{marker.color:.1f}%<br>Variations: %{customdata}<extra></extra>'
                         
                         fig_bar.update_traces(
                             hovertemplate=hover_template,
@@ -4788,7 +4788,7 @@ with tab_search:
                     else:
                         annotation_text = f'📊 Selected: {len(selected_keywords)} keywords<br>' + \
                                         f'🎯 Total {chart_metric}: {total_selected_volume:,.0f}<br>' + \
-                                        f'📈 Avg CTR: {avg_selected_ctr:.2f}%<br>' + \
+                                        f'📈 Avg CTR: {avg_selected_ctr:.1f}%<br>' + \
                                         f'🔄 Avg CR: {avg_selected_cr:.4f}%'  # ✅ Always show AVG CR
                     
                     fig_bar.add_annotation(
@@ -4816,7 +4816,7 @@ with tab_search:
                             </div>
                             <div>
                                 <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>📈 Combined {chart_metric}:</strong> {total_selected_volume:,.4f}{'%' if chart_metric == 'AVG CR (Conv/Vol)' else ''}</p>
-                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Average CTR:</strong> {avg_selected_ctr:.2f}%</p>
+                                <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🎯 Average CTR:</strong> {avg_selected_ctr:.1f}%</p>
                             </div>
                             <div>
                                 <p style="margin: 0.2rem 0; color: #2E7D32;"><strong>🔄 Average CR (Conv/Vol):</strong> {avg_selected_cr:.4f}%</p>
@@ -4889,7 +4889,7 @@ with tab_search:
                                 <div>
                                     <h3 style="color: #1B5E20; margin: 0; font-size: 1.8rem;">{keyword}</h3>
                                     <p style="color: #2E7D32; margin: 0.3rem 0 0 0; font-size: 1.1rem;">
-                                        {format_number(row['total_counts'])} searches • {row['variations_count']} variations • {row['avg_ctr']:.2f}% CTR
+                                        {format_number(row['total_counts'])} searches • {row['variations_count']} variations • {row['avg_ctr']:.1f}% CTR
                                     </p>
                                 </div>
                             </div>
@@ -5018,9 +5018,9 @@ with tab_search:
                             top_keywords['total_counts'].sum(),
                             top_keywords['total_clicks'].sum(),
                             top_keywords['total_conversions'].sum(),
-                            f"{top_keywords['avg_ctr'].mean():.2f}%",
-                            f"{top_keywords['health_cr'].mean():.2f}%",
-                            f"{top_keywords['classic_cr'].mean():.2f}%",
+                            f"{top_keywords['avg_ctr'].mean():.1f}%",
+                            f"{top_keywords['health_cr'].mean():.1f}%",
+                            f"{top_keywords['classic_cr'].mean():.1f}%",
                             top_keywords['variations_count'].sum(),
                             f"{processing_time:.2f}",
                             datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -5108,7 +5108,7 @@ with tab_search:
                         <div style="margin-bottom: 1rem;">
                             <p><strong>🔍 Unique Search Queries:</strong> {format_number(unique_queries_sum)}</p>
                             <p><strong>📊 Avg Variations per Group:</strong> {avg_variations_per_group:.1f}</p>
-                            <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.2f}% CR)</p>
+                            <p><strong>⭐ High Performance Keywords:</strong> {high_perf_keywords} (above {avg_health_cr:.1f}% CR)</p>
                         </div>
                         <div class="sub-box">
                             <p style="color: #1B5E20; font-weight: bold;">🎯 Processing Efficiency:</p>
@@ -5134,7 +5134,7 @@ with tab_search:
                             <p>🎯 Focus on top {excellent_keywords + good_keywords} performing keyword{'s' if (excellent_keywords + good_keywords) != 1 else ''}</p>
                             <p>📈 Optimize content for {poor_keywords} underperforming keyword{'s' if poor_keywords != 1 else ''}</p>
                             <p>🔍 Leverage {format_number(total_variations)} variations for long-tail SEO</p>
-                            <p>⚡ Average Health CR: {avg_health_cr:.2f}% - Industry benchmark</p>
+                            <p>⚡ Average Health CR: {avg_health_cr:.1f}% - Industry benchmark</p>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -5550,9 +5550,9 @@ with tab_brand:
         fig_brand_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
                          'Search Counts: %{x:,.0f}<br>' +
-                         'CTR: %{y:.2f}%<br>' +
+                         'CTR: %{y:.1f}%<br>' +
                          'Total Clicks: %{marker.size:,.0f}<br>' +
-                         'CR: %{marker.color:.2f}%<extra></extra>'
+                         'CR: %{marker.color:.1f}%<extra></extra>'
         )
         
         fig_brand_perf.update_layout(
@@ -5994,15 +5994,15 @@ with tab_brand:
                 ])
                 
                 format_dict = {
-                    'Market Share %': '{:.2f}%',
-                    'Overall CTR': '{:.2f}%',
-                    'Overall CR': '{:.2f}%',
-                    'Classic CR': '{:.2f}%'
+                    'Market Share %': '{:.1f}%',
+                    'Overall CTR': '{:.1f}%',
+                    'Overall CR': '{:.1f}%',
+                    'Classic CR': '{:.1f}%'
                 }
                 
                 for col in ctr_columns + cr_columns:
                     if col in display_brands.columns:
-                        format_dict[col] = '{:.2f}%'
+                        format_dict[col] = '{:.1f}%'
                 
                 styled_brands = styled_brands.format(format_dict)
                 st.session_state.styled_top_brands = styled_brands
@@ -6287,7 +6287,7 @@ with tab_brand:
                     with metric_col2:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['ctr']:.2f}%</div>
+                            <div class="brand-metric-value">{brand_metrics['ctr']:.1f}%</div>
                             <div class="brand-metric-label">📈 CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6295,7 +6295,7 @@ with tab_brand:
                     with metric_col3:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['cr']:.2f}%</div>
+                            <div class="brand-metric-value">{brand_metrics['cr']:.1f}%</div>
                             <div class="brand-metric-label">🎯 CR (Search)</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6303,7 +6303,7 @@ with tab_brand:
                     with metric_col4:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['classic_cr']:.2f}%</div>
+                            <div class="brand-metric-value">{brand_metrics['classic_cr']:.1f}%</div>
                             <div class="brand-metric-label">🔄 Classic CR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6341,7 +6341,7 @@ with tab_brand:
                 with metric_col2:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_ctr:.2f}%</div>
+                        <div class="brand-metric-value">{avg_ctr:.1f}%</div>
                         <div class="brand-metric-label">📈 Avg CTR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -6349,7 +6349,7 @@ with tab_brand:
                 with metric_col3:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_cr:.2f}%</div>
+                        <div class="brand-metric-value">{avg_cr:.1f}%</div>
                         <div class="brand-metric-label">🎯 Avg CR (Search)</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -6357,7 +6357,7 @@ with tab_brand:
                 with metric_col4:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{avg_classic_cr:.2f}%</div>
+                        <div class="brand-metric-value">{avg_classic_cr:.1f}%</div>
                         <div class="brand-metric-label">🔄 Avg Classic CR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -6457,9 +6457,9 @@ with tab_brand:
                             f"<b>{brand}</b><br>" +
                             f"Search Term: {search}<br>" +
                             f"Total Searches: {format_number(counts)}<br>" +  # 🚀 UPDATED: format_number
-                            f"CTR: {ctr:.2f}%<br>" +
-                            f"CR (Search): {cr:.2f}%<br>" +  # ADDED: CR in hover
-                            f"Classic CR: {classic_cr:.2f}%"
+                            f"CTR: {ctr:.1f}%<br>" +
+                            f"CR (Search): {cr:.1f}%<br>" +  # ADDED: CR in hover
+                            f"Classic CR: {classic_cr:.1f}%"
                         )
                     hover_text.append(hover_row)
                 
@@ -6525,9 +6525,9 @@ with tab_brand:
                     textposition='outside',
                     hovertemplate='<b>%{x}</b><br>' +
                                 'Search Volume: %{customdata[3]}<br>' +  # 🚀 UPDATED: Use formatted number
-                                'CTR: %{customdata[0]:.2f}%<br>' +
-                                'CR (Search): %{customdata[1]:.2f}%<br>' +  # ADDED: CR in hover
-                                'Classic CR: %{customdata[2]:.2f}%<br>' +
+                                'CTR: %{customdata[0]:.1f}%<br>' +
+                                'CR (Search): %{customdata[1]:.1f}%<br>' +  # ADDED: CR in hover
+                                'Classic CR: %{customdata[2]:.1f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
                     customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
                             for _, row in brand_search_data.iterrows()],  # 🚀 UPDATED: Include formatted numbers
@@ -6559,9 +6559,9 @@ with tab_brand:
 
                 # 🚀 Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
-                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
 
                 # ✅ USE STYLED TABLE FUNCTION
                 display_styled_table(
@@ -6775,9 +6775,9 @@ with tab_brand:
                         textposition='inside',
                         hovertemplate='<b>%{y}</b><br>' +
                                     'Growth Score: %{x:.1f}<br>' +
-                                    'Market Share: %{customdata[0]:.2f}%<br>' +
-                                    'CTR: %{customdata[1]:.2f}%<br>' +
-                                    'Classic CR: %{customdata[2]:.2f}%<extra></extra>',
+                                    'Market Share: %{customdata[0]:.1f}%<br>' +
+                                    'CTR: %{customdata[1]:.1f}%<br>' +
+                                    'Classic CR: %{customdata[2]:.1f}%<extra></extra>',
                         customdata=high_opportunity[['share_pct', 'ctr', 'classic_cr']].values
                     )
                     
@@ -6857,8 +6857,8 @@ with tab_brand:
                         <p><strong>Market Size:</strong> {total_market_size:,.0f} total searches</p>
                         <p><strong>Market Leader:</strong> {top_performer['brand']} ({top_performer['share_pct']:.1f}% share)</p>
                         <p><strong>Market Concentration:</strong> {market_concentration} (Top 5: {top_5_share:.1f}%)</p>
-                        <p><strong>Average CTR:</strong> {avg_ctr:.2f}%</p>
-                        <p><strong>Average Classic CR:</strong> {avg_classic_cr:.2f}%</p>
+                        <p><strong>Average CTR:</strong> {avg_ctr:.1f}%</p>
+                        <p><strong>Average Classic CR:</strong> {avg_classic_cr:.1f}%</p>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -6868,8 +6868,8 @@ with tab_brand:
                         <div class="brand-performance-card">
                             <h4>🏆 Performance Leaders</h4>
                             <p><strong>Volume Leader:</strong> {top_performer['brand']}</p>
-                            <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['classic_cr']:.2f}% Classic CR)</p>
-                            <p><strong>Best CTR:</strong> {bs.loc[bs['ctr'].idxmax(), 'brand']} ({bs['ctr'].max():.2f}%)</p>
+                            <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['classic_cr']:.1f}% Classic CR)</p>
+                            <p><strong>Best CTR:</strong> {bs.loc[bs['ctr'].idxmax(), 'brand']} ({bs['ctr'].max():.1f}%)</p>
                             <p><strong>Total Brands:</strong> {len(bs)} active brands</p>
                             <p><strong>Competitive Intensity:</strong> {"High" if len(bs) > 50 else "Medium" if len(bs) > 20 else "Low"}</p>
                         </div>
@@ -7008,8 +7008,8 @@ with tab_brand:
                         len(bs),
                         top_performer['brand'],
                         f"{total_market_size:,.0f}",
-                        f"{avg_ctr:.2f}%",
-                        f"{avg_classic_cr:.2f}%",
+                        f"{avg_ctr:.1f}%",
+                        f"{avg_classic_cr:.1f}%",
                         f"{market_concentration} ({top_5_share:.1f}%)",
                         pd.Timestamp.now().strftime('%Y-%m-%d')
                     ]
@@ -7234,9 +7234,9 @@ with tab_category:
         fig_category_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
                          'Health Searches: %{customdata[0]}<br>' +
-                         'CTR: %{y:.2f}%<br>' +
+                         'CTR: %{y:.1f}%<br>' +
                          'Total Clicks: %{customdata[1]}<br>' +
-                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>',
+                         'Conversion Rate: %{marker.color:.1f}%<extra></extra>',
             customdata=[[format_number(row['Counts']), format_number(row['clicks'])] 
                        for _, row in cs.head(30).iterrows()]
         )
@@ -7298,7 +7298,7 @@ with tab_category:
             )
             
             fig_cr.update_traces(
-                texttemplate='%{text:.2f}%',
+                texttemplate='%{text:.1f}%',
                 textposition='outside'
             )
             
@@ -7607,14 +7607,14 @@ with tab_category:
                 ])
                 
                 format_dict = {
-                    'Share %': '{:.2f}%',
-                    'Overall CTR': '{:.2f}%',
-                    'Overall CR': '{:.2f}%'
+                    'Share %': '{:.1f}%',
+                    'Overall CTR': '{:.1f}%',
+                    'Overall CR': '{:.1f}%'
                 }
                 
                 for col in ctr_columns + cr_columns:
                     if col in display_categories.columns:
-                        format_dict[col] = '{:.2f}%'
+                        format_dict[col] = '{:.1f}%'
                 
                 styled_categories = styled_categories.format(format_dict)
                 st.session_state.styled_categories_health = styled_categories
@@ -8025,7 +8025,7 @@ with tab_category:
                     with metric_col2:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{category_metrics['ctr']:.2f}%</div>
+                            <div class="brand-metric-value">{category_metrics['ctr']:.1f}%</div>
                             <div class="brand-metric-label">📈 CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -8033,7 +8033,7 @@ with tab_category:
                     with metric_col3:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{category_metrics['cr']:.2f}%</div>
+                            <div class="brand-metric-value">{category_metrics['cr']:.1f}%</div>
                             <div class="brand-metric-label">🎯 CR (Search)</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -8041,7 +8041,7 @@ with tab_category:
                     with metric_col4:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{category_metrics['classic_cr']:.2f}%</div>
+                            <div class="brand-metric-value">{category_metrics['classic_cr']:.1f}%</div>
                             <div class="brand-metric-label">🔄 Classic CR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -8079,7 +8079,7 @@ with tab_category:
                 with metric_col2:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{overall_ctr_matrix:.2f}%</div>
+                        <div class="brand-metric-value">{overall_ctr_matrix:.1f}%</div>
                         <div class="brand-metric-label">📈 Overall CTR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -8087,7 +8087,7 @@ with tab_category:
                 with metric_col3:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{overall_cr_matrix:.2f}%</div>
+                        <div class="brand-metric-value">{overall_cr_matrix:.1f}%</div>
                         <div class="brand-metric-label">🎯 Overall CR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -8095,7 +8095,7 @@ with tab_category:
                 with metric_col4:
                     st.markdown(f"""
                     <div class="brand-metric-card">
-                        <div class="brand-metric-value">{overall_classic_cr_matrix:.2f}%</div>
+                        <div class="brand-metric-value">{overall_classic_cr_matrix:.1f}%</div>
                         <div class="brand-metric-label">🔄 Overall Classic CR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -8197,9 +8197,9 @@ with tab_category:
                                 f"<b>{category}</b><br>" +
                                 f"Search Term: {search}<br>" +
                                 f"Total Searches: {format_number(counts)}<br>" +
-                                f"CTR: {ctr:.2f}%<br>" +
-                                f"CR (Search): {cr:.2f}%<br>" +
-                                f"Classic CR: {classic_cr:.2f}%"
+                                f"CTR: {ctr:.1f}%<br>" +
+                                f"CR (Search): {cr:.1f}%<br>" +
+                                f"Classic CR: {classic_cr:.1f}%"
                             )
                         hover_text.append(hover_row)
                     
@@ -8267,9 +8267,9 @@ with tab_category:
                     textposition='outside',
                     hovertemplate='<b>%{x}</b><br>' +
                                 'Search Volume: %{customdata[3]}<br>' +
-                                'CTR: %{customdata[0]:.2f}%<br>' +
-                                'CR (Search): %{customdata[1]:.2f}%<br>' +
-                                'Classic CR: %{customdata[2]:.2f}%<br>' +
+                                'CTR: %{customdata[0]:.1f}%<br>' +
+                                'CR (Search): %{customdata[1]:.1f}%<br>' +
+                                'Classic CR: %{customdata[2]:.1f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
                     customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
                             for _, row in category_search_data.iterrows()],
@@ -8300,9 +8300,9 @@ with tab_category:
 
                 # 🚀 Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
-                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
 
                 # ✅ USE STYLED TABLE FUNCTION
                 display_styled_table(
@@ -8457,7 +8457,7 @@ with tab_category:
                         f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Category Total Volume': format_number(category_total_volume),
-                        'Market Share %': f"{share_percentage:.2f}%",
+                        'Market Share %': f"{share_percentage:.1f}%",
                         'Keyword Analysis Volume': format_number(keyword_analysis_volume),
                         'Avg Keyword Count': format_number(avg_keyword_count),
                         'Top Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
@@ -8509,7 +8509,7 @@ with tab_category:
                         <span class='icon'>🚀</span>
                         <div class='value'>{category_name}</div>
                         <div class='label'>Highest Volume Category</div>
-                        <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total searches<br>{highest_volume_cat[1]['share_percentage']:.2f}% market share</div>
+                        <div class='sub-label'>{format_number(highest_volume_cat[1]['total_count'])} total searches<br>{highest_volume_cat[1]['share_percentage']:.1f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -8823,7 +8823,7 @@ with tab_subcat:
             st.markdown(f"""
             <div class='health-subcat-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{avg_ctr:.2f}% <span class='health-performance-badge {performance_class}'>{performance_text}</span></div>
+                <div class='value'>{avg_ctr:.1f}% <span class='health-performance-badge {performance_class}'>{performance_text}</span></div>
                 <div class='label'>Average CTR</div>
                 <div class='sub-label'>Click-through rate</div>
             </div>
@@ -8848,7 +8848,7 @@ with tab_subcat:
             st.markdown(f"""
             <div class='health-subcat-metric-card'>
                 <span class='icon'>💚</span>
-                <div class='value'>{avg_cr:.2f}%</div>
+                <div class='value'>{avg_cr:.1f}%</div>
                 <div class='label'>Avg Conversion Rate</div>
                 <div class='sub-label'>Overall performance</div>
             </div>
@@ -8968,7 +8968,7 @@ with tab_subcat:
                             f'Top {top_n} Keywords (with counts)': keywords_str,
                             'Total Keywords': unique_keywords,
                             'Subcategory Total Volume': format_number(actual_subcategory_total),
-                            'Nutraceuticals & Nutrition Share %': f"{share_percentage:.2f}%",
+                            'Nutraceuticals & Nutrition Share %': f"{share_percentage:.1f}%",
                             'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
                             'Top Health Keyword': top_keywords.iloc[0][kw_col] if len(top_keywords) > 0 else 'N/A',
                             'Top Keyword Volume': format_number(int(top_keywords.iloc[0]['count'])) if len(top_keywords) > 0 else '0',
@@ -9304,14 +9304,14 @@ with tab_subcat:
                             ])
                             
                             format_dict = {
-                                'Share %': '{:.2f}%',
-                                'Overall CTR': '{:.2f}%',
-                                'Overall CR': '{:.2f}%'
+                                'Share %': '{:.1f}%',
+                                'Overall CTR': '{:.1f}%',
+                                'Overall CR': '{:.1f}%'
                             }
                             
                             for col in ctr_columns + cr_columns:
                                 if col in display_subcategories.columns:
-                                    format_dict[col] = '{:.2f}%'
+                                    format_dict[col] = '{:.1f}%'
                             
                             styled_subcategories = styled_subcategories.format(format_dict)
                             st.session_state.styled_subcategories_health = styled_subcategories
@@ -9598,7 +9598,7 @@ with tab_subcat:
                         st.markdown(f"""
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>📊</span>
-                            <div class='value'>{market_share:.2f}% <span class='health-performance-badge {share_performance}'>{share_text}</span></div>
+                            <div class='value'>{market_share:.1f}% <span class='health-performance-badge {share_performance}'>{share_text}</span></div>
                             <div class='label'>Nutraceuticals & Nutrition Market Share</div>
                             <div class='sub-label'>Of total search volume</div>
                         </div>
@@ -9639,11 +9639,11 @@ with tab_subcat:
                             format_number(int(subcat_data['Counts'])),
                             format_number(int(subcat_data['clicks'])),
                             format_number(int(subcat_data['conversions'])),
-                            f"{float(subcat_data['ctr']):.2f}%",
-                            f"{float(subcat_data['classic_cvr']):.2f}%",
-                            f"{float(subcat_data['conversion_rate']):.2f}%",
-                            f"{float(subcat_data['click_share']):.2f}%",
-                            f"{float(subcat_data['conversion_share']):.2f}%"
+                            f"{float(subcat_data['ctr']):.1f}%",
+                            f"{float(subcat_data['classic_cvr']):.1f}%",
+                            f"{float(subcat_data['conversion_rate']):.1f}%",
+                            f"{float(subcat_data['click_share']):.1f}%",
+                            f"{float(subcat_data['conversion_share']):.1f}%"
                         ],
                         'Performance': [
                             'High' if float(subcat_data['Counts']) > float(sc['Counts'].median()) else 'Low',
@@ -9781,8 +9781,8 @@ with tab_subcat:
                             keyword_display['Counts'] = keyword_display['Counts'].apply(lambda x: format_number(int(x)))
                             keyword_display['clicks'] = keyword_display['clicks'].apply(lambda x: format_number(int(x)))
                             keyword_display['conversions'] = keyword_display['conversions'].apply(lambda x: format_number(int(x)))
-                            keyword_display['keyword_ctr'] = keyword_display['keyword_ctr'].apply(lambda x: f"{x:.2f}%")
-                            keyword_display['keyword_cr'] = keyword_display['keyword_cr'].apply(lambda x: f"{x:.2f}%")
+                            keyword_display['keyword_ctr'] = keyword_display['keyword_ctr'].apply(lambda x: f"{x:.1f}%")
+                            keyword_display['keyword_cr'] = keyword_display['keyword_cr'].apply(lambda x: f"{x:.1f}%")
                             
                             keyword_display.columns = ['Keyword', 'Search Volume', 'Clicks', 
                                                      'Conversions', 'Health CTR %', 'CR %']
@@ -9938,8 +9938,8 @@ with tab_subcat:
                     # Enhanced hover with format_number
                     fig_scatter.update_traces(
                         hovertemplate='<b>%{fullData.name}</b><br>' +
-                                     'Health CTR: %{x:.2f}%<br>' +
-                                     'Conversion Rate: %{y:.2f}%<br>' +
+                                     'Health CTR: %{x:.1f}%<br>' +
+                                     'Conversion Rate: %{y:.1f}%<br>' +
                                      'Search Volume: %{customdata}<extra></extra>',
                         customdata=[format_number(int(x)) for x in comparison_data['Counts']]
                     )
@@ -9970,10 +9970,10 @@ with tab_subcat:
                         'Search Volume': comparison_table['search_vol'].apply(lambda x: format_number(int(x))),
                         'Clicks': comparison_table['clicks_raw'].apply(lambda x: format_number(int(x))),
                         'Conversions': comparison_table['conv_raw'].apply(lambda x: format_number(int(x))),
-                        'CTR %': comparison_table['ctr_raw'].apply(lambda x: f"{x:.2f}%"),
-                        'Conversion Rate %': comparison_table['conv_rate_raw'].apply(lambda x: f"{x:.2f}%"),
-                        'Click Share %': comparison_table['click_share_raw'].apply(lambda x: f"{x:.2f}%"),
-                        'Conversion Share %': comparison_table['conv_share_raw'].apply(lambda x: f"{x:.2f}%")
+                        'CTR %': comparison_table['ctr_raw'].apply(lambda x: f"{x:.1f}%"),
+                        'Conversion Rate %': comparison_table['conv_rate_raw'].apply(lambda x: f"{x:.1f}%"),
+                        'Click Share %': comparison_table['click_share_raw'].apply(lambda x: f"{x:.1f}%"),
+                        'Conversion Share %': comparison_table['conv_share_raw'].apply(lambda x: f"{x:.1f}%")
                     })
 
                     display_styled_table(
@@ -10396,9 +10396,9 @@ with tab_class:
         fig_class_perf.update_traces(
             hovertemplate='<b>%{hovertext}</b><br>' +
                          'Health Searches: %{customdata[0]}<br>' +
-                         'CTR: %{y:.2f}%<br>' +
+                         'CTR: %{y:.1f}%<br>' +
                          'Total Clicks: %{customdata[1]}<br>' +
-                         'Conversion Rate: %{marker.color:.2f}%<extra></extra>',
+                         'Conversion Rate: %{marker.color:.1f}%<extra></extra>',
             customdata=[[format_number(row['Counts']), format_number(row['clicks'])] 
                        for _, row in cls.head(30).iterrows()]
         )
@@ -10460,7 +10460,7 @@ with tab_class:
             )
             
             fig_cr.update_traces(
-                texttemplate='%{text:.2f}%',
+                texttemplate='%{text:.1f}%',
                 textposition='outside'
             )
             
@@ -10751,14 +10751,14 @@ with tab_class:
                 ])
                 
                 format_dict = {
-                    'Share %': '{:.2f}%',
-                    'Overall CTR': '{:.2f}%',
-                    'Overall CR': '{:.2f}%'
+                    'Share %': '{:.1f}%',
+                    'Overall CTR': '{:.1f}%',
+                    'Overall CR': '{:.1f}%'
                 }
                 
                 for col in ctr_columns + cr_columns:
                     if col in display_classes.columns:
-                        format_dict[col] = '{:.2f}%'
+                        format_dict[col] = '{:.1f}%'
                 
                 styled_classes = styled_classes.format(format_dict)
                 st.session_state.styled_classes_health = styled_classes
@@ -11185,7 +11185,7 @@ with tab_class:
                     with metric_col2:
                         st.markdown(f"""
                         <div class="class-metric-card">
-                            <div class="class-metric-value">{class_metrics['ctr']:.2f}%</div>
+                            <div class="class-metric-value">{class_metrics['ctr']:.1f}%</div>
                             <div class="class-metric-label">📈 CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -11193,7 +11193,7 @@ with tab_class:
                     with metric_col3:
                         st.markdown(f"""
                         <div class="class-metric-card">
-                            <div class="class-metric-value">{class_metrics['cr']:.2f}%</div>
+                            <div class="class-metric-value">{class_metrics['cr']:.1f}%</div>
                             <div class="class-metric-label">🎯 CR (Search)</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -11201,7 +11201,7 @@ with tab_class:
                     with metric_col4:
                         st.markdown(f"""
                         <div class="class-metric-card">
-                            <div class="class-metric-value">{class_metrics['classic_cr']:.2f}%</div>
+                            <div class="class-metric-value">{class_metrics['classic_cr']:.1f}%</div>
                             <div class="class-metric-label">🔄 Classic CR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -11239,7 +11239,7 @@ with tab_class:
                 with metric_col2:
                     st.markdown(f"""
                     <div class="class-metric-card">
-                        <div class="class-metric-value">{overall_ctr_matrix:.2f}%</div>
+                        <div class="class-metric-value">{overall_ctr_matrix:.1f}%</div>
                         <div class="class-metric-label">📈 Overall CTR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11247,7 +11247,7 @@ with tab_class:
                 with metric_col3:
                     st.markdown(f"""
                     <div class="class-metric-card">
-                        <div class="class-metric-value">{overall_cr_matrix:.2f}%</div>
+                        <div class="class-metric-value">{overall_cr_matrix:.1f}%</div>
                         <div class="class-metric-label">🎯 Overall CR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11255,7 +11255,7 @@ with tab_class:
                 with metric_col4:
                     st.markdown(f"""
                     <div class="class-metric-card">
-                        <div class="class-metric-value">{overall_classic_cr_matrix:.2f}%</div>
+                        <div class="class-metric-value">{overall_classic_cr_matrix:.1f}%</div>
                         <div class="class-metric-label">🔄 Overall Classic CR</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11357,9 +11357,9 @@ with tab_class:
                                 f"<b>{class_name}</b><br>" +
                                 f"Search Term: {search}<br>" +
                                 f"Total Searches: {format_number(counts)}<br>" +
-                                f"CTR: {ctr:.2f}%<br>" +
-                                f"CR (Search): {cr:.2f}%<br>" +
-                                f"Classic CR: {classic_cr:.2f}%"
+                                f"CTR: {ctr:.1f}%<br>" +
+                                f"CR (Search): {cr:.1f}%<br>" +
+                                f"Classic CR: {classic_cr:.1f}%"
                             )
                         hover_text.append(hover_row)
                     
@@ -11427,9 +11427,9 @@ with tab_class:
                     textposition='outside',
                     hovertemplate='<b>%{x}</b><br>' +
                                 'Search Volume: %{customdata[3]}<br>' +
-                                'CTR: %{customdata[0]:.2f}%<br>' +
-                                'CR (Search): %{customdata[1]:.2f}%<br>' +
-                                'Classic CR: %{customdata[2]:.2f}%<br>' +
+                                'CTR: %{customdata[0]:.1f}%<br>' +
+                                'CR (Search): %{customdata[1]:.1f}%<br>' +
+                                'Classic CR: %{customdata[2]:.1f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
                     customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
                             for _, row in class_search_data.iterrows()],
@@ -11461,9 +11461,9 @@ with tab_class:
 
                 # 🚀 Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
-                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.2f}%")
-                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.2f}%")
+                display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
 
                 # ✅ USE STYLED TABLE FUNCTION
                 display_styled_table(
@@ -11612,7 +11612,7 @@ with tab_class:
                         f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Class Total Volume': actual_class_total,  # ✅ Keep as number for sorting
-                        'Market Share %': f"{share_percentage:.2f}%",
+                        'Market Share %': f"{share_percentage:.1f}%",
                         'Keyword Analysis Volume': total_keyword_count,  # ✅ Keep as number for sorting
                         'Avg Keyword Count': format_number(avg_keyword_count),
                         'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
@@ -11662,7 +11662,7 @@ with tab_class:
                         <span class='icon'>🚀</span>
                         <div class='value'>{class_name}</div>
                         <div class='label'>Highest Volume Class</div>
-                        <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total searches<br>{highest_volume_cls[1]['share_percentage']:.2f}% market share</div>
+                        <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total searches<br>{highest_volume_cls[1]['share_percentage']:.1f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -11675,7 +11675,7 @@ with tab_class:
                         <span class='icon'>🎯</span>
                         <div class='value'>{class_name}</div>
                         <div class='label'>Most Concentrated Class</div>
-                        <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.2f}% Market share</div>
+                        <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.1f}% Market share</div>
                     </div>
                     """, unsafe_allow_html=True)
             
@@ -11901,7 +11901,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{metrics['avg_ctr']:.2f}% <span class='nutrition-performance-badge {performance_class}'>{performance_text}</span></div>
+                <div class='value'>{metrics['avg_ctr']:.1f}% <span class='nutrition-performance-badge {performance_class}'>{performance_text}</span></div>
                 <div class='label'>Average CTR</div>
                 <div class='sub-label'>Click-through rate</div>
             </div>
@@ -11926,7 +11926,7 @@ with tab_generic:
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
                 <span class='icon'>💚</span>
-                <div class='value'>{metrics['avg_cr']:.2f}%</div>
+                <div class='value'>{metrics['avg_cr']:.1f}%</div>
                 <div class='label'>Avg Conversion Rate</div>
                 <div class='sub-label'>Overall performance</div>
             </div>
@@ -12243,14 +12243,14 @@ with tab_generic:
                 ])
                 
                 format_dict = {
-                    'Share %': '{:.2f}%',
-                    'Overall CTR': '{:.2f}%',
-                    'Overall CR': '{:.2f}%'
+                    'Share %': '{:.1f}%',
+                    'Overall CTR': '{:.1f}%',
+                    'Overall CR': '{:.1f}%'
                 }
                 
                 for col in ctr_columns + cr_columns:
                     if col in display_generics.columns:
-                        format_dict[col] = '{:.2f}%'
+                        format_dict[col] = '{:.1f}%'
                 
                 styled_generics = styled_generics.format(format_dict)
                 st.session_state.styled_generics_health = styled_generics
@@ -12537,7 +12537,7 @@ with tab_generic:
                     st.markdown(f"""
                     <div class='nutrition-generic-metric-card'>
                         <span class='icon'>📊</span>
-                        <div class='value'>{market_share:.2f}% <span class='nutrition-performance-badge {share_performance}'>{share_text}</span></div>
+                        <div class='value'>{market_share:.1f}% <span class='nutrition-performance-badge {share_performance}'>{share_text}</span></div>
                         <div class='label'>Market Share</div>
                         <div class='sub-label'>Of total search volume</div>
                     </div>
@@ -12590,11 +12590,11 @@ with tab_generic:
                         f"{int(generic_data['count']):,}",
                         f"{int(generic_data['Clicks']):,}",
                         f"{int(generic_data['Conversions']):,}",
-                        f"{generic_data['ctr']:.2f}%",
-                        f"{generic_data['classic_cvr']:.2f}%",
-                        f"{generic_data['conversion_rate']:.2f}%",
-                        f"{generic_data['click_share']:.2f}%",
-                        f"{generic_data['conversion_share']:.2f}%"
+                        f"{generic_data['ctr']:.1f}%",
+                        f"{generic_data['classic_cvr']:.1f}%",
+                        f"{generic_data['conversion_rate']:.1f}%",
+                        f"{generic_data['click_share']:.1f}%",
+                        f"{generic_data['conversion_share']:.1f}%"
                     ],
                     'Performance': [
                         'High' if generic_data['count'] > medians['count'] else 'Low',
@@ -12704,7 +12704,7 @@ with tab_generic:
                 for col in ['Search Volume', 'Clicks', 'Conversions']:
                     comparison_table[col] = comparison_table[col].apply(lambda x: f"{int(x):,}")
                 for col in ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']:
-                    comparison_table[col] = comparison_table[col].apply(lambda x: f"{x:.2f}%")
+                    comparison_table[col] = comparison_table[col].apply(lambda x: f"{x:.1f}%")
 
                 display_styled_table(
                     df=comparison_table,
@@ -12894,9 +12894,9 @@ with tab_generic:
                 low_avg_ctr = gt_agg[gt_agg['count'] < q2]['ctr'].mean()
                 
                 st.markdown(f"**CTR by Volume:**")
-                st.markdown(f"- High Volume: {high_avg_ctr:.2f}%")
-                st.markdown(f"- Medium Volume: {medium_avg_ctr:.2f}%")
-                st.markdown(f"- Low Volume: {low_avg_ctr:.2f}%")
+                st.markdown(f"- High Volume: {high_avg_ctr:.1f}%")
+                st.markdown(f"- Medium Volume: {medium_avg_ctr:.1f}%")
+                st.markdown(f"- Low Volume: {low_avg_ctr:.1f}%")
 
         # Enhanced Download and Export Section
         st.markdown("---")
@@ -12930,7 +12930,7 @@ with tab_generic:
             # Optimized summary report generation
             @st.cache_data
             def generate_summary_report(data, metrics_dict):
-                top_10_list = "\n".join([f"{i+1}. {row['search']}: {int(row['count']):,} searches ({row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR)" 
+                top_10_list = "\n".join([f"{i+1}. {row['search']}: {int(row['count']):,} searches ({row['ctr']:.1f}% CTR, {row['conversion_rate']:.1f}% CR)" 
                                        for i, (_, row) in enumerate(data.head(10).iterrows())])
                 
                 summary = f"""# Generic Terms Analysis Summary Report
@@ -12939,8 +12939,8 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ## Executive Summary
 - Total Generic Terms Analyzed: {metrics_dict['total_generic_terms']:,}
 - Total Search Volume: {metrics_dict['total_searches']:,}
-- Average CTR: {metrics_dict['avg_ctr']:.2f}%
-- Average Conversion Rate: {metrics_dict['avg_cr']:.2f}%
+- Average CTR: {metrics_dict['avg_ctr']:.1f}%
+- Average Conversion Rate: {metrics_dict['avg_cr']:.1f}%
 - Total Clicks: {metrics_dict['total_clicks']:,}
 - Total Conversions: {metrics_dict['total_conversions']:,}
 
@@ -13091,7 +13091,7 @@ Generated by Generic Terms Analysis Dashboard
                     st.markdown(f"""
                     <div class='nutrition-generic-metric-card'>
                         <span class='icon'>📈</span>
-                        <div class='value'>{avg_ctr_filtered:.2f}% <span class='nutrition-performance-badge {ctr_performance}'>{ctr_text}</span></div>
+                        <div class='value'>{avg_ctr_filtered:.1f}% <span class='nutrition-performance-badge {ctr_performance}'>{ctr_text}</span></div>
                         <div class='label'>Avg CTR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -13104,7 +13104,7 @@ Generated by Generic Terms Analysis Dashboard
                     st.markdown(f"""
                     <div class='nutrition-generic-metric-card'>
                         <span class='icon'>💚</span>
-                        <div class='value'>{avg_cr_filtered:.2f}% <span class='nutrition-performance-badge {cr_performance}'>{cr_text}</span></div>
+                        <div class='value'>{avg_cr_filtered:.1f}% <span class='nutrition-performance-badge {cr_performance}'>{cr_text}</span></div>
                         <div class='label'>Avg CR</div>
                         <div class='sub-label'>Filtered average</div>
                     </div>
@@ -13118,7 +13118,7 @@ Generated by Generic Terms Analysis Dashboard
                 for col in ['Search Volume', 'Clicks', 'Conversions']:
                     display_filtered[col] = display_filtered[col].apply(lambda x: f"{int(x):,}")
                 for col in ['CTR %', 'Conversion Rate %']:
-                    display_filtered[col] = display_filtered[col].apply(lambda x: f"{x:.2f}%")
+                    display_filtered[col] = display_filtered[col].apply(lambda x: f"{x:.1f}%")
                 
                 display_styled_table(
                     df=display_filtered,
@@ -13356,9 +13356,9 @@ with tab_time:
             st.markdown(f"""
             <div class='time-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{monthly_avg_ctr:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_ctr > 5 else "Medium" if monthly_avg_ctr > 2 else "Low"}</span></div>
+                <div class='value'>{monthly_avg_ctr:.1f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_ctr > 5 else "Medium" if monthly_avg_ctr > 2 else "Low"}</span></div>
                 <div class='label'>Average Monthly CTR</div>
-                <div class='sub-label'>Overall: {overall_ctr:.2f}% | Monthly Avg: {monthly_avg_ctr:.2f}%</div>
+                <div class='sub-label'>Overall: {overall_ctr:.1f}% | Monthly Avg: {monthly_avg_ctr:.1f}%</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -13371,9 +13371,9 @@ with tab_time:
             st.markdown(f"""
             <div class='time-metric-card'>
                 <span class='icon'>💚</span>
-                <div class='value'>{monthly_avg_cr:.2f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_cr > 3 else "Medium" if monthly_avg_cr > 1 else "Low"}</span></div>
+                <div class='value'>{monthly_avg_cr:.1f}% <span class='time-performance-badge {performance_class}'>{"High" if monthly_avg_cr > 3 else "Medium" if monthly_avg_cr > 1 else "Low"}</span></div>
                 <div class='label'>Average Monthly CR</div>
-                <div class='sub-label'>Overall: {overall_cr:.2f}% | Monthly Avg: {monthly_avg_cr:.2f}%</div>
+                <div class='sub-label'>Overall: {overall_cr:.1f}% | Monthly Avg: {monthly_avg_cr:.1f}%</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -13874,7 +13874,7 @@ with tab_time:
                 """🚀 OPTIMIZED: Cached report generation"""
                 top_months = monthly_df.head(3)
                 top_months_text = '\n'.join([
-                    f"{row['month']}: {int(row['Counts']):,} searches ({row['ctr']:.2f}% CTR, {row['conversion_rate']:.2f}% CR)" 
+                    f"{row['month']}: {int(row['Counts']):,} searches ({row['ctr']:.1f}% CTR, {row['conversion_rate']:.1f}% CR)" 
                     for _, row in top_months.iterrows()
                 ])
                 
@@ -13884,8 +13884,8 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 ## Executive Summary
 - Total Months Analyzed: {summary_stats['total_months']}
 - Total Health Search Volume: {summary_stats['total_searches']:,}
-- Average Health CTR: {summary_stats['avg_ctr']:.2f}%
-- Average Nutraceuticals & Nutrition Conversion Rate: {summary_stats['avg_cr']:.2f}%
+- Average Health CTR: {summary_stats['avg_ctr']:.1f}%
+- Average Nutraceuticals & Nutrition Conversion Rate: {summary_stats['avg_cr']:.1f}%
 - Total Health Clicks: {summary_stats['total_clicks']:,}
 - Total Nutraceuticals & Nutrition Conversions: {summary_stats['total_conversions']:,}
 
@@ -14161,7 +14161,7 @@ with tab_pivot:
                 st.markdown(f"""
                 <div class='pivot-metric-card'>
                     <span class='icon'>📈</span>
-                    <div class='value'>{pivot_metrics['avg_ctr']:.2f}% <span class='pivot-performance-badge {ctr_performance}'>{ctr_label}</span></div>
+                    <div class='value'>{pivot_metrics['avg_ctr']:.1f}% <span class='pivot-performance-badge {ctr_performance}'>{ctr_label}</span></div>
                     <div class='label'>Average CTR</div>
                     <div class='sub-label'>Top 300 pairs</div>
                 </div>
@@ -14173,7 +14173,7 @@ with tab_pivot:
                 st.markdown(f"""
                 <div class='pivot-metric-card'>
                     <span class='icon'>💚</span>
-                    <div class='value'>{pivot_metrics['avg_cr']:.2f}% <span class='pivot-performance-badge {cr_performance}'>{cr_label}</span></div>
+                    <div class='value'>{pivot_metrics['avg_cr']:.1f}% <span class='pivot-performance-badge {cr_performance}'>{cr_label}</span></div>
                     <div class='label'>Avg CR</div>
                     <div class='sub-label'>Top 300 pairs</div>
                 </div>
@@ -15149,8 +15149,8 @@ with tab_insights:
                 display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
                 display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
                 display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-                display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
-                display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+                display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.1f}%")
+                display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.1f}%")
                 
                 display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
                                         'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
@@ -15238,8 +15238,8 @@ with tab_insights:
                 display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
                 display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
                 display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-                display_df['ctr_fmt'] = display_df['ctr_calculated'].apply(lambda x: f"{x:.2f}%")
-                display_df['cr_fmt'] = display_df['cr_calculated'].apply(lambda x: f"{x:.2f}%")
+                display_df['ctr_fmt'] = display_df['ctr_calculated'].apply(lambda x: f"{x:.1f}%")
+                display_df['cr_fmt'] = display_df['cr_calculated'].apply(lambda x: f"{x:.1f}%")
                 display_df['opportunity_fmt'] = display_df['opportunity_score'].apply(lambda x: format_number(int(x)))
                 
                 display_df = display_df[['brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
@@ -15256,7 +15256,7 @@ with tab_insights:
                 
                 # Add insight callout
                 top_gem = out.iloc[0]
-                st.success(f"💎 **Top Hidden Gem:** {top_gem['brand']} ('{top_gem['search_query']}') has {top_gem['cr_calculated']:.2f}% CR but only {top_gem['ctr_calculated']:.2f}% CTR. Improving visibility could unlock {format_number(int(top_gem['search_volume'] * (5 - top_gem['ctr_calculated'])/100))} additional clicks!")
+                st.success(f"💎 **Top Hidden Gem:** {top_gem['brand']} ('{top_gem['search_query']}') has {top_gem['cr_calculated']:.1f}% CR but only {top_gem['ctr_calculated']:.1f}% CTR. Improving visibility could unlock {format_number(int(top_gem['search_volume'] * (5 - top_gem['ctr_calculated'])/100))} additional clicks!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
                                 f"q8_hidden_gems_{datetime.now().strftime('%Y%m%d')}.csv", 
@@ -15369,10 +15369,10 @@ with tab_insights:
             display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
             display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
             display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
-            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
-            display_df['click_to_conversion_fmt'] = display_df['click_to_conversion'].apply(lambda x: f"{x:.2f}%")
-            display_df['funnel_efficiency_fmt'] = display_df['funnel_efficiency'].apply(lambda x: f"{x:.2f}%")
+            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.1f}%")
+            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.1f}%")
+            display_df['click_to_conversion_fmt'] = display_df['click_to_conversion'].apply(lambda x: f"{x:.1f}%")
+            display_df['funnel_efficiency_fmt'] = display_df['funnel_efficiency'].apply(lambda x: f"{x:.1f}%")
             
             display_df = display_df[['query', 'brand', 'search_query', 'search_volume_fmt', 'clicks_fmt', 
                                     'conversions_fmt', 'ctr_fmt', 'cr_fmt', 'click_to_conversion_fmt', 'funnel_efficiency_fmt']]
@@ -15388,7 +15388,7 @@ with tab_insights:
 
             # Add insight callout
             top_performer = out.iloc[0]
-            st.success(f"🏆 **Top Funnel Performer:** {top_performer['brand']} ('{top_performer['search_query']}') with {top_performer['funnel_efficiency']:.2f}% efficiency - converting {top_performer['conversions']:.0f} out of {format_number(int(top_performer['search_volume']))} searches!")
+            st.success(f"🏆 **Top Funnel Performer:** {top_performer['brand']} ('{top_performer['search_query']}') with {top_performer['funnel_efficiency']:.1f}% efficiency - converting {top_performer['conversions']:.0f} out of {format_number(int(top_performer['search_volume']))} searches!")
             
             st.download_button("📥 Download Data", out.to_csv(index=False), 
                             f"q10_funnel_efficiency_{datetime.now().strftime('%Y%m%d')}.csv", 
@@ -15489,8 +15489,8 @@ with tab_insights:
                 display_df['total_search_volume_fmt'] = display_df['total_search_volume'].apply(lambda x: format_number(int(x)))
                 display_df['total_clicks_fmt'] = display_df['total_clicks'].apply(lambda x: format_number(int(x)))
                 display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
-                display_df['avg_ctr_fmt'] = display_df['avg_ctr'].apply(lambda x: f"{x:.2f}%")
-                display_df['avg_cr_fmt'] = display_df['avg_cr'].apply(lambda x: f"{x:.2f}%")
+                display_df['avg_ctr_fmt'] = display_df['avg_ctr'].apply(lambda x: f"{x:.1f}%")
+                display_df['avg_cr_fmt'] = display_df['avg_cr'].apply(lambda x: f"{x:.1f}%")
                 display_df['cannibalization_score_fmt'] = display_df['cannibalization_score'].apply(lambda x: f"{x:.0f}")
                 
                 display_df = display_df[['brand', 'unique_queries', 'total_search_volume_fmt', 'total_clicks_fmt', 
@@ -15519,8 +15519,8 @@ with tab_insights:
                 detail_display['Counts_fmt'] = detail_display['Counts'].apply(lambda x: format_number(int(x)))
                 detail_display['clicks_fmt'] = detail_display['clicks'].apply(lambda x: format_number(int(x)))
                 detail_display['conversions_fmt'] = detail_display['conversions'].apply(lambda x: format_number(int(x)))
-                detail_display['ctr_fmt'] = detail_display['ctr'].apply(lambda x: f"{x:.2f}%")
-                detail_display['cr_fmt'] = detail_display['cr'].apply(lambda x: f"{x:.2f}%")
+                detail_display['ctr_fmt'] = detail_display['ctr'].apply(lambda x: f"{x:.1f}%")
+                detail_display['cr_fmt'] = detail_display['cr'].apply(lambda x: f"{x:.1f}%")
                 
                 detail_display = detail_display[['search', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
                 detail_display.columns = ['Search Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
@@ -15612,8 +15612,8 @@ with tab_insights:
             display_df['search_volume_fmt'] = display_df['search_volume'].apply(lambda x: format_number(int(x)))
             display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
             display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
-            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+            display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.1f}%")
+            display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.1f}%")
             display_df['loyalty_score_fmt'] = display_df['loyalty_score'].apply(lambda x: f"{x:.2f}")
             
             display_df = display_df[['brand', 'top_queries', 'search_volume_fmt', 'clicks_fmt', 
@@ -15637,7 +15637,7 @@ with tab_insights:
             st.success(f"""
             🏆 **Top Loyalty Brand: {top_brand}**
             - Loyalty Score: **{top_loyalty:.2f}**
-            - CTR: **{top_ctr:.2f}%** | CR: **{top_cr:.2f}%**
+            - CTR: **{top_ctr:.1f}%** | CR: **{top_cr:.1f}%**
             - This brand shows strong customer engagement and conversion behavior
             """)
             
@@ -15858,10 +15858,10 @@ with tab_insights:
                     display_df['total_search_fmt'] = display_df['total_search'].apply(lambda x: format_number(int(x)))
                     display_df['total_clicks_fmt'] = display_df['total_clicks'].apply(lambda x: format_number(int(x)))
                     display_df['total_conversions_fmt'] = display_df['total_conversions'].apply(lambda x: format_number(int(x)))
-                    display_df['cv_fmt'] = display_df['cv'].apply(lambda x: f"{x:.2f}%")
+                    display_df['cv_fmt'] = display_df['cv'].apply(lambda x: f"{x:.1f}%")
                     display_df['stability_score_fmt'] = display_df['stability_score'].apply(lambda x: f"{x:.2f}")
-                    display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.2f}%")
-                    display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.2f}%")
+                    display_df['ctr_fmt'] = display_df['ctr'].apply(lambda x: f"{x:.1f}%")
+                    display_df['cr_fmt'] = display_df['cr'].apply(lambda x: f"{x:.1f}%")
                     
                     display_df = display_df[['brand', 'unique_queries', 'avg_search_fmt', 'total_search_fmt', 
                                             'total_clicks_fmt', 'total_conversions_fmt', 'ctr_fmt', 'cr_fmt',
@@ -15885,8 +15885,8 @@ with tab_insights:
                     st.success(f"""
                     🎯 **Most Stable Brand: {top_stable}**
                     - Stability Score: **{top_stability:.2f}**
-                    - Volatility: **{top_cv:.2f}%**
-                    - CTR: **{out.iloc[0]['ctr']:.2f}%** | CR: **{out.iloc[0]['cr']:.2f}%**
+                    - Volatility: **{top_cv:.1f}%**
+                    - CTR: **{out.iloc[0]['ctr']:.1f}%** | CR: **{out.iloc[0]['cr']:.1f}%**
                     - This brand shows consistent, predictable performance
                     """)
                     
