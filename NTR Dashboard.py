@@ -2462,7 +2462,7 @@ with tab_overview:
                             for insight in insights:
                                 st.markdown(f"- {insight}")
                         else:
-                            st.markdown("- 📊 **Stable Performance**: Health metrics show consistent performance across months")
+                            st.markdown("- 📊 **Stable Performance**: metrics show consistent performance across months")
                         
                         # ✅ ADDED: Filter status reminder
                         if st.session_state.get('filters_applied', False):
@@ -5205,7 +5205,7 @@ with tab_search:
             st.plotly_chart(fig_ql, use_container_width=True)
     
     with adv_col2:
-        st.markdown("**📊 Long-tail vs Short-tail Health Performance**")
+        st.markdown("**📊 Long-tail vs Short-tail Performance**")
         queries['is_long_tail'] = queries['query_length'] >= 20
         lt_analysis = queries.groupby('is_long_tail').agg({
             'Counts': 'sum', 
@@ -9552,7 +9552,7 @@ with tab_subcat:
                         <div class='health-subcat-metric-card'>
                             <span class='icon'>🏆</span>
                             <div class='value'>#{subcat_rank} <span class='health-performance-badge {rank_performance}'>{rank_text}</span></div>
-                            <div class='label'>Health Market Rank</div>
+                            <div class='label'>Market Rank</div>
                             <div class='sub-label'>Out of {total_subcategories} subcategories</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -9600,7 +9600,7 @@ with tab_subcat:
                     st.markdown("### 📈 Performance Breakdown")
 
                     metrics_data = {
-                        'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
+                        'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
                                 'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
                                 'Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
                         'Value': [
@@ -9613,7 +9613,7 @@ with tab_subcat:
                             f"{float(subcat_data['click_share']):.2f}%",
                             f"{float(subcat_data['conversion_share']):.2f}%"
                         ],
-                        'Health Performance': [
+                        'Performance': [
                             'High' if float(subcat_data['Counts']) > float(sc['Counts'].median()) else 'Low',
                             'High' if float(subcat_data['clicks']) > float(sc['clicks'].median()) else 'Low',
                             'High' if float(subcat_data['conversions']) > float(sc['conversions'].median()) else 'Low',
@@ -9626,7 +9626,12 @@ with tab_subcat:
                     }
                     
                     metrics_df = pd.DataFrame(metrics_data)
-                    st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+                    # ✅ USE STYLED TABLE FUNCTION
+                    display_styled_table(
+                        df=metrics_df,
+                        title="Performance Breakdown",
+                        align="left"
+                    )
                     
                     # Performance radar chart
                     st.markdown("### 📊 Performance Radar Chart")
@@ -9813,17 +9818,17 @@ with tab_subcat:
                     
                     # Download detailed analysis
                     detailed_analysis_data = {
-                        'Health Subcategory': [selected_subcategory],
-                        'Health Search Volume': [int(subcat_data['Counts'])],
-                        'Total Health Clicks': [int(subcat_data['clicks'])],
-                        'Total Nutraceuticals & Nutrition Conversions': [int(subcat_data['conversions'])],
-                        'Health CTR %': [float(subcat_data['ctr'])],
+                        'Subcategory': [selected_subcategory],
+                        'Search Volume': [int(subcat_data['Counts'])],
+                        'Total Clicks': [int(subcat_data['clicks'])],
+                        'Total Conversions': [int(subcat_data['conversions'])],
+                        'CTR %': [float(subcat_data['ctr'])],
                         'Classic CVR %': [float(subcat_data['classic_cvr'])],
-                        'Nutraceuticals & Nutrition Conversion Rate %': [float(subcat_data['conversion_rate'])],
-                        'Health Market Rank': [subcat_rank],
-                        'Nutraceuticals & Nutrition Market Share %': [market_share],
-                        'Health Performance Score': [performance_score],
-                        'Nutraceuticals & Nutrition Conversion Efficiency %': [conversion_efficiency]
+                        'Conversion Rate %': [float(subcat_data['conversion_rate'])],
+                        'Market Rank': [subcat_rank],
+                        'Market Share %': [market_share],
+                        'Performance Score': [performance_score],
+                        'Conversion Efficiency %': [conversion_efficiency]
                     }
                     
                     detailed_df = pd.DataFrame(detailed_analysis_data)
@@ -11609,7 +11614,7 @@ with tab_class:
                         <span class='icon'>🎯</span>
                         <div class='value'>{class_name}</div>
                         <div class='label'>Most Concentrated Health Class</div>
-                        <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.2f}% Nutraceuticals & Nutrition market share</div>
+                        <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.2f}% Market share</div>
                     </div>
                     """, unsafe_allow_html=True)
             
@@ -13418,9 +13423,9 @@ with tab_time:
                     """, unsafe_allow_html=True)
                 
                 # 🚀 OPTIMIZED: Pre-calculated performance table
-                st.markdown("### 📊 Health Performance Breakdown")
+                st.markdown("### 📊 Performance Breakdown")
                 metrics_data = {
-                    'Health Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 'CTR', 'Conversion Rate', 'Classic CVR', 'Click Share', 'Conversion Share'],
+                    'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 'CTR', 'Conversion Rate', 'Classic CVR', 'Click Share', 'Conversion Share'],
                     'Value': [
                         format_number(month_data['Counts']), 
                         format_number(month_data['clicks']), 
@@ -13431,7 +13436,7 @@ with tab_time:
                         format_percentage(month_data['click_share']), 
                         format_percentage(month_data['conversion_share'])
                     ],
-                    'Health Performance': [
+                    'Performance': [
                         'High' if month_data['Counts'] > monthly['Counts'].median() else 'Low',
                         'High' if month_data['clicks'] > monthly['clicks'].median() else 'Low',
                         'High' if month_data['conversions'] > monthly['conversions'].median() else 'Low',
@@ -13497,7 +13502,7 @@ with tab_time:
                 st.plotly_chart(fig_brands, use_container_width=True)
                 
                 # 🚀 OPTIMIZED: Pre-formatted display table
-                st.markdown("### 📊 Brand Health Performance Table")
+                st.markdown("### 📊 Brand Performance Table")
                 display_brands = brand_month[['month', 'brand', 'Counts', 'clicks', 'conversions', 'ctr', 'conversion_rate']].copy()
                 display_brands.columns = ['Month', 'Brand', 'Health Search Volume', 'Health Clicks', 'Nutraceuticals & Nutrition Conversions', 'Health CTR %', 'Nutraceuticals & Nutrition Conversion Rate %']
                 
