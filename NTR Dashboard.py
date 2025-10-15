@@ -586,7 +586,7 @@ div[data-testid="stMarkdownContainer"] table tbody td {
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td:first-child {
-    text-align: left !important;
+    text-align: center !important;
     font-weight: 500 !important;
     color: #2E7D32 !important;
 }
