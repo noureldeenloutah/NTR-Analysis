@@ -9630,7 +9630,7 @@ with tab_subcat:
                     display_styled_table(
                         df=metrics_df,
                         title="Performance Breakdown",
-                        align="left"
+                        align="center"
                     )
                     
                     # Performance radar chart
