@@ -14226,7 +14226,7 @@ with tab_pivot:
                 AgGrid(display_pv, gridOptions=gb.build(), height=500, theme='material', fit_columns_on_grid_load=True)
             else:
                 display_styled_table(
-                    df=display_filtered,
+                    df=display_pv,
                     align="center",
                     scrollable=True,
                     max_height="500px"
