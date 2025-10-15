@@ -9945,11 +9945,11 @@ with tab_subcat:
                     comparison_table['Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
                     display_styled_table(
-    df=comparison_table,
-    align="center",
-    scrollable=True,
-    max_height="500px"
-)
+                        df=comparison_table,
+                        align="center",
+                        scrollable=True,
+                        max_height="500px"
+                    )
                     
                     # Performance ranking
                     st.markdown("### 🏆 Performance Ranking")
