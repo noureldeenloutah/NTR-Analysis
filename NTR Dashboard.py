@@ -4279,7 +4279,7 @@ with tab_search:
             """, unsafe_allow_html=True)
             
             num_keywords = st.slider(
-                "Number of health keywords to display:", 
+                "Number of keywords to display:", 
                 min_value=10, 
                 max_value=min(300, len(kw_perf_df)), 
                 value=15, 
@@ -5825,7 +5825,7 @@ with tab_brand:
                     'Total Clicks': total_clicks,
                     'Total Conversions': total_conversions,
                     'Unique Keywords': unique_keywords_count,
-                    'Top Health Keywords': top_keywords_str
+                    'Top Keywords': top_keywords_str
                 }
                 
                 # ✅ CALCULATE: Monthly metrics
@@ -5877,7 +5877,7 @@ with tab_brand:
                 st.info(f"📊 **All Data**: Showing Top {num_brands} brands from {unique_brands_count:,} total brands")
             
             # ✅ ORGANIZE: Column order
-            base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions', 'Unique Keywords', 'Top Health Keywords']
+            base_columns = ['Brand', 'Total Volume', 'Market Share %', 'Overall CTR', 'Overall CR', 'Classic CR', 'Total Clicks', 'Total Conversions', 'Unique Keywords', 'Top Keywords']
             
             volume_columns = []
             ctr_columns = []
@@ -7225,7 +7225,7 @@ with tab_category:
             color='cr',
             hover_name='category',
             title='<b style="color:#2E7D32; font-size:18px;">🌿 Category Performance Matrix: Search Volume vs CTR</b>',
-            labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            labels={'Counts': 'Total Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
@@ -8951,8 +8951,8 @@ with tab_subcat:
                         
                         top_keywords_summary.append({
                             'Health Subcategory': subcat,
-                            f'Top {top_n} Health Keywords (with counts)': keywords_str,
-                            'Total Health Keywords': unique_keywords,
+                            f'Top {top_n} Keywords (with counts)': keywords_str,
+                            'Total Keywords': unique_keywords,
                             'Subcategory Total Volume': format_number(actual_subcategory_total),
                             'Nutraceuticals & Nutrition Share %': f"{share_percentage:.2f}%",
                             'Avg Health Keyword Count': f"{avg_keyword_count:.1f}",
@@ -10361,7 +10361,7 @@ with tab_class:
             color='cr',
             hover_name='class',
             title='<b style="color:#2E7D32; font-size:18px;">🎯 Class Performance Matrix: Search Volume vs CTR</b>',
-            labels={'Counts': 'Total Health Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            labels={'Counts': 'Total Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
@@ -10939,11 +10939,11 @@ with tab_class:
                             # Dynamic charts: Create charts based on selection
                             charts_to_show = []
                             if show_volume:
-                                charts_to_show.append(('Search Volume', 'Counts', '🎯 Top 5 Health Classes - Monthly Search Volume Trend'))
+                                charts_to_show.append(('Search Volume', 'Counts', '🎯 Top 5 Classes - Monthly Search Volume Trend'))
                             if show_ctr:
-                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Health Classes - Monthly CTR Trend'))
+                                charts_to_show.append(('CTR (%)', 'CTR', '📈 Top 5 Classes - Monthly CTR Trend'))
                             if show_cr:
-                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Health Classes - Monthly CR Trend'))
+                                charts_to_show.append(('CR (%)', 'CR', '🎯 Top 5 Classes - Monthly CR Trend'))
                             
                             if not charts_to_show:
                                 st.warning("Please select at least one metric to display.")
@@ -11077,7 +11077,7 @@ with tab_class:
                                 
                                 
                         else:
-                            st.info("No valid trend data available for the top 5 health classes")
+                            st.info("No valid trend data available for the top 5 classes")
                     else:
                         st.info("No valid dates found in the health class data")
                 except Exception as e:
@@ -11573,7 +11573,7 @@ with tab_class:
                     
                     top_keywords_summary.append({
                         'Nutraceuticals & Nutrition Class': cls_name,
-                        f'Top {num_keywords} Health Keywords (with counts)': keywords_str,
+                        f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
                         'Class Total Volume': actual_class_total,  # ✅ Keep as number for sorting
                         'Market Share %': f"{share_percentage:.2f}%",
@@ -11613,7 +11613,7 @@ with tab_class:
                         <span class='icon'>🌟</span>
                         <div class='value'>{class_name}</div>
                         <div class='label'>Most Diverse Class</div>
-                        <div class='sub-label'>{most_diverse_cls[1]['total_keywords']} unique health keywords</div>
+                        <div class='sub-label'>{most_diverse_cls[1]['total_keywords']} unique keywords</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -11626,7 +11626,7 @@ with tab_class:
                         <span class='icon'>🚀</span>
                         <div class='value'>{class_name}</div>
                         <div class='label'>Highest Volume Class</div>
-                        <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total health searches<br>{highest_volume_cls[1]['share_percentage']:.2f}% market share</div>
+                        <div class='sub-label'>{format_number(highest_volume_cls[1]['total_count'])} total searches<br>{highest_volume_cls[1]['share_percentage']:.2f}% market share</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
@@ -11638,7 +11638,7 @@ with tab_class:
                     <div class='enhanced-health-class-metric'>
                         <span class='icon'>🎯</span>
                         <div class='value'>{class_name}</div>
-                        <div class='label'>Most Concentrated Health Class</div>
+                        <div class='label'>Most Concentrated Class</div>
                         <div class='sub-label'>{most_concentrated_cls[1]['share_percentage']:.2f}% Market share</div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11667,8 +11667,6 @@ with tab_class:
 
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
-    st.header("🌱 Generic Type Intelligence Hub")
-    st.markdown("Deep dive into generic term performance and nutraceutical search trends. 💚")
 
     # Optimized Hero Image with caching
     # 🎨 GREEN-THEMED HERO HEADER (replacing image selection)
@@ -11699,7 +11697,7 @@ with tab_generic:
             font-weight: 300;
             opacity: 0.9;
         ">
-            Deep dive into Nutraceuticals & Nutrition subcategory performance and health search trends
+            Deep dive into generic type performance and search trends
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -12227,16 +12225,25 @@ with tab_generic:
                 st.session_state.styled_generics_health = styled_generics
 
             # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
+            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
+            html_content = st.session_state.styled_generics_health.to_html(index=False, escape=False)
+
+            # Clean up any duplicate closing tags
+            html_content = html_content.strip()
+
             # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
             actual_rows = len(top_generics_monthly)
             table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
-            
-            st.dataframe(
-                st.session_state.styled_generics_health, 
-                use_container_width=True, 
-                height=table_height,  # ✅ DYNAMIC HEIGHT
-                hide_index=True
+
+            st.markdown(
+                f"""
+                <div style="height: {table_height}px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                    {html_content}
+                </div>
+                """,
+                unsafe_allow_html=True
             )
+
 
             # 🔄 ENHANCED: Better legend with comparison focus
             st.markdown("""
@@ -13428,7 +13435,7 @@ with tab_time:
                         <span class='icon'>📊</span>
                         <div class='value'>{format_percentage(market_share)}</div>
                         <div class='label'>Nutraceuticals & Nutrition Market Share</div>
-                        <div class='sub-label'>Of total health searches</div>
+                        <div class='sub-label'>Of total searches</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
