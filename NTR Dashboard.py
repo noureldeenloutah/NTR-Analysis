@@ -745,7 +745,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 word-wrap: break-word;
                 overflow-wrap: break-word;
                 line-height: 1.5;
-                vertical-align: top;
+                vertical-align: middle;
             }
         </style>
         '''
