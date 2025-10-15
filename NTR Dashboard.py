@@ -12003,75 +12003,71 @@ with tab_generic:
             """, unsafe_allow_html=True)
             st.session_state.generic_terms_health_css_loaded = True
 
-        # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
-        month_names = {
-            '2025-06': 'June 2025',
-            '2025-07': 'July 2025',
-            '2025-08': 'August 2025'
-        }
+        # ✅ REUSE: Dynamic month names from categories section (already defined above)
+        # If not defined, create it here
+        if 'month_names' not in locals():
+            month_names = get_dynamic_month_names(queries_with_month)
+
+        # ✅ ENSURE: Month column exists in generic_type dataframe
+        generic_type_with_month = generic_type.copy()
+        if 'month' not in generic_type_with_month.columns and 'start_date' in generic_type_with_month.columns:
+            generic_type_with_month['start_date'] = pd.to_datetime(generic_type_with_month['start_date'])
+            generic_type_with_month['month'] = generic_type_with_month['start_date'].dt.to_period('M').astype(str)
 
         # 🚀 COMPUTE: Get generic terms data with caching (filter-aware)
         generic_filter_state = {
             'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': generic_type.shape,
-            'data_hash': hash(str(gt_agg['search'].tolist()[:10]) if not gt_agg.empty else "empty")
+            'data_shape': generic_type_with_month.shape,
+            'data_hash': hash(str(gt_agg['search'].tolist()[:10]) if not gt_agg.empty else "empty"),
+            'num_generic_terms': num_generic_terms
         }
         generic_filter_key = str(hash(str(generic_filter_state)))
 
         @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_generic_health_performance_monthly(_df, _gt, month_names_dict, cache_key):
-            """🔄 FIXED: Create month column from start_date and compute monthly metrics"""
+        def compute_generic_health_performance_monthly(_df, _gt, month_names_dict, num_terms, cache_key):
+            """🔄 UNIFIED: Build complete generic terms table directly from generic_type dataframe"""
             if _df.empty or _gt.empty:
                 return pd.DataFrame(), []
             
-            # ✅ CREATE MONTH COLUMN from start_date
-            df_with_month = _df.copy()
+            # Step 1: Get top generic terms by total counts
+            top_generics_list = _gt.nlargest(num_terms, 'count')['search'].tolist()
             
-            # Convert start_date to datetime if it's not already
-            if 'start_date' in df_with_month.columns:
-                df_with_month['start_date'] = pd.to_datetime(df_with_month['start_date'])
-                # Extract year-month format (e.g., '2025-08')
-                df_with_month['month'] = df_with_month['start_date'].dt.strftime('%Y-%m')
+            # Step 2: Filter original data for top generic terms
+            top_data = _df[_df['search'].isin(top_generics_list)].copy()
+            
+            # Step 3: Get unique months
+            if 'month' in top_data.columns:
+                unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
             else:
-                # Fallback: if no start_date, create a dummy month
-                df_with_month['month'] = '2025-08'
+                unique_months = []
             
-            # Get top generic terms by total counts
-            top_generics_list = _gt.nlargest(50, 'count')['search'].tolist()
-            
-            # Filter original data for top generic terms
-            top_data = df_with_month[df_with_month['search'].isin(top_generics_list)].copy()
-            
-            # Get unique months from the data
-            unique_months = sorted(top_data['month'].unique()) if not top_data.empty else []
-            
-            # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
+            # Step 4: Build comprehensive generic terms data
             result_data = []
             
             for generic_term in top_generics_list:
                 generic_data = top_data[top_data['search'] == generic_term]
                 
-                # ✅ SKIP GENERIC TERMS WITH NO DATA
                 if generic_data.empty:
                     continue
                 
-                # Base information
+                # ✅ CALCULATE: Base metrics
                 total_counts = int(generic_data['count'].sum())
                 total_clicks = int(generic_data['Clicks'].sum())
                 total_conversions = int(generic_data['Conversions'].sum())
                 
-                # ✅ SKIP GENERIC TERMS WITH ZERO VOLUME
                 if total_counts == 0:
                     continue
-                    
+                
+                # Calculate total dataset counts for share percentage
+                dataset_total_counts = _df['count'].sum()
+                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
+                
                 overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                 overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                 
-                # Calculate share percentage
-                share_pct = (total_counts / df_with_month['count'].sum()) * 100 if df_with_month['count'].sum() > 0 else 0
-                
+                # ✅ BUILD: Row data
                 row = {
-                    'Generic Health Term': generic_term,
+                    'Generic Term': generic_term,
                     'Total Volume': total_counts,
                     'Share %': share_pct,
                     'Overall CTR': overall_ctr,
@@ -12080,24 +12076,22 @@ with tab_generic:
                     'Total Conversions': total_conversions
                 }
                 
-                # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
+                # ✅ CALCULATE: Monthly metrics
                 for month in unique_months:
-                    month_data = generic_data[generic_data['month'] == month]
                     month_display = month_names_dict.get(month, month)
+                    month_data = generic_data[generic_data['month'] == month]
                     
                     if not month_data.empty:
-                        # ✅ FIXED: Calculate month-specific metrics
                         month_counts = int(month_data['count'].sum())
                         month_clicks = int(month_data['Clicks'].sum())
                         month_conversions = int(month_data['Conversions'].sum())
                         
-                        # ✅ FIXED: Month-specific CTR and CR calculations
                         month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
                         month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                         
                         row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr  # ✅ NOW CORRECT
-                        row[f'{month_display} CR'] = month_cr    # ✅ NOW CORRECT
+                        row[f'{month_display} CTR'] = month_ctr
+                        row[f'{month_display} CR'] = month_cr
                     else:
                         row[f'{month_display} Vol'] = 0
                         row[f'{month_display} CTR'] = 0
@@ -12106,54 +12100,64 @@ with tab_generic:
                 result_data.append(row)
             
             result_df = pd.DataFrame(result_data)
-            if not result_df.empty:
-                result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-                # ✅ REMOVE EMPTY ROWS: Filter out rows with all zero values
-                result_df = result_df[result_df['Total Volume'] > 0]
+            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+            result_df = result_df[result_df['Total Volume'] > 0]
             
             return result_df, unique_months
 
-        top_generics_monthly, unique_months_gen = compute_generic_health_performance_monthly(generic_type, gt_agg, month_names, generic_filter_key)
+        top_generics_monthly, unique_months_gen = compute_generic_health_performance_monthly(
+            generic_type_with_month, 
+            gt_agg, 
+            month_names, 
+            num_generic_terms,
+            generic_filter_key
+        )
 
         if top_generics_monthly.empty:
             st.warning("No valid generic terms data after processing.")
         else:
-            # ✅ CLEAN DATA: Remove any remaining empty rows and limit to selected number
-            top_generics_monthly = top_generics_monthly.dropna(subset=['Generic Health Term'])
-            top_generics_monthly = top_generics_monthly[top_generics_monthly['Total Volume'] > 0]
-            top_generics_monthly = top_generics_monthly.head(num_generic_terms)
+            # ✅ SHOW: Filter status
+            unique_generic_terms_count = generic_type_with_month['search'].nunique()
             
-            # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
-            base_columns = ['Generic Health Term', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered Results**: Showing Top {num_generic_terms} generic terms from {unique_generic_terms_count:,} total terms")
+            else:
+                st.info(f"📊 **All Data**: Showing Top {num_generic_terms} generic terms from {unique_generic_terms_count:,} total terms")
             
-            # Group monthly columns by type for easier comparison
+            # ✅ ORGANIZE: Column order - MATCHING SCREENSHOT PATTERN
+            base_columns = ['Generic Term', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            
+            # Get sorted months
+            sorted_months = sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))
+            
+            # Build column lists
             volume_columns = []
             ctr_columns = []
             cr_columns = []
             
-            for month in sorted(unique_months_gen):
+            for month in sorted_months:
                 month_display = month_names.get(month, month)
                 volume_columns.append(f'{month_display} Vol')
                 ctr_columns.append(f'{month_display} CTR')
                 cr_columns.append(f'{month_display} CR')
             
-            # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+            # ✅ CORRECT ORDER: Base → Volumes → CTRs → CRs
             ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
             existing_columns = [col for col in ordered_columns if col in top_generics_monthly.columns]
             top_generics_monthly = top_generics_monthly[existing_columns]
-
-            # 🚀 ENHANCED: Smart styling with better comparison highlighting
+            
+            # ✅ FORMAT & STYLE
             generics_hash = hash(str(top_generics_monthly.shape) + str(top_generics_monthly.columns.tolist()) + str(top_generics_monthly.iloc[0].to_dict()) if len(top_generics_monthly) > 0 else "empty")
+            styling_cache_key = f"{generics_hash}_{generic_filter_key}"
             
             if ('styled_generics_health' not in st.session_state or 
-                st.session_state.get('generics_health_cache_key') != generics_hash):
+                st.session_state.get('generics_health_cache_key') != styling_cache_key):
                 
-                st.session_state.generics_health_cache_key = generics_hash
+                st.session_state.generics_health_cache_key = styling_cache_key
                 
-                # 🚀 FAST: Apply format_number to numeric columns before styling
                 display_generics = top_generics_monthly.copy()
                 
-                # Format volume columns with format_number
+                # Format volume columns
                 volume_cols_to_format = ['Total Volume'] + volume_columns
                 for col in volume_cols_to_format:
                     if col in display_generics.columns:
@@ -12165,72 +12169,65 @@ with tab_generic:
                 if 'Total Conversions' in display_generics.columns:
                     display_generics['Total Conversions'] = display_generics['Total Conversions'].apply(lambda x: format_number(int(x)))
                 
-                # 🔄 ENHANCED: Better performance highlighting with comparison focus
+                # ✅ STYLING: Month-over-month comparison
                 def highlight_generic_health_performance_with_comparison(df):
-                    """Enhanced highlighting for better health generic terms comparison"""
+                    """Enhanced highlighting for generic terms comparison"""
                     styles = pd.DataFrame('', index=df.index, columns=df.columns)
                     
                     if len(unique_months_gen) < 2:
                         return styles
                     
-                    sorted_months = sorted(unique_months_gen)
+                    sorted_months_local = sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))
                     
-                    # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
-                    for i in range(1, len(sorted_months)):
-                        current_month = month_names.get(sorted_months[i], sorted_months[i])
-                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                    # Compare consecutive months
+                    for i in range(1, len(sorted_months_local)):
+                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
                         
                         current_ctr_col = f'{current_month} CTR'
                         prev_ctr_col = f'{prev_month} CTR'
                         current_cr_col = f'{current_month} CR'
                         prev_cr_col = f'{prev_month} CR'
                         
-                        # CTR comparison with threshold
+                        # CTR comparison
                         if current_ctr_col in df.columns and prev_ctr_col in df.columns:
                             for idx in df.index:
-                                try:
-                                    current_ctr = float(df.loc[idx, current_ctr_col])
-                                    prev_ctr = float(df.loc[idx, prev_ctr_col])
-                                    
-                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                        if change_pct > 10:  # 10% improvement
-                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:  # 10% decline
-                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:  # 5-10% change
-                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                                except (ValueError, TypeError):
-                                    pass
+                                current_ctr = df.loc[idx, current_ctr_col]
+                                prev_ctr = df.loc[idx, prev_ctr_col]
+                                
+                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
                         
-                        # CR comparison with threshold
+                        # CR comparison
                         if current_cr_col in df.columns and prev_cr_col in df.columns:
                             for idx in df.index:
-                                try:
-                                    current_cr = float(df.loc[idx, current_cr_col])
-                                    prev_cr = float(df.loc[idx, prev_cr_col])
-                                    
-                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                        if change_pct > 10:  # 10% improvement
-                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                        elif change_pct < -10:  # 10% decline
-                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                        elif abs(change_pct) > 5:  # 5-10% change
-                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
-                                except (ValueError, TypeError):
-                                    pass
+                                current_cr = df.loc[idx, current_cr_col]
+                                prev_cr = df.loc[idx, prev_cr_col]
+                                
+                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                    if change_pct > 10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                    elif change_pct < -10:
+                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                    elif abs(change_pct) > 5:
+                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
                     
-                    # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                    # Volume column highlighting
                     for col in volume_columns:
                         if col in df.columns:
                             styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
                     
                     return styles
                 
-                # Create styled DataFrame from the formatted copy
                 styled_generics = display_generics.style.apply(highlight_generic_health_performance_with_comparison, axis=None)
                 
                 styled_generics = styled_generics.set_properties(**{
@@ -12245,43 +12242,33 @@ with tab_generic:
                     {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
                 ])
                 
-                # 🔄 IMPROVED: Format dictionary
                 format_dict = {
                     'Share %': '{:.2f}%',
                     'Overall CTR': '{:.2f}%',
                     'Overall CR': '{:.2f}%'
                 }
                 
-                # Add formatting for monthly CTR and CR columns
                 for col in ctr_columns + cr_columns:
                     if col in display_generics.columns:
                         format_dict[col] = '{:.2f}%'
-
+                
                 styled_generics = styled_generics.format(format_dict)
                 st.session_state.styled_generics_health = styled_generics
-
-            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
-            # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
+            
+            # Display table
             html_content = st.session_state.styled_generics_health.to_html(index=False, escape=False)
-
-            # Clean up any duplicate closing tags
             html_content = html_content.strip()
-
-            # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
-            actual_rows = len(top_generics_monthly)
-            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
 
             st.markdown(
                 f"""
-                <div style="height: {table_height}px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 5px;">
                     {html_content}
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-
-
-            # 🔄 ENHANCED: Better legend with comparison focus
+            
+            # Legend
             st.markdown("""
             <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
                 <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Comparison Guide:</h4>
@@ -12294,39 +12281,43 @@ with tab_generic:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-            # 🔄 ENHANCED: Column grouping explanation for generic terms
+            
+            # Column organization explanation
             if unique_months_gen:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months_gen)]
+                month_list = [month_names.get(m, m) for m in sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))]
                 st.markdown(f"""
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
                     <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Column Organization:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Generic Health Term, Total Volume, Share %, Overall CTR/CR</div>
+                        <div><strong>🌱 Base Metrics:</strong> Generic Term, Total Volume, Share %, Overall CTR/CR</div>
                         <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
                         <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
                         <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-
-            # 🚀 ENHANCED DOWNLOAD SECTION
+            
+            # Download section
             st.markdown("<br>", unsafe_allow_html=True)
             
             csv_generics = top_generics_monthly.to_csv(index=False)
             
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
+                filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                
                 st.download_button(
                     label="📥 Download Generic Terms CSV",
                     data=csv_generics,
-                    file_name=f"top_{num_generic_terms}_generic_health_terms_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"top_{num_generic_terms}_generic_terms{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the generic health terms table with monthly comparison data",
+                    help="Download the generic terms table with current filter settings applied",
                     use_container_width=True,
                     key="generic_terms_monthly_download"
                 )
-            st.markdown("---")
+
+        st.markdown("---")
+
 
 
 
