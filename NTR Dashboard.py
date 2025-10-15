@@ -14917,7 +14917,12 @@ with tab_insights:
             display_df = display_df[['brand', 'search_volume_fmt', 'conversions_fmt', 'cr_calculated', 'potential_conversions_fmt', 'conversion_gap_fmt']]
             display_df.columns = ['Brand', 'Search Volume', 'Current Conversions', 'Current CR (%)', 'Potential Conversions', 'Conversion Gap']
             
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            display_styled_table(
+                df=display_df,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )
             
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q3_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q3_dl")
             
@@ -15844,7 +15849,7 @@ with tab_insights:
                         scrollable=True,
                         max_height="600px"
                     )          
-                              
+
                     # Insights callout
                     top_stable = out.iloc[0]['brand']
                     top_stability = out.iloc[0]['stability_score']
@@ -15905,7 +15910,12 @@ with tab_insights:
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.dataframe(category_summary, use_container_width=True, hide_index=True)
+                        display_styled_table(
+                            df=category_summary,
+                            align="center",
+                            scrollable=True,
+                            max_height="400px"
+                        )
                     
                     with col2:
                         fig3 = px.pie(category_summary, values='Brand Count', names='Stability Category',
