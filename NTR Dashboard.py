@@ -8973,7 +8973,6 @@ with tab_subcat:
                     # Display the enhanced summary table with styled function
                     display_styled_table(
                         df=summary_df,
-                        download_filename=f"nutraceuticals_category_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                         scrollable=True,
                         max_height="500px",
                         align="center"
@@ -9270,16 +9269,19 @@ with tab_subcat:
                         st.session_state.styled_subcategories_health = styled_subcategories
 
                     # 🚀 DISPLAY: Cached styled DataFrame with dynamic height
-                    # ✅ CALCULATE PROPER HEIGHT: Based on actual number of rows
-                    actual_rows = len(top_subcategories_monthly)
-                    table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
-                    
-                    st.dataframe(
-                        st.session_state.styled_subcategories_health, 
-                        use_container_width=True, 
-                        height=table_height,  # ✅ DYNAMIC HEIGHT
-                        hide_index=True
+                    # 🚀 DISPLAY: Scrollable container instead of dynamic height
+                    html_content = st.session_state.styled_subcategories_health.to_html(index=False, escape=False)
+                    html_content = html_content.strip()
+
+                    st.markdown(
+                        f"""
+                        <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 5px;">
+                            {html_content}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
+
 
                     # 🔄 ENHANCED: Better legend with comparison focus
                     st.markdown("""
