@@ -9605,8 +9605,6 @@ with tab_subcat:
                         """, unsafe_allow_html=True)
                     
                     # Performance breakdown table
-                    st.markdown("### 📈 Performance Breakdown")
-
                     metrics_data = {
                         'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
                                 'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
@@ -9691,9 +9689,7 @@ with tab_subcat:
                     st.plotly_chart(fig_radar, use_container_width=True)
                     
                     # Keyword analysis for selected subcategory
-                    if 'keyword' in queries.columns or 'search' in queries.columns:
-                        st.markdown("### 🔍 Top Keywords for Selected Subcategory")
-                        
+                    if 'keyword' in queries.columns or 'search' in queries.columns:                        
                         keyword_col = 'keyword' if 'keyword' in queries.columns else 'search'
                         subcat_keywords = subcategory_queries[subcategory_queries[subcategory_column] == selected_subcategory].copy()
                         
@@ -9765,7 +9761,7 @@ with tab_subcat:
                             keyword_display.columns = ['Keyword', 'Search Volume', 'Clicks', 
                                                      'Conversions', 'Health CTR %', 'CR %']
                             
-                            st.dataframe(keyword_display, use_container_width=True, hide_index=True)
+                            display_styled_table(df=keyword_display, title=f"🔍 Top Keywords Performance in {selected_subcategory}", align="center")
                         else:
                             st.info("No health keyword data available for this subcategory.")
                     
