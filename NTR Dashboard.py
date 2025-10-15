@@ -10035,7 +10035,7 @@ with tab_subcat:
                         pie_data,
                         values='Counts',
                         names='sub_category',
-                        title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Health Market Share</b>',
+                        title=f'<b style="color:#2E7D32;">🌿 Top {display_count} Market Share</b>',
                         color_discrete_sequence=['#2E7D32', '#388E3C', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C8', '#E8F5E8', '#F1F8E9', '#F9FBE7', '#DCEDC8']
                     )
                     
@@ -10729,15 +10729,20 @@ with tab_class:
 
             # Display: Cached styled DataFrame with dynamic height
             # Calculate proper height: Based on actual number of rows
+            # Convert styled DataFrame to HTML
+            html_content = st.session_state.styled_classes_health.to_html(index=False, escape=False)
+            html_content = html_content.strip()
+
+            # Calculate dynamic height
             actual_rows = len(top_classes_monthly)
-            table_height = min(max(actual_rows * 40 + 50, 200), 600)  # Min 200px, Max 600px
-            
-            st.dataframe(
-                st.session_state.styled_classes_health, 
-                use_container_width=True, 
-                height=table_height,
-                hide_index=True
-            )
+            table_height = min(max(actual_rows * 40 + 50, 200), 600)
+
+            # Display in scrollable container
+            st.markdown(f"""
+                <div style="height: {table_height}px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                    {html_content}
+                </div>
+            """, unsafe_allow_html=True)
 
             # Better legend with comparison focus
             st.markdown("""
