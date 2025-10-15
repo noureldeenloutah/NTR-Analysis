@@ -14810,7 +14810,12 @@ with tab_insights:
         display_df = display_df[['brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'conversion_efficiency']]
         display_df.columns = ['Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Efficiency Score']
         
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        display_styled_table(
+            df=display_df,
+            align="center",
+            scrollable=True,
+            max_height="600px"
+        )
         
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q1_top_products_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q1_dl")
         
@@ -14854,9 +14859,14 @@ with tab_insights:
                 
                 display_df = display_df[['category', 'search_volume_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
                 display_df.columns = ['Category', 'Search Volume', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
-                
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
+
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )
+
                 st.download_button("📥 Download Data", out.to_csv(index=False), f"q2_category_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q2_dl")
                 
                 fig = px.bar(out, x='category', y='conversions', color='cr',
@@ -14952,7 +14962,12 @@ with tab_insights:
             display_df = display_df[['search', 'brand', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_calculated', 'cr_calculated', 'bounce_indicator']]
             display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Experience Gap']
             
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            display_styled_table(
+                df=display_df,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )            
             
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q4_experience_issues_by_query_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q4_dl")
             
@@ -15001,7 +15016,12 @@ with tab_insights:
         display_df = display_df[['brand_type', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'search_share']]
         display_df.columns = ['Brand Type', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Search Share (%)']
         
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        display_styled_table(
+            df=display_df,
+            align="center",
+            scrollable=True,
+            max_height="600px"
+        )
         
         st.download_button("📥 Download Data", out.to_csv(index=False), f"q5_branded_vs_generic_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q5_dl")
         
@@ -15046,7 +15066,12 @@ with tab_insights:
                 display_df = display_df[['month', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr']]
                 display_df.columns = ['Month', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )                
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), f"q6_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q6_dl")
                 
@@ -15100,8 +15125,12 @@ with tab_insights:
                 display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 
                                     'Conversions', 'CTR', 'CR']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )                
                 # Add warning callout
                 total_underperforming = len(filtered)
                 total_volume = filtered['Counts'].sum()
@@ -15186,7 +15215,12 @@ with tab_insights:
                 display_df.columns = ['Brand', 'Search Query', 'Search Volume', 'Clicks', 
                                     'Conversions', 'CTR', 'CR', 'Opportunity Score']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )                
                 
                 # Add insight callout
                 top_gem = out.iloc[0]
@@ -15246,8 +15280,12 @@ with tab_insights:
                 display_df = display_df[['sub_category', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_potential']]
                 display_df.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )                
                 st.download_button("📥 Download Data", out.to_csv(index=False), f"q9_subcategory_performance_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q9_dl")
                 
                 fig = px.treemap(out, path=['sub_category'], values='search_volume', color='cr',
@@ -15309,8 +15347,13 @@ with tab_insights:
             display_df.columns = ['Query', 'Brand', 'Search Query', 'Search Volume', 'Clicks', 
                                 'Conversions', 'CTR', 'CR', 'Click-to-Conv', 'Funnel Efficiency']
             
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
+            display_styled_table(
+                df=display_df,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )
+
             # Add insight callout
             top_performer = out.iloc[0]
             st.success(f"🏆 **Top Funnel Performer:** {top_performer['brand']} ('{top_performer['search_query']}') with {top_performer['funnel_efficiency']:.2f}% efficiency - converting {top_performer['conversions']:.0f} out of {format_number(int(top_performer['search_volume']))} searches!")
@@ -15423,8 +15466,13 @@ with tab_insights:
                 display_df.columns = ['Brand', '# Unique Queries', 'Total Search Volume', 'Total Clicks', 
                                     'Total Conversions', 'Avg CTR', 'Avg CR', 'Cannibalization Risk']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                ) 
+
                 # Warning callout
                 st.warning(f"⚠️ **{top_brand}** has **{out.iloc[0]['unique_queries']:.0f} unique search queries** with **{format_number(int(out.iloc[0]['total_search_volume']))}** total search volume. This indicates severe keyword fragmentation!")
                 
@@ -15445,8 +15493,13 @@ with tab_insights:
                 detail_display = detail_display[['search', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr_fmt', 'cr_fmt']]
                 detail_display.columns = ['Search Query', 'Search Volume', 'Clicks', 'Conversions', 'CTR', 'CR']
                 
-                st.dataframe(detail_display, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=detail_display,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )     
+
                 # Actionable insights
                 st.info(f"""
                 **💡 Consolidation Strategy for {top_brand}:**
@@ -15536,7 +15589,12 @@ with tab_insights:
             display_df.columns = ['Brand', 'Top Queries', 'Search Volume', 'Clicks', 
                                 'Conversions', 'CTR', 'CR', 'Loyalty Score']
             
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
+            display_styled_table(
+                df=display_df,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )            
             
             # Insights callout
             top_brand = out.iloc[0]['brand']
@@ -15650,8 +15708,13 @@ with tab_insights:
             display_df = display_df[['brand', 'search_volume_fmt', 'ctr_calculated', 'cr_calculated', 'ctr_gap', 'cr_gap', 'total_gap']]
             display_df.columns = ['Brand', 'Search Volume', 'Current CTR (%)', 'Current CR (%)', 'CTR Gap', 'CR Gap', 'Total Gap']
             
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-            
+            display_styled_table(
+                df=display_df,
+                align="center",
+                scrollable=True,
+                max_height="600px"
+            )
+
             st.download_button("📥 Download Data", out.to_csv(index=False), f"q13_competitive_gap_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q13_dl")
             
             fig = px.bar(out, x='brand', y=['ctr_gap', 'cr_gap'],
@@ -15698,8 +15761,13 @@ with tab_insights:
                 display_df = display_df[['keyword', 'search_volume_fmt', 'clicks_fmt', 'conversions_fmt', 'ctr', 'cr', 'revenue_score']]
                 display_df.columns = ['Keyword', 'Search Volume', 'Clicks', 'Conversions', 'CTR (%)', 'CR (%)', 'Revenue Score']
                 
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-                
+                display_styled_table(
+                    df=display_df,
+                    align="center",
+                    scrollable=True,
+                    max_height="600px"
+                )       
+                         
                 st.download_button("📥 Download Data", out.to_csv(index=False), f"q14_high_value_keywords_{datetime.now().strftime('%Y%m%d')}.csv", "text/csv", key="q14_dl")
                 
                 fig = px.bar(out, x='keyword', y='revenue_score', color='cr',
@@ -15770,8 +15838,13 @@ with tab_insights:
                                         'Total Clicks', 'Total Conversions', 'CTR', 'CR', 
                                         'Volatility', 'Stability Score']
                     
-                    st.dataframe(display_df, use_container_width=True, hide_index=True)
-                    
+                    display_styled_table(
+                        df=display_df,
+                        align="center",
+                        scrollable=True,
+                        max_height="600px"
+                    )          
+                              
                     # Insights callout
                     top_stable = out.iloc[0]['brand']
                     top_stability = out.iloc[0]['stability_score']
