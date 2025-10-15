@@ -10477,17 +10477,17 @@ with tab_class:
         
         # Top Classes Performance Table
         st.subheader("🏆 Top Class Performance")
-        
+
         num_classes = st.slider(
-            "Number of health classes to display:", 
+            "Number of classes to display:", 
             min_value=10, 
             max_value=50, 
             value=20, 
             step=5,
             key="class_count_slider"
         )
-        
-        # Lazy CSS loading - Only load once per session
+
+        # 🚀 LAZY CSS LOADING - Only load once per session for classes
         if 'class_health_css_loaded' not in st.session_state:
             st.markdown("""
             <style>
@@ -10511,66 +10511,71 @@ with tab_class:
             """, unsafe_allow_html=True)
             st.session_state.class_health_css_loaded = True
 
-        # Static month names (faster than dynamic lookup)
-        month_names = {
-            '2025-06': 'June 2025',
-            '2025-07': 'July 2025',
-            '2025-08': 'August 2025'
-        }
+        # ✅ REUSE: Dynamic month names from categories section (already defined above)
+        # If not defined, create it here
+        if 'month_names' not in locals():
+            month_names = get_dynamic_month_names(queries_with_month)
 
-        # Get data with caching (filter-aware)
-        filter_state = {
+        # ✅ ENSURE: Month column exists
+        if 'queries_with_month' not in locals():
+            queries_with_month = queries.copy()
+            if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+                queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+
+        # 🚀 COMPUTE: Get class data with caching (filter-aware)
+        class_filter_state = {
             'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': queries.shape,
-            'data_hash': hash(str(cls['class'].tolist()[:10]) if not cls.empty else "empty")
+            'data_shape': queries_with_month.shape,
+            'data_hash': hash(str(cls['class'].tolist()[:10]) if not cls.empty else "empty"),
+            'num_classes': num_classes
         }
-        filter_key = str(hash(str(filter_state)))
+        class_filter_key = str(hash(str(class_filter_state)))
 
         @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_class_health_performance_monthly(_df, _cls, month_names_dict, cache_key):
-            """Proper monthly CTR/CR calculations for health classes"""
+        def compute_class_health_performance_monthly(_df, _cls, month_names_dict, num_cls, cache_key):
+            """🔄 UNIFIED: Build complete class table directly from queries dataframe"""
             if _df.empty or _cls.empty:
                 return pd.DataFrame(), []
             
-            # Get top classes by total counts
-            top_classes_list = _cls.nlargest(50, 'Counts')['class'].tolist()
+            # Step 1: Get top classes by total counts
+            top_classes_list = _cls.nlargest(num_cls, 'Counts')['class'].tolist()
             
-            # Filter original data for top classes
+            # Step 2: Filter original data for top classes
             top_data = _df[_df[class_column].isin(top_classes_list)].copy()
             
-            # Get unique months from the data
+            # Step 3: Get unique months
             if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].unique())
+                unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
             else:
                 unique_months = []
             
-            # Reorganize columns for easier comparison
+            # Step 4: Build comprehensive class data
             result_data = []
             
             for class_name in top_classes_list:
                 class_data = top_data[top_data[class_column] == class_name]
                 
-                # Skip classes with no data
                 if class_data.empty:
                     continue
                 
-                # Base information
+                # ✅ CALCULATE: Base metrics
                 total_counts = int(class_data['Counts'].sum())
                 total_clicks = int(class_data['clicks'].sum())
                 total_conversions = int(class_data['conversions'].sum())
                 
-                # Skip classes with zero volume
                 if total_counts == 0:
                     continue
-                    
+                
+                # Calculate total dataset counts for share percentage
+                dataset_total_counts = _df['Counts'].sum()
+                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
+                
                 overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
                 overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                 
-                # Calculate share percentage
-                share_pct = (total_counts / _df['Counts'].sum()) * 100 if _df['Counts'].sum() > 0 else 0
-                
+                # ✅ BUILD: Row data
                 row = {
-                    'Health Class': class_name,
+                    'Class': class_name,
                     'Total Volume': total_counts,
                     'Share %': share_pct,
                     'Overall CTR': overall_ctr,
@@ -10579,18 +10584,16 @@ with tab_class:
                     'Total Conversions': total_conversions
                 }
                 
-                # Monthly data calculations with proper month-specific metrics
+                # ✅ CALCULATE: Monthly metrics
                 for month in unique_months:
-                    month_data = class_data[class_data['month'] == month]
                     month_display = month_names_dict.get(month, month)
+                    month_data = class_data[class_data['month'] == month]
                     
                     if not month_data.empty:
-                        # Calculate month-specific metrics
                         month_counts = int(month_data['Counts'].sum())
                         month_clicks = int(month_data['clicks'].sum())
                         month_conversions = int(month_data['conversions'].sum())
                         
-                        # Month-specific CTR and CR calculations
                         month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
                         month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
                         
@@ -10606,53 +10609,63 @@ with tab_class:
             
             result_df = pd.DataFrame(result_data)
             result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            
-            # Remove empty rows: Filter out rows with all zero values
             result_df = result_df[result_df['Total Volume'] > 0]
             
             return result_df, unique_months
 
-        top_classes_monthly, unique_months = compute_class_health_performance_monthly(queries, cls, month_names, filter_key)
-        
+        top_classes_monthly, unique_months_cls = compute_class_health_performance_monthly(
+            queries_with_month, 
+            cls, 
+            month_names, 
+            num_classes,
+            class_filter_key
+        )
+
         if top_classes_monthly.empty:
             st.warning("No valid class data after processing.")
         else:
-            # Clean data: Remove any remaining empty rows and limit to selected number
-            top_classes_monthly = top_classes_monthly.dropna(subset=['Health Class'])
-            top_classes_monthly = top_classes_monthly[top_classes_monthly['Total Volume'] > 0]
-            top_classes_monthly = top_classes_monthly.head(num_classes)
+            # ✅ SHOW: Filter status
+            unique_classes_count = queries_with_month[class_column].nunique()
             
-            # Reorder columns for logical flow
-            base_columns = ['Health Class', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered Results**: Showing Top {num_classes} classes from {unique_classes_count:,} total classes")
+            else:
+                st.info(f"📊 **All Data**: Showing Top {num_classes} classes from {unique_classes_count:,} total classes")
             
-            # Group monthly columns by type for easier comparison
+            # ✅ ORGANIZE: Column order - MATCHING SCREENSHOT PATTERN
+            base_columns = ['Class', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            
+            # Get sorted months
+            sorted_months = sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))
+            
+            # Build column lists
             volume_columns = []
             ctr_columns = []
             cr_columns = []
             
-            for month in sorted(unique_months):
+            for month in sorted_months:
                 month_display = month_names.get(month, month)
                 volume_columns.append(f'{month_display} Vol')
                 ctr_columns.append(f'{month_display} CTR')
                 cr_columns.append(f'{month_display} CR')
             
-            # Logical column order: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
+            # ✅ CORRECT ORDER: Base → Volumes → CTRs → CRs
             ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
             existing_columns = [col for col in ordered_columns if col in top_classes_monthly.columns]
             top_classes_monthly = top_classes_monthly[existing_columns]
-
-            # Smart styling with better comparison highlighting
+            
+            # ✅ FORMAT & STYLE
             classes_hash = hash(str(top_classes_monthly.shape) + str(top_classes_monthly.columns.tolist()) + str(top_classes_monthly.iloc[0].to_dict()) if len(top_classes_monthly) > 0 else "empty")
+            styling_cache_key = f"{classes_hash}_{class_filter_key}"
             
             if ('styled_classes_health' not in st.session_state or 
-                st.session_state.get('classes_health_cache_key') != classes_hash):
+                st.session_state.get('classes_health_cache_key') != styling_cache_key):
                 
-                st.session_state.classes_health_cache_key = classes_hash
+                st.session_state.classes_health_cache_key = styling_cache_key
                 
-                # Apply format_number to numeric columns before styling
                 display_classes = top_classes_monthly.copy()
                 
-                # Format volume columns with format_number
+                # Format volume columns
                 volume_cols_to_format = ['Total Volume'] + volume_columns
                 for col in volume_cols_to_format:
                     if col in display_classes.columns:
@@ -10664,27 +10677,27 @@ with tab_class:
                 if 'Total Conversions' in display_classes.columns:
                     display_classes['Total Conversions'] = display_classes['Total Conversions'].apply(lambda x: format_number(int(x)))
                 
-                # Better performance highlighting with comparison focus
+                # ✅ STYLING: Month-over-month comparison
                 def highlight_class_health_performance_with_comparison(df):
-                    """Enhanced highlighting for better health class comparison"""
+                    """Enhanced highlighting for class comparison"""
                     styles = pd.DataFrame('', index=df.index, columns=df.columns)
                     
-                    if len(unique_months) < 2:
+                    if len(unique_months_cls) < 2:
                         return styles
                     
-                    sorted_months = sorted(unique_months)
+                    sorted_months_local = sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))
                     
-                    # Comparison focus: Highlight month-over-month changes
-                    for i in range(1, len(sorted_months)):
-                        current_month = month_names.get(sorted_months[i], sorted_months[i])
-                        prev_month = month_names.get(sorted_months[i-1], sorted_months[i-1])
+                    # Compare consecutive months
+                    for i in range(1, len(sorted_months_local)):
+                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
                         
                         current_ctr_col = f'{current_month} CTR'
                         prev_ctr_col = f'{prev_month} CTR'
                         current_cr_col = f'{current_month} CR'
                         prev_cr_col = f'{prev_month} CR'
                         
-                        # CTR comparison with threshold
+                        # CTR comparison
                         if current_ctr_col in df.columns and prev_ctr_col in df.columns:
                             for idx in df.index:
                                 current_ctr = df.loc[idx, current_ctr_col]
@@ -10692,15 +10705,15 @@ with tab_class:
                                 
                                 if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
                                     change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:  # 10% improvement
+                                    if change_pct > 10:
                                         styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
+                                    elif change_pct < -10:
                                         styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
+                                    elif abs(change_pct) > 5:
                                         color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                         styles.loc[idx, current_ctr_col] = f'background-color: {color};'
                         
-                        # CR comparison with threshold
+                        # CR comparison
                         if current_cr_col in df.columns and prev_cr_col in df.columns:
                             for idx in df.index:
                                 current_cr = df.loc[idx, current_cr_col]
@@ -10708,22 +10721,21 @@ with tab_class:
                                 
                                 if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
                                     change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:  # 10% improvement
+                                    if change_pct > 10:
                                         styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:  # 10% decline
+                                    elif change_pct < -10:
                                         styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:  # 5-10% change
+                                    elif abs(change_pct) > 5:
                                         color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
                                         styles.loc[idx, current_cr_col] = f'background-color: {color};'
                     
-                    # Section highlighting: Different background for different metric groups
+                    # Volume column highlighting
                     for col in volume_columns:
                         if col in df.columns:
                             styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
                     
                     return styles
                 
-                # Create styled DataFrame from the formatted copy
                 styled_classes = display_classes.style.apply(highlight_class_health_performance_with_comparison, axis=None)
                 
                 styled_classes = styled_classes.set_properties(**{
@@ -10738,39 +10750,33 @@ with tab_class:
                     {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]}
                 ])
                 
-                # Format dictionary
                 format_dict = {
                     'Share %': '{:.2f}%',
                     'Overall CTR': '{:.2f}%',
                     'Overall CR': '{:.2f}%'
                 }
                 
-                # Add formatting for monthly CTR and CR columns
                 for col in ctr_columns + cr_columns:
                     if col in display_classes.columns:
                         format_dict[col] = '{:.2f}%'
-
+                
                 styled_classes = styled_classes.format(format_dict)
                 st.session_state.styled_classes_health = styled_classes
-
-            # Display: Cached styled DataFrame with dynamic height
-            # Calculate proper height: Based on actual number of rows
-            # Convert styled DataFrame to HTML
+            
+            # Display table
             html_content = st.session_state.styled_classes_health.to_html(index=False, escape=False)
             html_content = html_content.strip()
 
-            # Calculate dynamic height
-            actual_rows = len(top_classes_monthly)
-            table_height = min(max(actual_rows * 40 + 50, 200), 600)
-
-            # Display in scrollable container
-            st.markdown(f"""
-                <div style="height: {table_height}px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+            st.markdown(
+                f"""
+                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 5px;">
                     {html_content}
                 </div>
-            """, unsafe_allow_html=True)
-
-            # Better legend with comparison focus
+                """,
+                unsafe_allow_html=True
+            )
+            
+            # Legend
             st.markdown("""
             <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
                 <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Comparison Guide:</h4>
@@ -10783,37 +10789,41 @@ with tab_class:
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-            # Column grouping explanation
-            if unique_months:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months)]
+            
+            # Column organization explanation
+            if unique_months_cls:
+                month_list = [month_names.get(m, m) for m in sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))]
                 st.markdown(f"""
                 <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
                     <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Column Organization:</h4>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Health Class, Total Volume, Share %, Overall CTR/CR</div>
+                        <div><strong>🌱 Base Metrics:</strong> Class, Total Volume, Share %, Overall CTR/CR</div>
                         <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
                         <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
                         <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-
-            # Enhanced download section
+            
+            # Download section
             st.markdown("<br>", unsafe_allow_html=True)
             
             csv_classes = top_classes_monthly.to_csv(index=False)
             
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
+                filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                
                 st.download_button(
-                    label="📥 Download Nutraceuticals & Nutrition Classes CSV",
+                    label="📥 Download Classes CSV",
                     data=csv_classes,
-                    file_name=f"top_{num_classes}_health_classes_monthly_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"top_{num_classes}_classes{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the health classes table with monthly comparison data",
-                    use_container_width=True
+                    help="Download the classes table with current filter settings applied",
+                    use_container_width=True,
+                    key="class_monthly_download"
                 )
+
 
     
     with col_right:
