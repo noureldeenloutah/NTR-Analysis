@@ -9636,7 +9636,7 @@ with tab_subcat:
                     display_styled_table(
                         df=metrics_df,
                         title="📈 Performance Breakdown",
-                        align="left"
+                        align="center"
                     )
                     
                     # Performance radar chart
@@ -9761,7 +9761,7 @@ with tab_subcat:
                             keyword_display.columns = ['Keyword', 'Search Volume', 'Clicks', 
                                                      'Conversions', 'Health CTR %', 'CR %']
                             
-                            display_styled_table(df=keyword_display, title=f"🔍 Top Keywords Performance in {selected_subcategory}", align="left")
+                            display_styled_table(df=keyword_display, title=f"🔍 Top Keywords Performance in {selected_subcategory}", align="center")
                         else:
                             st.info("No health keyword data available for this subcategory.")
                     
