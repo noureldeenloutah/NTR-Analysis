@@ -9636,7 +9636,7 @@ with tab_subcat:
                     display_styled_table(
                         df=metrics_df,
                         title="📈 Performance Breakdown",
-                        align="center"
+                        align="left"
                     )
                     
                     # Performance radar chart
@@ -9944,7 +9944,12 @@ with tab_subcat:
                     comparison_table['Click Share %'] = comparison_table['Health Click Share %'].apply(lambda x: f"{x:.2f}%")
                     comparison_table['Conversion Share %'] = comparison_table['Nutraceuticals & Nutrition Conversion Share %'].apply(lambda x: f"{x:.2f}%")
 
-                    st.dataframe(comparison_table, use_container_width=True, hide_index=True)
+                    display_styled_table(
+    df=comparison_table,
+    align="center",
+    scrollable=True,
+    max_height="500px"
+)
                     
                     # Performance ranking
                     st.markdown("### 🏆 Performance Ranking")
@@ -12649,7 +12654,12 @@ with tab_generic:
                 for col in ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']:
                     comparison_table[col] = comparison_table[col].apply(lambda x: f"{x:.2f}%")
 
-                st.dataframe(comparison_table, use_container_width=True, hide_index=True)
+                display_styled_table(
+                    df=comparison_table,
+                    align="center",
+                    scrollable=True,
+                    max_height="500px"
+                )
                 
                 # Download comparison data
                 csv_comparison = comparison_data.to_csv(index=False)
