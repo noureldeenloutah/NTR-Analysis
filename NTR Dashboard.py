@@ -6246,12 +6246,46 @@ with tab_brand:
     # ENHANCED Brand-Keyword Intelligence Matrix with Interactive CTR/CR Display
     st.subheader("🔥 Brand-Keyword Intelligence Matrix")
 
+    # ✅ FIX: Aggregate queries data across ALL months for matrix analysis
+    @st.cache_data(ttl=300, show_spinner=False)
+    def aggregate_matrix_data(_queries_df, brand_col):
+        """Aggregate queries across all months for brand-keyword matrix"""
+        if _queries_df.empty:
+            return pd.DataFrame()
+        
+        # Group by brand and search, summing across all months
+        aggregated = _queries_df.groupby([brand_col, 'search']).agg({
+            'Counts': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).reset_index()
+        
+        # Rename brand column to 'brand' for consistency
+        aggregated = aggregated.rename(columns={brand_col: 'brand'})
+        
+        # Calculate metrics
+        aggregated['ctr'] = ((aggregated['clicks'] / aggregated['Counts']) * 100).fillna(0).round(2)
+        aggregated['cr'] = ((aggregated['conversions'] / aggregated['Counts']) * 100).fillna(0).round(2)
+        aggregated['classic_cr'] = ((aggregated['conversions'] / aggregated['clicks']) * 100).fillna(0).round(2)
+        
+        return aggregated
+
+    # ✅ CREATE: Aggregated dataset for matrix
+    queries_matrix = aggregate_matrix_data(brand_queries, brand_column)
+
+    # ✅ SHOW: Date range info
+    if 'start_date' in brand_queries.columns and 'end_date' in brand_queries.columns:
+        date_range_start = brand_queries['start_date'].min()
+        date_range_end = brand_queries['end_date'].max()
+        st.info(f"📅 Analyzing aggregated data from **{date_range_start}** to **{date_range_end}**")
+
     # Create brand filter dropdown with enhanced UI
-    if 'brand' in queries.columns and 'search' in queries.columns:
-        available_brands = queries[
-            (queries['brand'].notna()) & 
-            (queries['brand'].str.lower() != 'other') &
-            (queries['brand'].str.lower() != 'others')
+    if not queries_matrix.empty and 'brand' in queries_matrix.columns and 'search' in queries_matrix.columns:
+        # ✅ CHANGED: Use queries_matrix instead of queries
+        available_brands = queries_matrix[
+            (queries_matrix['brand'].notna()) & 
+            (queries_matrix['brand'].str.lower() != 'other') &
+            (queries_matrix['brand'].str.lower() != 'others')
         ]['brand'].unique()
         
         available_brands = sorted(available_brands)
@@ -6285,17 +6319,30 @@ with tab_brand:
         
         with col_metrics:
             if selected_brand != 'All Nutraceuticals & Nutrition Brands':
-                # Show metrics for selected brand
-                brand_metrics = bs[bs['brand'] == selected_brand].iloc[0] if not bs[bs['brand'] == selected_brand].empty else None
+                # ✅ CHANGED: Show metrics from aggregated data
+                brand_metrics = queries_matrix[queries_matrix['brand'] == selected_brand]
                 
-                if brand_metrics is not None:
-                    # UPDATED: Now showing 5 metrics including both CR types with format_number
+                if not brand_metrics.empty:
+                    # Aggregate metrics for the selected brand
+                    total_counts = brand_metrics['Counts'].sum()
+                    total_clicks = brand_metrics['clicks'].sum()
+                    total_conversions = brand_metrics['conversions'].sum()
+                    
+                    avg_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                    avg_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
+                    avg_classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                    
+                    # Get share_pct from bs_summary
+                    brand_summary = bs_summary[bs_summary['brand'] == selected_brand]
+                    share_pct = brand_summary['share_pct'].iloc[0] if not brand_summary.empty else 0
+                    
+                    # Display 5 metrics
                     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
                     
                     with metric_col1:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{format_number(brand_metrics['Counts'])}</div>
+                            <div class="brand-metric-value">{format_number(total_counts)}</div>
                             <div class="brand-metric-label">📊 Total Searches</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6303,7 +6350,7 @@ with tab_brand:
                     with metric_col2:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['ctr']:.1f}%</div>
+                            <div class="brand-metric-value">{avg_ctr:.1f}%</div>
                             <div class="brand-metric-label">📈 CTR</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6311,7 +6358,7 @@ with tab_brand:
                     with metric_col3:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['cr']:.1f}%</div>
+                            <div class="brand-metric-value">{avg_cr:.1f}%</div>
                             <div class="brand-metric-label">🎯 CR (Search)</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -6319,16 +6366,12 @@ with tab_brand:
                     with metric_col4:
                         st.markdown(f"""
                         <div class="brand-metric-card">
-                            <div class="brand-metric-value">{brand_metrics['classic_cr']:.1f}%</div>
+                            <div class="brand-metric-value">{avg_classic_cr:.1f}%</div>
                             <div class="brand-metric-label">🔄 Classic CR</div>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with metric_col5:
-                        # ✅ FIXED: Get share_pct from bs_summary instead of bs
-                        brand_summary = bs_summary[bs_summary['brand'] == selected_brand]
-                        share_pct = brand_summary['share_pct'].iloc[0] if not brand_summary.empty else 0
-                        
                         st.markdown(f"""
                         <div class="brand-metric-card">
                             <div class="brand-metric-value">{share_pct:.1f}%</div>
@@ -6337,13 +6380,16 @@ with tab_brand:
                         """, unsafe_allow_html=True)
 
             else:
-                # Show overall metrics
-                total_searches = bs['Counts'].sum()
-                avg_ctr = bs['ctr'].mean()
-                avg_cr = bs['cr'].mean()  # ADDED: CR (Search-based)
-                avg_classic_cr = bs['classic_cr'].mean()
+                # ✅ CHANGED: Show overall metrics from aggregated data
+                total_searches = queries_matrix['Counts'].sum()
+                total_clicks = queries_matrix['clicks'].sum()
+                total_conversions = queries_matrix['conversions'].sum()
                 
-                # UPDATED: Now showing 4 metrics including both CR types with format_number
+                avg_ctr = (total_clicks / total_searches * 100) if total_searches > 0 else 0
+                avg_cr = (total_conversions / total_searches * 100) if total_searches > 0 else 0
+                avg_classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                
+                # Display 4 metrics
                 metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
                 
                 with metric_col1:
@@ -6378,18 +6424,15 @@ with tab_brand:
                     </div>
                     """, unsafe_allow_html=True)
         
-        # Filter data based on selection
+        # ✅ CHANGED: Filter from queries_matrix instead of queries
         if selected_brand == 'All Nutraceuticals & Nutrition Brands':
-            top_brands = queries[
-                (queries['brand'].str.lower() != 'other') &
-                (queries['brand'].str.lower() != 'others') &
-                (queries['brand'].notna())
-            ]['brand'].value_counts().head(8).index.tolist()
+            # Get top 8 brands by total counts from aggregated data
+            top_brands = queries_matrix.groupby('brand')['Counts'].sum().nlargest(8).index.tolist()
             
-            filtered_data = queries[queries['brand'].isin(top_brands)]
+            filtered_data = queries_matrix[queries_matrix['brand'].isin(top_brands)]
             matrix_title = "Top Nutraceuticals & Nutrition Brands vs Health Search Terms"
         else:
-            filtered_data = queries[queries['brand'] == selected_brand]
+            filtered_data = queries_matrix[queries_matrix['brand'] == selected_brand]
             matrix_title = f"{selected_brand} - Health Search Terms Analysis"
         
         # Remove null values and 'other' categories
@@ -6404,22 +6447,11 @@ with tab_brand:
         
         if not matrix_data.empty:
             if selected_brand == 'All Nutraceuticals & Nutrition Brands':
-                # Enhanced heatmap with CTR/CR data
-                brand_search_matrix = matrix_data.groupby(['brand', 'search']).agg({
-                    'Counts': 'sum',
-                    'clicks': 'sum',
-                    'conversions': 'sum'
-                }).reset_index()
+                # ✅ CHANGED: Data is already aggregated, no need to groupby again
+                brand_search_matrix = matrix_data.copy()
                 
-                # CORRECTED Calculate CTR and CR for each brand-search combination
-                brand_search_matrix['ctr'] = ((brand_search_matrix['clicks'] / brand_search_matrix['Counts']) * 100).round(2)
-                brand_search_matrix['cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['Counts']) * 100).round(2)  # CR = conversions/search volume
-                brand_search_matrix['classic_cr'] = ((brand_search_matrix['conversions'] / brand_search_matrix['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
-                
-                top_searches = matrix_data[
-                    (matrix_data['search'].str.lower() != 'other') &
-                    (matrix_data['search'].str.lower() != 'others')
-                ]['search'].value_counts().head(12).index.tolist()
+                # Get top 12 search terms by total counts
+                top_searches = brand_search_matrix.groupby('search')['Counts'].sum().nlargest(12).index.tolist()
                 
                 brand_search_matrix = brand_search_matrix[brand_search_matrix['search'].isin(top_searches)]
                 
@@ -6437,7 +6469,7 @@ with tab_brand:
                     values='ctr'
                 ).fillna(0)
                 
-                cr_data = brand_search_matrix.pivot(  # ADDED: CR data pivot
+                cr_data = brand_search_matrix.pivot(
                     index='brand', 
                     columns='search', 
                     values='cr'
@@ -6460,21 +6492,21 @@ with tab_brand:
                     aspect='auto'
                 )
                 
-                # UPDATED: Create custom hover data with CTR, CR, and Classic CR using format_number
+                # Create custom hover data with CTR, CR, and Classic CR using format_number
                 hover_text = []
                 for i, brand in enumerate(heatmap_data.index):
                     hover_row = []
                     for j, search in enumerate(heatmap_data.columns):
                         counts = heatmap_data.iloc[i, j]
                         ctr = ctr_data.iloc[i, j]
-                        cr = cr_data.iloc[i, j]  # ADDED: CR (Search-based)
+                        cr = cr_data.iloc[i, j]
                         classic_cr = classic_cr_data.iloc[i, j]
                         hover_row.append(
                             f"<b>{brand}</b><br>" +
                             f"Search Term: {search}<br>" +
-                            f"Total Searches: {format_number(counts)}<br>" +  # 🚀 UPDATED: format_number
+                            f"Total Searches: {format_number(counts)}<br>" +
                             f"CTR: {ctr:.1f}%<br>" +
-                            f"CR (Search): {cr:.1f}%<br>" +  # ADDED: CR in hover
+                            f"CR (Search): {cr:.1f}%<br>" +
                             f"Classic CR: {classic_cr:.1f}%"
                         )
                     hover_text.append(hover_row)
@@ -6496,21 +6528,11 @@ with tab_brand:
                 st.plotly_chart(fig_matrix, use_container_width=True)
                 
             else:
-                # Single brand analysis with enhanced bar chart
-                brand_search_data = matrix_data.groupby('search').agg({
-                    'Counts': 'sum',
-                    'clicks': 'sum',
-                    'conversions': 'sum'
-                }).reset_index()
-                
-                # CORRECTED Calculate CTR and CR
-                brand_search_data['ctr'] = ((brand_search_data['clicks'] / brand_search_data['Counts']) * 100).round(2)
-                brand_search_data['cr'] = ((brand_search_data['conversions'] / brand_search_data['Counts']) * 100).round(2)  # CR = conversions/search volume
-                brand_search_data['classic_cr'] = ((brand_search_data['conversions'] / brand_search_data['clicks']) * 100).fillna(0).round(2)  # Classic CR = conversions/clicks
-                
+                # ✅ CHANGED: Data is already aggregated
+                brand_search_data = matrix_data.copy()
                 brand_search_data = brand_search_data.sort_values('Counts', ascending=False).head(15)
                 
-                # UPDATED: Add CR selection for chart coloring
+                # Add CR selection for chart coloring
                 st.markdown("#### 📊 Chart Display Options")
                 cr_option = st.radio(
                     "Color bars by:",
@@ -6530,24 +6552,24 @@ with tab_brand:
                     y='Counts',
                     title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
                     labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
-                    color=color_column,  # Dynamic color selection
+                    color=color_column,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                     text='Counts'
                 )
                 
-                # UPDATED: Enhanced hover template with both CR types using format_number
+                # Enhanced hover template with both CR types using format_number
                 fig_brand_search.update_traces(
-                    texttemplate='%{text}',  # 🚀 UPDATED: Will be formatted by customdata
+                    texttemplate='%{text}',
                     textposition='outside',
                     hovertemplate='<b>%{x}</b><br>' +
-                                'Search Volume: %{customdata[3]}<br>' +  # 🚀 UPDATED: Use formatted number
+                                'Search Volume: %{customdata[3]}<br>' +
                                 'CTR: %{customdata[0]:.1f}%<br>' +
-                                'CR (Search): %{customdata[1]:.1f}%<br>' +  # ADDED: CR in hover
+                                'CR (Search): %{customdata[1]:.1f}%<br>' +
                                 'Classic CR: %{customdata[2]:.1f}%<br>' +
                                 f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
                     customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
-                            for _, row in brand_search_data.iterrows()],  # 🚀 UPDATED: Include formatted numbers
-                    text=[format_number(x) for x in brand_search_data['Counts']]  # 🚀 UPDATED: Format bar labels
+                            for _, row in brand_search_data.iterrows()],
+                    text=[format_number(x) for x in brand_search_data['Counts']]
                 )
                 
                 fig_brand_search.update_layout(
@@ -6557,13 +6579,12 @@ with tab_brand:
                     height=500,
                     xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
                     yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                    coloraxis_colorbar=dict(title=color_label)  # Dynamic colorbar title
+                    coloraxis_colorbar=dict(title=color_label)
                 )
                 
                 st.plotly_chart(fig_brand_search, use_container_width=True)
                 
-                # ADDED: Display both CR metrics in a comparison table
-                # ✅ ENHANCED: Display both CR metrics using styled table function
+                # Display both CR metrics in a comparison table
                 display_comparison = brand_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
                 display_comparison = display_comparison.rename(columns={
                     'search': 'Health Search Term',
@@ -6573,13 +6594,13 @@ with tab_brand:
                     'classic_cr': 'Classic CR (%)'
                 })
 
-                # 🚀 Format the display using format_number
+                # Format the display using format_number
                 display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
                 display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.1f}%")
                 display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
                 display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
 
-                # ✅ USE STYLED TABLE FUNCTION
+                # Use styled table function
                 display_styled_table(
                     df=display_comparison,
                     title="📋 Search Terms Performance Comparison",
@@ -6595,6 +6616,9 @@ with tab_brand:
 
     else:
         st.error("❌ Required columns 'brand' and 'search' not found in the dataset.")
+
+    st.markdown("---")
+
 
     st.markdown("---")
 
