@@ -6606,7 +6606,7 @@ with tab_brand:
                     title="📋 Search Terms Performance Comparison",
                     download_filename=f"search_terms_comparison_{selected_brand.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                     scrollable=True,
-                    max_height="500px",
+                    max_height="900px",
                     align="center"
                 )
 
