@@ -8350,7 +8350,7 @@ with tab_category:
                     title="📋 Search Terms Performance Comparison",
                     download_filename=f"category_search_terms_{selected_category.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                     scrollable=True,
-                    max_height="500px",
+                    max_height="900px",
                     align="center"
                 )
 
@@ -11511,7 +11511,7 @@ with tab_class:
                     title="📋 Search Terms Performance Comparison",
                     download_filename=f"class_search_terms_{selected_class.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
                     scrollable=True,
-                    max_height="500px",
+                    max_height="900px",
                     align="center"
                 )
 
