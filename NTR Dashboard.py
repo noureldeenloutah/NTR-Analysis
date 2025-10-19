@@ -14834,6 +14834,20 @@ with tab_insights:
 
     st.markdown("---")
 
+    # 🚀 FORMAT FUNCTIONS
+    def format_number(num):
+        """Format numbers with K/M suffix"""
+        if num >= 1_000_000:
+            return f"{num/1_000_000:.1f}M"
+        elif num >= 1_000:
+            return f"{num/1_000:.1f}K"
+        else:
+            return f"{num:,.0f}"
+
+    def format_percentage(num):
+        """Format percentages with 1 decimal place"""
+        return f"{num:.1f}%"
+
     # Helper function for expandable questions
     def q_expand(title, explanation, render_fn, icon="💡"):
         with st.expander(f"{icon} {title}", expanded=False):
@@ -14845,22 +14859,7 @@ with tab_insights:
                 import traceback
                 st.code(traceback.format_exc())
 
-# ==================== TOP 15 STRATEGIC QUESTIONS ====================
-
-# 🚀 FORMAT FUNCTIONS
-def format_number(num):
-    """Format numbers with K/M suffix"""
-    if num >= 1_000_000:
-        return f"{num/1_000_000:.1f}M"
-    elif num >= 1_000:
-        return f"{num/1_000:.1f}K"
-    else:
-        return f"{num:,.0f}"
-
-def format_percentage(num):
-    """Format percentages with 1 decimal place"""
-    return f"{num:.1f}%"
-
+    # ==================== TOP 12 STRATEGIC QUESTIONS ====================
 
     # ==================== NEW Q1: Top 20 Search Queries by CTR and CR ====================
     def q1():
@@ -15144,7 +15143,7 @@ def format_percentage(num):
                 
                 out = opportunities.nlargest(20, 'conversion_gap')[
                     ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated', 
-                    'potential_conversions', 'conversion_gap']
+                     'potential_conversions', 'conversion_gap']
                 ].copy()
                 
                 # Format for display
@@ -15173,8 +15172,8 @@ def format_percentage(num):
                 st.warning(f"💰 **Potential Revenue Loss:** {format_number(int(total_gap))} conversions could be captured by optimizing these {len(out)} high-traffic queries!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q5_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q5_dl")
+                                  f"q5_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q5_dl")
                 
                 # Visualization
                 fig = px.bar(out.head(15), x='search', y='conversion_gap', color='cr_calculated',
@@ -15242,8 +15241,8 @@ def format_percentage(num):
                 st.warning(f"⚠️ **{len(out)} queries** attract clicks but fail to convert. Post-click experience needs immediate improvement!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q6_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q6_dl")
+                                  f"q6_experience_issues_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q6_dl")
                 
                 # Visualization
                 fig = px.scatter(out.head(20), x='ctr_calculated', y='cr_calculated', 
@@ -15324,24 +15323,57 @@ def format_percentage(num):
             )
             
             st.download_button("📥 Download Data", out.to_csv(index=False), 
-                            f"q7_branded_vs_generic_{datetime.now().strftime('%Y%m%d')}.csv", 
-                            "text/csv", key="q7_dl")
+                              f"q7_branded_vs_generic_{datetime.now().strftime('%Y%m%d')}.csv", 
+                              "text/csv", key="q7_dl")
             
             # Visualization with numbers on bars
-            fig = px.bar(out, x='brand_type', y=['Counts', 'clicks', 'conversions'],
-                        title='Branded vs Generic Performance', barmode='group', 
-                        color_discrete_sequence=['#4CAF50', '#81C784', '#66BB6A'])
+            fig = go.Figure()
             
-            # Add text labels on bars
-            fig.update_traces(texttemplate='%{y}', textposition='outside')
-            fig.update_layout(xaxis_title="Brand Type", yaxis_title="Count")
+            # Add bars for each metric
+            fig.add_trace(go.Bar(
+                name='Search Volume',
+                x=out['brand_type'],
+                y=out['Counts'],
+                text=out['Counts'].apply(lambda x: format_number(int(x))),
+                textposition='outside',
+                marker_color='#4CAF50'
+            ))
+            
+            fig.add_trace(go.Bar(
+                name='Clicks',
+                x=out['brand_type'],
+                y=out['clicks'],
+                text=out['clicks'].apply(lambda x: format_number(int(x))),
+                textposition='outside',
+                marker_color='#81C784'
+            ))
+            
+            fig.add_trace(go.Bar(
+                name='Conversions',
+                x=out['brand_type'],
+                y=out['conversions'],
+                text=out['conversions'].apply(lambda x: format_number(int(x))),
+                textposition='outside',
+                marker_color='#66BB6A'
+            ))
+            
+            fig.update_layout(
+                title='Branded vs Generic Performance',
+                xaxis_title='Brand Type',
+                yaxis_title='Count',
+                barmode='group'
+            )
             st.plotly_chart(fig, use_container_width=True)
             
             # Additional pie chart for search share
-            fig2 = px.pie(out, values='Counts', names='brand_type',
-                        title='Search Volume Distribution: Branded vs Generic',
-                        color_discrete_sequence=['#4CAF50', '#FFC107'])
-            fig2.update_traces(textposition='inside', textinfo='percent+label+value')
+            fig2 = go.Figure(data=[go.Pie(
+                labels=out['brand_type'],
+                values=out['Counts'],
+                textinfo='percent+label+value',
+                textposition='inside',
+                marker=dict(colors=['#4CAF50', '#FFC107'])
+            )])
+            fig2.update_layout(title='Search Volume Distribution: Branded vs Generic')
             st.plotly_chart(fig2, use_container_width=True)
         else:
             st.info("📊 No data found with search volume >= 200")
@@ -15353,7 +15385,6 @@ def format_percentage(num):
     )
 
 
-    # ==================== Q8: Seasonal Trends ====================
     # ==================== Q8: Seasonal Trends ====================
     def q8():
         """Month-over-month performance trends"""
@@ -15397,8 +15428,8 @@ def format_percentage(num):
                 )
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q8_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q8_dl")
+                                  f"q8_seasonal_trends_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q8_dl")
                 
                 # Visualization - Multi-line chart
                 fig = go.Figure()
@@ -15416,12 +15447,12 @@ def format_percentage(num):
                 # CTR & CR trends
                 fig2 = go.Figure()
                 fig2.add_trace(go.Scatter(x=out['month'], y=out['ctr'], mode='lines+markers', 
-                                        name='CTR (%)', line=dict(color='#9C27B0', width=3)))
+                                         name='CTR (%)', line=dict(color='#9C27B0', width=3)))
                 fig2.add_trace(go.Scatter(x=out['month'], y=out['cr'], mode='lines+markers', 
-                                        name='CR (%)', line=dict(color='#E91E63', width=3)))
+                                         name='CR (%)', line=dict(color='#E91E63', width=3)))
                 fig2.update_layout(title='CTR & CR Trends Over Time', 
-                                xaxis_title='Month', yaxis_title='Percentage (%)',
-                                hovermode='x unified')
+                                 xaxis_title='Month', yaxis_title='Percentage (%)',
+                                 hovermode='x unified')
                 st.plotly_chart(fig2, use_container_width=True)
             else:
                 st.info("📊 No data found with search volume >= 200")
@@ -15479,14 +15510,14 @@ def format_percentage(num):
                 )
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q9_subcategory_analysis_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q9_dl")
+                                  f"q9_subcategory_analysis_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q9_dl")
                 
                 # Visualization
                 fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='conversion_efficiency',
-                            hover_data=['sub_category', 'clicks', 'conversions'],
-                            title='Sub-Category Performance Matrix',
-                            color_continuous_scale='Viridis', text='sub_category')
+                               hover_data=['sub_category', 'clicks', 'conversions'],
+                               title='Sub-Category Performance Matrix',
+                               color_continuous_scale='Viridis', text='sub_category')
                 fig.update_traces(textposition='top center', textfont_size=8)
                 fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
                 st.plotly_chart(fig, use_container_width=True)
@@ -15522,7 +15553,7 @@ def format_percentage(num):
                 
                 out = opportunities.nlargest(20, 'cr_calculated')[
                     ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated', 
-                    'estimated_conversions_at_1k', 'upside_potential']
+                     'estimated_conversions_at_1k', 'upside_potential']
                 ].copy()
                 
                 # Format for display
@@ -15551,8 +15582,8 @@ def format_percentage(num):
                 st.success(f"🚀 **Scaling Opportunity:** {len(out)} high-converting queries could generate {format_number(int(total_upside))} additional conversions if scaled to 1K search volume!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q10_scaling_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q10_dl")
+                                  f"q10_scaling_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q10_dl")
                 
                 # Visualization
                 fig = px.bar(out.head(15), x='search', y='upside_potential', color='cr_calculated',
@@ -15628,8 +15659,8 @@ def format_percentage(num):
             )
             
             st.download_button("📥 Download Data", out.to_csv(index=False), 
-                            f"q11_brand_comparison_{datetime.now().strftime('%Y%m%d')}.csv", 
-                            "text/csv", key="q11_dl")
+                              f"q11_brand_comparison_{datetime.now().strftime('%Y%m%d')}.csv", 
+                              "text/csv", key="q11_dl")
             
             # Visualization - Brand performance comparison
             fig = px.scatter(out, x='CTR', y='CR', size='Total Search Volume', color='Total Conversions',
@@ -15642,8 +15673,8 @@ def format_percentage(num):
             
             # Top brands bar chart
             fig2 = px.bar(out.head(10), x='Brand', y='Total Conversions', color='CR',
-                        title='Top 10 Brands by Total Conversions',
-                        color_continuous_scale='Greens')
+                         title='Top 10 Brands by Total Conversions',
+                         color_continuous_scale='Greens')
             fig2.update_layout(xaxis_tickangle=-45)
             st.plotly_chart(fig2, use_container_width=True)
         else:
@@ -15677,8 +15708,8 @@ def format_percentage(num):
             
             # Flatten column names
             brand_stats.columns = ['Brand', '# Unique Queries', 'Total Search Volume', 'Avg Search Volume', 
-                                'Std Search Volume', 'Total Clicks', 'Total Conversions', 
-                                'Avg CTR', 'Std CTR', 'Avg CR', 'Std CR']
+                                  'Std Search Volume', 'Total Clicks', 'Total Conversions', 
+                                  'Avg CTR', 'Std CTR', 'Avg CR', 'Std CR']
             
             # Filter brands with at least 2 queries for meaningful volatility calculation
             brand_stats = brand_stats[brand_stats['# Unique Queries'] >= 2].copy()
@@ -15687,7 +15718,6 @@ def format_percentage(num):
                 # Calculate Coefficient of Variation (CV) for CTR and CR
                 # CV = (Standard Deviation / Mean) × 100
                 # Lower CV = More consistent/stable performance
-                # According to , , CV is the ratio of standard deviation to mean, useful for comparing variability
                 
                 brand_stats['CTR Volatility'] = (brand_stats['Std CTR'] / brand_stats['Avg CTR'] * 100).fillna(0)
                 brand_stats['CR Volatility'] = (brand_stats['Std CR'] / brand_stats['Avg CR'] * 100).fillna(0)
@@ -15700,7 +15730,6 @@ def format_percentage(num):
                 brand_stats['Volatility'] = ((brand_stats['CTR Volatility'] + brand_stats['CR Volatility']) / 2).round(1)
                 
                 # Stability Score: Inverse of volatility (100 - normalized volatility)
-                # According to , , low CV indicates data points closely clustered around mean (high consistency)
                 max_volatility = brand_stats['Volatility'].max()
                 if max_volatility > 0:
                     brand_stats['Stability Score'] = (100 - (brand_stats['Volatility'] / max_volatility * 100)).round(2)
@@ -15713,7 +15742,7 @@ def format_percentage(num):
                 
                 out = brand_stats.nlargest(20, 'Total Search Volume')[
                     ['Brand', '# Unique Queries', 'Avg Search Volume', 'Total Search Volume', 
-                    'Total Clicks', 'Total Conversions', 'CTR', 'CR', 'Volatility', 'Stability Score']
+                     'Total Clicks', 'Total Conversions', 'CTR', 'CR', 'Volatility', 'Stability Score']
                 ].copy()
                 
                 # Format for display
@@ -15752,14 +15781,14 @@ def format_percentage(num):
                     st.warning(f"⚠️ **Most Volatile Brand:** {most_volatile['Brand']} (Stability Score: {most_volatile['Stability Score']:.2f}, Volatility: {format_percentage(most_volatile['Volatility'])})")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                f"q12_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                "text/csv", key="q12_dl")
+                                  f"q12_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q12_dl")
                 
                 # Visualization
                 fig = px.scatter(out, x='Volatility', y='Stability Score', size='Total Search Volume', 
-                            color='CR', hover_data=['Brand', '# Unique Queries', 'CTR', 'Total Conversions'],
-                            title='Brand Performance Consistency: Volatility vs Stability',
-                            color_continuous_scale='RdYlGn', text='Brand')
+                               color='CR', hover_data=['Brand', '# Unique Queries', 'CTR', 'Total Conversions'],
+                               title='Brand Performance Consistency: Volatility vs Stability',
+                               color_continuous_scale='RdYlGn', text='Brand')
                 fig.update_traces(textposition='top center', textfont_size=9)
                 fig.update_layout(xaxis_title="Volatility (%)", yaxis_title="Stability Score")
                 st.plotly_chart(fig, use_container_width=True)
@@ -15768,12 +15797,12 @@ def format_percentage(num):
                 st.info("""
                 **📊 Revised Logic Explanation:**
                 
-                **Volatility Calculation** (based on Coefficient of Variation - , ):
+                **Volatility Calculation** (based on Coefficient of Variation):
                 - **CTR Volatility** = (Std Dev of CTR / Mean CTR) × 100
                 - **CR Volatility** = (Std Dev of CR / Mean CR) × 100
                 - **Combined Volatility** = Average of CTR and CR volatility
                 
-                **Stability Score Calculation** (, ):
+                **Stability Score Calculation**:
                 - Normalized inverse of volatility (0-100 scale)
                 - **High Score (80-100)** = Consistent, predictable performance across queries
                 - **Low Score (0-40)** = Erratic, unpredictable performance
@@ -15791,7 +15820,7 @@ def format_percentage(num):
 
     q_expand(
         "Q12 — 📊 Performance Consistency - Stable vs Volatile Brands (REVISED)",
-        "Analyzes brand performance consistency using Coefficient of Variation (CV). **Filter: Brands with 2+ queries, Search Volume >= 200, excludes generic items**. Identifies stable, predictable performers vs erratic brands needing optimization.    ",
+        "Analyzes brand performance consistency using Coefficient of Variation (CV). **Filter: Brands with 2+ queries, Search Volume >= 200, excludes generic items**. Identifies stable, predictable performers vs erratic brands needing optimization.",
         q12, "📊"
     )
 
