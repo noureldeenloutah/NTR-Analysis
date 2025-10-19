@@ -14864,8 +14864,11 @@ with tab_insights:
     # ==================== Q1: Top 20 Search Queries by CTR and CR ====================
     def q1():
         """Top 20 search queries based on both CTR and CR performance"""
-        # Filter: exclude 'Other' brand only
-        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
+        # Filter: exclude 'Other' brand AND search count >= 200
+        filtered = df_insights[
+            (df_insights['Brand'] != 'Other') & 
+            (df_insights['Counts'] >= 200)
+        ].copy()
         
         if len(filtered) > 0:
             # Calculate combined score (CTR + CR weighted equally)
@@ -14910,11 +14913,11 @@ with tab_insights:
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found")
+            st.info("📊 No search queries found with volume >= 200")
 
     q_expand(
         "Q1 — 🏆 Top 20 Search Queries by CTR & CR Performance",
-        "Identifies the best-performing search queries based on CTR and CR scores. **Filter: Excludes generic items**. Focus optimization efforts on these high-performing queries.",
+        "Identifies the best-performing search queries based on CTR and CR scores. **Filter: Search Volume >= 200, excludes generic items**. Focus optimization efforts on these high-performing queries.",
         q1, "🏆"
     )
 
@@ -14922,8 +14925,11 @@ with tab_insights:
     # ==================== Q2: Bottom 20 Search Queries by CTR and CR ====================
     def q2():
         """Bottom 20 search queries based on both CTR and CR performance"""
-        # Filter: exclude 'Other' brand only
-        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
+        # Filter: exclude 'Other' brand AND search count >= 200
+        filtered = df_insights[
+            (df_insights['Brand'] != 'Other') & 
+            (df_insights['Counts'] >= 200)
+        ].copy()
         
         if len(filtered) > 0:
             # Calculate combined score (CTR + CR weighted equally)
@@ -14972,11 +14978,11 @@ with tab_insights:
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found")
+            st.info("📊 No search queries found with volume >= 200")
 
     q_expand(
         "Q2 — ⚠️ Bottom 20 Search Queries by CTR & CR Performance",
-        "Identifies the worst-performing search queries. **Filter: Excludes generic items**. These queries need immediate optimization: review product relevance, pricing, descriptions, and availability.",
+        "Identifies the worst-performing search queries. **Filter: Search Volume >= 200, excludes generic items**. These queries need immediate optimization: review product relevance, pricing, descriptions, and availability.",
         q2, "⚠️"
     )
 
@@ -14984,8 +14990,11 @@ with tab_insights:
     # ==================== Q3: Top 20 Search Queries by CR ====================
     def q3():
         """Top 20 search queries based on Conversion Rate (CR)"""
-        # Filter: exclude 'Other' brand only
-        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
+        # Filter: exclude 'Other' brand AND search count >= 200
+        filtered = df_insights[
+            (df_insights['Brand'] != 'Other') & 
+            (df_insights['Counts'] >= 200)
+        ].copy()
         
         if len(filtered) > 0:
             # Calculate CR
@@ -15033,11 +15042,11 @@ with tab_insights:
             fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found")
+            st.info("📊 No search queries found with volume >= 200")
 
     q_expand(
         "Q3 — 🎯 Top 20 Search Queries by Conversion Rate (CR)",
-        "Identifies search queries with the highest conversion rates. **Filter: Excludes generic items**. These queries represent high purchase intent - prioritize them in SEO and PPC campaigns.",
+        "Identifies search queries with the highest conversion rates. **Filter: Search Volume >= 200, excludes generic items**. These queries represent high purchase intent - prioritize them in SEO and PPC campaigns.",
         q3, "🎯"
     )
 
@@ -15045,8 +15054,11 @@ with tab_insights:
     # ==================== Q4: Top 20 Search Queries by CTR ====================
     def q4():
         """Top 20 search queries based on Click-Through Rate (CTR)"""
-        # Filter: exclude 'Other' brand only
-        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
+        # Filter: exclude 'Other' brand AND search count >= 200
+        filtered = df_insights[
+            (df_insights['Brand'] != 'Other') & 
+            (df_insights['Counts'] >= 200)
+        ].copy()
         
         if len(filtered) > 0:
             # Calculate CTR
@@ -15094,13 +15106,14 @@ with tab_insights:
             fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="CTR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found")
+            st.info("📊 No search queries found with volume >= 200")
 
     q_expand(
         "Q4 — 👆 Top 20 Search Queries by Click-Through Rate (CTR)",
-        "Identifies search queries with the highest click-through rates. **Filter: Excludes generic items**. These queries have strong search result appeal - analyze what makes them attractive and replicate across other products.",
+        "Identifies search queries with the highest click-through rates. **Filter: Search Volume >= 200, excludes generic items**. These queries have strong search result appeal - analyze what makes them attractive and replicate across other products.",
         q4, "👆"
     )
+
 
 
     # ==================== Q5: High Search Volume, Low CR - Conversion Optimization ====================
@@ -15438,78 +15451,9 @@ with tab_insights:
     )
 
 
-    # ==================== Q9: Low Visibility, High Potential ====================
-    def q9():
-        """Low search volume but high conversion rate - scaling opportunities"""
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Counts'] <= 500) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
-        
-        if len(filtered) > 0:
-            high_cr = filtered['cr_calculated'].quantile(0.75)
-            
-            opportunities = filtered[filtered['cr_calculated'] >= high_cr].copy()
-            
-            if len(opportunities) > 0:
-                out = opportunities.nlargest(20, 'Counts')[
-                    ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated']
-                ].copy()
-                
-                # Format for display
-                display_df = out.copy()
-                display_df['Counts_fmt'] = display_df['Counts'].apply(lambda x: format_number(int(x)))
-                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
-                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-                display_df['cr_fmt'] = display_df['cr_calculated'].apply(format_percentage)
-                
-                display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'cr_fmt']]
-                display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 'CR']
-                
-                display_styled_table(
-                    df=display_df,
-                    align="center",
-                    scrollable=True,
-                    max_height="600px"
-                )
-                
-                # Success callout
-                st.success(f"🚀 **Scaling Opportunity:** {len(out)} high-converting queries ready for scaling!")
-                
-                st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                  f"q9_scaling_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                  "text/csv", key="q9_dl")
-                
-                # Visualization
-                fig = px.bar(out.head(15), x='search', y='Counts', color='cr_calculated',
-                            title='Top 15 Scaling Opportunities (Low Volume, High CR)',
-                            color_continuous_scale='Greens',
-                            hover_data=['Brand', 'clicks', 'conversions'])
-                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="Search Volume")
-                st.plotly_chart(fig, use_container_width=True)
-                
-                st.info("""
-                **💡 How to Scale These Queries:**
-                - 📢 Increase PPC budget for these keywords
-                - 🔍 Improve SEO content and backlinks
-                - 📱 Create targeted social media campaigns
-                - 📧 Feature in email marketing
-                - 🎯 Use as seed keywords for similar high-intent terms
-                """)
-            else:
-                st.info("📊 No high-CR, low-volume opportunities found")
-        else:
-            st.info("📊 No search queries found in 200-500 volume range")
-
-    q_expand(
-        "Q9 — 🚀 Low Visibility, High Potential - Scaling Opportunities",
-        "Identifies low-volume (200-500) queries with high conversion rates (top 25%). **Filter: Search Volume 200-500, CR >= 75th percentile, excludes generic items**. These are proven winners ready for scaling through SEO and PPC investment.",
-        q9, "🚀"
-    )
 
 
-    # ==================== Q10: Brand Comparison ====================
+    # ==================== Q9: Brand Comparison ====================
     def q10():
         """Top brands comparison by key metrics"""
         filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
@@ -15574,7 +15518,7 @@ with tab_insights:
             st.info("📊 No brand data found")
 
     q_expand(
-        "Q10 — 🏅 Brand Comparison - Top Performers",
+        "Q9 — 🏅 Brand Comparison - Top Performers",
         "Compares top 20 brands by search volume, engagement, and conversion metrics. **Filter: Excludes generic items, sorted by Search Volume descending**. Identify which brands drive the most value and deserve increased investment.",
         q10, "🏅"
     )
@@ -15723,119 +15667,11 @@ with tab_insights:
             st.info("📊 No search queries found with volume >= 200")
 
     q_expand(
-        "Q11 — 📊 Performance Consistency - Stable vs Volatile Brands",
+        "Q10 — 📊 Performance Consistency - Stable vs Volatile Brands",
         "Analyzes brand performance consistency using Coefficient of Variation. **Filter: Search Volume >= 200, brands with >= 2 queries, excludes generic items**. Identifies stable performers (reliable revenue) vs volatile brands (need investigation).",
         q11, "📊"
     )
 
-
-    # ==================== SUMMARY METRICS SECTION ====================
-    st.markdown("---")
-    st.markdown("""
-    <div style="
-        text-align: center; 
-        padding: 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
-        border-radius: 15px; 
-        margin: 2rem 0;
-        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
-    ">
-        <h2 style="color: #1B5E20; margin-bottom: 1rem;">📈 Overall Performance Summary 📈</h2>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Calculate summary metrics
-    total_queries = len(df_insights)
-    total_search_volume = int(df_insights['Counts'].sum())
-    total_clicks = int(df_insights['clicks'].sum())
-    total_conversions = int(df_insights['conversions'].sum())
-    avg_ctr = (total_clicks / total_search_volume * 100) if total_search_volume > 0 else 0
-    avg_cr = (total_conversions / total_search_volume * 100) if total_search_volume > 0 else 0
-    
-    # Count branded vs generic
-    branded_count = len(df_insights[df_insights['Brand'] != 'Other'])
-    generic_count = len(df_insights[df_insights['Brand'] == 'Other'])
-    
-    # Display metrics in cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">🔍</div>
-            <div class="value">{format_number(total_queries)}</div>
-            <div class="label">Total Queries</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">📊</div>
-            <div class="value">{format_number(total_search_volume)}</div>
-            <div class="label">Total Search Volume</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">👆</div>
-            <div class="value">{format_number(total_clicks)}</div>
-            <div class="label">Total Clicks</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">🎯</div>
-            <div class="value">{format_number(total_conversions)}</div>
-            <div class="label">Total Conversions</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col5, col6, col7, col8 = st.columns(4)
-    
-    with col5:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">📈</div>
-            <div class="value">{format_percentage(avg_ctr)}</div>
-            <div class="label">Average CTR</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col6:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">💰</div>
-            <div class="value">{format_percentage(avg_cr)}</div>
-            <div class="label">Average CR</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col7:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">🏷️</div>
-            <div class="value">{format_number(branded_count)}</div>
-            <div class="label">Branded Queries</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col8:
-        st.markdown(f"""
-        <div class="insight-metric-card">
-            <div class="icon">🔤</div>
-            <div class="value">{format_number(generic_count)}</div>
-            <div class="label">Generic Queries</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("---")
 
     # ==================== KEY TAKEAWAYS ====================
     st.markdown("""
@@ -15907,7 +15743,7 @@ with tab_insights:
         <h3 style="color: #01579B; margin-bottom: 1rem;">🚀 Ready to Take Action?</h3>
         <p style="color: #0277BD; font-size: 1.1rem;">
             Use the insights above to prioritize your optimization efforts. Download the data for each question 
-            and share with your team. Focus on quick wins (Q5, Q6, Q9) and long-term strategic improvements (Q7, Q8, Q11).
+            and share with your team. Focus on quick wins (Q5, Q6) and long-term strategic improvements (Q7, Q8, Q11).
         </p>
     </div>
     """, unsafe_allow_html=True)
