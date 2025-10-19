@@ -14859,26 +14859,22 @@ with tab_insights:
                 import traceback
                 st.code(traceback.format_exc())
 
-    # ==================== TOP 12 STRATEGIC QUESTIONS ====================
+    # ==================== TOP 11 STRATEGIC QUESTIONS ====================
 
-    # ==================== NEW Q1: Top 20 Search Queries by CTR and CR ====================
+    # ==================== Q1: Top 20 Search Queries by CTR and CR ====================
     def q1():
         """Top 20 search queries based on both CTR and CR performance"""
-        # Filter: search volume >= 200, exclude 'Other' brand
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
+        # Filter: exclude 'Other' brand only
+        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
         
         if len(filtered) > 0:
             # Calculate combined score (CTR + CR weighted equally)
             filtered['ctr'] = (filtered['clicks'] / filtered['Counts'] * 100).fillna(0)
             filtered['cr'] = (filtered['conversions'] / filtered['Counts'] * 100).fillna(0)
-            filtered['combined_score'] = (filtered['ctr'] + filtered['cr']) / 2
             
             # Get top 20
-            out = filtered.nlargest(20, 'combined_score')[
-                ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'ctr', 'cr', 'combined_score']
+            out = filtered.nlargest(20, ['ctr', 'cr'])[
+                ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']
             ].copy()
             
             # Format for display
@@ -14888,12 +14884,11 @@ with tab_insights:
             display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
             display_df['ctr_fmt'] = display_df['ctr'].apply(format_percentage)
             display_df['cr_fmt'] = display_df['cr'].apply(format_percentage)
-            display_df['combined_score_fmt'] = display_df['combined_score'].apply(format_percentage)
             
             display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 
-                                    'ctr_fmt', 'cr_fmt', 'combined_score_fmt']]
+                                    'ctr_fmt', 'cr_fmt']]
             display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 
-                                'CTR', 'CR', 'Combined Score']
+                                'CTR', 'CR']
             
             display_styled_table(
                 df=display_df,
@@ -14907,7 +14902,7 @@ with tab_insights:
                             "text/csv", key="q1_dl")
             
             # Visualization
-            fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='combined_score',
+            fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='cr',
                             hover_data=['search', 'Brand', 'clicks', 'conversions'],
                             title='Top 20 Search Queries: CTR vs CR Performance',
                             color_continuous_scale='Greens', text='search')
@@ -14915,33 +14910,29 @@ with tab_insights:
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found with volume >= 200")
+            st.info("📊 No search queries found")
 
     q_expand(
         "Q1 — 🏆 Top 20 Search Queries by CTR & CR Performance",
-        "Identifies the best-performing search queries based on combined CTR and CR scores. **Filter: Search Volume >= 200, excludes generic items**. Focus optimization efforts on these high-performing queries.",
+        "Identifies the best-performing search queries based on CTR and CR scores. **Filter: Excludes generic items**. Focus optimization efforts on these high-performing queries.",
         q1, "🏆"
     )
 
 
-    # ==================== NEW Q2: Bottom 20 Search Queries by CTR and CR ====================
+    # ==================== Q2: Bottom 20 Search Queries by CTR and CR ====================
     def q2():
         """Bottom 20 search queries based on both CTR and CR performance"""
-        # Filter: search volume >= 200, exclude 'Other' brand
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
+        # Filter: exclude 'Other' brand only
+        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
         
         if len(filtered) > 0:
             # Calculate combined score (CTR + CR weighted equally)
             filtered['ctr'] = (filtered['clicks'] / filtered['Counts'] * 100).fillna(0)
             filtered['cr'] = (filtered['conversions'] / filtered['Counts'] * 100).fillna(0)
-            filtered['combined_score'] = (filtered['ctr'] + filtered['cr']) / 2
             
             # Get bottom 20
-            out = filtered.nsmallest(20, 'combined_score')[
-                ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'ctr', 'cr', 'combined_score']
+            out = filtered.nsmallest(20, ['ctr', 'cr'])[
+                ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'ctr', 'cr']
             ].copy()
             
             # Format for display
@@ -14951,12 +14942,11 @@ with tab_insights:
             display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
             display_df['ctr_fmt'] = display_df['ctr'].apply(format_percentage)
             display_df['cr_fmt'] = display_df['cr'].apply(format_percentage)
-            display_df['combined_score_fmt'] = display_df['combined_score'].apply(format_percentage)
             
             display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 
-                                    'ctr_fmt', 'cr_fmt', 'combined_score_fmt']]
+                                    'ctr_fmt', 'cr_fmt']]
             display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 
-                                'CTR', 'CR', 'Combined Score']
+                                'CTR', 'CR']
             
             display_styled_table(
                 df=display_df,
@@ -14974,7 +14964,7 @@ with tab_insights:
                             "text/csv", key="q2_dl")
             
             # Visualization
-            fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='combined_score',
+            fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='cr',
                             hover_data=['search', 'Brand', 'clicks', 'conversions'],
                             title='Bottom 20 Search Queries: CTR vs CR Performance',
                             color_continuous_scale='Reds_r', text='search')
@@ -14982,23 +14972,20 @@ with tab_insights:
             fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found with volume >= 200")
+            st.info("📊 No search queries found")
 
     q_expand(
         "Q2 — ⚠️ Bottom 20 Search Queries by CTR & CR Performance",
-        "Identifies the worst-performing search queries. **Filter: Search Volume >= 200, excludes generic items**. These queries need immediate optimization: review product relevance, pricing, descriptions, and availability.",
+        "Identifies the worst-performing search queries. **Filter: Excludes generic items**. These queries need immediate optimization: review product relevance, pricing, descriptions, and availability.",
         q2, "⚠️"
     )
 
 
-    # ==================== NEW Q3: Top 20 Search Queries by CR ====================
+    # ==================== Q3: Top 20 Search Queries by CR ====================
     def q3():
         """Top 20 search queries based on Conversion Rate (CR)"""
-        # Filter: search volume >= 200, exclude 'Other' brand
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
+        # Filter: exclude 'Other' brand only
+        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
         
         if len(filtered) > 0:
             # Calculate CR
@@ -15046,23 +15033,20 @@ with tab_insights:
             fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="CR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found with volume >= 200")
+            st.info("📊 No search queries found")
 
     q_expand(
         "Q3 — 🎯 Top 20 Search Queries by Conversion Rate (CR)",
-        "Identifies search queries with the highest conversion rates. **Filter: Search Volume >= 200, excludes generic items**. These queries represent high purchase intent - prioritize them in SEO and PPC campaigns.",
+        "Identifies search queries with the highest conversion rates. **Filter: Excludes generic items**. These queries represent high purchase intent - prioritize them in SEO and PPC campaigns.",
         q3, "🎯"
     )
 
 
-    # ==================== NEW Q4: Top 20 Search Queries by CTR ====================
+    # ==================== Q4: Top 20 Search Queries by CTR ====================
     def q4():
         """Top 20 search queries based on Click-Through Rate (CTR)"""
-        # Filter: search volume >= 200, exclude 'Other' brand
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
+        # Filter: exclude 'Other' brand only
+        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
         
         if len(filtered) > 0:
             # Calculate CTR
@@ -15110,11 +15094,11 @@ with tab_insights:
             fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="CTR (%)")
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("📊 No search queries found with volume >= 200")
+            st.info("📊 No search queries found")
 
     q_expand(
         "Q4 — 👆 Top 20 Search Queries by Click-Through Rate (CTR)",
-        "Identifies search queries with the highest click-through rates. **Filter: Search Volume >= 200, excludes generic items**. These queries have strong search result appeal - analyze what makes them attractive and replicate across other products.",
+        "Identifies search queries with the highest click-through rates. **Filter: Excludes generic items**. These queries have strong search result appeal - analyze what makes them attractive and replicate across other products.",
         q4, "👆"
     )
 
@@ -15138,12 +15122,8 @@ with tab_insights:
             ].copy()
             
             if len(opportunities) > 0:
-                opportunities['potential_conversions'] = (opportunities['Counts'] * median_cr / 100).round(0)
-                opportunities['conversion_gap'] = (opportunities['potential_conversions'] - opportunities['conversions']).round(0)
-                
-                out = opportunities.nlargest(20, 'conversion_gap')[
-                    ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated', 
-                     'potential_conversions', 'conversion_gap']
+                out = opportunities.nlargest(20, 'Counts')[
+                    ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated']
                 ].copy()
                 
                 # Format for display
@@ -15152,13 +15132,9 @@ with tab_insights:
                 display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
                 display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 display_df['cr_fmt'] = display_df['cr_calculated'].apply(format_percentage)
-                display_df['potential_conversions_fmt'] = display_df['potential_conversions'].apply(lambda x: format_number(int(x)))
-                display_df['conversion_gap_fmt'] = display_df['conversion_gap'].apply(lambda x: format_number(int(x)))
                 
-                display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 
-                                        'cr_fmt', 'potential_conversions_fmt', 'conversion_gap_fmt']]
-                display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Current Conversions', 
-                                    'Current CR', 'Potential Conversions', 'Conversion Gap']
+                display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'cr_fmt']]
+                display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Current Conversions', 'Current CR']
                 
                 display_styled_table(
                     df=display_df,
@@ -15168,19 +15144,18 @@ with tab_insights:
                 )
                 
                 # Warning callout
-                total_gap = out['conversion_gap'].sum()
-                st.warning(f"💰 **Potential Revenue Loss:** {format_number(int(total_gap))} conversions could be captured by optimizing these {len(out)} high-traffic queries!")
+                st.warning(f"💰 **{len(out)} high-traffic queries** with below-median CR need optimization!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
                                   f"q5_conversion_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
                                   "text/csv", key="q5_dl")
                 
                 # Visualization
-                fig = px.bar(out.head(15), x='search', y='conversion_gap', color='cr_calculated',
+                fig = px.bar(out.head(15), x='search', y='Counts', color='cr_calculated',
                             title='Top 15 Conversion Optimization Opportunities',
                             color_continuous_scale='Reds_r',
-                            hover_data=['Brand', 'Counts', 'conversions', 'potential_conversions'])
-                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="Conversion Gap")
+                            hover_data=['Brand', 'clicks', 'conversions'])
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="Search Volume")
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("📊 No high volume, low CR opportunities found")
@@ -15281,7 +15256,7 @@ with tab_insights:
     # ==================== Q7: Brand Performance - Branded vs Generic ====================
     def q7():
         """Branded vs Generic search intent comparison"""
-        df_temp = df_insights[df_insights['Counts'] >= 200].copy()
+        df_temp = df_insights.copy()
         
         if len(df_temp) > 0:
             df_temp['brand_type'] = df_temp['Brand'].apply(
@@ -15299,7 +15274,7 @@ with tab_insights:
             total_sv = agg['Counts'].sum()
             agg['search_share'] = (agg['Counts'] / total_sv * 100).fillna(0) if total_sv > 0 else 0
             
-            out = agg.copy()
+            out = agg.sort_values('Counts', ascending=False).copy()
             
             # Format for display
             display_df = out.copy()
@@ -15376,11 +15351,11 @@ with tab_insights:
             fig2.update_layout(title='Search Volume Distribution: Branded vs Generic')
             st.plotly_chart(fig2, use_container_width=True)
         else:
-            st.info("📊 No data found with search volume >= 200")
+            st.info("📊 No data found")
 
     q_expand(
         "Q7 — 🏷️ Brand Performance: Branded vs Generic Search Intent",
-        "Compares branded vs generic search behavior. **Filter: Search Volume >= 200**. Balance SEO and brand marketing strategies accordingly. Numbers displayed on charts for clarity.",
+        "Compares branded vs generic search behavior. Balance SEO and brand marketing strategies accordingly. Numbers displayed on charts for clarity.",
         q7, "🏷️"
     )
 
@@ -15389,10 +15364,7 @@ with tab_insights:
     def q8():
         """Month-over-month performance trends"""
         if 'start_date' in df_insights.columns:
-            filtered = df_insights[
-                (df_insights['start_date'].notna()) &
-                (df_insights['Counts'] >= 200)
-            ]
+            filtered = df_insights[df_insights['start_date'].notna()].copy()
             
             if len(filtered) > 0:
                 df_temp = filtered.copy()
@@ -15455,86 +15427,19 @@ with tab_insights:
                                  hovermode='x unified')
                 st.plotly_chart(fig2, use_container_width=True)
             else:
-                st.info("📊 No data found with search volume >= 200")
+                st.info("📊 No data found with valid dates")
         else:
             st.info("📊 Date column not available")
 
     q_expand(
         "Q8 — 📅 Seasonal Trends - Month-over-Month Performance",
-        "Analyzes performance trends over time. **Filter: Search Volume >= 200**. Identify seasonal patterns, peak periods, and plan inventory/marketing campaigns accordingly.",
+        "Analyzes performance trends over time. Identify seasonal patterns, peak periods, and plan inventory/marketing campaigns accordingly.",
         q8, "📅"
     )
 
 
-    # ==================== Q9: Sub-Category Deep Dive ====================
+    # ==================== Q9: Low Visibility, High Potential ====================
     def q9():
-        """Sub-category granular performance insights"""
-        if 'sub_category' in df_insights.columns:
-            filtered = df_insights[
-                (df_insights['Counts'] >= 200) &
-                (df_insights['Brand'] != 'Other')
-            ].copy()
-            
-            if len(filtered) > 0:
-                agg = filtered.groupby('sub_category').agg({
-                    'Counts': 'sum',
-                    'clicks': 'sum',
-                    'conversions': 'sum'
-                }).reset_index()
-                
-                agg['ctr'] = (agg['clicks'] / agg['Counts'] * 100).fillna(0)
-                agg['cr'] = (agg['conversions'] / agg['Counts'] * 100).fillna(0)
-                agg['conversion_efficiency'] = (agg['conversions'] / agg['clicks'] * 100).fillna(0)
-                
-                out = agg.nlargest(20, 'Counts').copy()
-                
-                # Format for display
-                display_df = out.copy()
-                display_df['Counts_fmt'] = display_df['Counts'].apply(lambda x: format_number(int(x)))
-                display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
-                display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
-                display_df['ctr_fmt'] = display_df['ctr'].apply(format_percentage)
-                display_df['cr_fmt'] = display_df['cr'].apply(format_percentage)
-                display_df['conversion_efficiency_fmt'] = display_df['conversion_efficiency'].apply(format_percentage)
-                
-                display_df = display_df[['sub_category', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 
-                                        'ctr_fmt', 'cr_fmt', 'conversion_efficiency_fmt']]
-                display_df.columns = ['Sub-Category', 'Search Volume', 'Clicks', 'Conversions', 
-                                    'CTR', 'CR', 'Conversion Efficiency']
-                
-                display_styled_table(
-                    df=display_df,
-                    align="center",
-                    scrollable=True,
-                    max_height="600px"
-                )
-                
-                st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                  f"q9_subcategory_analysis_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                  "text/csv", key="q9_dl")
-                
-                # Visualization
-                fig = px.scatter(out, x='ctr', y='cr', size='Counts', color='conversion_efficiency',
-                               hover_data=['sub_category', 'clicks', 'conversions'],
-                               title='Sub-Category Performance Matrix',
-                               color_continuous_scale='Viridis', text='sub_category')
-                fig.update_traces(textposition='top center', textfont_size=8)
-                fig.update_layout(xaxis_title="CTR (%)", yaxis_title="CR (%)")
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("📊 No sub-category data found with search volume >= 200")
-        else:
-            st.info("📊 Sub-category column not available")
-
-    q_expand(
-        "Q9 — 🔬 Sub-Category Deep Dive - Granular Performance Insights",
-        "Analyzes performance at sub-category level. **Filter: Search Volume >= 200, excludes generic items**. Identify which sub-categories drive the most engagement and conversions.",
-        q9, "🔬"
-    )
-
-
-    # ==================== Q10: Low Visibility, High Potential ====================
-    def q10():
         """Low search volume but high conversion rate - scaling opportunities"""
         filtered = df_insights[
             (df_insights['Counts'] >= 200) &
@@ -15548,12 +15453,8 @@ with tab_insights:
             opportunities = filtered[filtered['cr_calculated'] >= high_cr].copy()
             
             if len(opportunities) > 0:
-                opportunities['estimated_conversions_at_1k'] = (1000 * opportunities['cr_calculated'] / 100).round(0)
-                opportunities['upside_potential'] = (opportunities['estimated_conversions_at_1k'] - opportunities['conversions']).round(0)
-                
-                out = opportunities.nlargest(20, 'cr_calculated')[
-                    ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated', 
-                     'estimated_conversions_at_1k', 'upside_potential']
+                out = opportunities.nlargest(20, 'Counts')[
+                    ['search', 'Brand', 'Counts', 'clicks', 'conversions', 'cr_calculated']
                 ].copy()
                 
                 # Format for display
@@ -15562,13 +15463,9 @@ with tab_insights:
                 display_df['clicks_fmt'] = display_df['clicks'].apply(lambda x: format_number(int(x)))
                 display_df['conversions_fmt'] = display_df['conversions'].apply(lambda x: format_number(int(x)))
                 display_df['cr_fmt'] = display_df['cr_calculated'].apply(format_percentage)
-                display_df['estimated_conversions_at_1k_fmt'] = display_df['estimated_conversions_at_1k'].apply(lambda x: format_number(int(x)))
-                display_df['upside_potential_fmt'] = display_df['upside_potential'].apply(lambda x: format_number(int(x)))
                 
-                display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 
-                                        'cr_fmt', 'estimated_conversions_at_1k_fmt', 'upside_potential_fmt']]
-                display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 
-                                    'CR', 'Est. Conv. at 1K', 'Upside Potential']
+                display_df = display_df[['search', 'Brand', 'Counts_fmt', 'clicks_fmt', 'conversions_fmt', 'cr_fmt']]
+                display_df.columns = ['Search Query', 'Brand', 'Search Volume', 'Clicks', 'Conversions', 'CR']
                 
                 display_styled_table(
                     df=display_df,
@@ -15578,19 +15475,18 @@ with tab_insights:
                 )
                 
                 # Success callout
-                total_upside = out['upside_potential'].sum()
-                st.success(f"🚀 **Scaling Opportunity:** {len(out)} high-converting queries could generate {format_number(int(total_upside))} additional conversions if scaled to 1K search volume!")
+                st.success(f"🚀 **Scaling Opportunity:** {len(out)} high-converting queries ready for scaling!")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                  f"q10_scaling_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                  "text/csv", key="q10_dl")
+                                  f"q9_scaling_opportunities_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q9_dl")
                 
                 # Visualization
-                fig = px.bar(out.head(15), x='search', y='upside_potential', color='cr_calculated',
+                fig = px.bar(out.head(15), x='search', y='Counts', color='cr_calculated',
                             title='Top 15 Scaling Opportunities (Low Volume, High CR)',
                             color_continuous_scale='Greens',
-                            hover_data=['Brand', 'Counts', 'conversions', 'estimated_conversions_at_1k'])
-                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="Upside Potential (Conversions)")
+                            hover_data=['Brand', 'clicks', 'conversions'])
+                fig.update_layout(xaxis_tickangle=-45, xaxis_title="Search Query", yaxis_title="Search Volume")
                 st.plotly_chart(fig, use_container_width=True)
                 
                 st.info("""
@@ -15607,19 +15503,16 @@ with tab_insights:
             st.info("📊 No search queries found in 200-500 volume range")
 
     q_expand(
-        "Q10 — 🚀 Low Visibility, High Potential - Scaling Opportunities",
+        "Q9 — 🚀 Low Visibility, High Potential - Scaling Opportunities",
         "Identifies low-volume (200-500) queries with high conversion rates (top 25%). **Filter: Search Volume 200-500, CR >= 75th percentile, excludes generic items**. These are proven winners ready for scaling through SEO and PPC investment.",
-        q10, "🚀"
+        q9, "🚀"
     )
 
 
-    # ==================== Q11: Brand Comparison ====================
-    def q11():
+    # ==================== Q10: Brand Comparison ====================
+    def q10():
         """Top brands comparison by key metrics"""
-        filtered = df_insights[
-            (df_insights['Counts'] >= 200) &
-            (df_insights['Brand'] != 'Other')
-        ].copy()
+        filtered = df_insights[df_insights['Brand'] != 'Other'].copy()
         
         if len(filtered) > 0:
             agg = filtered.groupby('Brand').agg({
@@ -15659,8 +15552,8 @@ with tab_insights:
             )
             
             st.download_button("📥 Download Data", out.to_csv(index=False), 
-                              f"q11_brand_comparison_{datetime.now().strftime('%Y%m%d')}.csv", 
-                              "text/csv", key="q11_dl")
+                              f"q10_brand_comparison_{datetime.now().strftime('%Y%m%d')}.csv", 
+                              "text/csv", key="q10_dl")
             
             # Visualization - Brand performance comparison
             fig = px.scatter(out, x='CTR', y='CR', size='Total Search Volume', color='Total Conversions',
@@ -15678,17 +15571,17 @@ with tab_insights:
             fig2.update_layout(xaxis_tickangle=-45)
             st.plotly_chart(fig2, use_container_width=True)
         else:
-            st.info("📊 No brand data found with search volume >= 200")
+            st.info("📊 No brand data found")
 
     q_expand(
-        "Q11 — 🏅 Brand Comparison - Top Performers",
-        "Compares top 20 brands by search volume, engagement, and conversion metrics. **Filter: Search Volume >= 200, excludes generic items**. Identify which brands drive the most value and deserve increased investment.",
-        q11, "🏅"
+        "Q10 — 🏅 Brand Comparison - Top Performers",
+        "Compares top 20 brands by search volume, engagement, and conversion metrics. **Filter: Excludes generic items, sorted by Search Volume descending**. Identify which brands drive the most value and deserve increased investment.",
+        q10, "🏅"
     )
 
 
-    # ==================== Q12: REVISED - Performance Consistency ====================
-    def q12():
+    # ==================== Q11: REVISED - Performance Consistency ====================
+    def q11():
         """Performance consistency - stable vs volatile products (REVISED LOGIC)"""
         filtered = df_insights[
             (df_insights['Counts'] >= 200) &
@@ -15781,8 +15674,8 @@ with tab_insights:
                     st.warning(f"⚠️ **Most Volatile Brand:** {most_volatile['Brand']} (Stability Score: {most_volatile['Stability Score']:.2f}, Volatility: {format_percentage(most_volatile['Volatility'])})")
                 
                 st.download_button("📥 Download Data", out.to_csv(index=False), 
-                                  f"q12_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", 
-                                  "text/csv", key="q12_dl")
+                                  f"q11_performance_consistency_{datetime.now().strftime('%Y%m%d')}.csv", 
+                                  "text/csv", key="q11_dl")
                 
                 # Visualization
                 fig = px.scatter(out, x='Volatility', y='Stability Score', size='Total Search Volume', 
@@ -15793,39 +15686,26 @@ with tab_insights:
                 fig.update_layout(xaxis_title="Volatility (%)", yaxis_title="Stability Score")
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Explanation
+                # Enhanced Explanation
                 st.info("""
-                **📊 Revised Logic Explanation:**
+                **📊 Performance Consistency Analysis - Detailed Explanation:**
                 
-                **Volatility Calculation** (based on Coefficient of Variation):
-                - **CTR Volatility** = (Std Dev of CTR / Mean CTR) × 100
-                - **CR Volatility** = (Std Dev of CR / Mean CR) × 100
-                - **Combined Volatility** = Average of CTR and CR volatility
+                **What is Volatility?**
+                - Volatility measures how much a brand's CTR and CR fluctuate across different search queries
+                - Calculated using the **Coefficient of Variation (CV)**: `(Standard Deviation / Mean) × 100`
+                - **Low volatility** = Consistent performance across all queries
+                - **High volatility** = Unpredictable, erratic performance
                 
-                **Stability Score Calculation**:
-                - Normalized inverse of volatility (0-100 scale)
-                - **High Score (80-100)** = Consistent, predictable performance across queries
-                - **Low Score (0-40)** = Erratic, unpredictable performance
+                **How is it Calculated?**
+                1. **CTR Volatility** = (Std Dev of CTR across queries / Average CTR) × 100
+                2. **CR Volatility** = (Std Dev of CR across queries / Average CR) × 100
+                3. **Combined Volatility** = Average of CTR and CR volatility
                 
-                **Why This Matters:**
-                - ✅ **Stable brands** = Reliable revenue, easier forecasting, lower risk
-                - ⚠️ **Volatile brands** = Unpredictable, may need product/pricing optimization
-                
-                **Note:** Only brands with 2+ unique queries are analyzed for meaningful volatility measurement.
-                """)
-            else:
-                st.info("📊 No brands found with 2+ unique queries for consistency analysis")
-        else:
-            st.info("📊 No data found with search volume >= 200")
-
-    q_expand(
-        "Q12 — 📊 Performance Consistency - Stable vs Volatile Brands (REVISED)",
-        "Analyzes brand performance consistency using Coefficient of Variation (CV). **Filter: Brands with 2+ queries, Search Volume >= 200, excludes generic items**. Identifies stable, predictable performers vs erratic brands needing optimization.",
-        q12, "📊"
-    )
-
-
-    st.success("✅ All 12 strategic questions loaded successfully!")
+                **What is Stability Score?**
+                - A normalized metric (0-100 scale) representing performance consistency
+                - Calculated as: `100 - (Volatility / Max Volatility × 100)`
+                - **High Score (80-100)** = Very stable, predictable performance
+                - **Medium Score (50-79)** =
 
 
 
