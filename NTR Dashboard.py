@@ -15687,6 +15687,7 @@ with tab_insights:
                 st.plotly_chart(fig, use_container_width=True)
                 
                 # Enhanced Explanation
+                # Enhanced Explanation
                 st.info("""
                 **📊 Performance Consistency Analysis - Detailed Explanation:**
                 
@@ -15705,7 +15706,224 @@ with tab_insights:
                 - A normalized metric (0-100 scale) representing performance consistency
                 - Calculated as: `100 - (Volatility / Max Volatility × 100)`
                 - **High Score (80-100)** = Very stable, predictable performance
-                - **Medium Score (50-79)** =
+                - **Medium Score (50-79)** = Moderate consistency with some fluctuation
+                - **Low Score (0-49)** = Highly volatile, unpredictable performance
+                
+                **Why Does This Matter?**
+                - **Stable brands** (low volatility) = Reliable revenue, easier to forecast, consistent customer experience
+                - **Volatile brands** (high volatility) = Requires investigation - may indicate pricing issues, stock problems, or inconsistent product quality
+                
+                **Action Items:**
+                - ✅ **Stable brands**: Increase investment, scale campaigns, use as benchmarks
+                - ⚠️ **Volatile brands**: Investigate root causes, standardize product pages, fix inconsistencies
+                """)
+            else:
+                st.info("📊 No brands found with at least 2 queries for consistency analysis")
+        else:
+            st.info("📊 No search queries found with volume >= 200")
+
+    q_expand(
+        "Q11 — 📊 Performance Consistency - Stable vs Volatile Brands",
+        "Analyzes brand performance consistency using Coefficient of Variation. **Filter: Search Volume >= 200, brands with >= 2 queries, excludes generic items**. Identifies stable performers (reliable revenue) vs volatile brands (need investigation).",
+        q11, "📊"
+    )
+
+
+    # ==================== SUMMARY METRICS SECTION ====================
+    st.markdown("---")
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%); 
+        border-radius: 15px; 
+        margin: 2rem 0;
+        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+    ">
+        <h2 style="color: #1B5E20; margin-bottom: 1rem;">📈 Overall Performance Summary 📈</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Calculate summary metrics
+    total_queries = len(df_insights)
+    total_search_volume = int(df_insights['Counts'].sum())
+    total_clicks = int(df_insights['clicks'].sum())
+    total_conversions = int(df_insights['conversions'].sum())
+    avg_ctr = (total_clicks / total_search_volume * 100) if total_search_volume > 0 else 0
+    avg_cr = (total_conversions / total_search_volume * 100) if total_search_volume > 0 else 0
+    
+    # Count branded vs generic
+    branded_count = len(df_insights[df_insights['Brand'] != 'Other'])
+    generic_count = len(df_insights[df_insights['Brand'] == 'Other'])
+    
+    # Display metrics in cards
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">🔍</div>
+            <div class="value">{format_number(total_queries)}</div>
+            <div class="label">Total Queries</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">📊</div>
+            <div class="value">{format_number(total_search_volume)}</div>
+            <div class="label">Total Search Volume</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">👆</div>
+            <div class="value">{format_number(total_clicks)}</div>
+            <div class="label">Total Clicks</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">🎯</div>
+            <div class="value">{format_number(total_conversions)}</div>
+            <div class="label">Total Conversions</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col5, col6, col7, col8 = st.columns(4)
+    
+    with col5:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">📈</div>
+            <div class="value">{format_percentage(avg_ctr)}</div>
+            <div class="label">Average CTR</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col6:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">💰</div>
+            <div class="value">{format_percentage(avg_cr)}</div>
+            <div class="label">Average CR</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col7:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">🏷️</div>
+            <div class="value">{format_number(branded_count)}</div>
+            <div class="label">Branded Queries</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col8:
+        st.markdown(f"""
+        <div class="insight-metric-card">
+            <div class="icon">🔤</div>
+            <div class="value">{format_number(generic_count)}</div>
+            <div class="label">Generic Queries</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ==================== KEY TAKEAWAYS ====================
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 2rem; 
+        background: linear-gradient(135deg, #FFF9C4 0%, #FFF59D 100%); 
+        border-radius: 15px; 
+        margin: 2rem 0;
+        box-shadow: 0 4px 16px rgba(251, 192, 45, 0.3);
+        border-left: 5px solid #FBC02D;
+    ">
+        <h2 style="color: #F57F17; margin-bottom: 1rem;">💡 Key Takeaways & Action Plan 💡</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Generate dynamic insights
+    underperforming_count = len(df_insights[df_insights.get('underperforming', False) == True])
+    high_volume_queries = len(df_insights[df_insights['Counts'] >= 500])
+    
+    # Top performing brand
+    if branded_count > 0:
+        brand_performance = df_insights[df_insights['Brand'] != 'Other'].groupby('Brand').agg({
+            'conversions': 'sum'
+        }).reset_index().nlargest(1, 'conversions')
+        top_brand = brand_performance.iloc[0]['Brand'] if len(brand_performance) > 0 else "N/A"
+        top_brand_conversions = int(brand_performance.iloc[0]['conversions']) if len(brand_performance) > 0 else 0
+    else:
+        top_brand = "N/A"
+        top_brand_conversions = 0
+
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="insight-box">
+            <h4>🎯 Priority Actions</h4>
+            <p><strong>1. Fix Underperformers:</strong> Review and optimize queries with low CTR/CR</p>
+            <p><strong>2. Scale Winners:</strong> Increase budget for high-converting queries</p>
+            <p><strong>3. Improve Experience:</strong> Address post-click issues (pricing, stock, reviews)</p>
+            <p><strong>4. Brand Strategy:</strong> Balance branded vs generic search optimization</p>
+            <p><strong>5. Seasonal Planning:</strong> Prepare inventory and campaigns based on trends</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="insight-box">
+            <h4>📊 Quick Stats</h4>
+            <p><strong>⚠️ Underperforming Queries:</strong> {format_number(underperforming_count)}</p>
+            <p><strong>🔥 High-Volume Queries (500+):</strong> {format_number(high_volume_queries)}</p>
+            <p><strong>🏆 Top Performing Brand:</strong> {top_brand}</p>
+            <p><strong>💎 Top Brand Conversions:</strong> {format_number(top_brand_conversions)}</p>
+            <p><strong>📈 CTR Performance:</strong> {format_percentage(avg_ctr)}</p>
+            <p><strong>💰 CR Performance:</strong> {format_percentage(avg_cr)}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Final CTA
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 2rem; 
+        background: linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%); 
+        border-radius: 15px; 
+        margin: 2rem 0;
+        box-shadow: 0 4px 16px rgba(3, 169, 244, 0.2);
+    ">
+        <h3 style="color: #01579B; margin-bottom: 1rem;">🚀 Ready to Take Action?</h3>
+        <p style="color: #0277BD; font-size: 1.1rem;">
+            Use the insights above to prioritize your optimization efforts. Download the data for each question 
+            and share with your team. Focus on quick wins (Q5, Q6, Q9) and long-term strategic improvements (Q7, Q8, Q11).
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    
+    # Footer
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem; color: #2E7D32; font-size: 0.9rem;">
+        <p>📊 <strong>Strategic Insights Hub</strong> | Data-Driven E-Commerce Optimization</p>
+        <p style="font-size: 0.8rem; color: #66BB6A;">
+            💡 Tip: Revisit this dashboard weekly to track improvements and identify new opportunities
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 
 
