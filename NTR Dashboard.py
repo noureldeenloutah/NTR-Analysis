@@ -2006,13 +2006,17 @@ with tab_overview:
                     st.session_state.top50_health_cache_key = styling_cache_key
                     
                     # 🚀 FAST: Apply format_number to numeric columns before styling
+                    # AFTER (Optimized - Memory Efficient)
+                    # ✅ Keep numeric version for calculations
+                    topN_numeric = topN.copy()  # Small numeric copy
+
+                    # ✅ Format ONLY for display (don't store intermediate)
                     display_topN = topN.copy()
-                    
-                    # Format volume columns with format_number
                     volume_cols_to_format = ['Total Volume'] + volume_columns
                     for col in volume_cols_to_format:
                         if col in display_topN.columns:
                             display_topN[col] = display_topN[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+
                     
                     # Format clicks and conversions
                     if 'Total Clicks' in display_topN.columns:
@@ -2043,7 +2047,7 @@ with tab_overview:
                             # ✅ FIXED: CTR comparison using ORIGINAL numeric values from topN
                             if current_ctr_col in topN.columns and prev_ctr_col in topN.columns:
                                 for idx in topN.index:
-                                    current_ctr = topN.loc[idx, current_ctr_col]  # ✅ Use original numeric value
+                                    current_ctr = topN_numeric.loc[idx, current_ctr_col]   # ✅ Use original numeric value
                                     prev_ctr = topN.loc[idx, prev_ctr_col]        # ✅ Use original numeric value
                                     
                                     if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
