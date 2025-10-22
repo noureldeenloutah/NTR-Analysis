@@ -63,34 +63,51 @@ except Exception:
 os.environ['PANDAS_COPY_ON_WRITE'] = '1'
 
 # ========================================
-# ✅ OPTIMIZED: Memory optimization function
+# ✅ FIXED: Memory optimization function
 # ========================================
 def optimize_memory_ultra(df):
-    """ULTRA memory optimization - 80% reduction"""
+    """ULTRA memory optimization - 80% reduction (FIXED)"""
+    
+    # ✅ FIX: Integer optimization
     for col in df.select_dtypes(include=['int64']).columns:
-        col_max = df[col].max()
-        col_min = df[col].min()
-        
-        if col_min >= 0:
-            if col_max < 255:
-                df[col] = df[col].astype('uint8')
-            elif col_max < 65535:
-                df[col] = df[col].astype('uint16')
-            elif col_max < 4294967295:
-                df[col] = df[col].astype('uint32')
-        else:
-            if col_min >= -128 and col_max <= 127:
-                df[col] = df[col].astype('int8')
-            elif col_min >= -32768 and col_max <= 32767:
-                df[col] = df[col].astype('int16')
+        try:
+            col_max = df[col].max()
+            col_min = df[col].min()
+            
+            if col_min >= 0:
+                if col_max < 255:
+                    df[col] = df[col].astype('uint8')
+                elif col_max < 65535:
+                    df[col] = df[col].astype('uint16')
+                elif col_max < 4294967295:
+                    df[col] = df[col].astype('uint32')
+            else:
+                if col_min >= -128 and col_max <= 127:
+                    df[col] = df[col].astype('int8')
+                elif col_min >= -32768 and col_max <= 32767:
+                    df[col] = df[col].astype('int16')
+        except Exception:
+            pass  # Skip problematic columns
     
+    # ✅ FIX: Float optimization
     for col in df.select_dtypes(include=['float64']).columns:
-        df[col] = df[col].astype('float32')
+        try:
+            df[col] = df[col].astype('float32')
+        except Exception:
+            pass
     
+    # ✅ FIX: Category optimization (skip list columns)
     for col in df.select_dtypes(include=['object']).columns:
-        unique_ratio = df[col].nunique() / len(df)
-        if unique_ratio < 0.5:
-            df[col] = df[col].astype('category')
+        try:
+            # Skip if column contains lists/unhashable types
+            if df[col].apply(lambda x: isinstance(x, (list, dict))).any():
+                continue
+            
+            unique_ratio = df[col].nunique() / len(df)
+            if unique_ratio < 0.5:
+                df[col] = df[col].astype('category')
+        except Exception:
+            pass  # Skip problematic columns
     
     return df
 
@@ -373,34 +390,34 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
 
     # Counts
     if 'count' in df.columns:
-        df['Counts'] = pd.to_numeric(df['count'], errors='coerce').fillna(0)
+        df['Counts'] = pd.to_numeric(df['count'], errors='coerce').fillna(0).astype('int32')
     else:
         df['Counts'] = 0
 
     # Clicks and Conversions
     if 'Clicks' in df.columns:
-        df['clicks'] = pd.to_numeric(df['Clicks'], errors='coerce').fillna(0)
+        df['clicks'] = pd.to_numeric(df['Clicks'], errors='coerce').fillna(0).astype('int32')
     else:
         df['clicks'] = 0
 
     if 'Conversions' in df.columns:
-        df['conversions'] = pd.to_numeric(df['Conversions'], errors='coerce').fillna(0)
+        df['conversions'] = pd.to_numeric(df['Conversions'], errors='coerce').fillna(0).astype('int32')
     else:
         df['conversions'] = 0
 
     # CTR
     if 'Click Through Rate' in df.columns:
         ctr = pd.to_numeric(df['Click Through Rate'], errors='coerce').fillna(0)
-        df['ctr'] = ctr * 100 if ctr.max() <= 1 else ctr
+        df['ctr'] = (ctr * 100 if ctr.max() <= 1 else ctr).astype('float32')
     else:
-        df['ctr'] = df.apply(lambda r: (r['clicks'] / r['Counts']) * 100 if r['Counts'] > 0 else 0, axis=1)
+        df['ctr'] = (df['clicks'] / df['Counts'].replace(0, 1) * 100).astype('float32')
 
     # CR
     if 'Conversion Rate' in df.columns:
         cr = pd.to_numeric(df['Conversion Rate'], errors='coerce').fillna(0)
-        df['cr'] = cr * 100 if cr.max() <= 1 else cr
+        df['cr'] = (cr * 100 if cr.max() <= 1 else cr).astype('float32')
     else:
-        df['cr'] = df.apply(lambda r: (r['conversions'] / r['Counts']) * 100 if r['Counts'] > 0 else 0, axis=1)
+        df['cr'] = (df['conversions'] / df['Counts'].replace(0, 1) * 100).astype('float32')
 
     df['classical_cr'] = df['cr']
     df['revenue'] = 0
@@ -412,9 +429,11 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     df['day_of_week'] = df['Date'].dt.day_name()
 
     # Text features
-    df['query_length'] = df['normalized_query'].astype(str).apply(len)
-    df['keywords'] = df['normalized_query'].apply(extract_keywords)
-
+    df['query_length'] = df['normalized_query'].astype(str).str.len().astype('uint16')
+    
+    # ✅ FIX: Create keywords AFTER optimization (to avoid list column issues)
+    # We'll add this later if needed
+    
     # Categories
     df['brand_ar'] = ''
     df['brand'] = df['Brand'] if 'Brand' in df.columns else None
@@ -423,8 +442,11 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     df['department'] = df['Department'] if 'Department' in df.columns else None
     df['class'] = df['Class'] if 'Class' in df.columns else None
 
-    # ✅ OPTIMIZED: Apply memory optimization
+    # ✅ OPTIMIZED: Apply memory optimization BEFORE keywords
     df = optimize_memory_ultra(df)
+    
+    # ✅ NOW add keywords (after optimization)
+    df['keywords'] = df['normalized_query'].apply(extract_keywords)
     
     return df.reset_index(drop=True)
 
@@ -512,7 +534,7 @@ brand_filter, brand_opts = get_filter_options(queries, 'brand', 'Brand(s)', '�
 dept_filter, dept_opts = get_filter_options(queries, 'department', 'Department(s)', '🏬')
 cat_filter, cat_opts = get_filter_options(queries, 'category', 'Category(ies)', '📦')
 subcat_filter, subcat_opts = get_filter_options(queries, 'sub_category', 'Sub Category(ies)', '🧴')
-class_filter, class_opts = get_filter_options(queries, 'Class', 'Class(es)', '🎯')
+class_filter, class_opts = get_filter_options(queries, 'class', 'Class(es)', '🎯')
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
 
 # Date filter
@@ -565,7 +587,7 @@ elif apply_filters:
     if subcat_filter and len(subcat_filter) < len(subcat_opts):
         mask &= queries['sub_category'].astype(str).isin(subcat_filter)
     if class_filter and len(class_filter) < len(class_opts):
-        mask &= queries['Class'].astype(str).isin(class_filter)
+        mask &= queries['class'].astype(str).isin(class_filter)
     
     # Text filter
     if text_filter:
@@ -628,6 +650,7 @@ tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class, tab_ge
     "⏰ Time Analysis","📊 Pivot Builder","💡 Insights","⬇ Export"
 ])
 
+# ✅ Your tab content goes here (unchanged)
 
 # ----------------- Overview -----------------
 with tab_overview:
