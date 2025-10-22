@@ -1139,7 +1139,7 @@ if not st.session_state.data_loaded:
             # Load file
             if upload is not None:
                 if upload.name.endswith('.xlsx'):
-                    sheets = load_excel_fast(upload_file=upload)
+                    sheets = load_with_cleanup(load_excel_fast, upload_file=upload)
                 else:  # CSV
                     df_csv = pd.read_csv(upload)
                     sheets = {'queries': df_csv}
