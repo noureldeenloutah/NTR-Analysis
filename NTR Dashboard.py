@@ -1914,7 +1914,9 @@ with tab_overview:
                 
                 if ('styled_top50_health' not in st.session_state or 
                     st.session_state.get('top50_health_cache_key') != styling_cache_key):
-                                        
+                    
+                    st.session_state.top50_health_cache_key = styling_cache_key
+                    
                     # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_topN = topN.copy()
                     
@@ -2037,9 +2039,11 @@ with tab_overview:
                             format_dict[col] = '{:.1f}%'
 
                     styled_topN = styled_topN.format(format_dict)
+                    st.session_state.styled_top50_health = styled_topN
 
                 # 🚀 DISPLAY: Styled DataFrame with CSS
                 # 🚀 DISPLAY: Styled DataFrame with scrollable container (FIXED)
+                html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
 
                 # Clean up any duplicate closing tags
                 html_content = html_content.strip()
