@@ -1278,7 +1278,7 @@ def get_filter_options(df, col, label, emoji):
 
 # Get filter selections (EXACTLY THE SAME AS YOUR CODE)
 brand_filter, brand_opts = get_filter_options(queries, 'brand', 'Brand(s)', '🏷')
-dept_filter, dept_opts = get_filter_options(squeries, 'department', 'Department(s)', '🏬')
+dept_filter, dept_opts = get_filter_options(queries, 'department', 'Department(s)', '🏬')
 cat_filter, cat_opts = get_filter_options(queries, 'category', 'Category(ies)', '📦')
 subcat_filter, subcat_opts = get_filter_options(queries, 'sub_category', 'Sub Category(ies)', '🧴')
 class_filter, class_opts = get_filter_options(queries, 'Class', 'Class(es)', '🎯')
