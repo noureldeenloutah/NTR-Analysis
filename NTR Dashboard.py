@@ -14,28 +14,29 @@ from uuid import uuid4
 import hashlib
 
 # ========================================
-# 🎨 UNIFIED CONFIGURATION SYSTEM
+# 🎨 UNIFIED GENERIC CONFIGURATION SYSTEM
 # ========================================
 
 class DashboardConfig:
-    """Centralized configuration for generic dashboard"""
+    """Centralized configuration for GENERIC multi-department dashboard"""
     
-    # 🎨 Theme Colors (can be customized per department)
+    # 🎨 VERSATILE Theme Colors (works for ALL departments)
     COLORS = {
-        'primary': '#2E7D32',      # Main green
-        'secondary': '#1976D2',    # Blue accent
-        'accent': '#66BB6A',       # Light green
-        'dark': '#1B5E20',         # Dark green
-        'light': '#E8F5E8',        # Very light green
-        'gradient_start': '#2E7D32',
-        'gradient_end': '#66BB6A'
+        'primary': '#1976D2',      # Professional Blue
+        'secondary': '#2E7D32',    # Success Green
+        'accent': '#42A5F5',       # Light Blue
+        'dark': '#0D47A1',         # Dark Blue
+        'light': '#E3F2FD',        # Very Light Blue
+        'success': '#4CAF50',      # Green accent
+        'gradient_start': '#1976D2',
+        'gradient_end': '#42A5F5'
     }
     
-    # 📊 Generic Labels (department-agnostic)
+    # 📊 GENERIC Labels (department-agnostic)
     LABELS = {
         'app_title': '🔍 Search Analytics Dashboard',
         'welcome_title': 'Welcome to Search Analytics!',
-        'welcome_text': 'Discover search trends, performance insights, and customer behavior patterns. Navigate through categories, analyze search queries, and unlock actionable insights for optimal business strategies!',
+        'welcome_text': 'Discover search trends, performance insights, and customer behavior patterns across all departments. Navigate through categories, analyze search queries, and unlock actionable insights for optimal business strategies!',
         'main_header': '📊 Search Analytics — Advanced Insights Hub',
         'sub_header': 'Explore search patterns and performance metrics with <b>data-driven analytics</b>',
         'kpi_searches': '📊 Total Searches',
@@ -45,7 +46,7 @@ class DashboardConfig:
         'kpi_cr': '🎯 Overall CR'
     }
     
-    # 📁 Column Mappings (unified across all tabs)
+    # 📁 UNIFIED Column Mappings (works across all tabs)
     COLUMN_MAPPING = {
         'search': 'normalized_query',
         'count': 'Counts',
@@ -54,6 +55,7 @@ class DashboardConfig:
         'Department': 'department',
         'Category': 'category',
         'Sub Category': 'sub_category',
+        'Sub Class': 'sub_class',
         'Brand': 'brand',
         'Class': 'class'
     }
@@ -64,22 +66,11 @@ class DashboardConfig:
         start = start or DashboardConfig.COLORS['gradient_start']
         end = end or DashboardConfig.COLORS['gradient_end']
         return f"linear-gradient(135deg, {start} 0%, {end} 100%)"
-    
-    @staticmethod
-    def update_theme(primary_color=None, secondary_color=None):
-        """Update theme colors dynamically"""
-        if primary_color:
-            DashboardConfig.COLORS['primary'] = primary_color
-        if secondary_color:
-            DashboardConfig.COLORS['secondary'] = secondary_color
 
 # Initialize config
 config = DashboardConfig()
 
-# ========================================
-# 🔧 UTILITY FUNCTIONS
-# ========================================
-
+# 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
     """Format numbers with K/M suffix"""
     if num >= 1_000_000:
@@ -89,34 +80,23 @@ def format_number(num):
     else:
         return f"{num:,.0f}"
 
+# 🚀 ADD PERCENTAGE FORMATTING FUNCTION
 def format_percentage(num):
-    """Format percentages with 1 decimal place"""
+    """Format percentages with 2 decimal places"""
     return f"{num:.1f}%"
 
-def extract_keywords(text: str):
-    """Extract words (Arabic & Latin & numbers) without correcting spelling."""
-    if not isinstance(text, str):
-        return []
-    tokens = re.findall(r'[\u0600-\u06FF\w%+\-]+', text)
-    return [t.strip().lower() for t in tokens if len(t.strip())>0]
-
-# ========================================
-# 🚀 PERFORMANCE CONFIGURATION
-# ========================================
-
-# Streamlit options
+# 🚀 STREAMLIT PERFORMANCE CONFIG
 try:
     st.set_option('deprecation.showPyplotGlobalUse', False)
 except:
     pass
 
-# Pandas options
+# 🚀 PANDAS PERFORMANCE OPTIONS
 pd.set_option('mode.chained_assignment', None)
 pd.set_option('compute.use_bottleneck', True)
 pd.set_option('compute.use_numexpr', True)
-os.environ['PANDAS_COPY_ON_WRITE'] = '1'
 
-# Plotly options
+# 🚀 PLOTLY PERFORMANCE
 try:
     import plotly.io as pio
     pio.templates.default = "plotly_white"
@@ -127,19 +107,21 @@ except:
 try:
     from st_aggrid import AgGrid, GridOptionsBuilder
     AGGRID_OK = True
-except:
+except Exception:
     AGGRID_OK = False
 
 try:
     from wordcloud import WordCloud
     import matplotlib.pyplot as plt
     WORDCLOUD_OK = True
-except:
+except Exception:
     WORDCLOUD_OK = False
 
 # ========================================
-# 🚀 UNIFIED DATA PROCESSING
+# 🚀 UNIFIED DATA PROCESSING FUNCTIONS
 # ========================================
+
+os.environ['PANDAS_COPY_ON_WRITE'] = '1'
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def smart_sampling(df, max_rows=50000):
@@ -149,20 +131,23 @@ def smart_sampling(df, max_rows=50000):
     
     try:
         # Keep high-value rows
-        high_value_mask = df['Clicks'] > df['Clicks'].quantile(0.8)
-        high_value = df[high_value_mask]
-        remaining = df[~high_value_mask]
-        
-        sample_size = max_rows - len(high_value)
-        if sample_size > 0 and len(remaining) > 0:
-            sampled = remaining.sample(n=min(sample_size, len(remaining)), random_state=42)
-            result = pd.concat([high_value, sampled], ignore_index=True)
-        else:
-            result = high_value.head(max_rows)
+        if 'Clicks' in df.columns:
+            high_value_mask = df['Clicks'] > df['Clicks'].quantile(0.8)
+            high_value = df[high_value_mask]
+            remaining = df[~high_value_mask]
             
-        return result
+            sample_size = max_rows - len(high_value)
+            if sample_size > 0 and len(remaining) > 0:
+                sampled = remaining.sample(n=min(sample_size, len(remaining)), random_state=42)
+                result = pd.concat([high_value, sampled], ignore_index=True)
+            else:
+                result = high_value.head(max_rows)
+            return result
     except:
-        return df.sample(n=max_rows, random_state=42).reset_index(drop=True)
+        pass
+    
+    # Fallback to simple random sampling
+    return df.sample(n=max_rows, random_state=42).reset_index(drop=True)
 
 def optimize_memory_ultra(df):
     """ULTRA memory optimization - 80% reduction"""
@@ -196,6 +181,17 @@ def optimize_memory_ultra(df):
             df[col] = df[col].astype('category')
     
     return df
+
+def extract_keywords(text: str):
+    """Extract words (Arabic & Latin & numbers) without correcting spelling."""
+    if not isinstance(text, str):
+        return []
+    tokens = re.findall(r'[\u0600-\u06FF\w%+\-]+', text)
+    return [t.strip().lower() for t in tokens if len(t.strip())>0]
+
+# ========================================
+# 🚀 SINGLE UNIFIED DATA PROCESSING FUNCTION
+# ========================================
 
 @st.cache_data(ttl=3600, show_spinner=False, max_entries=3)
 def process_dataframe_unified(_df):
@@ -242,15 +238,15 @@ def process_dataframe_unified(_df):
     for source_col, target_col in numeric_cols.items():
         if source_col in df.columns:
             df[target_col] = pd.to_numeric(df[source_col], errors='coerce').fillna(0)
-        else:
+        elif target_col not in df.columns:
             df[target_col] = 0
     
     # -------------------------
     # 📊 UNIFIED RATE CALCULATIONS (NUMPY VECTORIZED)
     # -------------------------
-    counts = df['Counts'].values
-    clicks = df['clicks'].values
-    conversions = df['conversions'].values
+    counts = df['Counts'].values.astype(np.float32)
+    clicks = df['clicks'].values.astype(np.float32)
+    conversions = df['conversions'].values.astype(np.float32)
     
     # CTR calculation
     df['ctr'] = np.divide(clicks * 100, counts, 
@@ -274,6 +270,7 @@ def process_dataframe_unified(_df):
         'Department': 'department',
         'Category': 'category',
         'Sub Category': 'sub_category',
+        'Sub Class': 'sub_class',
         'Brand': 'brand',
         'Class': 'class'
     }
@@ -298,6 +295,22 @@ def process_dataframe_unified(_df):
     # -------------------------
     df['query_length'] = df['normalized_query'].str.len().astype('uint16')
     df['keywords'] = df['normalized_query'].apply(extract_keywords)
+    
+    # -------------------------
+    # 🔧 ADDITIONAL OPTIONAL COLUMNS
+    # -------------------------
+    if 'underperforming' in df.columns:
+        df['underperforming'] = df['underperforming']
+    if 'averageClickPosition' in df.columns:
+        df['average_click_position'] = df['averageClickPosition']
+    if 'cluster_id' in df.columns:
+        df['cluster_id'] = df['cluster_id']
+    
+    # Revenue placeholder
+    df['revenue'] = 0
+    
+    # Brand AR placeholder
+    df['brand_ar'] = ''
     
     # -------------------------
     # 💾 MEMORY OPTIMIZATION
@@ -384,10 +397,15 @@ def calculate_unified_metrics(_df, group_by=None):
         return grouped
 
 # ========================================
-# 📥 DATA LOADING FUNCTIONS
+# 🚀 FAST DATA LOADING FUNCTIONS
 # ========================================
 
-@st.cache_data(ttl=86400, persist="disk", show_spinner=False, max_entries=5)
+@st.cache_data(
+    ttl=86400,
+    persist="disk",
+    show_spinner=False,
+    max_entries=5
+)
 def load_excel_fast(file_path=None, upload_file=None):
     """Fast Excel loading with caching"""
     try:
@@ -396,21 +414,18 @@ def load_excel_fast(file_path=None, upload_file=None):
                 return pd.read_excel(upload_file, sheet_name=None, engine='openpyxl')
             else:
                 df_csv = pd.read_csv(upload_file, low_memory=False)
-                return {'queries': df_csv}
+                return {'queries_clustered': df_csv}
         else:
             return pd.read_excel(file_path, sheet_name=None, engine='openpyxl')
     except Exception as e:
         st.error(f"❌ Loading error: {e}")
         raise
 
-# ========================================
-# 🎨 PAGE CONFIGURATION
-# ========================================
-
+# ----------------- OPTIMIZED PAGE CONFIG -----------------
 st.set_page_config(
     page_title=config.LABELS['app_title'], 
     layout="wide", 
-    page_icon="🔍",
+    page_icon="📊",
     initial_sidebar_state="expanded"
 )
 
@@ -418,171 +433,301 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ========================================
-# 🎨 UNIFIED CSS STYLING
+# 🎨 GENERIC BLUE/GREEN CSS THEME
 # ========================================
 
-st.markdown(f"""
+st.markdown("""
 <style>
 /* Global styling */
-body {{
+body {
     font-family: 'Segoe UI', 'Arial', sans-serif;
-    background: {config.get_color_gradient(config.COLORS['light'], config.COLORS['light'])};
-}}
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
+}
 
 /* Sidebar */
-.sidebar .sidebar-content {{
-    background: {config.get_color_gradient(config.COLORS['primary'], config.COLORS['accent'])};
+.sidebar .sidebar-content {
+    background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
     border-radius: 15px;
     padding: 20px;
-    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.2);
-}}
-.sidebar .sidebar-content h1, .sidebar .sidebar-content * {{
+    box-shadow: 0 8px 25px rgba(25, 118, 210, 0.2);
+}
+.sidebar .sidebar-content h1, .sidebar .sidebar-content * {
     color: #FFFFFF !important;
-}}
+}
 
 /* Header */
-.main-header {{
+.main-header {
     font-size: 2.8rem;
     font-weight: 900;
-    background: linear-gradient(45deg, {config.COLORS['dark']}, {config.COLORS['primary']}, {config.COLORS['accent']});
+    background: linear-gradient(45deg, #0D47A1, #1976D2, #42A5F5);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-align: center;
     margin-bottom: 0.3rem;
-    text-shadow: 2px 2px 4px rgba(27, 94, 32, 0.1);
-}}
+    text-shadow: 2px 2px 4px rgba(13, 71, 161, 0.1);
+}
 
 /* Subtitle */
-.sub-header {{
+.sub-header {
     font-size: 1.2rem;
-    color: {config.COLORS['primary']};
+    color: #1976D2;
     text-align: center;
     margin-bottom: 1.5rem;
     font-weight: 600;
-}}
+}
 
 /* Welcome section */
-.welcome-box {{
-    background: {config.get_color_gradient(config.COLORS['light'], '#F1F8E9')};
+.welcome-box {
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 50%, #E0F2F1 100%);
     padding: 25px;
     border-radius: 15px;
     margin-bottom: 25px;
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.1);
     text-align: center;
-    border: 2px solid rgba(102, 187, 106, 0.2);
-}}
-.welcome-box h2 {{
-    color: {config.COLORS['dark']};
+    border: 2px solid rgba(66, 165, 245, 0.2);
+}
+.welcome-box h2 {
+    color: #0D47A1;
     font-size: 2rem;
     margin-bottom: 12px;
     font-weight: 800;
-}}
-.welcome-box p {{
-    color: {config.COLORS['primary']};
+}
+.welcome-box p {
+    color: #1976D2;
     font-size: 1.1rem;
     line-height: 1.6;
-}}
+}
 
 /* KPI card */
-.kpi {{
-    background: linear-gradient(135deg, #FFFFFF 0%, #F8FDF8 100%);
+.kpi {
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%);
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.12);
+    box-shadow: 0 8px 25px rgba(25, 118, 210, 0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid rgba(102, 187, 106, 0.1);
-}}
-.kpi:hover {{
+    border: 2px solid rgba(66, 165, 245, 0.1);
+}
+.kpi:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 35px rgba(46, 125, 50, 0.18);
-    border-color: rgba(102, 187, 106, 0.3);
-}}
-.kpi .value {{
+    box-shadow: 0 12px 35px rgba(25, 118, 210, 0.18);
+    border-color: rgba(66, 165, 245, 0.3);
+}
+.kpi .value {
     font-size: 2rem;
     font-weight: 900;
-    background: linear-gradient(45deg, {config.COLORS['dark']}, {config.COLORS['primary']});
+    background: linear-gradient(45deg, #0D47A1, #1976D2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-}}
-.kpi .label {{
-    color: {config.COLORS['accent']};
+}
+.kpi .label {
+    color: #1976D2;
     font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}}
+}
+
+/* Insight box */
+.insight-box {
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
+    padding: 20px;
+    border-left: 6px solid #1976D2;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.1);
+}
+.insight-box:hover {
+    transform: translateX(8px);
+    box-shadow: 0 6px 25px rgba(25, 118, 210, 0.15);
+}
+.insight-box h4 {
+    margin: 0 0 10px 0;
+    color: #0D47A1;
+    font-weight: 700;
+}
+.insight-box p {
+    margin: 0;
+    color: #1976D2;
+    line-height: 1.5;
+}
 
 /* Tabs */
-.stTabs [data-baseweb="tab-list"] {{
+.stTabs [data-baseweb="tab-list"] {
     gap: 15px;
-    background: {config.get_color_gradient(config.COLORS['light'], '#F1F8E9')};
+    background: linear-gradient(135deg, #E3F2FD 0%, #E8F5E9 100%);
     padding: 15px;
     border-radius: 15px;
-    box-shadow: inset 0 2px 8px rgba(46, 125, 50, 0.1);
-}}
-.stTabs [data-baseweb="tab"] {{
+    box-shadow: inset 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+.stTabs [data-baseweb="tab"] {
     height: 55px;
     border-radius: 12px;
     padding: 15px 20px;
     font-weight: 700;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F8FDF8 100%);
-    color: {config.COLORS['primary']};
-    border: 2px solid rgba(76, 175, 80, 0.2);
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%);
+    color: #1976D2;
+    border: 2px solid rgba(66, 165, 245, 0.2);
     transition: all 0.3s ease;
-}}
-.stTabs [aria-selected="true"] {{
-    background: {config.get_color_gradient(config.COLORS['accent'], config.COLORS['accent'])};
+}
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
     color: #FFFFFF !important;
-    border-color: {config.COLORS['primary']};
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
-}}
+    border-color: #0D47A1;
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+}
+.stTabs [data-baseweb="tab"]:hover {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    color: #0D47A1;
+    border-color: #1976D2;
+    transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    color: #1976D2;
+    font-size: 1rem;
+    margin-top: 30px;
+    border-top: 3px solid #42A5F5;
+    background: linear-gradient(135deg, #F5F9FF 0%, #E3F2FD 100%);
+    border-radius: 15px 15px 0 0;
+}
+.footer a {
+    color: #1976D2;
+    text-decoration: none;
+    font-weight: 600;
+}
+.footer a:hover {
+    text-decoration: underline;
+    color: #0D47A1;
+}
+
+/* Dataframe and AgGrid */
+.dataframe, .stDataFrame {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.1);
+}
+.stDataFrame table {
+    background: #FFFFFF;
+    border: 1px solid rgba(66, 165, 245, 0.1);
+}
+.stDataFrame th {
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%) !important;
+    color: #0D47A1 !important;
+    font-weight: 700 !important;
+}
+
+/* Mini Metric Card */
+.mini-metric {
+    background: linear-gradient(135deg, #1976D2 0%, #42A5F5 50%, #64B5F6 100%);
+    padding: 18px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(25, 118, 210, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.mini-metric:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(25, 118, 210, 0.3);
+}
+.mini-metric .value {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+    text-shadow: 1px 1px 3px rgba(13, 71, 161, 0.3);
+}
+.mini-metric .label {
+    font-size: 0.95rem;
+    color: #E3F2FD;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.mini-metric .icon {
+    font-size: 1.4rem;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+    display: block;
+    text-shadow: 1px 1px 3px rgba(13, 71, 161, 0.3);
+}
 
 /* Table styling */
-div[data-testid="stMarkdownContainer"] table {{
+div[data-testid="stMarkdownContainer"] table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
-    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.1);
     border-radius: 12px;
     overflow: hidden;
-}}
+}
 
-div[data-testid="stMarkdownContainer"] table thead th {{
+div[data-testid="stMarkdownContainer"] table thead th {
     text-align: center !important;
-    background: {config.get_color_gradient(config.COLORS['primary'], config.COLORS['primary'])} !important;
+    background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%) !important;
     color: white !important;
     font-weight: 700 !important;
     padding: 12px !important;
     border: none !important;
-}}
+}
 
-div[data-testid="stMarkdownContainer"] table tbody td {{
+div[data-testid="stMarkdownContainer"] table tbody td {
     text-align: center !important;
     padding: 10px 12px !important;
     border: 1px solid #E0E0E0 !important;
-}}
+}
 
-div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {{
-    background-color: #F8FDF8 !important;
-}}
+div[data-testid="stMarkdownContainer"] table tbody td:first-child {
+    text-align: center !important;
+    font-weight: 500 !important;
+    color: #1976D2 !important;
+}
 
-div[data-testid="stMarkdownContainer"] table tbody tr:hover {{
-    background-color: #E8F5E9 !important;
+div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
+    background-color: #F5F9FF !important;
+}
+
+div[data-testid="stMarkdownContainer"] table tbody tr:hover {
+    background-color: #E3F2FD !important;
     transition: background-color 0.2s;
-}}
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #E3F2FD;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #1976D2, #42A5F5);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #0D47A1, #1976D2);
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ========================================
-# 🟢 STYLED TABLE FUNCTION
+# 🟢 GENERIC TABLE DISPLAY FUNCTION
 # ========================================
 
 def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center", 
                         scrollable=False, max_height="600px", wrap_text=True, max_cell_width="300px"):
-    """Display a styled table with current theme"""
+    """Display a styled table with generic blue/green theme"""
     
     if df is None or df.empty:
         st.warning("⚠️ No data available to display")
@@ -598,16 +743,147 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     display_df = df.head(max_rows) if max_rows else df.copy()
     
     if title:
-        st.markdown(f'<h3 style="color: {config.COLORS["primary"]}; margin-bottom: 10px;">{title}</h3>', unsafe_allow_html=True)
+        st.markdown(f'<h3 style="color: #1976D2; margin-bottom: 10px;">{title}</h3>', unsafe_allow_html=True)
     
-    # Use Streamlit's native dataframe display for better performance
-    st.dataframe(display_df, use_container_width=True, height=min(len(display_df) * 35 + 38, 600))
+    def create_styled_table(data):
+        white_space = "normal" if wrap_text else "nowrap"
+        cell_max_width = max_cell_width if wrap_text else "none"
+        
+        html = '''
+        <style>
+            .generic-table-wrapper {
+                margin: 20px 0;
+            }
+            .generic-table-scrollable {
+                overflow-x: auto;
+                overflow-y: auto;
+                max-height: ''' + max_height + ''';
+                border: 2px solid #1976D2;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+                background-color: white;
+            }
+            .generic-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+                background-color: white;
+                margin: 0;
+                box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+                border-radius: 8px;
+                overflow: hidden;
+                table-layout: auto;
+            }
+            .generic-table thead {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+            .generic-table thead tr {
+                background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
+                color: #FFFFFF;
+                text-align: center;
+                font-weight: bold;
+            }
+            .generic-table th {
+                padding: 14px;
+                border: 1px solid #0D47A1;
+                font-size: 15px;
+                letter-spacing: 0.5px;
+                white-space: ''' + white_space + ''';
+                background: linear-gradient(135deg, #1976D2 0%, #42A5F5 100%);
+                max-width: ''' + cell_max_width + ''';
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                text-align: center;
+            }
+            .generic-table tbody tr {
+                border-bottom: 1px solid #BBDEFB;
+                transition: all 0.3s ease;
+            }
+            .generic-table tbody tr:nth-child(odd) {
+                background-color: #F5F9FF;
+            }
+            .generic-table tbody tr:nth-child(even) {
+                background-color: #FFFFFF;
+            }
+            .generic-table tbody tr:hover {
+                background-color: #E3F2FD !important;
+                transform: scale(1.01);
+                box-shadow: 0 2px 5px rgba(25, 118, 210, 0.2);
+                cursor: pointer;
+            }
+            .generic-table td {
+                padding: 12px;
+                text-align: ''' + align + ''' !important;
+                color: #0D47A1;
+                border: 1px solid #BBDEFB;
+                font-size: 14px;
+                white-space: ''' + white_space + ''';
+                max-width: ''' + cell_max_width + ''';
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.5;
+                vertical-align: middle;
+            }
+        </style>
+        '''
+        
+        html += '<div class="generic-table-wrapper">'
+        
+        if scrollable:
+            html += '<div class="generic-table-scrollable">'
+        
+        html += '<table class="generic-table">'
+        
+        html += '<thead><tr>'
+        for col in data.columns:
+            html += f'<th>{col}</th>'
+        html += '</tr></thead>'
+        
+        html += '<tbody>'
+        for idx, row in data.iterrows():
+            html += '<tr>'
+            for val in row:
+                display_val = val if pd.notna(val) else ""
+                html += f'<td style="text-align: {align} !important;">{display_val}</td>'
+            html += '</tr>'
+        html += '</tbody></table>'
+        
+        if scrollable:
+            html += '</div>'
+        
+        html += '</div>'
+        
+        return html
+    
+    st.markdown(create_styled_table(display_df), unsafe_allow_html=True)
     
     if max_rows and len(df) > max_rows:
         st.caption(f"📊 Showing {max_rows} of {len(df)} rows")
     
     if download_filename:
         csv = df.to_csv(index=False).encode('utf-8')
+        
+        st.markdown("""
+            <style>
+            div.stDownloadButton > button {
+                background-color: #1976D2 !important;
+                color: white !important;
+                border: none !important;
+                padding: 0.5rem 1rem !important;
+                border-radius: 0.5rem !important;
+                font-weight: 500 !important;
+                transition: all 0.3s ease !important;
+            }
+            div.stDownloadButton > button:hover {
+                background-color: #0D47A1 !important;
+                box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3) !important;
+                transform: translateY(-2px) !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        
         st.download_button(
             label=f"📥 Download {download_filename}",
             data=csv,
@@ -693,62 +969,72 @@ if st.sidebar.checkbox("📊 Show Data Info"):
 st.markdown("---")
 
 # ========================================
-# 🔎 UNIFIED FILTERS (OPTIMIZED WITH SESSION STATE)
+# 🔎 OPTIMIZED FILTERS
 # ========================================
 
 st.sidebar.header("🔎 Filters")
 
-# Initialize filter cache in session state
-if 'filter_cache' not in st.session_state:
-    st.session_state.filter_cache = {}
+if 'filters_applied' not in st.session_state:
+    st.session_state.filters_applied = False
 
-def get_filter_options_cached(df, col, label, emoji):
-    """Get filter options with session state caching"""
-    if col not in df.columns:
-        return [], []
-    
-    # Create cache key
-    cache_key = f"{col}_{len(df)}_{df[col].nunique()}"
-    
-    # Check cache
-    if cache_key not in st.session_state.filter_cache:
-        opts = sorted(df[col].dropna().astype(str).unique().tolist())
-        st.session_state.filter_cache[cache_key] = opts
-    else:
-        opts = st.session_state.filter_cache[cache_key]
-    
-    sel = st.sidebar.multiselect(f"{emoji} {label}", options=opts, default=opts)
-    return sel, opts
-
-# Store original queries for reset
 if 'original_queries' not in st.session_state:
     st.session_state.original_queries = queries.copy()
 
-# Date filter
-try:
-    min_date = st.session_state.original_queries['Date'].min()
-    max_date = st.session_state.original_queries['Date'].max()
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_date_range(_df):
+    """Cache date range calculation"""
+    try:
+        min_date = _df['Date'].min()
+        max_date = _df['Date'].max()
+        
+        if pd.isna(min_date):
+            min_date = None
+        if pd.isna(max_date):
+            max_date = None
+            
+        return [min_date, max_date] if min_date is not None and max_date is not None else []
+    except:
+        return []
+
+default_dates = get_date_range(st.session_state.original_queries)
+date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
+
+@st.cache_data(ttl=1800, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: x.shape[0]})
+def get_cached_options(_df, col):
+    """Cache filter options for better performance"""
+    try:
+        if col not in _df.columns:
+            return []
+        return sorted(_df[col].dropna().astype(str).unique().tolist())
+    except:
+        return []
+
+def get_filter_options(df, col, label, emoji):
+    """Get filter options with caching"""
+    if col not in df.columns:
+        return [], []
     
-    if pd.notna(min_date) and pd.notna(max_date):
-        default_dates = [min_date, max_date]
-    else:
-        default_dates = []
-except:
-    default_dates = []
+    opts = get_cached_options(df, col)
+    
+    sel = st.sidebar.multiselect(
+        f"{emoji} {label}", 
+        options=opts, 
+        default=opts
+    )
+    return sel, opts
 
-date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates if default_dates else [])
-
-# Category filters (using cached function)
-brand_filter, brand_opts = get_filter_options_cached(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
-dept_filter, dept_opts = get_filter_options_cached(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
-cat_filter, cat_opts = get_filter_options_cached(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
-subcat_filter, subcat_opts = get_filter_options_cached(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
-class_filter, class_opts = get_filter_options_cached(st.session_state.original_queries, 'class', 'Class(es)', '🎯')
+# Get filter selections
+brand_filter, brand_opts = get_filter_options(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
+dept_filter, dept_opts = get_filter_options(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
+cat_filter, cat_opts = get_filter_options(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
+subcat_filter, subcat_opts = get_filter_options(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
+subclass_filter, subclass_opts = get_filter_options(st.session_state.original_queries, 'sub_class', 'Sub Class(es)', '🎨')
+class_filter, class_opts = get_filter_options(st.session_state.original_queries, 'class', 'Class(es)', '🎯')
 
 # Text filter
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
 
-# Filter buttons
+# Filter control buttons
 st.sidebar.markdown("---")
 col1, col2 = st.sidebar.columns(2)
 
@@ -758,13 +1044,13 @@ with col1:
 with col2:
     reset_filters = st.button("🗑️ Reset Filters", use_container_width=True)
 
-# Handle filters
+# Handle Reset Button
 if reset_filters:
     queries = st.session_state.original_queries.copy()
     st.session_state.filters_applied = False
-    st.session_state.filter_cache = {}  # Clear cache
     st.rerun()
 
+# Handle Apply Button
 elif apply_filters:
     queries = st.session_state.original_queries.copy()
     
@@ -789,6 +1075,10 @@ elif apply_filters:
     if subcat_filter and len(subcat_filter) < len(subcat_opts):
         queries = queries[queries['sub_category'].astype(str).isin(subcat_filter)]
 
+    # Sub Class filter
+    if subclass_filter and len(subclass_filter) < len(subclass_opts):
+        queries = queries[queries['sub_class'].astype(str).isin(subclass_filter)]
+
     # Class filter
     if class_filter and len(class_filter) < len(class_opts):
         queries = queries[queries['class'].astype(str).isin(class_filter)]
@@ -799,7 +1089,7 @@ elif apply_filters:
     
     st.session_state.filters_applied = True
 
-# Filter status
+# Show filter status
 if st.session_state.filters_applied:
     original_count = len(st.session_state.original_queries)
     current_count = len(queries)
@@ -810,9 +1100,8 @@ else:
 
 st.sidebar.markdown(f"**📊 Current rows:** {len(queries):,}")
 
-
 # ========================================
-# 🎨 WELCOME & HEADERS
+# 🎨 WELCOME MESSAGE (GENERIC)
 # ========================================
 
 st.markdown(f"""
@@ -822,12 +1111,12 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(f'<div class="main-header">{config.LABELS["main_header"]}</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="sub-header">{config.LABELS["sub_header"]}</div>', unsafe_allow_html=True)
-
 # ========================================
 # 📊 UNIFIED KPI CARDS
 # ========================================
+
+st.markdown(f'<div class="main-header">{config.LABELS["main_header"]}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="sub-header">{config.LABELS["sub_header"]}</div>', unsafe_allow_html=True)
 
 # Calculate metrics ONCE
 metrics = calculate_unified_metrics(queries)
@@ -855,14 +1144,21 @@ st.sidebar.info(f"""
 **Total Conversions:** {metrics['total_conversions']:,}
 """)
 
+# Debug info
+with st.sidebar.expander("🔍 Data Debug Info"):
+    st.write(f"Main sheet: {st.session_state.main_sheet_name}")
+    st.write(f"Processed columns: {list(queries.columns)}")
+    st.write(f"Processed shape: {queries.shape}")
+
 # ========================================
-# 📑 TABS
+# 📑 TABS (WITH SUB CLASS)
 # ========================================
 
-tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
-    "📊 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
+tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_subclass, tab_class, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
+    "📊 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎨 Sub Class","🎯 Class","💊 Generic Type",
     "⏰ Time Analysis","📊 Pivot Builder","💡 Insights","⬇ Export"
 ])
+
 
 
 # ----------------- Overview -----------------
