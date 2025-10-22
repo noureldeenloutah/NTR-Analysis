@@ -22,29 +22,29 @@ def format_number(num):
         return f"{num/1_000:.1f}K"
     else:
         return f"{num:,.0f}"
+
 # 🚀 ADD PERCENTAGE FORMATTING FUNCTION
 def format_percentage(num):
     """Format percentages with 2 decimal places"""
     return f"{num:.1f}%"
 
-# 🚀 STREAMLIT PERFORMANCE CONFIG (PUT RIGHT HERE AFTER IMPORTS)
+# 🚀 STREAMLIT PERFORMANCE CONFIG
 try:
-    # Only set options that exist in your Streamlit version
     st.set_option('deprecation.showPyplotGlobalUse', False)
 except:
-    pass  # Skip if option doesn't exist
+    pass
 
-# 🚀 PANDAS PERFORMANCE OPTIONS (These are safe)
-pd.set_option('mode.chained_assignment', None)  # Disable warning
+# 🚀 PANDAS PERFORMANCE OPTIONS
+pd.set_option('mode.chained_assignment', None)
 pd.set_option('compute.use_bottleneck', True)
 pd.set_option('compute.use_numexpr', True)
 
 # 🚀 PLOTLY PERFORMANCE
 try:
     import plotly.io as pio
-    pio.templates.default = "plotly_white"  # Lighter template
+    pio.templates.default = "plotly_white"
 except:
-    pass  # Skip if plotly issues
+    pass
 
 # Optional packages
 try:
@@ -60,15 +60,12 @@ try:
 except Exception:
     WORDCLOUD_OK = False
 
-# ----------------- 🚀 PERFORMANCE OPTIMIZATIONS -----------------
 # ----------------- 🚀 ULTRA PERFORMANCE OPTIMIZATIONS -----------------
-import os
-import hashlib
-os.environ['PANDAS_COPY_ON_WRITE'] = '1'  # Faster pandas operations
+os.environ['PANDAS_COPY_ON_WRITE'] = '1'
 
 @st.cache_data(
-    ttl=86400,  # 24 hours
-    persist="disk",  # Survives app restarts
+    ttl=86400,
+    persist="disk",
     show_spinner=False,
     max_entries=5
 )
@@ -77,10 +74,8 @@ def load_excel_ultra_fast(upload_file=None, file_path=None):
     try:
         if upload_file is not None:
             if upload_file.name.endswith('.xlsx'):
-                # 🚀 OPTIMIZED EXCEL READING
                 return pd.read_excel(upload_file, sheet_name=None, engine='openpyxl')
             else:
-                # 🚀 FAST CSV READING
                 df_csv = pd.read_csv(upload_file, low_memory=False, dtype_backend='pyarrow')
                 return {'queries_clustered': df_csv}
         else:
@@ -89,106 +84,12 @@ def load_excel_ultra_fast(upload_file=None, file_path=None):
         st.error(f"Ultra load error: {e}")
         raise
 
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=3)
-def prepare_queries_df_ultra(_df):
-    """ULTRA-OPTIMIZED: 10x faster than original"""
-    
-    # 🚀 SMART SAMPLING for large datasets
-    if len(_df) > 100000:
-        df = smart_sampling(_df, max_rows=50000)
-        st.info(f"📊 Dataset sampled to {len(df):,} rows for optimal performance")
-    else:
-        df = _df.copy(deep=False)  # Shallow copy for speed
-    
-    # 🚀 BATCH COLUMN OPERATIONS
-    # Process all numeric columns at once
-    numeric_cols = ['count', 'Clicks', 'Conversions']
-    existing_numeric = [col for col in numeric_cols if col in df.columns]
-    
-    if existing_numeric:
-        # Vectorized conversion of multiple columns
-        numeric_data = df[existing_numeric].apply(pd.to_numeric, errors='coerce').fillna(0)
-        df[existing_numeric] = numeric_data
-    
-    # 🚀 FAST COLUMN MAPPING
-    column_mapping = {
-        'count': 'Counts',
-        'Clicks': 'clicks', 
-        'Conversions': 'conversions'
-    }
-    
-    for old_col, new_col in column_mapping.items():
-        if old_col in df.columns:
-            df[new_col] = df[old_col]
-        else:
-            df[new_col] = 0
-
-    # 🚀 ULTRA-FAST DATE PROCESSING
-    if 'start_date' in df.columns:
-        df['Date'] = pd.to_datetime(df['start_date'], 
-                                  format='mixed', 
-                                  errors='coerce',
-                                  cache=True)
-    else:
-        df['Date'] = pd.NaT
-
-    # 🚀 NUMPY VECTORIZATION (fastest possible)
-    counts = df['Counts'].values
-    clicks = df['clicks'].values
-    conversions = df['conversions'].values
-    
-    # Use numpy for calculations (20x faster than pandas)
-    df['ctr'] = np.divide(clicks * 100, counts, 
-                         out=np.zeros_like(clicks, dtype=np.float32), 
-                         where=counts!=0)
-    
-    df['cr'] = np.divide(conversions * 100, counts, 
-                        out=np.zeros_like(conversions, dtype=np.float32), 
-                        where=counts!=0)
-    
-    # 🚀 ESSENTIAL COLUMNS ONLY
-    essential_cols = {
-        'Brand': 'brand',
-        'Category': 'category', 
-        'Sub Category': 'sub_category',
-        'Department': 'department'
-    }
-    
-    for orig_col, new_col in essential_cols.items():
-        if orig_col in df.columns:
-            df[new_col] = df[orig_col].astype('category')
-        else:
-            df[new_col] = pd.Categorical([''])
-    
-    # 🚀 LAZY COMPUTATION - Only when needed
-    # 🚀 LAZY COMPUTATION - Only when needed
-    if 'search' in df.columns:
-        df['normalized_query'] = df['search'].astype(str)
-        df['query_length'] = df['normalized_query'].str.len().astype('uint16')
-    else:
-        df['normalized_query'] = df.iloc[:, 0].astype(str)
-        df['query_length'] = df['normalized_query'].str.len().astype('uint16')
-    
-    # 🚀 ULTRA MEMORY OPTIMIZATION (apply BEFORE keywords)
-    df = optimize_memory_ultra(df)
-    
-    # ✅ FIX: Add keywords AFTER optimization (to avoid list column issues)
-    try:
-        df['keywords'] = df['normalized_query'].apply(extract_keywords)
-    except Exception:
-        df['keywords'] = None  # Fallback if extraction fails
-    
-    return df
-
-
 @st.cache_data(ttl=3600, show_spinner=False)
 def smart_sampling(df, max_rows=50000):
     """Intelligent sampling for large datasets - keeps important data"""
     if len(df) <= max_rows:
         return df
     
-    # 🚀 STRATIFIED SAMPLING
-    # Keep all high-value rows + sample the rest
     try:
         high_value_mask = df['Clicks'] > df['Clicks'].quantile(0.8)
         high_value = df[high_value_mask]
@@ -203,69 +104,71 @@ def smart_sampling(df, max_rows=50000):
             
         return result
     except:
-        # Fallback to simple random sampling
         return df.sample(n=max_rows, random_state=42).reset_index(drop=True)
 
 def optimize_memory_ultra(df):
-    """ULTRA memory optimization - 80% reduction (FIXED)"""
+    """ULTRA memory optimization - 80% reduction"""
     
-    # 🚀 SMART DOWNCASTING with error handling
+    # 🚀 SMART DOWNCASTING
     for col in df.select_dtypes(include=['int64']).columns:
         try:
             col_max = df[col].max()
             col_min = df[col].min()
             
-            if col_min >= 0:  # Unsigned integers
+            if col_min >= 0:
                 if col_max < 255:
                     df[col] = df[col].astype('uint8')
                 elif col_max < 65535:
                     df[col] = df[col].astype('uint16')
                 elif col_max < 4294967295:
                     df[col] = df[col].astype('uint32')
-            else:  # Signed integers
+            else:
                 if col_min >= -128 and col_max <= 127:
                     df[col] = df[col].astype('int8')
                 elif col_min >= -32768 and col_max <= 32767:
                     df[col] = df[col].astype('int16')
         except Exception:
-            pass  # Skip problematic columns
+            pass
     
-    # 🚀 FLOAT32 OPTIMIZATION (50% memory reduction)
+    # 🚀 FLOAT32 OPTIMIZATION
     for col in df.select_dtypes(include=['float64']).columns:
         try:
             df[col] = df[col].astype('float32')
         except Exception:
             pass
     
-    # 🚀 CATEGORY OPTIMIZATION (skip list columns)
+    # 🚀 CATEGORY OPTIMIZATION
     for col in df.select_dtypes(include=['object']).columns:
         try:
-            # Skip if column contains lists/unhashable types
             if df[col].apply(lambda x: isinstance(x, (list, dict))).any():
                 continue
             
             unique_ratio = df[col].nunique() / len(df)
-            if unique_ratio < 0.5:  # Less than 50% unique values
+            if unique_ratio < 0.5:
                 df[col] = df[col].astype('category')
         except Exception:
-            pass  # Skip problematic columns
+            pass
     
     return df
 
-
 # 🚀 ULTRA-FAST KEYWORD EXTRACTION
 _keyword_pattern = re.compile(r'[\u0600-\u06FF\w%+\-]+', re.IGNORECASE)
+
+def extract_keywords(text: str):
+    """Extract words (Arabic & Latin & numbers) without correcting spelling."""
+    if not isinstance(text, str):
+        return []
+    tokens = re.findall(r'[\u0600-\u06FF\w%+\-]+', text)
+    return [t.strip().lower() for t in tokens if len(t.strip())>0]
 
 @st.cache_data(ttl=1800, show_spinner=False)
 def extract_keywords_ultra_fast(text_series):
     """Vectorized keyword extraction - 10x faster"""
     if len(text_series) > 1000:
-        # Sample for large datasets
         sample_series = text_series.sample(n=1000, random_state=42)
     else:
         sample_series = text_series
     
-    # Vectorized operation
     keywords = sample_series.str.findall(_keyword_pattern).apply(
         lambda x: [token.lower() for token in x if token.strip()]
     )
@@ -278,20 +181,14 @@ def init_session_state():
         st.session_state.processed_data = None
         st.session_state.data_hash = None
         st.session_state.last_update = None
-
-def get_data_with_smart_caching(raw_data):
-    """Smart caching with session state"""
-    current_hash = hash(str(raw_data.shape) + str(raw_data.columns.tolist()))
-    
-    if (st.session_state.processed_data is None or 
-        st.session_state.data_hash != current_hash):
-        
-        with st.spinner("🚀 Processing data with ultra-optimization..."):
-            st.session_state.processed_data = prepare_queries_df_ultra(raw_data)
-            st.session_state.data_hash = current_hash
-            st.session_state.last_update = pd.Timestamp.now()
-    
-    return st.session_state.processed_data
+    # 🎯 BONUS: Initialize memory tracking
+    if 'initial_memory' not in st.session_state:
+        try:
+            import psutil
+            process = psutil.Process(os.getpid())
+            st.session_state.initial_memory = process.memory_info().rss / 1024 / 1024
+        except:
+            st.session_state.initial_memory = 0
 
 # ----------------- OPTIMIZED PAGE CONFIG -----------------
 st.set_page_config(
@@ -308,7 +205,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ----------------- CSS / UI enhancements -----------------
-# ----------------- CSS / UI enhancements -----------------
 st.markdown("""
 <style>
 /* Global styling */
@@ -323,9 +219,6 @@ body {
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 8px 25px rgba(46, 125, 50, 0.2);
-}
-.sidebar .sidebar-content h1, .sidebar .sidebar-content * {
-    color: #FFFFFF !important;
 }
 
 /* Header */
@@ -459,27 +352,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* Footer */
-.footer {
-    text-align: center;
-    padding: 20px 0;
-    color: #4CAF50;
-    font-size: 1rem;
-    margin-top: 30px;
-    border-top: 3px solid #66BB6A;
-    background: linear-gradient(135deg, #F8FDF8 0%, #E8F5E8 100%);
-    border-radius: 15px 15px 0 0;
-}
-.footer a {
-    color: #2E7D32;
-    text-decoration: none;
-    font-weight: 600;
-}
-.footer a:hover {
-    text-decoration: underline;
-    color: #1B5E20;
-}
-
 /* Dataframe and AgGrid */
 .dataframe, .stDataFrame {
     border-radius: 12px;
@@ -528,60 +400,8 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.8px;
 }
-.mini-metric .icon {
-    font-size: 1.4rem;
-    color: #FFFFFF;
-    margin-bottom: 8px;
-    display: block;
-    text-shadow: 1px 1px 3px rgba(27, 94, 32, 0.3);
-}
 
-/* Success/Health indicators */
-.health-indicator {
-    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
-    color: #FFFFFF;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: inline-block;
-    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.3);
-}
-
-/* Nutrition-themed accents */
-.nutrition-accent {
-    border-left: 4px solid #4CAF50;
-    padding-left: 15px;
-    background: linear-gradient(90deg, rgba(232, 245, 232, 0.5), transparent);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-::-webkit-scrollbar-track {
-    background: #E8F5E8;
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4CAF50, #66BB6A);
-    border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #388E3C, #4CAF50);
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ========================================
-# 🔥 ULTRA-STRONG CSS - FORCE CENTER
-# ========================================
-# ✅ ADD ONCE at top of file (after existing CSS, around line 400)
-st.markdown("""
-<style>
-/* Existing CSS... */
-
-/* ✅ Efficient table styling - applies to ALL tables */
+/* Table styling */
 div[data-testid="stMarkdownContainer"] table {
     width: 100%;
     border-collapse: collapse;
@@ -606,12 +426,6 @@ div[data-testid="stMarkdownContainer"] table tbody td {
     border: 1px solid #E0E0E0 !important;
 }
 
-div[data-testid="stMarkdownContainer"] table tbody td:first-child {
-    text-align: center !important;
-    font-weight: 500 !important;
-    color: #2E7D32 !important;
-}
-
 div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
     background-color: #F8FDF8 !important;
 }
@@ -620,57 +434,35 @@ div[data-testid="stMarkdownContainer"] table tbody tr:hover {
     background-color: #E8F5E9 !important;
     transition: background-color 0.2s;
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #E8F5E8;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #388E3C, #4CAF50);
+}
 </style>
 """, unsafe_allow_html=True)
-
-# ----------------- Helpers -----------------
-def safe_read_excel(path):
-    """Read Excel into dict of DataFrames (sheet_name -> df)."""
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"File not found: {path}")
-    xls = pd.ExcelFile(path)
-    sheets = {}
-    for name in xls.sheet_names:
-        try:
-            sheets[name] = pd.read_excel(xls, sheet_name=name)
-        except Exception as e:
-            logger.warning(f"Could not read sheet {name}: {e}")
-    if not sheets:
-        raise ValueError("No valid sheets found in the Excel file.")
-    return sheets
-
-def extract_keywords(text: str):
-    """Extract words (Arabic & Latin & numbers) without correcting spelling."""
-    if not isinstance(text, str):
-        return []
-    tokens = re.findall(r'[\u0600-\u06FF\w%+\-]+', text)
-    return [t.strip().lower() for t in tokens if len(t.strip())>0]
 
 # ========================================
 # 🟢 GREEN HEALTH THEME TABLE FUNCTION
 # ========================================
 def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center", 
                         scrollable=False, max_height="600px", wrap_text=True, max_cell_width="300px"):
-    """
-    Display a styled table with health dashboard green theme
-    
-    Args:
-        df: DataFrame to display
-        title: Optional title for the table
-        download_filename: If provided, adds download button with this filename
-        max_rows: Limit number of rows to display (None = show all)
-        align: Text alignment ("center", "left", "right")
-        scrollable: Enable vertical/horizontal scrolling (default: False)
-        max_height: Maximum height for scrollable table (default: "600px")
-        wrap_text: Enable text wrapping for wide cells (default: True)
-        max_cell_width: Maximum width for cells before wrapping (default: "300px")
-    """
-    # Validation
+    """Display a styled table with health dashboard green theme"""
     if df is None or df.empty:
         st.warning("⚠️ No data available to display")
         return
     
-    # Handle non-DataFrame inputs
     if not isinstance(df, pd.DataFrame):
         try:
             df = pd.DataFrame(df)
@@ -678,20 +470,15 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             st.error(f"❌ Cannot convert to DataFrame: {e}")
             return
     
-    # Limit rows if specified
     display_df = df.head(max_rows) if max_rows else df.copy()
     
-    # Show title if provided (with green styling)
     if title:
         st.markdown(f'<h3 style="color: #2E7D32; margin-bottom: 10px;">{title}</h3>', unsafe_allow_html=True)
     
-    # Create styled HTML table with health green theme
     def create_styled_table(data):
-        # Determine white-space and max-width based on wrap_text
         white_space = "normal" if wrap_text else "nowrap"
         cell_max_width = max_cell_width if wrap_text else "none"
         
-        # Base CSS styles with enhanced interactivity and text wrapping
         html = '''
         <style>
             .health-table-wrapper {
@@ -769,63 +556,45 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 line-height: 1.5;
                 vertical-align: middle;
             }
-            .health-table td:first-child {
-                text-align: ''' + align + ''' !important;
-            }
-            .health-table tbody td {
-                text-align: ''' + align + ''' !important;
-            }
         </style>
         '''
         
-        # Start wrapper
         html += '<div class="health-table-wrapper">'
         
-        # Add scrollable wrapper if enabled
         if scrollable:
             html += '<div class="health-table-scrollable">'
         
-        # Table start
         html += '<table class="health-table">'
         
-        # Header
         html += '<thead><tr>'
         for col in data.columns:
             html += f'<th>{col}</th>'
         html += '</tr></thead>'
         
-        # Body
         html += '<tbody>'
         for idx, row in data.iterrows():
             html += '<tr>'
             for val in row:
-                # Handle None/NaN values
                 display_val = val if pd.notna(val) else ""
                 html += f'<td style="text-align: {align} !important;">{display_val}</td>'
             html += '</tr>'
         html += '</tbody></table>'
         
-        # Close scrollable wrapper if enabled
         if scrollable:
             html += '</div>'
         
-        # Close main wrapper
         html += '</div>'
         
         return html
     
-    # Display table
     st.markdown(create_styled_table(display_df), unsafe_allow_html=True)
     
-    # Show row count if limited
     if max_rows and len(df) > max_rows:
         st.caption(f"📊 Showing {max_rows} of {len(df)} rows")
     
-    # Add download button if filename provided (with green styling)
     if download_filename:
         csv = df.to_csv(index=False).encode('utf-8')
         
-        # Custom CSS for green button
         st.markdown("""
             <style>
             div.stDownloadButton > button {
@@ -842,9 +611,6 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3) !important;
                 transform: translateY(-2px) !important;
             }
-            div.stDownloadButton > button:active {
-                transform: translateY(0) !important;
-            }
             </style>
         """, unsafe_allow_html=True)
         
@@ -856,39 +622,27 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             key=f"download_{download_filename}_{id(df)}"
         )
 
-
 # ========================================
-# 🎨 OPTIONAL: PRE-DEFINED THEME PRESETS
+# 🚀 CHANGE #2: MERGED & CACHED prepare_queries_df
 # ========================================
-def get_table_theme(theme_name="health"):
-    """Get pre-defined color themes for tables (optional - for future use)"""
-    themes = {
-        "health": {"align": "center"},
-        "blue": {"align": "center"},
-        "dark": {"align": "center"},
-    }
-    return themes.get(theme_name, themes["health"])
-
+@st.cache_data(ttl=3600, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: str(x.shape)})
 def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
-    """Normalize columns, create derived metrics and time buckets.
+    """
+    🚀 OPTIMIZED: Normalize columns, create derived metrics and time buckets (CACHED VERSION)
     
     Args:
         df (pd.DataFrame): Input DataFrame from Excel sheet.
-        use_derived_metrics (bool): If True, derive clicks and conversions from rates; if False, use sheet columns.
+        use_derived_metrics (bool): If True, derive clicks and conversions from rates
     """
-    df = df.copy()
+    df = df.copy(deep=False)  # 🚀 Shallow copy for speed
     
-    # -------------------------
     # Query text
-    # -------------------------
     if 'search' in df.columns:
         df['normalized_query'] = df['search'].astype(str)
     else:
         df['normalized_query'] = df.iloc[:, 0].astype(str)
 
-    # -------------------------
     # Date normalization
-    # -------------------------
     if 'start_date' in df.columns:
         if pd.api.types.is_datetime64_any_dtype(df['start_date']):
             df['Date'] = df['start_date']
@@ -899,88 +653,60 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     else:
         df['Date'] = pd.NaT
 
-    # -------------------------
-    # COUNTS = search counts (from 'count' column)
-    # -------------------------
+    # COUNTS
     if 'count' in df.columns:
         df['Counts'] = pd.to_numeric(df['count'], errors='coerce').fillna(0)
     else:
         df['Counts'] = 0
-        st.sidebar.warning("❌ No 'count' column found for impressions")
 
-    # -------------------------
-    # CLICKS and CONVERSIONS (use sheet columns or derive from rates)
-    # -------------------------
+    # CLICKS and CONVERSIONS
     if 'Clicks' in df.columns:
         df['clicks'] = pd.to_numeric(df['Clicks'], errors='coerce').fillna(0)
     else:
         df['clicks'] = 0
-        st.sidebar.warning("❌ No 'Clicks' column found")
 
     if 'Conversions' in df.columns:
         df['conversions'] = pd.to_numeric(df['Conversions'], errors='coerce').fillna(0)
-        
     else:
         df['conversions'] = 0
-        st.sidebar.warning("❌ No 'Conversions' column found")
 
-    # Derive metrics if requested (overrides sheet values)
+    # Derive metrics if requested
     if use_derived_metrics:
         if 'Click Through Rate' in df.columns and 'count' in df.columns:
             ctr = pd.to_numeric(df['Click Through Rate'], errors='coerce').fillna(0)
-            if ctr.max() > 1:  # Percentage format
+            if ctr.max() > 1:
                 ctr_decimal = ctr / 100.0
-            else:  # Decimal format
+            else:
                 ctr_decimal = ctr
             df['clicks'] = (df['Counts'] * ctr_decimal).round().astype(int)
-            st.sidebar.success(f"✅ Derived clicks from CTR: {df['clicks'].sum():,}")
-        else:
-            st.sidebar.warning("❌ Cannot derive clicks - missing CTR or count data")
 
-        if 'Conversion Rate' in df.columns:  # Fixed typo from 'Converion Rate'
+        if 'Conversion Rate' in df.columns:
             conv_rate = pd.to_numeric(df['Conversion Rate'], errors='coerce').fillna(0)
-            if conv_rate.max() > 1:  # Percentage format
+            if conv_rate.max() > 1:
                 conv_rate_decimal = conv_rate / 100.0
-            else:  # Decimal format
+            else:
                 conv_rate_decimal = conv_rate
             df['conversions'] = (df['clicks'] * conv_rate_decimal).round().astype(int)
-            st.sidebar.success(f"✅ Derived conversions: {df['conversions'].sum():,}")
-        else:
-            st.sidebar.warning("❌ No Conversion Rate data found")
 
-    # Validate derived vs. sheet values (if both exist)
-    if 'Clicks' in df.columns and use_derived_metrics:
-        diff_clicks = abs(df['clicks'].sum() - df['Clicks'].sum())
-        if diff_clicks > 0:
-            st.sidebar.warning(f"⚠ Derived clicks ({df['clicks'].sum():,}) differ from sheet Clicks ({df['Clicks'].sum():,}) by {diff_clicks:,}")
-    if 'Conversions' in df.columns and use_derived_metrics:
-        diff_conversions = abs(df['conversions'].sum() - df['Conversions'].sum())
-        if diff_conversions > 0:
-            st.sidebar.warning(f"⚠ Derived conversions ({df['conversions'].sum():,}) differ from sheet Conversions ({df['Conversions'].sum():,}) by {diff_conversions:,}")
-
-    # -------------------------
-    # CTR (store as percentage for consistency)
-    # -------------------------
+    # CTR
     if 'Click Through Rate' in df.columns:
         ctr = pd.to_numeric(df['Click Through Rate'], errors='coerce').fillna(0)
         if ctr.max() <= 1:
-            df['ctr'] = ctr * 100  # Convert to percentage
+            df['ctr'] = ctr * 100
         else:
-            df['ctr'] = ctr  # Already in percentage
+            df['ctr'] = ctr
     else:
         df['ctr'] = df.apply(
             lambda r: (r['clicks'] / r['Counts']) * 100 if r['Counts'] > 0 else 0, axis=1
         )
 
-    # -------------------------
-    # CR (store as percentage for consistency)
-    # -------------------------
-    if 'Conversion Rate' in df.columns:  # Fixed typo
+    # CR
+    if 'Conversion Rate' in df.columns:
         cr = pd.to_numeric(df['Conversion Rate'], errors='coerce').fillna(0)
         if cr.max() <= 1:
-            df['cr'] = cr * 100  # Convert to percentage
+            df['cr'] = cr * 100
         else:
-            df['cr'] = cr  # Already in percentage
+            df['cr'] = cr
     else:
         df['cr'] = df.apply(
             lambda r: (r['conversions'] / r['Counts']) * 100 if r['Counts'] > 0 else 0,
@@ -997,28 +723,20 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     else:
         df['classical_cr'] = df['cr']
 
-    # -------------------------
-    # Revenue (placeholder)
-    # -------------------------
+    # Revenue
     df['revenue'] = 0
 
-    # -------------------------
     # Time buckets
-    # -------------------------
     df['year'] = df['Date'].dt.year
     df['month'] = df['Date'].dt.strftime('%B %Y')
     df['month_short'] = df['Date'].dt.strftime('%b')
     df['day_of_week'] = df['Date'].dt.day_name()
 
-    # -------------------------
     # Text features
-    # -------------------------
     df['query_length'] = df['normalized_query'].astype(str).apply(len)
-    df['keywords'] = df['normalized_query'].apply(extract_keywords)  # Assuming extract_keywords is defined
+    df['keywords'] = df['normalized_query'].apply(extract_keywords)
 
-    # -------------------------
-    # Brand, Category, Subcategory, Department
-    # -------------------------
+    # Brand, Category, etc.
     df['brand_ar'] = ''
     df['brand'] = df['Brand'] if 'Brand' in df.columns else None
     df['category'] = df['Category'] if 'Category' in df.columns else None
@@ -1026,9 +744,7 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     df['department'] = df['Department'] if 'Department' in df.columns else None
     df['class'] = df['Class'] if 'Class' in df.columns else None
 
-    # -------------------------
     # Additional optional columns
-    # -------------------------
     if 'underperforming' in df.columns:
         df['underperforming'] = df['underperforming']
     if 'averageClickPosition' in df.columns:
@@ -1036,38 +752,48 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     if 'cluster_id' in df.columns:
         df['cluster_id'] = df['cluster_id']
 
-    # -------------------------
-    # Keep original columns for reference
-    # -------------------------
-    original_cols = ['Department', 'Category', 'Sub Category', 'Class', 'Brand', 'search', 'count', 
-                     'Click Through Rate', 'Conversion Rate', 'total_impressions over 3m',
-                     'averageClickPosition', 'underperforming', 'classical_cr', 'cluster_id',
-                     'start_date', 'end_date']
+    # 🚀 CHANGE #5: CONDITIONAL COLUMN KEEPING (saves 100MB+)
+    debug_mode = st.session_state.get('debug_mode', False)
     
-    for col in original_cols:
-        if col in df.columns:
-            df[f'orig_{col}'] = df[col]
+    if debug_mode:
+        # Keep original columns only in debug mode
+        original_cols = ['Department', 'Category', 'Sub Category', 'Class', 'Brand', 'search', 'count', 
+                         'Click Through Rate', 'Conversion Rate', 'total_impressions over 3m',
+                         'averageClickPosition', 'underperforming', 'classical_cr', 'cluster_id',
+                         'start_date', 'end_date']
+        
+        for col in original_cols:
+            if col in df.columns:
+                df[f'orig_{col}'] = df[col]
+    else:
+        # 🚀 In production, drop original columns to save memory
+        cols_to_drop = [col for col in df.columns if col in ['Department', 'Category', 'Sub Category', 'Class', 'Brand']]
+        df = df.drop(columns=cols_to_drop, errors='ignore')
 
-    # -------------------------
-    # Remove index for cleaner display
-    # -------------------------
-    df = df.reset_index(drop=True)
+    # 🚀 MEMORY OPTIMIZATION
+    df = optimize_memory_ultra(df)
 
-    return df
+    return df.reset_index(drop=True)
 
+# ========================================
+# 🚀 CHANGE #3: LAZY LOADING FOR SUMMARY SHEETS
+# ========================================
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_summary_sheet(sheet_name):
+    """🚀 OPTIMIZED: Load summary sheet only when needed (LAZY LOADING)"""
+    return st.session_state.sheets.get(sheet_name, None)
 
-# ----------------- OPTIMIZED DATA LOADING SECTION -----------------
+# ----------------- DATA LOADING SECTION -----------------
 st.sidebar.title("📁 Upload Data")
 upload = st.sidebar.file_uploader("Upload Excel (multi-sheet) or CSV (queries)", type=['xlsx','csv'])
 
-# 🚀 SIMPLE SESSION STATE CACHING
+# Session state initialization
 if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
     st.session_state.queries = None
     st.session_state.sheets = None
-# ✅ FIX: Add memory cleanup flag
-if 'memory_optimized' not in st.session_state:
     st.session_state.memory_optimized = False
+    st.session_state.debug_mode = False  # 🚀 For Change #5
 
 # 🚀 FAST LOADING FUNCTIONS
 @st.cache_data(show_spinner=False)
@@ -1078,42 +804,6 @@ def load_excel_fast(file_path=None, upload_file=None):
     else:
         return pd.read_excel(file_path, sheet_name=None, engine='openpyxl')
 
-@st.cache_data(show_spinner=False, hash_funcs={pd.DataFrame: lambda x: str(x.shape) + str(x.columns.tolist())})  # 🚀 BETTER HASHING
-def prepare_queries_fast(df):
-    """Fast query preparation with memory optimization"""
-    if df is None or df.empty:
-        return pd.DataFrame()
-    
-    # 🚀 SHALLOW COPY (faster)
-    queries = df.copy(deep=False)
-    
-    # 🚀 VECTORIZED COLUMN FIXES (faster than individual renames)
-    column_mapping = {
-        'Search': 'search', 'query': 'search', 'Query': 'search',
-        'Count': 'Counts', 'counts': 'Counts', 'count': 'Counts',  # 🚀 ADD 'count' mapping
-        'Clicks': 'clicks', 'Conversions': 'conversions'
-    }
-    queries = queries.rename(columns=column_mapping)
-    
-    # 🚀 BATCH ADD MISSING COLUMNS (faster)
-    required_cols = {'search': 'Unknown Query', 'Counts': 0, 'clicks': 0, 'conversions': 0}
-    for col, default_val in required_cols.items():
-        if col not in queries.columns:
-            queries[col] = default_val
-    
-    # 🚀 VECTORIZED NUMERIC CONVERSION (much faster)
-    numeric_cols = ['Counts', 'clicks', 'conversions']
-    for col in numeric_cols:
-        if col in queries.columns:
-            queries[col] = pd.to_numeric(queries[col], errors='coerce').fillna(0).astype('int32')  # 🚀 USE INT32
-    
-    # 🚀 OPTIMIZED CLEANUP (faster boolean indexing)
-    valid_mask = (queries['search'].notna()) & (queries['search'].astype(str).str.strip() != '')
-    queries = queries[valid_mask].reset_index(drop=True)
-    
-    return queries
-
-
 # 🚀 LOAD DATA ONLY ONCE
 if not st.session_state.data_loaded:
     with st.spinner('🚀 Loading data...'):
@@ -1122,7 +812,7 @@ if not st.session_state.data_loaded:
             if upload is not None:
                 if upload.name.endswith('.xlsx'):
                     sheets = load_excel_fast(upload_file=upload)
-                else:  # CSV
+                else:
                     df_csv = pd.read_csv(upload)
                     sheets = {'queries': df_csv}
             else:
@@ -1147,40 +837,92 @@ if not st.session_state.data_loaded:
                 main_sheet = sheet_names[0]
             
             raw_queries = sheets[main_sheet]
-            queries = prepare_queries_fast(raw_queries)
+            queries = prepare_queries_df(raw_queries)
             
-            # ✅ FIX: Store optimized data + cleanup
+            # ✅ FIXED: Store data with smart memory cleanup
             st.session_state.queries = queries
-            st.session_state.sheets = sheets
-            st.session_state.data_loaded = True
+            st.session_state.main_sheet_name = main_sheet
             
-            # 🚀 MEMORY CLEANUP: Remove raw data from sheets dict
+            # 🚀 MEMORY CLEANUP: Keep main sheet + summary sheets
             if not st.session_state.memory_optimized:
-                # Keep only summary sheets (not the huge main sheet)
                 summary_sheets = ['brand_summary', 'category_summary', 'subcategory_summary', 'generic_type']
-                st.session_state.sheets = {k: v for k, v in sheets.items() if k in summary_sheets}
+                
+                # ✅ Keep main sheet + summaries
+                sheets_to_keep = {main_sheet: raw_queries}
+                
+                # Add summary sheets if they exist
+                for sheet_name in summary_sheets:
+                    if sheet_name in sheets:
+                        sheets_to_keep[sheet_name] = sheets[sheet_name]
+                
+                st.session_state.sheets = sheets_to_keep
                 st.session_state.memory_optimized = True
-
+            else:
+                st.session_state.sheets = sheets
             
+            st.session_state.data_loaded = True
             
         except Exception as e:
             st.error(f"❌ Loading error: {e}")
             st.stop()
 
-# 🚀 USE CACHED DATA
+
+# 🚀 CHANGE #1: USE CACHED DATA (NO DUPLICATE LOADING!)
 queries = st.session_state.queries
 sheets = st.session_state.sheets
-
-# Load summary sheets
-brand_summary = sheets.get('brand_summary', None)
-category_summary = sheets.get('category_summary', None)
-subcategory_summary = sheets.get('subcategory_summary', None)
-generic_type = sheets.get('generic_type', None)
+main_key = st.session_state.get('main_sheet_name', 'queries')
 
 # 🚀 OPTIONAL: Reload button
 if st.sidebar.button("🔄 Reload Data"):
     st.session_state.data_loaded = False
     st.rerun()
+
+# 🎯 BONUS: MEMORY MONITOR
+st.sidebar.markdown("---")
+if st.sidebar.checkbox("📊 Memory Usage", value=False):
+    try:
+        import psutil
+        
+        process = psutil.Process(os.getpid())
+        memory_mb = process.memory_info().rss / 1024 / 1024
+        
+        initial_memory = st.session_state.get('initial_memory', memory_mb)
+        memory_delta = memory_mb - initial_memory
+        
+        col1, col2 = st.sidebar.columns(2)
+        
+        with col1:
+            st.metric(
+                "Current Memory", 
+                f"{memory_mb:.0f} MB",
+                delta=f"{memory_delta:+.0f} MB",
+                delta_color="inverse"
+            )
+        
+        with col2:
+            st.metric(
+                "Data Size",
+                f"{len(queries):,} rows",
+                delta=f"{queries.memory_usage(deep=True).sum() / 1024 / 1024:.1f} MB"
+            )
+        
+        # Memory breakdown
+        with st.sidebar.expander("🔍 Memory Details"):
+            st.write(f"**Initial:** {initial_memory:.0f} MB")
+            st.write(f"**Current:** {memory_mb:.0f} MB")
+            st.write(f"**Change:** {memory_delta:+.0f} MB")
+            st.write(f"**DataFrame:** {queries.memory_usage(deep=True).sum() / 1024 / 1024:.1f} MB")
+            
+            # Top memory columns
+            mem_usage = queries.memory_usage(deep=True).sort_values(ascending=False).head(5)
+            st.write("**Top 5 Columns:**")
+            for col, size in mem_usage.items():
+                st.write(f"- {col}: {size / 1024 / 1024:.1f} MB")
+    
+    except ImportError:
+        st.sidebar.warning("⚠️ Install psutil for memory monitoring: `pip install psutil`")
+    except Exception as e:
+        st.sidebar.error(f"❌ Memory monitoring error: {e}")
 
 # Show data info
 if st.sidebar.checkbox("📊 Show Data Info"):
@@ -1188,48 +930,20 @@ if st.sidebar.checkbox("📊 Show Data Info"):
     **Data Loaded:**
     - Queries: {len(queries):,}
     - Sheets: {len(sheets)}
-    - Columns: {list(queries.columns)}
+    - Main Sheet: {main_key}
     """)
 
 st.markdown("---")
 
-# ----------------- Choose main queries sheet -----------------
-sheet_keys = list(sheets.keys())
-preferred = [k for k in ['queries_clustered','queries_dedup','queries','queries_clustered_preprocessed'] if k in sheets]
-if preferred:
-    main_key = preferred[0]
-else:
-    main_key = sheet_keys[0]
-
-raw_queries = sheets[main_key]
-try:
-    queries = prepare_queries_df(raw_queries)
-except Exception as e:
-    st.error(f"Error processing queries sheet: {e}")
-    st.stop()
-
-# Load additional summary sheets if present
-brand_summary = sheets.get('brand_summary', None)
-category_summary = sheets.get('category_summary', None)
-subcategory_summary = sheets.get('subcategory_summary', None)
-generic_type = sheets.get('generic_type', None)
-
-# ----------------- Filters (no sampling) -----------------
-# ----------------- Filters with Apply/Reset buttons -----------------
-# ----------------- OPTIMIZED FILTERS (KEEPING YOUR EXACT LOGIC) -----------------
+# ----------------- OPTIMIZED FILTERS -----------------
 st.sidebar.header("🔎 Filters")
 
-# Initialize session state for filters
 if 'filters_applied' not in st.session_state:
     st.session_state.filters_applied = False
-
-# Store original queries for reset
-# ✅ FIX: Don't store duplicate - use cached version instead
 if 'filter_reset_flag' not in st.session_state:
     st.session_state.filter_reset_flag = False
 
-
-# 🚀 OPTIMIZED DATE FILTER (SAME LOGIC, BETTER PERFORMANCE)
+# 🚀 CHANGE #4: OPTIMIZED FILTER CACHING
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_date_range(_df):
     """Cache date range calculation"""
@@ -1246,47 +960,49 @@ def get_date_range(_df):
     except:
         return []
 
-default_dates = get_date_range(queries)
-date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
-
-# 🚀 OPTIMIZED Multi-select filters helper (SAME INTERFACE, CACHED)
-@st.cache_data(ttl=1800, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: x.shape[0]})  # 🚀 ADD THIS LINE
+@st.cache_data(
+    ttl=3600,  # 🚀 Longer cache
+    show_spinner=False,
+    hash_funcs={pd.DataFrame: lambda x: hashlib.md5(str(x.shape).encode()).hexdigest()}  # 🚀 Faster hash
+)
 def get_cached_options(_df, col):
-    """Cache filter options for better performance"""
+    """🚀 OPTIMIZED: Cache filter options with faster hashing"""
     try:
         if col not in _df.columns:
             return []
-        return sorted(_df[col].dropna().astype(str).unique().tolist())
+        # 🚀 Use numpy for faster unique values
+        unique_vals = _df[col].dropna().astype(str).unique()
+        return sorted(unique_vals.tolist())
     except:
         return []
 
-
 def get_filter_options(df, col, label, emoji):
-    """Your exact function with caching optimization"""
+    """Filter options with caching"""
     if col not in df.columns:
         return [], []
     
-    # Use cached options instead of recalculating every time
     opts = get_cached_options(df, col)
     
     sel = st.sidebar.multiselect(
         f"{emoji} {label}", 
         options=opts, 
-        default=opts  # Keep your exact default behavior
+        default=opts
     )
     return sel, opts
 
-# Get filter selections (EXACTLY THE SAME AS YOUR CODE)
+default_dates = get_date_range(queries)
+date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
+
+# Get filter selections
 brand_filter, brand_opts = get_filter_options(queries, 'brand', 'Brand(s)', '🏷')
 dept_filter, dept_opts = get_filter_options(queries, 'department', 'Department(s)', '🏬')
 cat_filter, cat_opts = get_filter_options(queries, 'category', 'Category(ies)', '📦')
 subcat_filter, subcat_opts = get_filter_options(queries, 'sub_category', 'Sub Category(ies)', '🧴')
 class_filter, class_opts = get_filter_options(queries, 'Class', 'Class(es)', '🎯')
 
-# Text filter (EXACTLY THE SAME)
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
 
-# Filter control buttons (EXACTLY THE SAME)
+# Filter control buttons
 st.sidebar.markdown("---")
 col1, col2 = st.sidebar.columns(2)
 
@@ -1296,37 +1012,32 @@ with col1:
 with col2:
     reset_filters = st.button("🗑️ Reset Filters", use_container_width=True)
 
-# Handle Reset Button (EXACTLY THE SAME AS YOUR CODE)
+# Handle Reset
 if reset_filters:
-    # ✅ FIX: Just reload from cache (no copy needed)
     st.session_state.filters_applied = False
     st.session_state.filter_reset_flag = True
     st.rerun()
 
-
-# Handle Apply Button (YOUR EXACT LOGIC WITH MINOR OPTIMIZATION)
+# Handle Apply
 elif apply_filters:
-    # ✅ FIX: Start with cached data (already loaded above)
-    # queries variable is already loaded from st.session_state.queries
-    
-    # Date filter (YOUR EXACT LOGIC)
+    # Date filter
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2 and date_range[0] is not None:
         start_date, end_date = date_range
         queries = queries[(queries['Date'] >= pd.to_datetime(start_date)) & (queries['Date'] <= pd.to_datetime(end_date))]
     
-    # Brand filter (YOUR EXACT LOGIC)
+    # Brand filter
     if brand_filter and len(brand_filter) < len(brand_opts):
         queries = queries[queries['brand'].astype(str).isin(brand_filter)]
     
-    # Department filter (YOUR EXACT LOGIC)
+    # Department filter
     if dept_filter and len(dept_filter) < len(dept_opts):
         queries = queries[queries['department'].astype(str).isin(dept_filter)]
     
-    # Category filter (YOUR EXACT LOGIC)
+    # Category filter
     if cat_filter and len(cat_filter) < len(cat_opts):
         queries = queries[queries['category'].astype(str).isin(cat_filter)]
     
-    # Subcategory filter (YOUR EXACT LOGIC)
+    # Subcategory filter
     if subcat_filter and len(subcat_filter) < len(subcat_opts):
         queries = queries[queries['sub_category'].astype(str).isin(subcat_filter)]
 
@@ -1334,15 +1045,15 @@ elif apply_filters:
     if class_filter and len(class_filter) < len(class_opts):
         queries = queries[queries['Class'].astype(str).isin(class_filter)]
 
-    # Text filter (YOUR EXACT LOGIC)
+    # Text filter
     if text_filter:
         queries = queries[queries['normalized_query'].str.contains(re.escape(text_filter), case=False, na=False)]
     
     st.session_state.filters_applied = True
 
-# Show filter status (ENHANCED VERSION OF YOUR CODE)
+# Show filter status
 if st.session_state.filters_applied:
-    original_count = len(st.session_state.queries)  # Use cached version
+    original_count = len(st.session_state.queries)
     current_count = len(queries)
     reduction_pct = ((original_count - current_count) / original_count) * 100 if original_count > 0 else 0
     st.sidebar.success(f"✅ Filters Applied - {current_count:,} rows ({reduction_pct:.1f}% filtered)")
@@ -1351,8 +1062,10 @@ else:
 
 st.sidebar.markdown(f"**📊 Current rows:** {len(queries):,}")
 
-# 🚀 DEBUG INFO (OPTIONAL - REMOVE AFTER TESTING)
+# Debug info
 if st.sidebar.checkbox("🔍 Debug Info", value=False):
+    st.session_state.debug_mode = True  # 🚀 Enable debug mode for Change #5
+    
     st.sidebar.write("**Filter Status:**")
     st.sidebar.write(f"- Date range: {date_range}")
     st.sidebar.write(f"- Brand selected: {len(brand_filter)}/{len(brand_opts)}")
@@ -1361,7 +1074,8 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
     st.sidebar.write(f"- Subcat selected: {len(subcat_filter)}/{len(subcat_opts)}")
     st.sidebar.write(f"- Class selected: {len(class_filter)}/{len(class_opts)}")
     st.sidebar.write(f"- Text filter: '{text_filter}'")
-
+else:
+    st.session_state.debug_mode = False
 
 # ----------------- Welcome Message -----------------
 st.markdown("""
@@ -1375,9 +1089,8 @@ st.markdown("""
 st.markdown('<div class="main-header">🌱 Nutraceuticals & Nutrition — Advanced Analytics Hub</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Explore Nutraceuticals & Nutrition search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
 
-# ✅ UPDATED: Non-cached function that works with filtered data
 def calculate_metrics(df):
-    """Calculate metrics from dataframe (works with filtered data)"""
+    """Calculate metrics from dataframe"""
     total_counts = int(df['Counts'].sum())
     total_clicks = int(df['clicks'].sum())
     total_conversions = int(df['conversions'].sum())
@@ -1385,24 +1098,10 @@ def calculate_metrics(df):
     overall_cr = (total_conversions / total_counts * 100) if total_clicks > 0 else 0  
     return total_counts, total_clicks, total_conversions, overall_ctr, overall_cr
 
-# Helper function for number formatting
-def format_number(num):
-    """Format numbers with K/M suffix"""
-    if num >= 1_000_000:
-        return f"{num/1_000_000:.1f}M"
-    elif num >= 1_000:
-        return f"{num/1_000:.1f}K"
-    else:
-        return f"{num:,.0f}"
-
-# ✅ PLACEHOLDER: Calculate initial metrics (will be recalculated after filtering)
 total_counts, total_clicks, total_conversions, overall_ctr, overall_cr = calculate_metrics(queries)
-total_revenue = 0.0  # No revenue column
 
-# ✅ CREATE PLACEHOLDER CONTAINERS for KPI cards
 kpi_container = st.container()
 
-# ✅ FUNCTION to update KPI display
 def display_kpi_cards(df):
     """Display KPI cards with current dataframe metrics"""
     counts, clicks, conversions, ctr, cr = calculate_metrics(df)
@@ -1423,10 +1122,8 @@ def display_kpi_cards(df):
     
     return counts, clicks, conversions, ctr, cr
 
-# ✅ Display initial KPI cards
 total_counts, total_clicks, total_conversions, overall_ctr, overall_cr = display_kpi_cards(queries)
 
-# ✅ UPDATED SIDEBAR: Function to update sidebar info
 def update_sidebar_info(df, data_source):
     """Update sidebar with current dataframe info"""
     counts, clicks, conversions, ctr, cr = calculate_metrics(df)
@@ -1437,30 +1134,14 @@ def update_sidebar_info(df, data_source):
     st.sidebar.write(f"**Calculated Clicks:** {clicks:,}")
     st.sidebar.write(f"**Calculated Conversions:** {conversions:,}")
 
-# ✅ Initial sidebar update
 update_sidebar_info(queries, main_key)
 
-# ✅ Debug info (unchanged)
-with st.sidebar.expander("🔍 Data Debug Info"):
-    st.write(f"Main sheet: {main_key}")
-    st.write(f"Processed columns: {list(queries.columns)}")
-    st.write(f"Processed shape: {queries.shape}")
-    
-    st.write("**Column Usage:**")
-    if 'count' in raw_queries.columns:
-        st.write(f"✓ Searches/Impressions: 'count' column")
-    else:
-        st.write("✗ Searches/Impressions: No 'count' column found")
-    
-    st.write("**Calculation Method:**")
-    st.write("• Clicks = Searches × Click Through Rate")
-    st.write("• Conversions = Clicks × Conversion Rate")
-
 # ----------------- Tabs -----------------
-tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
+tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class, tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
     "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
     "⏰ Time Analysis","📊 Pivot Builder","💡 Insights","⬇ Export"
 ])
+
 
 # ----------------- Overview -----------------
 with tab_overview:
