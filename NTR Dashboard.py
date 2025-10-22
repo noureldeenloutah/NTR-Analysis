@@ -12,6 +12,24 @@ from fuzzywuzzy import fuzz
 from plotly.subplots import make_subplots
 from uuid import uuid4
 import hashlib
+import gc  # ADD THIS TO IMPORTS (line 10)
+
+# 🚀 AGGRESSIVE MEMORY MANAGEMENT (ADD AFTER LINE 200)
+def cleanup_memory():
+    """Force garbage collection and clear cache"""
+    gc.collect()
+    if hasattr(st, 'cache_data'):
+        st.cache_data.clear()
+    if hasattr(st, 'cache_resource'):
+        st.cache_resource.clear()
+
+# Call after data loading
+def load_with_cleanup(load_func, *args, **kwargs):
+    """Load data and immediately cleanup"""
+    result = load_func(*args, **kwargs)
+    cleanup_memory()
+    return result
+
 
 # 🚀 ADD THE FORMAT_NUMBER FUNCTION HERE
 def format_number(num):
