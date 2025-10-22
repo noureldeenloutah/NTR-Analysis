@@ -200,37 +200,51 @@ def smart_sampling(df, max_rows=50000):
         return df.sample(n=max_rows, random_state=42).reset_index(drop=True)
 
 def optimize_memory_ultra(df):
-    """ULTRA memory optimization - 80% reduction"""
+    """ULTRA memory optimization - 80% reduction (FIXED)"""
     
-    # 🚀 SMART DOWNCASTING
+    # 🚀 SMART DOWNCASTING with error handling
     for col in df.select_dtypes(include=['int64']).columns:
-        col_max = df[col].max()
-        col_min = df[col].min()
-        
-        if col_min >= 0:  # Unsigned integers
-            if col_max < 255:
-                df[col] = df[col].astype('uint8')
-            elif col_max < 65535:
-                df[col] = df[col].astype('uint16')
-            elif col_max < 4294967295:
-                df[col] = df[col].astype('uint32')
-        else:  # Signed integers
-            if col_min >= -128 and col_max <= 127:
-                df[col] = df[col].astype('int8')
-            elif col_min >= -32768 and col_max <= 32767:
-                df[col] = df[col].astype('int16')
+        try:
+            col_max = df[col].max()
+            col_min = df[col].min()
+            
+            if col_min >= 0:  # Unsigned integers
+                if col_max < 255:
+                    df[col] = df[col].astype('uint8')
+                elif col_max < 65535:
+                    df[col] = df[col].astype('uint16')
+                elif col_max < 4294967295:
+                    df[col] = df[col].astype('uint32')
+            else:  # Signed integers
+                if col_min >= -128 and col_max <= 127:
+                    df[col] = df[col].astype('int8')
+                elif col_min >= -32768 and col_max <= 32767:
+                    df[col] = df[col].astype('int16')
+        except Exception:
+            pass  # Skip problematic columns
     
     # 🚀 FLOAT32 OPTIMIZATION (50% memory reduction)
     for col in df.select_dtypes(include=['float64']).columns:
-        df[col] = df[col].astype('float32')
+        try:
+            df[col] = df[col].astype('float32')
+        except Exception:
+            pass
     
-    # 🚀 CATEGORY OPTIMIZATION
+    # 🚀 CATEGORY OPTIMIZATION (skip list columns)
     for col in df.select_dtypes(include=['object']).columns:
-        unique_ratio = df[col].nunique() / len(df)
-        if unique_ratio < 0.5:  # Less than 50% unique values
-            df[col] = df[col].astype('category')
+        try:
+            # Skip if column contains lists/unhashable types
+            if df[col].apply(lambda x: isinstance(x, (list, dict))).any():
+                continue
+            
+            unique_ratio = df[col].nunique() / len(df)
+            if unique_ratio < 0.5:  # Less than 50% unique values
+                df[col] = df[col].astype('category')
+        except Exception:
+            pass  # Skip problematic columns
     
     return df
+
 
 # 🚀 ULTRA-FAST KEYWORD EXTRACTION
 _keyword_pattern = re.compile(r'[\u0600-\u06FF\w%+\-]+', re.IGNORECASE)
