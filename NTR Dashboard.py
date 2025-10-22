@@ -235,212 +235,6 @@ def optimize_memory_ultra(df):
 # 🚀 ULTRA-FAST KEYWORD EXTRACTION
 _keyword_pattern = re.compile(r'[\u0600-\u06FF\w%+\-]+', re.IGNORECASE)
 
-# ========================================
-# 🚀 UNIFIED DATA PROCESSING - SINGLE SOURCE OF TRUTH
-# ========================================
-
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=3)
-def process_unified_dataframe(_df):
-    """
-    UNIFIED data processing - single function for all tabs
-    Returns the master dataframe with all necessary columns
-    This replaces prepare_queries_df, prepare_queries_df_ultra, and prepare_queries_fast
-    """
-    if _df is None or _df.empty:
-        return pd.DataFrame()
-    
-    # 🚀 SMART SAMPLING for large datasets
-    if len(_df) > 100000:
-        df = smart_sampling(_df, max_rows=50000)
-        st.info(f"📊 Dataset sampled to {len(df):,} rows for optimal performance")
-    else:
-        df = _df.copy(deep=False)  # Shallow copy for speed
-    
-    # -------------------------
-    # STEP 1: Column Standardization (unified mapping)
-    # -------------------------
-    column_mapping = {
-        'Search': 'search', 'query': 'search', 'Query': 'search',
-        'Count': 'Counts', 'counts': 'Counts', 'count': 'Counts',
-        'Clicks': 'clicks', 
-        'Conversions': 'conversions'
-    }
-    df = df.rename(columns=column_mapping)
-    
-    # -------------------------
-    # STEP 2: Query Text Normalization
-    # -------------------------
-    if 'search' in df.columns:
-        df['normalized_query'] = df['search'].astype(str)
-    else:
-        df['normalized_query'] = df.iloc[:, 0].astype(str) if len(df.columns) > 0 else ''
-    
-    # -------------------------
-    # STEP 3: Numeric Columns (batch processing)
-    # -------------------------
-    numeric_cols = {
-        'Counts': 0,
-        'clicks': 0,
-        'conversions': 0
-    }
-    
-    for col, default_val in numeric_cols.items():
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(default_val)
-        else:
-            df[col] = default_val
-    
-    # -------------------------
-    # STEP 4: Date Processing (unified)
-    # -------------------------
-    if 'start_date' in df.columns:
-        if pd.api.types.is_datetime64_any_dtype(df['start_date']):
-            df['Date'] = df['start_date']
-        else:
-            df['Date'] = pd.to_datetime(df['start_date'], 
-                                       format='mixed', 
-                                       errors='coerce',
-                                       cache=True)
-    else:
-        df['Date'] = pd.NaT
-    
-    # -------------------------
-    # STEP 5: Calculate Rates (vectorized - numpy for speed)
-    # -------------------------
-    counts = df['Counts'].values
-    clicks = df['clicks'].values
-    conversions = df['conversions'].values
-    
-    # CTR and CR as percentages
-    df['ctr'] = np.divide(clicks * 100, counts, 
-                         out=np.zeros_like(clicks, dtype=np.float32), 
-                         where=counts!=0)
-    
-    df['cr'] = np.divide(conversions * 100, counts, 
-                        out=np.zeros_like(conversions, dtype=np.float32), 
-                        where=counts!=0)
-    
-    # Classical CR (for compatibility)
-    df['classical_cr'] = df['cr'].copy()
-    
-    # -------------------------
-    # STEP 6: Categorical Columns (memory optimization)
-    # -------------------------
-    categorical_mapping = {
-        'Brand': 'brand',
-        'Category': 'category',
-        'Sub Category': 'sub_category',
-        'Department': 'department',
-        'Class': 'class'
-    }
-    
-    for orig_col, new_col in categorical_mapping.items():
-        if orig_col in df.columns:
-            df[new_col] = df[orig_col].astype('category')
-        else:
-            df[new_col] = pd.Categorical([''])
-    
-    # -------------------------
-    # STEP 7: Time Buckets (all at once)
-    # -------------------------
-    if pd.notna(df['Date']).any():
-        df['year'] = df['Date'].dt.year
-        df['month'] = df['Date'].dt.strftime('%B %Y')
-        df['month_short'] = df['Date'].dt.strftime('%b')
-        df['day_of_week'] = df['Date'].dt.day_name()
-    else:
-        df['year'] = None
-        df['month'] = None
-        df['month_short'] = None
-        df['day_of_week'] = None
-    
-    # -------------------------
-    # STEP 8: Text Features
-    # -------------------------
-    df['query_length'] = df['normalized_query'].str.len().astype('uint16')
-    df['keywords'] = df['normalized_query'].apply(extract_keywords)
-    
-    # -------------------------
-    # STEP 9: Additional Columns (preserve originals)
-    # -------------------------
-    optional_cols = {
-        'underperforming': 'underperforming',
-        'averageClickPosition': 'average_click_position',
-        'cluster_id': 'cluster_id'
-    }
-    
-    for orig_col, new_col in optional_cols.items():
-        if orig_col in df.columns:
-            df[new_col] = df[orig_col]
-    
-    # -------------------------
-    # STEP 10: Memory Optimization
-    # -------------------------
-    df = optimize_memory_ultra(df)
-    
-    # -------------------------
-    # STEP 11: Clean Data
-    # -------------------------
-    valid_mask = (df['normalized_query'].notna()) & (df['normalized_query'].str.strip() != '')
-    df = df[valid_mask].reset_index(drop=True)
-    
-    return df
-
-# ========================================
-# 🚀 UNIFIED METRICS CALCULATOR
-# ========================================
-
-@st.cache_data(ttl=1800, show_spinner=False)
-def calculate_unified_metrics(_df):
-    """
-    Calculate ALL metrics once - used by all tabs
-    Returns a dictionary with all calculated metrics
-    """
-    if _df is None or _df.empty:
-        return {
-            'total_counts': 0,
-            'total_clicks': 0,
-            'total_conversions': 0,
-            'overall_ctr': 0.0,
-            'overall_cr': 0.0,
-            'total_queries': 0,
-            'avg_query_length': 0.0,
-            'date_range': None
-        }
-    
-    metrics = {
-        # Basic counts
-        'total_counts': int(_df['Counts'].sum()),
-        'total_clicks': int(_df['clicks'].sum()),
-        'total_conversions': int(_df['conversions'].sum()),
-        'total_queries': len(_df),
-        
-        # Calculated rates
-        'overall_ctr': 0.0,
-        'overall_cr': 0.0,
-        
-        # Text metrics
-        'avg_query_length': float(_df['query_length'].mean()) if 'query_length' in _df.columns else 0.0,
-        
-        # Date range
-        'date_range': None
-    }
-    
-    # Calculate rates
-    if metrics['total_counts'] > 0:
-        metrics['overall_ctr'] = (metrics['total_clicks'] / metrics['total_counts']) * 100
-        metrics['overall_cr'] = (metrics['total_conversions'] / metrics['total_counts']) * 100
-    
-    # Date range
-    if 'Date' in _df.columns and _df['Date'].notna().any():
-        metrics['date_range'] = {
-            'min': _df['Date'].min(),
-            'max': _df['Date'].max()
-        }
-    
-    return metrics
-
-
 @st.cache_data(ttl=1800, show_spinner=False)
 def extract_keywords_ultra_fast(text_series):
     """Vectorized keyword extraction - 10x faster"""
@@ -1241,21 +1035,60 @@ def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     return df
 
 
-# ========================================
-# 🚀 OPTIMIZED DATA LOADING - SINGLE PIPELINE
-# ========================================
-
+# ----------------- OPTIMIZED DATA LOADING SECTION -----------------
 st.sidebar.title("📁 Upload Data")
 upload = st.sidebar.file_uploader("Upload Excel (multi-sheet) or CSV (queries)", type=['xlsx','csv'])
 
-# Initialize session state
+# 🚀 SIMPLE SESSION STATE CACHING
 if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
     st.session_state.queries = None
     st.session_state.sheets = None
-    st.session_state.metrics = None  # 🚀 NEW: Store calculated metrics
-    st.session_state.original_queries = None
-    st.session_state.original_metrics = None
+
+# 🚀 FAST LOADING FUNCTIONS
+@st.cache_data(show_spinner=False)
+def load_excel_fast(file_path=None, upload_file=None):
+    """Fast Excel loading with caching"""
+    if upload_file is not None:
+        return pd.read_excel(upload_file, sheet_name=None, engine='openpyxl')
+    else:
+        return pd.read_excel(file_path, sheet_name=None, engine='openpyxl')
+
+@st.cache_data(show_spinner=False, hash_funcs={pd.DataFrame: lambda x: str(x.shape) + str(x.columns.tolist())})  # 🚀 BETTER HASHING
+def prepare_queries_fast(df):
+    """Fast query preparation with memory optimization"""
+    if df is None or df.empty:
+        return pd.DataFrame()
+    
+    # 🚀 SHALLOW COPY (faster)
+    queries = df.copy(deep=False)
+    
+    # 🚀 VECTORIZED COLUMN FIXES (faster than individual renames)
+    column_mapping = {
+        'Search': 'search', 'query': 'search', 'Query': 'search',
+        'Count': 'Counts', 'counts': 'Counts', 'count': 'Counts',  # 🚀 ADD 'count' mapping
+        'Clicks': 'clicks', 'Conversions': 'conversions'
+    }
+    queries = queries.rename(columns=column_mapping)
+    
+    # 🚀 BATCH ADD MISSING COLUMNS (faster)
+    required_cols = {'search': 'Unknown Query', 'Counts': 0, 'clicks': 0, 'conversions': 0}
+    for col, default_val in required_cols.items():
+        if col not in queries.columns:
+            queries[col] = default_val
+    
+    # 🚀 VECTORIZED NUMERIC CONVERSION (much faster)
+    numeric_cols = ['Counts', 'clicks', 'conversions']
+    for col in numeric_cols:
+        if col in queries.columns:
+            queries[col] = pd.to_numeric(queries[col], errors='coerce').fillna(0).astype('int32')  # 🚀 USE INT32
+    
+    # 🚀 OPTIMIZED CLEANUP (faster boolean indexing)
+    valid_mask = (queries['search'].notna()) & (queries['search'].astype(str).str.strip() != '')
+    queries = queries[valid_mask].reset_index(drop=True)
+    
+    return queries
+
 
 # 🚀 LOAD DATA ONLY ONCE
 if not st.session_state.data_loaded:
@@ -1264,14 +1097,14 @@ if not st.session_state.data_loaded:
             # Load file
             if upload is not None:
                 if upload.name.endswith('.xlsx'):
-                    sheets = load_excel_ultra_fast(upload_file=upload)
+                    sheets = load_excel_fast(upload_file=upload)
                 else:  # CSV
-                    df_csv = pd.read_csv(upload, low_memory=False)
+                    df_csv = pd.read_csv(upload)
                     sheets = {'queries': df_csv}
             else:
                 default_path = "NUTRACEUTICALS AND NUTRITION combined_data_ June - August 2025_with_brands.xlsx"
                 if os.path.exists(default_path):
-                    sheets = load_excel_ultra_fast(file_path=default_path)
+                    sheets = load_excel_fast(file_path=default_path)
                 else:
                     st.info("📁 No file uploaded and default Excel not found.")
                     st.stop()
@@ -1279,42 +1112,40 @@ if not st.session_state.data_loaded:
             # Get main queries sheet
             sheet_names = list(sheets.keys())
             preferred = ['queries_clustered', 'queries_dedup', 'queries']
-            main_sheet = next((s for s in preferred if s in sheets), sheet_names[0])
+            main_sheet = None
+            
+            for pref in preferred:
+                if pref in sheets:
+                    main_sheet = pref
+                    break
+            
+            if main_sheet is None:
+                main_sheet = sheet_names[0]
             
             raw_queries = sheets[main_sheet]
-            
-            # 🚀 UNIFIED PROCESSING - Single function call
-            queries = process_unified_dataframe(raw_queries)
-            
-            # 🚀 CALCULATE METRICS ONCE
-            metrics = calculate_unified_metrics(queries)
+            queries = prepare_queries_fast(raw_queries)
             
             # Store in session state
             st.session_state.queries = queries
             st.session_state.sheets = sheets
-            st.session_state.metrics = metrics  # 🚀 NEW
-            st.session_state.original_queries = queries.copy()
-            st.session_state.original_metrics = metrics.copy()
-            st.session_state.main_sheet = main_sheet
             st.session_state.data_loaded = True
+            
             
         except Exception as e:
             st.error(f"❌ Loading error: {e}")
             st.stop()
 
-# 🚀 USE CACHED DATA (single source of truth)
+# 🚀 USE CACHED DATA
 queries = st.session_state.queries
 sheets = st.session_state.sheets
-metrics = st.session_state.metrics
-main_key = st.session_state.main_sheet
 
-# Load summary sheets (if available)
+# Load summary sheets
 brand_summary = sheets.get('brand_summary', None)
 category_summary = sheets.get('category_summary', None)
 subcategory_summary = sheets.get('subcategory_summary', None)
 generic_type = sheets.get('generic_type', None)
 
-# 🚀 RELOAD BUTTON
+# 🚀 OPTIONAL: Reload button
 if st.sidebar.button("🔄 Reload Data"):
     st.session_state.data_loaded = False
     st.rerun()
@@ -1325,11 +1156,10 @@ if st.sidebar.checkbox("📊 Show Data Info"):
     **Data Loaded:**
     - Queries: {len(queries):,}
     - Sheets: {len(sheets)}
-    - Columns: {list(queries.columns)[:10]}...
+    - Columns: {list(queries.columns)}
     """)
 
 st.markdown("---")
-
 
 # ----------------- Choose main queries sheet -----------------
 sheet_keys = list(sheets.keys())
