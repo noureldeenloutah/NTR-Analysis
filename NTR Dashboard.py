@@ -1231,20 +1231,181 @@ if st.sidebar.checkbox("📊 Show Data Info"):
     - Columns: {list(queries.columns)}
     """)
     
-# 🚀 MEMORY MONITORING (ADD AFTER LINE 850)
-if st.sidebar.checkbox("📊 Show Memory Usage", value=False):
-    import psutil
-    import os
+import sys
+import gc
+import psutil
+import os
+import pandas as pd
+
+# ============================================================================
+# 🔍 SIDEBAR MEMORY MONITOR (Simple & Accurate)
+# ============================================================================
+
+def get_accurate_size(obj):
+    """Get accurate deep size of an object"""
+    try:
+        if isinstance(obj, pd.DataFrame):
+            return obj.memory_usage(deep=True).sum()
+        elif isinstance(obj, pd.Series):
+            return obj.memory_usage(deep=True)
+        elif isinstance(obj, (list, tuple, set)):
+            return sys.getsizeof(obj) + sum(get_accurate_size(item) for item in obj)
+        elif isinstance(obj, dict):
+            return sys.getsizeof(obj) + sum(get_accurate_size(k) + get_accurate_size(v) for k, v in obj.items())
+        else:
+            return sys.getsizeof(obj)
+    except:
+        return sys.getsizeof(obj)
+
+def create_sidebar_memory_monitor():
+    """Simple sidebar memory monitor with prioritized fixes"""
     
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_info()
-    mem_mb = mem_info.rss / 1024 / 1024
-    
-    st.sidebar.metric("💾 Memory Usage", f"{mem_mb:.1f} MB")
-    
-    # Show dataframe memory
-    queries_mem = queries.memory_usage(deep=True).sum() / 1024 / 1024
-    st.sidebar.metric("📊 Queries DataFrame", f"{queries_mem:.1f} MB")
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown("### 🔍 Memory Monitor")
+        
+        # Get process memory
+        process = psutil.Process(os.getpid())
+        process_memory_mb = process.memory_info().rss / 1024 / 1024
+        
+        # Memory status indicator
+        if process_memory_mb > 2000:
+            status = "🔴 CRITICAL"
+            color = "#FF4444"
+        elif process_memory_mb > 1500:
+            status = "🟡 WARNING"
+            color = "#FFA500"
+        else:
+            status = "🟢 HEALTHY"
+            color = "#4CAF50"
+        
+        st.markdown(f"""
+        <div style="background: {color}; padding: 10px; border-radius: 8px; text-align: center; color: white; font-weight: bold;">
+            {status}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display total memory
+        st.metric("💾 Total Memory", f"{process_memory_mb:.0f} MB")
+        
+        # Analyze session state
+        if st.button("🔍 Analyze Memory", key="sidebar_analyze"):
+            with st.spinner("Analyzing..."):
+                memory_data = []
+                
+                # Scan session state
+                for key, value in st.session_state.items():
+                    size_bytes = get_accurate_size(value)
+                    size_mb = size_bytes / 1024 / 1024
+                    
+                    if size_mb > 0.1:  # Only show items > 0.1 MB
+                        memory_data.append({
+                            'Item': key,
+                            'Size (MB)': round(size_mb, 2),
+                            'Type': type(value).__name__,
+                            'Priority': '🔴 HIGH' if size_mb > 50 else '🟡 MEDIUM' if size_mb > 10 else '🟢 LOW'
+                        })
+                
+                if memory_data:
+                    # Sort by size
+                    memory_df = pd.DataFrame(memory_data)
+                    memory_df = memory_df.sort_values('Size (MB)', ascending=False)
+                    
+                    # Show top 10 memory consumers
+                    st.markdown("#### 📊 Top Memory Items")
+                    
+                    for idx, row in memory_df.head(10).iterrows():
+                        with st.expander(f"{row['Priority']} {row['Item']} - {row['Size (MB)']} MB"):
+                            st.write(f"**Type:** {row['Type']}")
+                            st.write(f"**Size:** {row['Size (MB)']} MB")
+                            
+                            # Provide fix recommendations
+                            if row['Size (MB)'] > 50:
+                                st.error("⚠️ **ACTION REQUIRED**: This item is consuming significant memory!")
+                                
+                                if 'styled' in row['Item'].lower():
+                                    st.code("""
+# FIX: Delete display DataFrame after styling
+del display_brands
+gc.collect()
+                                    """, language='python')
+                                
+                                elif 'df' in row['Item'].lower() or 'dataframe' in row['Type'].lower():
+                                    st.code("""
+# FIX: Use caching and delete unused copies
+@st.cache_data
+def process_data(_df):
+    return _df.copy()
+
+# Delete temporary DataFrames
+del temp_df
+gc.collect()
+                                    """, language='python')
+                            
+                            elif row['Size (MB)'] > 10:
+                                st.warning("💡 **OPTIMIZATION**: Consider optimizing this item")
+                                st.code("""
+# FIX: Store only necessary data
+# Instead of storing full DataFrame:
+st.session_state.full_data = df  # ❌ BAD
+
+# Store only what you need:
+st.session_state.summary = df.groupby('key').sum()  # ✅ GOOD
+                                """, language='python')
+                    
+                    # Total session state memory
+                    total_session_mb = memory_df['Size (MB)'].sum()
+                    st.metric("📦 Session State Total", f"{total_session_mb:.0f} MB")
+                    
+                    # Download full report
+                    csv = memory_df.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Download Full Report",
+                        data=csv,
+                        file_name=f"memory_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv"
+                    )
+                else:
+                    st.success("✅ No large memory items found!")
+        
+        # Quick actions
+        st.markdown("#### ⚡ Quick Actions")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🗑️ Clear Cache", key="sidebar_clear_cache"):
+                st.cache_data.clear()
+                st.success("✅ Cache cleared!")
+        
+        with col2:
+            if st.button("♻️ GC", key="sidebar_gc"):
+                collected = gc.collect()
+                st.success(f"✅ Freed {collected} objects")
+        
+        # Memory tips
+        with st.expander("💡 Memory Tips"):
+            st.markdown("""
+            **🔴 HIGH Priority (>50 MB):**
+            - Delete unused DataFrames immediately
+            - Use `@st.cache_data` for large computations
+            - Avoid storing styled DataFrames
+            
+            **🟡 MEDIUM Priority (10-50 MB):**
+            - Store aggregated data instead of raw data
+            - Use `.copy()` only when necessary
+            - Delete temporary variables with `del`
+            
+            **🟢 LOW Priority (<10 MB):**
+            - Monitor regularly
+            - Clean up when memory > 1500 MB
+            """)
+
+# ============================================================================
+# 📍 CALL THIS AT THE TOP OF YOUR APP (after imports, before tabs)
+# ============================================================================
+create_sidebar_memory_monitor()
+
 
 st.markdown("---")
 
