@@ -999,7 +999,7 @@ def get_date_range(_df):
 default_dates = get_date_range(st.session_state.original_queries)
 date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
 
-@st.cache_data(ttl=1800, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: x.shape[0]})
+@st.cache_data(ttl=1800, show_spinner=False)
 def get_cached_options(_df, col):
     """Cache filter options for better performance"""
     try:
