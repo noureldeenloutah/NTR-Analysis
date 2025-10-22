@@ -1139,15 +1139,16 @@ def prepare_queries_fast(df):
 
 
 # 🚀 LOAD DATA ONLY ONCE
+# 🚀 LOAD DATA ONLY ONCE (REPLACE LINES 730-780)
 if not st.session_state.data_loaded:
     with st.spinner('🚀 Loading data...'):
         try:
             # Load file
             if upload is not None:
                 if upload.name.endswith('.xlsx'):
-                    sheets = load_with_cleanup(load_excel_fast, upload_file=upload)
-                else:  # CSV
-                    df_csv = pd.read_csv(upload)
+                    sheets = load_excel_fast(upload_file=upload)
+                else:
+                    df_csv = pd.read_csv(upload, low_memory=False)
                     sheets = {'queries': df_csv}
             else:
                 default_path = "NUTRACEUTICALS AND NUTRITION combined_data_ June - August 2025_with_brands.xlsx"
@@ -1157,7 +1158,7 @@ if not st.session_state.data_loaded:
                     st.info("📁 No file uploaded and default Excel not found.")
                     st.stop()
             
-            # Get main queries sheet
+            # 🚀 MEMORY OPTIMIZATION #1: Get main sheet and DROP OTHERS IMMEDIATELY
             sheet_names = list(sheets.keys())
             preferred = ['queries_clustered', 'queries_dedup', 'queries']
             main_sheet = None
@@ -1170,26 +1171,41 @@ if not st.session_state.data_loaded:
             if main_sheet is None:
                 main_sheet = sheet_names[0]
             
+            # ✅ EXTRACT MAIN SHEET
             raw_queries = sheets[main_sheet]
+            
+            # 🚀 MEMORY OPTIMIZATION #2: Keep ONLY essential sheets
+            summary_sheets = ['brand_summary', 'category_summary', 'subcategory_summary', 'generic_type']
+            essential_sheets = {main_sheet: raw_queries}
+            
+            for sheet_name in summary_sheets:
+                if sheet_name in sheets:
+                    essential_sheets[sheet_name] = sheets[sheet_name]
+            
+            # ✅ DELETE ORIGINAL SHEETS DICT (CRITICAL!)
+            del sheets
+            gc.collect()  # Force cleanup
+            
+            # 🚀 PROCESS QUERIES
             queries = prepare_queries_fast(raw_queries)
             
-            # ✅ FIX: Store optimized data + cleanup
+            # ✅ DELETE RAW QUERIES (CRITICAL!)
+            del raw_queries
+            gc.collect()
+            
+            # ✅ STORE OPTIMIZED DATA
             st.session_state.queries = queries
-            st.session_state.sheets = sheets
+            st.session_state.sheets = essential_sheets
             st.session_state.data_loaded = True
+            st.session_state.memory_optimized = True
             
-            # 🚀 MEMORY CLEANUP: Remove raw data from sheets dict
-            if not st.session_state.memory_optimized:
-                # Keep only summary sheets (not the huge main sheet)
-                summary_sheets = ['brand_summary', 'category_summary', 'subcategory_summary', 'generic_type']
-                st.session_state.sheets = {k: v for k, v in sheets.items() if k in summary_sheets}
-                st.session_state.memory_optimized = True
-
-            
+            # 🚀 FINAL CLEANUP
+            cleanup_memory()
             
         except Exception as e:
             st.error(f"❌ Loading error: {e}")
             st.stop()
+
 
 # 🚀 USE CACHED DATA
 queries = st.session_state.queries
@@ -1214,6 +1230,21 @@ if st.sidebar.checkbox("📊 Show Data Info"):
     - Sheets: {len(sheets)}
     - Columns: {list(queries.columns)}
     """)
+    
+# 🚀 MEMORY MONITORING (ADD AFTER LINE 850)
+if st.sidebar.checkbox("📊 Show Memory Usage", value=False):
+    import psutil
+    import os
+    
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    mem_mb = mem_info.rss / 1024 / 1024
+    
+    st.sidebar.metric("💾 Memory Usage", f"{mem_mb:.1f} MB")
+    
+    # Show dataframe memory
+    queries_mem = queries.memory_usage(deep=True).sum() / 1024 / 1024
+    st.sidebar.metric("📊 Queries DataFrame", f"{queries_mem:.1f} MB")
 
 st.markdown("---")
 
