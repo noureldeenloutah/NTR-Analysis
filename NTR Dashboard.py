@@ -1249,6 +1249,11 @@ if st.sidebar.checkbox("📊 Show Memory Usage", value=False):
 st.markdown("---")
 
 # ----------------- Choose main queries sheet -----------------
+# ========================================
+# 🚀 FIXED: Use Already Processed Data
+# ========================================
+
+# Get main sheet name for reference
 sheet_keys = list(sheets.keys())
 preferred = [k for k in ['queries_clustered','queries_dedup','queries','queries_clustered_preprocessed'] if k in sheets]
 if preferred:
@@ -1256,12 +1261,35 @@ if preferred:
 else:
     main_key = sheet_keys[0]
 
-raw_queries = sheets[main_key]
+# ✅ FIX: queries is already processed in session state - don't reprocess!
+# The data was already processed by prepare_queries_fast() during loading
+# Just ensure we have the required columns for prepare_queries_df compatibility
+
 try:
-    queries = prepare_queries_df(raw_queries)
+    # Add any missing columns that prepare_queries_df expects
+    if 'year' not in queries.columns and 'Date' in queries.columns:
+        queries['year'] = queries['Date'].dt.year
+    if 'month' not in queries.columns and 'Date' in queries.columns:
+        queries['month'] = queries['Date'].dt.strftime('%B %Y')
+    if 'month_short' not in queries.columns and 'Date' in queries.columns:
+        queries['month_short'] = queries['Date'].dt.strftime('%b')
+    if 'day_of_week' not in queries.columns and 'Date' in queries.columns:
+        queries['day_of_week'] = queries['Date'].dt.day_name()
+    if 'keywords' not in queries.columns:
+        queries['keywords'] = None  # Lazy loading
+    if 'query_length' not in queries.columns and 'search' in queries.columns:
+        queries['query_length'] = queries['search'].astype(str).apply(len)
+    
+    # Add metadata columns if missing
+    for col, default in [('brand', None), ('category', None), ('sub_category', None), 
+                         ('department', None), ('Class', None), ('brand_ar', ''), ('revenue', 0)]:
+        if col not in queries.columns:
+            queries[col] = default
+    
 except Exception as e:
-    st.error(f"Error processing queries sheet: {e}")
+    st.error(f"Error adding required columns: {e}")
     st.stop()
+
 
 # Load additional summary sheets if present
 brand_summary = sheets.get('brand_summary', None)
