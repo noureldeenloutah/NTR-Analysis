@@ -505,18 +505,29 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
         )
 
 # =============================================================================
+# 📁 SESSION STATE INITIALIZATION (CRITICAL FIX)
+# =============================================================================
+
+# ✅ INITIALIZE ALL SESSION STATE VARIABLES FIRST
+if 'data_loaded' not in st.session_state:
+    st.session_state.data_loaded = False
+if 'queries' not in st.session_state:
+    st.session_state.queries = None
+if 'sheets' not in st.session_state:
+    st.session_state.sheets = None
+if 'original_queries' not in st.session_state:
+    st.session_state.original_queries = None
+if 'main_sheet' not in st.session_state:
+    st.session_state.main_sheet = None  # ✅ CRITICAL FIX
+if 'filters_applied' not in st.session_state:
+    st.session_state.filters_applied = False
+
+# =============================================================================
 # 📁 DATA LOADING SECTION
 # =============================================================================
 
 st.sidebar.title("📁 Upload Data")
 upload = st.sidebar.file_uploader("Upload Excel (multi-sheet) or CSV (queries)", type=['xlsx','csv'])
-
-# Session state initialization
-if 'data_loaded' not in st.session_state:
-    st.session_state.data_loaded = False
-    st.session_state.queries = None
-    st.session_state.sheets = None
-    st.session_state.original_queries = None
 
 # Load data only once
 if not st.session_state.data_loaded:
@@ -544,21 +555,21 @@ if not st.session_state.data_loaded:
             raw_queries = sheets[main_sheet]
             queries = prepare_queries_unified(raw_queries)
             
-            # Store in session state
+            # ✅ STORE ALL IN SESSION STATE
             st.session_state.queries = queries
             st.session_state.sheets = sheets
             st.session_state.original_queries = queries.copy()
-            st.session_state.main_sheet = main_sheet
+            st.session_state.main_sheet = main_sheet  # ✅ CRITICAL
             st.session_state.data_loaded = True
             
         except Exception as e:
             st.error(f"❌ Loading error: {e}")
             st.stop()
 
-# Use cached data
-queries = st.session_state.queries
-sheets = st.session_state.sheets
-main_key = st.session_state.main_sheet
+# ✅ SAFE ACCESS TO SESSION STATE
+queries = st.session_state.queries if st.session_state.queries is not None else pd.DataFrame()
+sheets = st.session_state.sheets if st.session_state.sheets is not None else {}
+main_key = st.session_state.main_sheet if st.session_state.main_sheet is not None else "queries"
 
 # Load summary sheets
 brand_summary = sheets.get('brand_summary', None)
@@ -578,9 +589,6 @@ st.markdown("---")
 # =============================================================================
 
 st.sidebar.header("🔎 Filters")
-
-if 'filters_applied' not in st.session_state:
-    st.session_state.filters_applied = False
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_date_range(_df):
@@ -615,7 +623,7 @@ def get_filter_options(df, col, label, emoji):
     return sel, opts
 
 # Filter controls
-default_dates = get_date_range(st.session_state.original_queries)
+default_dates = get_date_range(st.session_state.original_queries) if st.session_state.original_queries is not None else []
 date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
 
 brand_filter, brand_opts = get_filter_options(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
