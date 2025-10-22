@@ -1261,34 +1261,86 @@ if preferred:
 else:
     main_key = sheet_keys[0]
 
-# ✅ FIX: queries is already processed in session state - don't reprocess!
+# ✅ CRITICAL FIX: Define raw_queries (needed for debug info later)
+raw_queries = sheets[main_key]
+
+# ✅ queries is already processed in session state - don't reprocess!
 # The data was already processed by prepare_queries_fast() during loading
 # Just ensure we have the required columns for prepare_queries_df compatibility
 
 try:
     # Add any missing columns that prepare_queries_df expects
-    if 'year' not in queries.columns and 'Date' in queries.columns:
-        queries['year'] = queries['Date'].dt.year
-    if 'month' not in queries.columns and 'Date' in queries.columns:
-        queries['month'] = queries['Date'].dt.strftime('%B %Y')
-    if 'month_short' not in queries.columns and 'Date' in queries.columns:
-        queries['month_short'] = queries['Date'].dt.strftime('%b')
-    if 'day_of_week' not in queries.columns and 'Date' in queries.columns:
-        queries['day_of_week'] = queries['Date'].dt.day_name()
+    if 'Date' in queries.columns:
+        if 'year' not in queries.columns:
+            queries['year'] = queries['Date'].dt.year
+        if 'month' not in queries.columns:
+            queries['month'] = queries['Date'].dt.strftime('%B %Y')
+        if 'month_short' not in queries.columns:
+            queries['month_short'] = queries['Date'].dt.strftime('%b')
+        if 'day_of_week' not in queries.columns:
+            queries['day_of_week'] = queries['Date'].dt.day_name()
+    
+    # Add keywords column if missing
     if 'keywords' not in queries.columns:
         queries['keywords'] = None  # Lazy loading
-    if 'query_length' not in queries.columns and 'search' in queries.columns:
-        queries['query_length'] = queries['search'].astype(str).apply(len)
+    
+    # Add query_length if missing
+    if 'query_length' not in queries.columns:
+        if 'search' in queries.columns:
+            queries['query_length'] = queries['search'].astype(str).apply(len)
+        elif 'normalized_query' in queries.columns:
+            queries['query_length'] = queries['normalized_query'].astype(str).apply(len)
+        else:
+            queries['query_length'] = 0
     
     # Add metadata columns if missing
-    for col, default in [('brand', None), ('category', None), ('sub_category', None), 
-                         ('department', None), ('Class', None), ('brand_ar', ''), ('revenue', 0)]:
+    metadata_defaults = {
+        'brand': None,
+        'category': None,
+        'sub_category': None,
+        'department': None,
+        'Class': None,
+        'brand_ar': '',
+        'revenue': 0
+    }
+    
+    for col, default in metadata_defaults.items():
         if col not in queries.columns:
             queries[col] = default
     
+    # Add CTR if missing
+    if 'ctr' not in queries.columns:
+        if 'clicks' in queries.columns and 'Counts' in queries.columns:
+            queries['ctr'] = queries.apply(
+                lambda r: (r['clicks'] / r['Counts']) * 100 if r['Counts'] > 0 else 0,
+                axis=1
+            )
+        else:
+            queries['ctr'] = 0
+    
+    # Add CR if missing
+    if 'cr' not in queries.columns:
+        if 'conversions' in queries.columns and 'Counts' in queries.columns:
+            queries['cr'] = queries.apply(
+                lambda r: (r['conversions'] / r['Counts']) * 100 if r['Counts'] > 0 else 0,
+                axis=1
+            )
+        else:
+            queries['cr'] = 0
+    
+    # Add normalized_query if missing
+    if 'normalized_query' not in queries.columns:
+        if 'search' in queries.columns:
+            queries['normalized_query'] = queries['search'].astype(str)
+        else:
+            queries['normalized_query'] = ''
+
 except Exception as e:
-    st.error(f"Error adding required columns: {e}")
+    st.error(f"❌ Error adding required columns: {e}")
+    import traceback
+    st.error(traceback.format_exc())
     st.stop()
+
 
 
 # Load additional summary sheets if present
