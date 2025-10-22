@@ -693,60 +693,57 @@ if st.sidebar.checkbox("📊 Show Data Info"):
 st.markdown("---")
 
 # ========================================
-# 🔎 UNIFIED FILTERS
+# 🔎 UNIFIED FILTERS (OPTIMIZED WITH SESSION STATE)
 # ========================================
 
 st.sidebar.header("🔎 Filters")
+
+# Initialize filter cache in session state
+if 'filter_cache' not in st.session_state:
+    st.session_state.filter_cache = {}
+
+def get_filter_options_cached(df, col, label, emoji):
+    """Get filter options with session state caching"""
+    if col not in df.columns:
+        return [], []
+    
+    # Create cache key
+    cache_key = f"{col}_{len(df)}_{df[col].nunique()}"
+    
+    # Check cache
+    if cache_key not in st.session_state.filter_cache:
+        opts = sorted(df[col].dropna().astype(str).unique().tolist())
+        st.session_state.filter_cache[cache_key] = opts
+    else:
+        opts = st.session_state.filter_cache[cache_key]
+    
+    sel = st.sidebar.multiselect(f"{emoji} {label}", options=opts, default=opts)
+    return sel, opts
 
 # Store original queries for reset
 if 'original_queries' not in st.session_state:
     st.session_state.original_queries = queries.copy()
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def get_date_range(_df):
-    """Cache date range calculation"""
-    try:
-        min_date = _df['Date'].min()
-        max_date = _df['Date'].max()
-        
-        if pd.isna(min_date):
-            min_date = None
-        if pd.isna(max_date):
-            max_date = None
-            
-        return [min_date, max_date] if min_date is not None and max_date is not None else []
-    except:
-        return []
-
-@st.cache_data(ttl=1800, show_spinner=False)
-def get_cached_options(_df, col):
-    """Cache filter options for better performance"""
-    try:
-        if col not in _df.columns:
-            return []
-        return sorted(_df[col].dropna().astype(str).unique().tolist())
-    except:
-        return []
-
-def get_filter_options(df, col, label, emoji):
-    """Get filter options with caching"""
-    if col not in df.columns:
-        return [], []
-    
-    opts = get_cached_options(df, col)
-    sel = st.sidebar.multiselect(f"{emoji} {label}", options=opts, default=opts)
-    return sel, opts
-
 # Date filter
-default_dates = get_date_range(st.session_state.original_queries)
-date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
+try:
+    min_date = st.session_state.original_queries['Date'].min()
+    max_date = st.session_state.original_queries['Date'].max()
+    
+    if pd.notna(min_date) and pd.notna(max_date):
+        default_dates = [min_date, max_date]
+    else:
+        default_dates = []
+except:
+    default_dates = []
 
-# Category filters
-brand_filter, brand_opts = get_filter_options(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
-dept_filter, dept_opts = get_filter_options(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
-cat_filter, cat_opts = get_filter_options(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
-subcat_filter, subcat_opts = get_filter_options(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
-class_filter, class_opts = get_filter_options(st.session_state.original_queries, 'class', 'Class(es)', '🎯')
+date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates if default_dates else [])
+
+# Category filters (using cached function)
+brand_filter, brand_opts = get_filter_options_cached(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
+dept_filter, dept_opts = get_filter_options_cached(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
+cat_filter, cat_opts = get_filter_options_cached(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
+subcat_filter, subcat_opts = get_filter_options_cached(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
+class_filter, class_opts = get_filter_options_cached(st.session_state.original_queries, 'class', 'Class(es)', '🎯')
 
 # Text filter
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
@@ -765,6 +762,7 @@ with col2:
 if reset_filters:
     queries = st.session_state.original_queries.copy()
     st.session_state.filters_applied = False
+    st.session_state.filter_cache = {}  # Clear cache
     st.rerun()
 
 elif apply_filters:
@@ -811,6 +809,7 @@ else:
     st.sidebar.info(f"📊 No filters applied - {len(queries):,} rows")
 
 st.sidebar.markdown(f"**📊 Current rows:** {len(queries):,}")
+
 
 # ========================================
 # 🎨 WELCOME & HEADERS
