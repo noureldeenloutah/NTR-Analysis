@@ -161,18 +161,25 @@ def prepare_queries_df_ultra(_df):
             df[new_col] = pd.Categorical([''])
     
     # 🚀 LAZY COMPUTATION - Only when needed
+    # 🚀 LAZY COMPUTATION - Only when needed
     if 'search' in df.columns:
         df['normalized_query'] = df['search'].astype(str)
-        # Only compute length if needed for analysis
         df['query_length'] = df['normalized_query'].str.len().astype('uint16')
     else:
         df['normalized_query'] = df.iloc[:, 0].astype(str)
         df['query_length'] = df['normalized_query'].str.len().astype('uint16')
     
-    # 🚀 ULTRA MEMORY OPTIMIZATION
+    # 🚀 ULTRA MEMORY OPTIMIZATION (apply BEFORE keywords)
     df = optimize_memory_ultra(df)
     
+    # ✅ FIX: Add keywords AFTER optimization (to avoid list column issues)
+    try:
+        df['keywords'] = df['normalized_query'].apply(extract_keywords)
+    except Exception:
+        df['keywords'] = None  # Fallback if extraction fails
+    
     return df
+
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def smart_sampling(df, max_rows=50000):
