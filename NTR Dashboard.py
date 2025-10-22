@@ -1530,87 +1530,75 @@ with tab_overview:
     if st.button("🔄 Refresh Data & Filters"):
         st.rerun()
 
-    # 🎨 GREEN-THEMED HERO HEADER (OPTIMIZED: Load CSS once)
-    if 'hero_css_loaded' not in st.session_state:
-        st.sidebar.header("🌿 Customize Nutraceuticals & Nutrition Theme")
-        st.markdown("""
-        <div style="
-            text-align: center; 
-            padding: 3rem 2rem; 
-            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-            border-radius: 20px; 
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-            border: 1px solid rgba(76, 175, 80, 0.2);
+    # 🎨 GREEN-THEMED HERO HEADER
+    st.sidebar.header("🌿 Customize Nutraceuticals & Nutrition Theme")
+    st.markdown("""
+    <div style="
+        text-align: center; 
+        padding: 3rem 2rem; 
+        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        border-radius: 20px; 
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+    ">
+        <h1 style="
+            color: #1B5E20; 
+            margin: 0; 
+            font-size: 3rem; 
+            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            font-weight: 700;
+            letter-spacing: -1px;
         ">
-            <h1 style="
-                color: #1B5E20; 
-                margin: 0; 
-                font-size: 3rem; 
-                text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
-                font-weight: 700;
-                letter-spacing: -1px;
-            ">
-                🌿 Nutraceuticals & Nutrition Analytics 🌿
-            </h1>
-            <p style="
-                color: #2E7D32; 
-                margin: 1rem 0 0 0; 
-                font-size: 1.3rem;
-                font-weight: 300;
-                opacity: 0.9;
-            ">
-                Advanced Performance Analytics • Search Insights • Health Data Intelligence
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.session_state.hero_css_loaded = True
+            🌿 Nutraceuticals & Nutrition Analytics 🌿
+        </h1>
+        <p style="
+            color: #2E7D32; 
+            margin: 1rem 0 0 0; 
+            font-size: 1.3rem;
+            font-weight: 300;
+            opacity: 0.9;
+        ">
+            Advanced Performance Analytics • Search Insights • Health Data Intelligence
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
-
-    # ✅ OPTIMIZATION 1: Pre-compute monthly data ONCE (cached)
-    @st.cache_data(ttl=3600, show_spinner=False)
-    def compute_monthly_summary(_queries_df):
-        """Optimized monthly computation with single pass"""
-        if _queries_df.empty:
-            return pd.DataFrame()
-        
-        # Single operation: group and aggregate
-        queries_temp = _queries_df.copy()
-        queries_temp['month_sort'] = queries_temp['Date'].dt.to_period('M')
-        queries_temp['month_display'] = queries_temp['Date'].dt.strftime('%B %Y')
-        
-        monthly_counts = queries_temp.groupby(
-            ['month_sort', 'month_display'], 
-            as_index=False
-        )['Counts'].sum()
-        
-        monthly_counts = monthly_counts.sort_values('month_sort').reset_index(drop=True)
-        monthly_counts = monthly_counts.drop(columns=['month_sort']).rename(columns={'month_display': 'Date'})
-        
-        # Vectorized percentage calculation
-        total = monthly_counts['Counts'].sum()
-        monthly_counts['Percentage'] = (monthly_counts['Counts'] / total * 100).round(1)
-        
-        return monthly_counts
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
     st.markdown("## 🌱 Monthly Analysis Overview")
-    col_table, col_chart = st.columns([1,2])
+    col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
         st.markdown("### 📋 Monthly Searches Table")
-        
-        # ✅ Use cached computation
-        monthly_counts = compute_monthly_summary(queries)
+
+        # ✅ FIX: Add sorting column before grouping
+        queries_temp = queries.copy()
+        queries_temp['month_sort'] = queries_temp['Date'].dt.to_period('M')
+        queries_temp['month_display'] = queries_temp['Date'].dt.strftime('%B %Y')
+
+        # Group by both sort key and display string
+        monthly_counts = queries_temp.groupby(['month_sort', 'month_display'])['Counts'].sum().reset_index()
+
+        # ✅ SORT by period, then drop it
+        monthly_counts = monthly_counts.sort_values('month_sort').reset_index(drop=True)
+        monthly_counts = monthly_counts.drop(columns=['month_sort']).rename(columns={'month_display': 'Date'})
 
         if not monthly_counts.empty:
-            # ✅ OPTIMIZATION 2: Vectorized formatting (faster than apply)
+            # Ensure 'Counts' is numeric and handle NaN
+            monthly_counts['Counts'] = pd.to_numeric(monthly_counts['Counts'], errors='coerce').fillna(0)
+            total_all_months = monthly_counts['Counts'].sum()
+            monthly_counts['Percentage'] = (monthly_counts['Counts'] / total_all_months * 100).round(1)
+            
+            # ✅ Create display version with formatted numbers
             display_monthly = monthly_counts.copy()
-            display_monthly['Counts'] = display_monthly['Counts'].astype(int).apply(format_number)
-            display_monthly['Percentage'] = display_monthly['Percentage'].astype(str) + '%'
+            display_monthly['Counts'] = display_monthly['Counts'].apply(lambda x: format_number(int(x)))
+            display_monthly['Percentage'] = display_monthly['Percentage'].apply(lambda x: f"{x}%")
+            
+            # ✅ Rename column for better display
             display_monthly = display_monthly.rename(columns={'Date': 'Month'})
             
-            # Display table
+            # ✅ NO STYLING - Display raw dataframe (CSS will handle styling)
             display_styled_table(
                 df=display_monthly,
                 align="center",
@@ -1618,8 +1606,7 @@ with tab_overview:
                 max_height="600px"
             )
             
-            # Summary metrics
-            total_all_months = monthly_counts['Counts'].sum()
+            # Summary metrics below table
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
                         padding: 15px; border-radius: 10px; color: white; margin: 10px 0; text-align: center;">
@@ -1630,41 +1617,54 @@ with tab_overview:
             st.info("No monthly Nutraceuticals & Nutrition data available")
 
 
+
     with col_chart:
         st.markdown("### 📈 Monthly Trends Visualization")
         
         if not monthly_counts.empty and len(monthly_counts) >= 2:
             try:
-                # ✅ OPTIMIZATION 3: Simplified Plotly config (faster rendering)
-                fig = px.bar(
-                    monthly_counts, 
-                    x='Date', 
-                    y='Counts',
-                    title='<b style="color:#2E7D32; font-size:16px;">Monthly Search Trends 🌿</b>',
-                    color='Counts',
-                    color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                    template='plotly_white'
-                )
+                fig = px.bar(monthly_counts, x='Date', y='Counts',
+                            title='<b style="color:#2E7D32; font-size:16px;">Monthly Search Trends 🌿</b>',
+                            labels={'Date': '<i>Month</i>', 'Counts': '<b>Searches</b>'},
+                            color='Counts',
+                            color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                            template='plotly_white',
+                            text=monthly_counts['Counts'].astype(str))
                     
-                # Minimal trace updates
+                # Update traces
                 fig.update_traces(
-                    texttemplate='%{y:,.0f}',
+                    texttemplate='%{text}<br>%{customdata:.1f}%',
+                    customdata=monthly_counts['Percentage'],
                     textposition='outside',
-                    hovertemplate='<b>%{x}</b><br>Searches: %{y:,.0f}<extra></extra>'
+                    hovertemplate='<b>%{x}</b><br>Searches: %{y:,.0f}<br>Share: %{customdata:.1f}%<extra></extra>'
                 )
                 
-                # Streamlined layout
+                # Layout optimization
                 fig.update_layout(
                     plot_bgcolor='rgba(248,253,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
-                    title_x=0.5,
-                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+                    title_x=0.5,  # Center alignment for title
+                    title_font_size=16,
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', linecolor='#2E7D32', linewidth=2),
                     bargap=0.2,
+                    barcornerradius=8,
                     height=400,
-                    margin=dict(l=40, r=40, t=80, b=40),
-                    showlegend=False  # ✅ Faster rendering
+                    margin=dict(l=40, r=40, t=80, b=40)
+                )
+                
+                # Highlight peak month
+                peak_month = monthly_counts.loc[monthly_counts['Counts'].idxmax(), 'Date']
+                peak_value = monthly_counts['Counts'].max()
+                fig.add_annotation(
+                    x=peak_month, y=peak_value,
+                    text=f"🏆 Peak: {peak_value:,.0f}",
+                    showarrow=True,
+                    arrowhead=3,
+                    arrowcolor='#2E7D32',
+                    ax=0, ay=-40,
+                    font=dict(size=12, color='#2E7D32', family='Segoe UI', weight='bold')
                 )
                 
                 st.plotly_chart(fig, use_container_width=True)
@@ -1673,57 +1673,138 @@ with tab_overview:
         else:
             st.info("📅 Add more date range for Nutraceuticals & Nutrition trends visualization")
 
+    # Add separator between sections
     st.markdown("---")
 
-    # ✅ OPTIMIZATION 4: Lazy CSS loading (only when section is visible)
-    if 'top50_health_css_loaded' not in st.session_state:
-        st.markdown("""
-        <style>
-        .top50-health-metric-card {
-            background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-            padding: 20px; border-radius: 15px; text-align: center; color: white;
-            box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-            transition: transform 0.2s ease; width: 100%;
-        }
-        .top50-health-metric-card:hover { transform: translateY(-2px); }
-        .top50-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; }
-        .top50-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; }
-        .top50-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; }
-        .monthly-health-metric-card {
-            background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
-            padding: 18px; border-radius: 12px; text-align: center; color: white;
-            box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
-            min-height: 100px; display: flex; flex-direction: column; justify-content: center;
-        }
-        .monthly-health-metric-card .icon { font-size: 2em; margin-bottom: 6px; }
-        .monthly-health-metric-card .value { font-size: 1.5em; font-weight: bold; }
-        .monthly-health-metric-card .label { font-size: 0.9em; opacity: 0.95; }
-        .download-health-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; }
-        .insights-health-section { background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); padding: 20px; border-radius: 12px; margin: 20px 0; }
-        .mom-health-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
-        .health-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
-        </style>
-        """, unsafe_allow_html=True)
-        st.session_state.top50_health_css_loaded = True
+    # SECOND ROW: Top 50 Queries (Full Width)
+    # SECOND ROW: Top 50 Queries (Full Width)
+    # 🚀 MOVE THESE FUNCTIONS OUTSIDE - DEFINE THEM BEFORE THE SECTION
+    @st.cache_data(ttl=1800, show_spinner=False, hash_funcs={pd.DataFrame: lambda x: hash(str(x.shape) + str(x.columns.tolist()))})
+    def compute_top50_queries_ultra(_queries, _month_names, _filter_key=None):
+        """Ultra-optimized version of your compute_top50_queries function"""
+        
+        # 🚀 FAST: Early return for empty data
+        if _queries.empty:
+            return pd.DataFrame(), []
+        
+        # 🚀 VECTORIZED: Get unique months efficiently
+        unique_months = []
+        if 'Date' in _queries.columns:
+            _queries = _queries.copy()
+            _queries['month_year'] = _queries['Date'].dt.strftime('%Y-%m')
+            unique_months = sorted(_queries['month_year'].dropna().unique())
 
-    # ✅ OPTIMIZATION 5: Simplified helper function
-    def safe_sum_column(df, col_name):
-        """Safely sum a column - optimized version"""
-        if col_name not in df.columns:
-            return 0
-        try:
-            return int(pd.to_numeric(df[col_name], errors='coerce').sum())
-        except:
-            return 0
+        # 🚀 OPTIMIZED: Single groupby operation
+        agg_dict = {
+            'Counts': 'sum',
+            'clicks': 'sum', 
+            'conversions': 'sum'
+        }
+        
+        top50 = _queries.groupby('search', as_index=False).agg(agg_dict)
 
-    # TOP QUERIES SECTION
+        # 🚀 FAST: Vectorized monthly calculations using pivot
+        if unique_months and 'month_year' in _queries.columns:
+            monthly_pivot = _queries.pivot_table(
+                index='search', 
+                columns='month_year', 
+                values='Counts', 
+                aggfunc='sum', 
+                fill_value=0
+            )
+            
+            for month in unique_months:
+                month_display_name = _month_names.get(month, month)
+                if month in monthly_pivot.columns:
+                    top50[month_display_name] = top50['search'].map(
+                        monthly_pivot[month].to_dict()
+                    ).fillna(0).astype('int32')
+
+        # 🚀 VECTORIZED: All calculations at once
+        total_counts = _queries['Counts'].sum()
+        top50['Share %'] = (top50['Counts'] / total_counts * 100).round(2)
+        
+        # Fast conversion rate with numpy
+        top50['Conversion Rate'] = np.where(
+            top50['Counts'] > 0,
+            (top50['conversions'] / top50['Counts'] * 100).round(2),
+            0
+        )
+
+        # 🚀 EFFICIENT: Single sort and slice
+        top50 = top50.nlargest(50, 'Counts')
+
+        # 🚀 FAST: Batch column operations
+        column_renames = {
+            'search': 'Query',
+            'Counts': 'Total Search Volume',
+            'clicks': 'Clicks',
+            'conversions': 'Conversions'
+        }
+        top50 = top50.rename(columns=column_renames)
+
+        # 🚀 VECTORIZED: Batch type conversion
+        numeric_cols = ['Clicks', 'Conversions']
+        for col in numeric_cols:
+            if col in top50.columns:
+                top50[col] = top50[col].round().astype('int32')
+
+        # Format monthly columns efficiently
+        for month in unique_months:
+            month_display_name = _month_names.get(month, month)
+            if month_display_name in top50.columns:
+                top50[month_display_name] = top50[month_display_name].astype('int32')
+
+        # 🚀 OPTIMIZED: Column ordering
+        column_order = ['Query', 'Total Search Volume', 'Share %']
+        column_order.extend([_month_names.get(month, month) for month in unique_months 
+                        if _month_names.get(month, month) in top50.columns])
+        column_order.extend(['Clicks', 'Conversions', 'Conversion Rate'])
+        
+        available_columns = [col for col in column_order if col in top50.columns]
+        top50 = top50[available_columns]
+
+        return top50, unique_months
+
+    # 🚀 CACHED: MoM analysis function
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def compute_mom_analysis_ultra(_top50, _unique_months, _month_names, _filter_key=None):
+        """Ultra-fast MoM analysis"""
+        if len(_unique_months) < 2:
+            return pd.DataFrame(), pd.DataFrame()
+        
+        top10_for_analysis = _top50.head(10).copy()
+        
+        month1_name = _month_names.get(_unique_months[0], _unique_months[0])
+        month2_name = _month_names.get(_unique_months[1], _unique_months[1])
+        
+        if month1_name in top10_for_analysis.columns and month2_name in top10_for_analysis.columns:
+            # Vectorized MoM calculation
+            month1_vals = top10_for_analysis[month1_name].replace(0, 1)
+            top10_for_analysis['MoM Change'] = (
+                (top10_for_analysis[month2_name] - top10_for_analysis[month1_name]) / month1_vals * 100
+            ).round(1)
+            
+            gainers = top10_for_analysis.nlargest(3, 'MoM Change')[['Query', 'MoM Change']]
+            losers = top10_for_analysis.nsmallest(3, 'MoM Change')[['Query', 'MoM Change']]
+            
+            return gainers, losers
+        
+        return pd.DataFrame(), pd.DataFrame()
+
+    # 🚀 CACHED: CSV generation
+    @st.cache_data(ttl=300, show_spinner=False)
+    def generate_csv_ultra(_df):
+        return _df.to_csv(index=False)
+
+    # NOW START THE ACTUAL SECTION
     st.markdown("## 🔍 Top Queries Analysis")
     
+    # ✅ FIX 1: ADD TOP N SELECTOR
     top_n_queries = st.selectbox(
         "📊 Select number of top queries to display:",
         options=[10, 25, 50, 100, 200, 500],
-        index=2,
+        index=2,  # Default to 50
         help="Choose how many top queries you want to analyze"
     )
 
@@ -1731,117 +1812,173 @@ with tab_overview:
         st.warning("No valid data available for top health queries.")
     else:
         try:
-            # Static month names
+            # 🚀 LAZY CSS LOADING - Only load once per session
+            if 'top50_health_css_loaded' not in st.session_state:
+                st.markdown("""
+                <style>
+                .top50-health-metric-card {
+                    background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+                    padding: 20px; border-radius: 15px; text-align: center; color: white;
+                    box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
+                    min-height: 120px; display: flex; flex-direction: column; justify-content: center;
+                    transition: transform 0.2s ease; width: 100%;
+                }
+                .top50-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
+                .top50-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
+                .top50-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
+                .top50-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+                .monthly-health-metric-card {
+                    background: linear-gradient(135deg, #1B5E20 0%, #4CAF50 100%);
+                    padding: 18px; border-radius: 12px; text-align: center; color: white;
+                    box-shadow: 0 6px 25px rgba(27, 94, 32, 0.3); margin: 8px 0;
+                    min-height: 100px; display: flex; flex-direction: column; justify-content: center;
+                    transition: transform 0.2s ease; width: 100%;
+                }
+                .monthly-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(27, 94, 32, 0.4); }
+                .monthly-health-metric-card .icon { font-size: 2em; margin-bottom: 6px; display: block; }
+                .monthly-health-metric-card .value { font-size: 1.5em; font-weight: bold; margin-bottom: 4px; line-height: 1.1; }
+                .monthly-health-metric-card .label { font-size: 0.9em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
+                .download-health-section { background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; box-shadow: 0 6px 25px rgba(56, 142, 60, 0.3); }
+                .insights-health-section { background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: 0 6px 25px rgba(46, 125, 50, 0.3); }
+                .mom-health-analysis { background: rgba(255, 255, 255, 0.1); padding: 15px; border-radius: 10px; margin: 10px 0; }
+                .health-gainer-item { background: rgba(76, 175, 80, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50; }
+                .health-decliner-item { background: rgba(244, 67, 54, 0.2); padding: 8px 12px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336; }
+                .health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
+                .health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
+                .health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
+                .health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
+                .health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
+                </style>
+                """, unsafe_allow_html=True)
+                st.session_state.top50_health_css_loaded = True
+
+            # 🚀 OPTIMIZED: Show debug info only in sidebar (non-blocking)
+            if st.sidebar.checkbox("Show Health Debug Info", value=False):
+                st.sidebar.write("**Available columns in health queries:**", list(queries.columns))
+
+            # 🚀 ENHANCED: Static month names (faster than dynamic lookup)
             month_names = OrderedDict([
                 ('2025-06', 'June 2025'),
                 ('2025-07', 'July 2025'),
                 ('2025-08', 'August 2025')
             ])
 
-            # ✅ OPTIMIZATION 6: Smarter cache key (faster hashing)
+            # ✅ FIXED: Create filter-aware cache key that updates when filters change
             def create_filter_cache_key():
-                """Lightweight cache key"""
-                return hash((
-                    queries.shape[0],
-                    queries.shape[1],
-                    top_n_queries,
-                    str(queries['search'].iloc[0] if len(queries) > 0 else ""),
-                    st.session_state.get('filters_applied', False)
-                ))
+                """Create a cache key that includes filter state"""
+                filter_state = {
+                    'filters_applied': st.session_state.get('filters_applied', False),
+                    'data_shape': queries.shape,
+                    'data_hash': hash(str(queries['search'].tolist()[:10]) if not queries.empty else "empty"),
+                    'top_n': top_n_queries,  # ✅ ADDED: Include top_n in cache key
+                    # Include actual filter values to ensure cache updates
+                    'brand_filter': str(sorted(brand_filter)) if 'brand_filter' in locals() else "",
+                    'dept_filter': str(sorted(dept_filter)) if 'dept_filter' in locals() else "",
+                    'cat_filter': str(sorted(cat_filter)) if 'cat_filter' in locals() else "",
+                    'subcat_filter': str(sorted(subcat_filter)) if 'subcat_filter' in locals() else "",
+                    'class_filter': str(sorted(class_filter)) if 'class_filter' in locals() else "",
+                    'text_filter': text_filter if 'text_filter' in locals() else "",
+                    'date_range': str(date_range) if 'date_range' in locals() else ""
+                }
+                return str(hash(str(filter_state)))
 
             filter_cache_key = create_filter_cache_key()
 
-            # ✅ OPTIMIZATION 7: Streamlined computation with vectorization
-            @st.cache_data(ttl=3600, show_spinner=False)
-            def compute_top50_health_queries_optimized(_df, month_names_dict, cache_key, top_n=50):
-                """Ultra-optimized version with vectorization"""
+            # ✅ FIX 2: Updated cache function with filter awareness AND top_n parameter
+            @st.cache_data(ttl=300, show_spinner=False)
+            def compute_top50_health_queries_filter_aware(_df, month_names_dict, cache_key, top_n=50):
+                """🔄 FIXED: Filter-aware computation of top N health queries"""
                 if _df.empty:
                     return pd.DataFrame(), []
                 
-                # ✅ Single groupby operation (faster)
-                grouped = _df.groupby('search', as_index=False).agg({
+                # Group by search query and sum counts
+                grouped = _df.groupby('search').agg({
                     'Counts': 'sum',
                     'clicks': 'sum', 
                     'conversions': 'sum'
-                })
+                }).reset_index()
                 
-                # Get top N
+                # ✅ FIXED: Get top N by total counts (dynamic)
                 topN_queries = grouped.nlargest(top_n, 'Counts')['search'].tolist()
+                
+                # Filter original data for top N queries
                 topN_data = _df[_df['search'].isin(topN_queries)].copy()
                 
-                # Get unique months
-                unique_months = []
+                # Get unique months from the data
                 if 'month' in topN_data.columns:
                     unique_months = sorted(topN_data['month'].unique(), key=lambda x: pd.to_datetime(x))
+                else:
+                    unique_months = []
                 
-                # ✅ VECTORIZED: Build result using pivot tables (10x faster)
+                # 🔄 BETTER ARRANGEMENT: Reorganize columns for easier comparison
                 result_data = []
                 
-                # Base metrics
-                base_metrics = grouped[grouped['search'].isin(topN_queries)].copy()
-                total_counts_all = _df['Counts'].sum()
-                
-                for _, row in base_metrics.iterrows():
-                    query = row['search']
+                for query in topN_queries:
                     query_data = topN_data[topN_data['search'] == query]
                     
-                    total_counts = int(row['Counts'])
-                    total_clicks = int(row['clicks'])
-                    total_conversions = int(row['conversions'])
+                    # Base information
+                    total_counts = int(query_data['Counts'].sum())
+                    total_clicks = int(query_data['clicks'].sum())
+                    total_conversions = int(query_data['conversions'].sum())
+                    overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
+                    overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                     
-                    result_row = {
+                    row = {
                         'Query': query,
                         'Total Volume': total_counts,
-                        'Share %': (total_counts / total_counts_all * 100),
-                        'Overall CTR': (total_clicks / total_counts * 100) if total_counts > 0 else 0,
-                        'Overall CR': (total_conversions / total_counts * 100) if total_counts > 0 else 0,
+                        'Share %': (total_counts / _df['Counts'].sum()) * 100,
+                        'Overall CTR': overall_ctr,
+                        'Overall CR': overall_cr,
                         'Total Clicks': total_clicks,
                         'Total Conversions': total_conversions
                     }
                     
-                    # Monthly metrics (vectorized)
+                    # 🔧 FIXED: Monthly data calculations with proper month-specific metrics
                     for month in unique_months:
                         month_data = query_data[query_data['month'] == month]
                         month_display = month_names_dict.get(month, month)
                         
                         if not month_data.empty:
+                            # ✅ FIXED: Calculate month-specific metrics
                             month_counts = int(month_data['Counts'].sum())
                             month_clicks = int(month_data['clicks'].sum())
                             month_conversions = int(month_data['conversions'].sum())
                             
-                            result_row[f'{month_display} Vol'] = month_counts
-                            result_row[f'{month_display} CTR'] = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                            result_row[f'{month_display} CR'] = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                            # ✅ FIXED: Month-specific CTR and CR calculations
+                            month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
+                            month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
+                            
+                            row[f'{month_display} Vol'] = month_counts
+                            row[f'{month_display} CTR'] = month_ctr
+                            row[f'{month_display} CR'] = month_cr
                         else:
-                            result_row[f'{month_display} Vol'] = 0
-                            result_row[f'{month_display} CTR'] = 0
-                            result_row[f'{month_display} CR'] = 0
+                            row[f'{month_display} Vol'] = 0
+                            row[f'{month_display} CTR'] = 0
+                            row[f'{month_display} CR'] = 0
                     
-                    result_data.append(result_row)
+                    result_data.append(row)
                 
                 result_df = pd.DataFrame(result_data)
                 result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
                 
                 return result_df, unique_months
 
-            # Compute data
-            topN, unique_months = compute_top50_health_queries_optimized(queries, month_names, filter_cache_key, top_n_queries)
-
-            # ✅ OPTIMIZATION 8: Keep numeric copy (necessary for calculations)
-            topN_numeric = topN.copy()
+            # ✅ FIXED: Use filter-aware cache key with top_n parameter
+            topN, unique_months = compute_top50_health_queries_filter_aware(queries, month_names, filter_cache_key, top_n_queries)
 
             if topN.empty:
                 st.warning("No valid data after processing top queries.")
             else:
-                # Filter status
+                # ✅ FIXED: Show filter status for this section
                 if st.session_state.get('filters_applied', False):
                     st.info(f"🔍 **Filtered Results**: Showing Top {top_n_queries} from {len(queries):,} filtered queries")
                 else:
                     st.info(f"📊 **All Data**: Showing Top {top_n_queries} from {len(queries):,} total queries")
 
-                # Column organization
+                # 🔄 BETTER ARRANGEMENT: Reorder columns for logical flow
                 base_columns = ['Query', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
                 
+                # Group monthly columns by type for easier comparison
                 volume_columns = []
                 ctr_columns = []
                 cr_columns = []
@@ -1854,13 +1991,13 @@ with tab_overview:
                     ctr_columns.append(f'{month_display} CTR')
                     cr_columns.append(f'{month_display} CR')
                 
+                # 🔄 LOGICAL COLUMN ORDER: Base info → Monthly Volumes → Monthly CTRs → Monthly CRs
                 ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
                 existing_columns = [col for col in ordered_columns if col in topN.columns]
                 topN = topN[existing_columns]
-                topN_numeric = topN_numeric[existing_columns]
 
-                # ✅ OPTIMIZATION 9: Simplified styling (60% faster)
-                topN_hash = hash(str(topN.shape) + str(topN.columns.tolist()))
+                # ✅ FIXED: Filter-aware styling cache
+                topN_hash = hash(str(topN.shape) + str(topN.columns.tolist()) + str(topN.iloc[0].to_dict()) if len(topN) > 0 else "empty")
                 styling_cache_key = f"{topN_hash}_{filter_cache_key}"
                 
                 if ('styled_top50_health' not in st.session_state or 
@@ -1868,454 +2005,581 @@ with tab_overview:
                     
                     st.session_state.top50_health_cache_key = styling_cache_key
                     
-                    # Format display version
+                    # 🚀 FAST: Apply format_number to numeric columns before styling
                     display_topN = topN.copy()
                     
-                    # ✅ Vectorized formatting (faster)
+                    # Format volume columns with format_number
                     volume_cols_to_format = ['Total Volume'] + volume_columns
                     for col in volume_cols_to_format:
                         if col in display_topN.columns:
-                            display_topN[col] = display_topN[col].astype(int).apply(format_number)
+                            display_topN[col] = display_topN[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
                     
+                    # Format clicks and conversions
                     if 'Total Clicks' in display_topN.columns:
-                        display_topN['Total Clicks'] = display_topN['Total Clicks'].astype(int).apply(format_number)
+                        display_topN['Total Clicks'] = display_topN['Total Clicks'].apply(lambda x: format_number(int(x)))
                     if 'Total Conversions' in display_topN.columns:
-                        display_topN['Total Conversions'] = display_topN['Total Conversions'].astype(int).apply(format_number)
+                        display_topN['Total Conversions'] = display_topN['Total Conversions'].apply(lambda x: format_number(int(x)))
                     
-                    # ✅ OPTIMIZATION 10: Simplified highlighting
-                    def highlight_top50_health_optimized(row):
-                        """Optimized highlighting with minimal operations"""
-                        styles = [''] * len(row)
+                    # ✅ FIX 3: CORRECTED highlighting logic - compare with ORIGINAL numeric values from topN
+                    def highlight_health_performance_with_comparison(styled_df):
+                        """✅ FIXED: Enhanced highlighting using ORIGINAL numeric values"""
+                        styles = pd.DataFrame('', index=styled_df.index, columns=styled_df.columns)
                         
-                        try:
-                            # Use numeric version for comparisons
-                            numeric_row = topN_numeric.loc[row.name]
-                            
-                            # Overall CTR highlighting
-                            if 'Overall CTR' in row.index:
-                                idx = row.index.get_loc('Overall CTR')
-                                ctr_val = numeric_row['Overall CTR']
-                                if ctr_val >= 2.5:
-                                    styles[idx] = 'background-color: #C8E6C9; color: #1B5E20; font-weight: bold'
-                                elif ctr_val >= 1.5:
-                                    styles[idx] = 'background-color: #E8F5E9; color: #2E7D32'
-                            
-                            # Overall CR highlighting
-                            if 'Overall CR' in row.index:
-                                idx = row.index.get_loc('Overall CR')
-                                cr_val = numeric_row['Overall CR']
-                                if cr_val >= 1.0:
-                                    styles[idx] = 'background-color: #C8E6C9; color: #1B5E20; font-weight: bold'
-                                elif cr_val >= 0.5:
-                                    styles[idx] = 'background-color: #E8F5E9; color: #2E7D32'
-                            
-                            # Monthly CTR highlighting (simplified loop)
-                            for col in ctr_columns:
-                                if col in row.index:
-                                    idx = row.index.get_loc(col)
-                                    ctr_val = numeric_row[col]
-                                    if ctr_val >= 2.5:
-                                        styles[idx] = 'background-color: #C8E6C9; color: #1B5E20'
-                                    elif ctr_val >= 1.5:
-                                        styles[idx] = 'background-color: #E8F5E9; color: #2E7D32'
-                            
-                            # Monthly CR highlighting (simplified loop)
-                            for col in cr_columns:
-                                if col in row.index:
-                                    idx = row.index.get_loc(col)
-                                    cr_val = numeric_row[col]
-                                    if cr_val >= 1.0:
-                                        styles[idx] = 'background-color: #C8E6C9; color: #1B5E20'
-                                    elif cr_val >= 0.5:
-                                        styles[idx] = 'background-color: #E8F5E9; color: #2E7D32'
+                        if len(unique_months) < 2:
+                            return styles
                         
-                        except Exception:
-                            pass  # Silent fail for safety
+                        sorted_months_list = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+                        
+                        # 🔄 COMPARISON FOCUS: Highlight month-over-month changes
+                        for i in range(1, len(sorted_months_list)):
+                            current_month = month_names.get(sorted_months_list[i], sorted_months_list[i])
+                            prev_month = month_names.get(sorted_months_list[i-1], sorted_months_list[i-1])
+                            
+                            current_ctr_col = f'{current_month} CTR'
+                            prev_ctr_col = f'{prev_month} CTR'
+                            current_cr_col = f'{current_month} CR'
+                            prev_cr_col = f'{prev_month} CR'
+                            
+                            # ✅ FIXED: CTR comparison using ORIGINAL numeric values from topN
+                            if current_ctr_col in topN.columns and prev_ctr_col in topN.columns:
+                                for idx in topN.index:
+                                    current_ctr = topN.loc[idx, current_ctr_col]  # ✅ Use original numeric value
+                                    prev_ctr = topN.loc[idx, prev_ctr_col]        # ✅ Use original numeric value
+                                    
+                                    if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
+                                        change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_ctr_col] = f'background-color: {color};'
+                            
+                            # ✅ FIXED: CR comparison using ORIGINAL numeric values from topN
+                            if current_cr_col in topN.columns and prev_cr_col in topN.columns:
+                                for idx in topN.index:
+                                    current_cr = topN.loc[idx, current_cr_col]   # ✅ Use original numeric value
+                                    prev_cr = topN.loc[idx, prev_cr_col]         # ✅ Use original numeric value
+                                    
+                                    if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
+                                        change_pct = ((current_cr - prev_cr) / prev_cr) * 100
+                                        if change_pct > 10:  # 10% improvement
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
+                                        elif change_pct < -10:  # 10% decline
+                                            styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
+                                        elif abs(change_pct) > 5:  # 5-10% change
+                                            color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
+                                            styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                        
+                        # 🔄 SECTION HIGHLIGHTING: Different background for different metric groups
+                        for col in volume_columns:
+                            if col in styled_df.columns:
+                                for idx in styled_df.index:
+                                    existing_style = styles.loc[idx, col]
+                                    styles.loc[idx, col] = existing_style + 'background-color: rgba(46, 125, 50, 0.05);' if not existing_style else existing_style
                         
                         return styles
                     
-                    # Apply styling
-                    styled_topN = display_topN.style.apply(highlight_top50_health_optimized, axis=1)
+                    # Create styled DataFrame from the formatted copy
+                    styled_topN = display_topN.style.apply(highlight_health_performance_with_comparison, axis=None)
                     
-                    # ✅ Format percentages and numbers
-                    format_dict = {}
-                    for col in display_topN.columns:
-                        if 'CTR' in col or 'CR' in col or 'Share %' in col:
-                            format_dict[col] = '{:.2f}%'
+                    # ✅ FIX 4: STRONGER center alignment with !important
+                    styled_topN = styled_topN.set_properties(**{
+                        'text-align': 'center !important',
+                        'vertical-align': 'middle',
+                        'font-size': '11px',
+                        'padding': '4px',
+                        'line-height': '1.1'
+                    }).set_table_styles([
+                        {'selector': 'th', 'props': [
+                            ('text-align', 'center !important'), 
+                            ('vertical-align', 'middle'), 
+                            ('font-weight', 'bold'), 
+                            ('background-color', '#E8F5E8'), 
+                            ('color', '#1B5E20'), 
+                            ('padding', '6px'), 
+                            ('border', '1px solid #ddd'), 
+                            ('font-size', '10px')
+                        ]},
+                        {'selector': 'td', 'props': [
+                            ('text-align', 'center !important'), 
+                            ('vertical-align', 'middle'), 
+                            ('padding', '4px'), 
+                            ('border', '1px solid #ddd')
+                        ]},
+                        {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FDF8')]},
+                        {'selector': '.col_heading', 'props': [('text-align', 'center !important')]},
+                        {'selector': '.row_heading', 'props': [('text-align', 'center !important')]},
+                        {'selector': '.data', 'props': [('text-align', 'center !important')]}
+                    ])
                     
-                    if format_dict:
-                        styled_topN = styled_topN.format(format_dict, na_rep='0.00%')
+                    # 🔄 IMPROVED: Format dictionary
+                    format_dict = {
+                        'Share %': '{:.1f}%',
+                        'Overall CTR': '{:.1f}%',
+                        'Overall CR': '{:.1f}%'
+                    }
                     
-                    # Cache styled result
+                    # Add formatting for monthly CTR and CR columns
+                    for col in ctr_columns + cr_columns:
+                        if col in display_topN.columns:
+                            format_dict[col] = '{:.1f}%'
+
+                    styled_topN = styled_topN.format(format_dict)
                     st.session_state.styled_top50_health = styled_topN
-                
-                # Display styled table
-                st.markdown(f"### 🌿 Top {top_n_queries} Nutraceuticals & Nutrition Queries Performance")
-                st.dataframe(
-                    st.session_state.styled_top50_health,
-                    use_container_width=True,
-                    height=600
+
+                # 🚀 DISPLAY: Styled DataFrame with CSS
+                # 🚀 DISPLAY: Styled DataFrame with scrollable container (FIXED)
+                html_content = st.session_state.styled_top50_health.to_html(index=False, escape=False)
+
+                # Clean up any duplicate closing tags
+                html_content = html_content.strip()
+
+                st.markdown(
+                    f"""
+                    <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                        {html_content}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
 
-                # ✅ OPTIMIZATION 11: Lazy-load download section (only when clicked)
-                with st.expander("💾 Download Top Queries Data", expanded=False):
-                    st.markdown("""
-                    <div class="download-health-section">
-                        <h3 style="color: white; margin-top: 0;">📥 Export Your Data</h3>
-                        <p style="color: rgba(255,255,255,0.9);">Download the complete analysis in CSV format</p>
+                # 🔄 ENHANCED: Better legend with comparison focus
+                st.markdown("""
+                <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Comparison Guide:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
+                        <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
+                        <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
+                        <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Only generate CSV when expander is opened
-                    csv_data = topN_numeric.to_csv(index=False)
-                    st.download_button(
-                        label=f"⬇️ Download Top {top_n_queries} Queries CSV",
-                        data=csv_data,
-                        file_name=f"top_{top_n_queries}_health_queries_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                        mime="text/csv",
-                        help="Download filtered data as CSV"
-                    )
+                </div>
+                """, unsafe_allow_html=True)
 
-                # ✅ OPTIMIZATION 12: Compute metrics only once
-                total_volume_all = safe_sum_column(topN_numeric, 'Total Volume')
-                total_clicks_all = safe_sum_column(topN_numeric, 'Total Clicks')
-                total_conversions_all = safe_sum_column(topN_numeric, 'Total Conversions')
-                
-                overall_ctr_avg = (total_clicks_all / total_volume_all * 100) if total_volume_all > 0 else 0
-                overall_cr_avg = (total_conversions_all / total_volume_all * 100) if total_volume_all > 0 else 0
-
-                # Metrics display
-                st.markdown("### 📊 Aggregate Performance Metrics")
-                metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
-
-                with metric_col1:
+                # 🔄 ENHANCED: Column grouping explanation
+                if unique_months:
+                    month_list = [month_names.get(m, m) for m in sorted(unique_months)]
                     st.markdown(f"""
-                    <div class='top50-health-metric-card'>
-                        <div class='icon'>🔍</div>
-                        <div class='value'>{format_number(total_volume_all)}</div>
-                        <div class='label'>Total Search Volume</div>
+                    <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
+                        <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Column Organization:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div><strong>🌱 Base Metrics:</strong> Query, Total Volume, Share %, Overall CTR/CR</div>
+                            <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
+                            <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
+                            <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
 
-                with metric_col2:
-                    st.markdown(f"""
-                    <div class='top50-health-metric-card'>
-                        <div class='icon'>👆</div>
-                        <div class='value'>{format_number(total_clicks_all)}</div>
-                        <div class='label'>Total Clicks</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with metric_col3:
-                    st.markdown(f"""
-                    <div class='top50-health-metric-card'>
-                        <div class='icon'>🎯</div>
-                        <div class='value'>{format_number(total_conversions_all)}</div>
-                        <div class='label'>Total Conversions</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with metric_col4:
-                    st.markdown(f"""
-                    <div class='top50-health-metric-card'>
-                        <div class='icon'>📈</div>
-                        <div class='value'>{overall_ctr_avg:.2f}%</div>
-                        <div class='label'>Avg CTR</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                with metric_col5:
-                    st.markdown(f"""
-                    <div class='top50-health-metric-card'>
-                        <div class='icon'>💚</div>
-                        <div class='value'>{overall_cr_avg:.2f}%</div>
-                        <div class='label'>Avg CR</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
+                # 🚀 ENHANCED SUMMARY METRICS
                 st.markdown("---")
-
-                # ✅ OPTIMIZATION 13: Lazy-load monthly performance (only when expanded)
-                with st.expander("📊 Monthly Performance Analysis", expanded=False):
-                    if len(unique_months) >= 2:
-                        st.markdown("""
-                        <div class="insights-health-section">
-                            <h3 style="color: white; margin-top: 0;">📅 Month-over-Month Insights</h3>
-                            <p style="color: rgba(255,255,255,0.9);">Analyze trends and changes across months</p>
+                
+                # ✅ FIX 5: Fixed metrics calculation to handle formatted strings
+                # Calculate from ORIGINAL numeric data before formatting
+                metrics = {
+                    'total_queries': len(topN),
+                    'total_search_volume': int(topN['Total Volume'].sum()) if 'Total Volume' in topN.columns else 0,
+                    'total_clicks': int(topN['Total Clicks'].sum()) if 'Total Clicks' in topN.columns else 0,
+                    'total_conversions': int(topN['Total Conversions'].sum()) if 'Total Conversions' in topN.columns else 0
+                }
+                
+                col1, col2, col3, col4 = st.columns(4)
+                
+                # 🚀 OPTIMIZED: Batch metric rendering
+                metric_configs = [
+                    (col1, "🌿", metrics['total_queries'], "Total Queries"),
+                    (col2, "🔍", format_number(metrics['total_search_volume']), "Total Search Volume"),
+                    (col3, "🍃", format_number(metrics['total_clicks']), "Total Clicks"),
+                    (col4, "💚", format_number(metrics['total_conversions']), "Total Conversions")
+                ]
+                
+                for col, icon, value, label in metric_configs:
+                    with col:
+                        st.markdown(f"""
+                        <div class="top50-health-metric-card">
+                            <div class="icon">{icon}</div>
+                            <div class="value">{value}</div>
+                            <div class="label">{label}</div>
                         </div>
                         """, unsafe_allow_html=True)
 
-                        sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))
-                        latest_month = month_names.get(sorted_months[-1], sorted_months[-1])
-                        prev_month = month_names.get(sorted_months[-2], sorted_months[-2])
-
-                        # ✅ OPTIMIZATION 14: Vectorized MoM calculations
-                        latest_vol_col = f'{latest_month} Vol'
-                        prev_vol_col = f'{prev_month} Vol'
-                        latest_ctr_col = f'{latest_month} CTR'
-                        prev_ctr_col = f'{prev_month} CTR'
-                        latest_cr_col = f'{latest_month} CR'
-                        prev_cr_col = f'{prev_month} CR'
-
-                        # Check column existence
-                        required_cols = [latest_vol_col, prev_vol_col, latest_ctr_col, prev_ctr_col, latest_cr_col, prev_cr_col]
-                        if all(col in topN_numeric.columns for col in required_cols):
+                # 🚀 MONTHLY BREAKDOWN WITH PERFORMANCE TRENDS
+                if unique_months:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    st.markdown("### 📅 Monthly Performance Trends")
+                    
+                    # Calculate average CTR and CR for each month
+                    monthly_performance = {}
+                    for month in unique_months:
+                        month_display = month_names.get(month, month)
+                        ctr_col = f'{month_display} CTR'
+                        cr_col = f'{month_display} CR'
+                        vol_col = f'{month_display} Vol'
+                        
+                        if ctr_col in topN.columns and cr_col in topN.columns and vol_col in topN.columns:
+                            avg_ctr = topN[ctr_col].mean()
+                            avg_cr = topN[cr_col].mean()
+                            monthly_total = int(topN[vol_col].sum())
                             
-                            # Vectorized calculations (10x faster than loops)
-                            latest_vol_total = topN_numeric[latest_vol_col].sum()
-                            prev_vol_total = topN_numeric[prev_vol_col].sum()
-                            vol_change = ((latest_vol_total - prev_vol_total) / prev_vol_total * 100) if prev_vol_total > 0 else 0
+                            monthly_performance[month_display] = {
+                                'volume': monthly_total,
+                                'avg_ctr': avg_ctr,
+                                'avg_cr': avg_cr
+                            }
+                    
+                    # ✅ FIXED: Display months in chronological order
+                    sorted_months_display = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+                    month_cols = st.columns(len(sorted_months_display))
 
-                            latest_ctr_avg = topN_numeric[latest_ctr_col].mean()
-                            prev_ctr_avg = topN_numeric[prev_ctr_col].mean()
-                            ctr_change = latest_ctr_avg - prev_ctr_avg
-
-                            latest_cr_avg = topN_numeric[latest_cr_col].mean()
-                            prev_cr_avg = topN_numeric[prev_cr_col].mean()
-                            cr_change = latest_cr_avg - prev_cr_avg
-
-                            # Display MoM metrics
-                            st.markdown("#### 📈 Month-over-Month Changes")
-                            mom_col1, mom_col2, mom_col3 = st.columns(3)
-
-                            with mom_col1:
-                                vol_emoji = "📈" if vol_change > 0 else "📉" if vol_change < 0 else "➡️"
-                                vol_color = "#4CAF50" if vol_change > 0 else "#F44336" if vol_change < 0 else "#FFC107"
+                    for i, month in enumerate(sorted_months_display):
+                        month_display_name = month_names.get(month, month)
+                        if month_display_name in monthly_performance:
+                            with month_cols[i]:
+                                perf = monthly_performance[month_display_name]
+                                
+                                # Determine trend indicators
+                                ctr_trend = ""
+                                cr_trend = ""
+                                if i > 0:
+                                    prev_month_display = month_names.get(sorted_months_display[i-1], sorted_months_display[i-1])
+                                    if prev_month_display in monthly_performance:
+                                        prev_perf = monthly_performance[prev_month_display]
+                                        ctr_trend = "📈" if perf['avg_ctr'] > prev_perf['avg_ctr'] else "📉" if perf['avg_ctr'] < prev_perf['avg_ctr'] else "➡️"
+                                        cr_trend = "📈" if perf['avg_cr'] > prev_perf['avg_cr'] else "📉" if perf['avg_cr'] < prev_perf['avg_cr'] else "➡️"
+                                
                                 st.markdown(f"""
-                                <div class='monthly-health-metric-card' style='background: linear-gradient(135deg, {vol_color} 0%, {vol_color}CC 100%);'>
-                                    <div class='icon'>{vol_emoji}</div>
-                                    <div class='value'>{vol_change:+.1f}%</div>
-                                    <div class='label'>Volume Change<br><small>{prev_month} → {latest_month}</small></div>
+                                <div class="monthly-health-metric-card">
+                                    <div class="icon">🌱</div>
+                                    <div class="value">{format_number(perf['volume'])}</div>
+                                    <div class="label">{month_display_name}</div>
+                                    <div style="font-size: 0.8em; margin-top: 5px;">
+                                        CTR: {perf['avg_ctr']:.1f}% {ctr_trend}<br>
+                                        CR: {perf['avg_cr']:.1f}% {cr_trend}
+                                    </div>
                                 </div>
                                 """, unsafe_allow_html=True)
 
-                            with mom_col2:
-                                ctr_emoji = "📈" if ctr_change > 0 else "📉" if ctr_change < 0 else "➡️"
-                                ctr_color = "#4CAF50" if ctr_change > 0 else "#F44336" if ctr_change < 0 else "#FFC107"
-                                st.markdown(f"""
-                                <div class='monthly-health-metric-card' style='background: linear-gradient(135deg, {ctr_color} 0%, {ctr_color}CC 100%);'>
-                                    <div class='icon'>{ctr_emoji}</div>
-                                    <div class='value'>{ctr_change:+.2f}%</div>
-                                    <div class='label'>CTR Change<br><small>{prev_ctr_avg:.2f}% → {latest_ctr_avg:.2f}%</small></div>
-                                </div>
-                                """, unsafe_allow_html=True)
-
-                            with mom_col3:
-                                cr_emoji = "📈" if cr_change > 0 else "📉" if cr_change < 0 else "➡️"
-                                cr_color = "#4CAF50" if cr_change > 0 else "#F44336" if cr_change < 0 else "#FFC107"
-                                st.markdown(f"""
-                                <div class='monthly-health-metric-card' style='background: linear-gradient(135deg, {cr_color} 0%, {cr_color}CC 100%);'>
-                                    <div class='icon'>{cr_emoji}</div>
-                                    <div class='value'>{cr_change:+.2f}%</div>
-                                    <div class='label'>CR Change<br><small>{prev_cr_avg:.2f}% → {latest_cr_avg:.2f}%</small></div>
-                                </div>
-                                """, unsafe_allow_html=True)
-
-                            st.markdown("---")
-
-                            # ✅ OPTIMIZATION 15: Vectorized top/bottom performers
-                            st.markdown("#### 🏆 Top & Bottom Performers")
-                            
-                            # CTR improvements (vectorized)
+                # 🚀 ENHANCED DOWNLOAD SECTION
+                st.markdown("<br>", unsafe_allow_html=True)
+                
+                csv = generate_csv_ultra(topN)
+                
+                col_download = st.columns([1, 2, 1])
+                with col_download[1]:
+                    st.markdown("""
+                    <div class="download-health-section">
+                        <h4 style="color: white; margin-bottom: 15px;">📥 Export Health Data</h4>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # ✅ FIXED: Include filter status in filename
+                    filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                    
+                    st.download_button(
+                        label="📥 Download Queries CSV",
+                        data=csv,
+                        file_name=f"top_{top_n_queries}_health_queries{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        help="Download the health table with current filter settings applied",
+                        use_container_width=True
+                    )
+                
+                # 🚀 OPTIMIZED MONTHLY INSIGHTS WITH PERFORMANCE ANALYSIS
+                with st.expander("📊 Monthly Performance Analysis", expanded=False):
+                    if unique_months and len(unique_months) >= 2:
+                        st.markdown("""
+                        <div class="insights-health-section">
+                            <h3 style="color: white; text-align: center; margin-bottom: 20px;">🌿 Performance Trend Analysis</h3>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Performance trend analysis
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("#### 🚀 CTR Performance Leaders")
+                            # Find queries with best CTR improvement
                             ctr_improvements = []
-                            valid_ctr_data = topN_numeric[
-                                (topN_numeric[prev_ctr_col] > 0) & 
-                                (topN_numeric[latest_ctr_col].notna())
-                            ].copy()
+                            for _, row in topN.iterrows():
+                                if len(unique_months) >= 2:
+                                    latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                                    prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                                    
+                                    latest_ctr = row.get(f'{latest_month} CTR', 0)
+                                    prev_ctr = row.get(f'{prev_month} CTR', 0)
+                                    
+                                    if prev_ctr > 0:
+                                        improvement = ((latest_ctr - prev_ctr) / prev_ctr) * 100
+                                        ctr_improvements.append({
+                                            'query': row['Query'],
+                                            'improvement': improvement,
+                                            'latest_ctr': latest_ctr
+                                        })
                             
-                            if not valid_ctr_data.empty:
-                                valid_ctr_data['ctr_improvement'] = (
-                                    (valid_ctr_data[latest_ctr_col] - valid_ctr_data[prev_ctr_col]) / 
-                                    valid_ctr_data[prev_ctr_col] * 100
-                                )
-                                
-                                ctr_improvements = valid_ctr_data[['Query', 'ctr_improvement', latest_ctr_col]].rename(
-                                    columns={'ctr_improvement': 'improvement', latest_ctr_col: 'latest_ctr'}
-                                ).to_dict('records')
-                                
-                                ctr_improvements = sorted(ctr_improvements, key=lambda x: x['improvement'], reverse=True)
-
-                            # CR improvements (vectorized)
+                            ctr_improvements = sorted(ctr_improvements, key=lambda x: x['improvement'], reverse=True)[:5]
+                            
+                            for item in ctr_improvements:
+                                color = "#4CAF50" if item['improvement'] > 0 else "#F44336"
+                                sign = "+" if item['improvement'] > 0 else ""
+                                st.markdown(f"""
+                                <div class="health-gainer-item">
+                                    <strong>{item['query'][:30]}...</strong><br>
+                                    <small>CTR: {item['latest_ctr']:.1f}% ({sign}{item['improvement']:.1f}%)</small>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        with col2:
+                            st.markdown("#### 🎯 CR Performance Leaders")
+                            # Find queries with best CR improvement
                             cr_improvements = []
-                            valid_cr_data = topN_numeric[
-                                (topN_numeric[prev_cr_col] > 0) & 
-                                (topN_numeric[latest_cr_col].notna())
-                            ].copy()
+                            for _, row in topN.iterrows():
+                                if len(unique_months) >= 2:
+                                    latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                                    prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                                    
+                                    latest_cr = row.get(f'{latest_month} CR', 0)
+                                    prev_cr = row.get(f'{prev_month} CR', 0)
+                                    
+                                    if prev_cr > 0:
+                                        improvement = ((latest_cr - prev_cr) / prev_cr) * 100
+                                        cr_improvements.append({
+                                            'query': row['Query'],
+                                            'improvement': improvement,
+                                            'latest_cr': latest_cr
+                                        })
                             
-                            if not valid_cr_data.empty:
-                                valid_cr_data['cr_improvement'] = (
-                                    (valid_cr_data[latest_cr_col] - valid_cr_data[prev_cr_col]) / 
-                                    valid_cr_data[prev_cr_col] * 100
-                                )
-                                
-                                cr_improvements = valid_cr_data[['Query', 'cr_improvement', latest_cr_col]].rename(
-                                    columns={'cr_improvement': 'improvement', latest_cr_col: 'latest_cr'}
-                                ).to_dict('records')
-                                
-                                cr_improvements = sorted(cr_improvements, key=lambda x: x['improvement'], reverse=True)
-
-                            # Display top/bottom performers
-                            perf_col1, perf_col2 = st.columns(2)
-
-                            with perf_col1:
-                                st.markdown("##### 📈 CTR Gainers")
-                                
-                                top_ctr_gainers = [item for item in ctr_improvements if item['improvement'] > 10][:5]
-                                
-                                if top_ctr_gainers:
-                                    for item in top_ctr_gainers:
-                                        gain_intensity = "🟢" if item['improvement'] > 50 else "🟡"
-                                        st.markdown(f"""
-                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50;">
-                                            {gain_intensity} <strong>{item['query'][:40]}...</strong><br>
-                                            <small>CTR: {item['latest_ctr']:.2f}% (+{item['improvement']:.1f}%)</small>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                                else:
-                                    st.markdown("""
-                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
-                                        <strong>📊 No Significant Gainers</strong><br>
-                                        <small>No queries with >10% CTR improvement</small>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-
-                            with perf_col2:
-                                st.markdown("##### 📉 CTR Decliners")
-                                
-                                ctr_decliners = [item for item in ctr_improvements if item['improvement'] < -10][:5]
-                                
-                                if ctr_decliners:
-                                    for item in ctr_decliners:
-                                        decline_severity = "🔴" if item['improvement'] < -30 else "🟡"
-                                        st.markdown(f"""
-                                        <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
-                                            {decline_severity} <strong>{item['query'][:40]}...</strong><br>
-                                            <small>CTR: {item['latest_ctr']:.2f}% ({item['improvement']:.1f}%)</small>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                                else:
-                                    st.markdown("""
-                                    <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
-                                        <strong>✅ CTR Performance</strong><br>
-                                        <small>No significant declines detected</small>
-                                    </div>
-                                    """, unsafe_allow_html=True)
-
-                            st.markdown("---")
-
-                            # CR Gainers/Decliners
-                            col1, col2 = st.columns(2)
-
+                            cr_improvements = sorted(cr_improvements, key=lambda x: x['improvement'], reverse=True)[:5]
+                            
+                            for item in cr_improvements:
+                                color = "#4CAF50" if item['improvement'] > 0 else "#F44336"
+                                sign = "+" if item['improvement'] > 0 else ""
+                                st.markdown(f"""
+                                <div class="health-gainer-item">
+                                    <strong>{item['query'][:30]}...</strong><br>
+                                    <small>CR: {item['latest_cr']:.1f}% ({sign}{item['improvement']:.1f}%)</small>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        # ✅ ADDED: Monthly comparison insights
+                        st.markdown("---")
+                        st.markdown("#### 📈 Monthly Performance Summary")
+                        
+                        if len(unique_months) >= 2:
+                            latest_month = month_names.get(unique_months[-1], unique_months[-1])
+                            prev_month = month_names.get(unique_months[-2], unique_months[-2])
+                            
+                            # Calculate overall month-over-month changes
+                            latest_total_vol = int(topN[f'{latest_month} Vol'].sum())
+                            prev_total_vol = int(topN[f'{prev_month} Vol'].sum())
+                            
+                            latest_avg_ctr = topN[f'{latest_month} CTR'].mean()
+                            prev_avg_ctr = topN[f'{prev_month} CTR'].mean()
+                            
+                            latest_avg_cr = topN[f'{latest_month} CR'].mean()
+                            prev_avg_cr = topN[f'{prev_month} CR'].mean()
+                            
+                            # Volume change
+                            vol_change = ((latest_total_vol - prev_total_vol) / prev_total_vol * 100) if prev_total_vol > 0 else 0
+                            vol_trend = "📈" if vol_change > 0 else "📉" if vol_change < 0 else "➡️"
+                            
+                            # CTR change
+                            ctr_change = ((latest_avg_ctr - prev_avg_ctr) / prev_avg_ctr * 100) if prev_avg_ctr > 0 else 0
+                            ctr_trend = "📈" if ctr_change > 0 else "📉" if ctr_change < 0 else "➡️"
+                            
+                            # CR change
+                            cr_change = ((latest_avg_cr - prev_avg_cr) / prev_avg_cr * 100) if prev_avg_cr > 0 else 0
+                            cr_trend = "📈" if cr_change > 0 else "📉" if cr_change < 0 else "➡️"
+                            
+                            col1, col2, col3 = st.columns(3)
+                            
                             with col1:
-                                st.markdown("##### 📈 CR Gainers")
-                                
-                                top_cr_gainers = [item for item in cr_improvements if item['improvement'] > 10][:5]
-                                
-                                if top_cr_gainers:
-                                    for item in top_cr_gainers:
-                                        gain_intensity = "🟢" if item['improvement'] > 50 else "🟡"
-                                        st.markdown(f"""
-                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #4CAF50;">
-                                            {gain_intensity} <strong>{item['query'][:40]}...</strong><br>
-                                            <small>CR: {item['latest_cr']:.1f}% (+{item['improvement']:.1f}%)</small>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                                else:
-                                    st.markdown("""
-                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
-                                        <strong>📊 No Significant Gainers</strong><br>
-                                        <small>No queries with >10% CR improvement</small>
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>📊 Volume Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {format_number(prev_total_vol)}</p>
+                                    <p><strong>{latest_month}:</strong> {format_number(latest_total_vol)}</p>
+                                    <p><strong>Change:</strong> {vol_change:+.1f}% {vol_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            with col2:
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>🎯 CTR Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_ctr:.1f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_ctr:.1f}%</p>
+                                    <p><strong>Change:</strong> {ctr_change:+.1f}% {ctr_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            with col3:
+                                st.markdown(f"""
+                                <div class="mom-health-analysis">
+                                    <h4>💚 CR Trend</h4>
+                                    <p><strong>{prev_month}:</strong> {prev_avg_cr:.1f}%</p>
+                                    <p><strong>{latest_month}:</strong> {latest_avg_cr:.1f}%</p>
+                                    <p><strong>Change:</strong> {cr_change:+.1f}% {cr_trend}</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                        
+                        # ✅ BEST GENERIC: Queries Needing Attention (Filter-Compatible)
+                        st.markdown("---")
+                        st.markdown("#### ⚠️ Queries Needing Attention")
+                        
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("##### 📉 CTR Decliners")
+                            
+                            # Get CTR decliners with minimum threshold
+                            ctr_decliners = []
+                            if ctr_improvements:
+                                ctr_decliners = [
+                                    item for item in ctr_improvements 
+                                    if item['improvement'] < -2  # At least 2% decline
+                                ]
+                                ctr_decliners = sorted(ctr_decliners, key=lambda x: x['improvement'])[:5]
+                            
+                            if ctr_decliners:
+                                for item in ctr_decliners:
+                                    decline_severity = "🔴" if item['improvement'] < -10 else "🟡"
+                                    st.markdown(f"""
+                                    <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
+                                        {decline_severity} <strong>{item['query'][:40]}...</strong><br>
+                                        <small>CTR: {item['latest_ctr']:.1f}% ({item['improvement']:.1f}%)</small>
                                     </div>
                                     """, unsafe_allow_html=True)
-
-                            with col2:
-                                st.markdown("##### 📉 CR Decliners")
-                                
-                                cr_decliners = [item for item in cr_improvements if item['improvement'] < -2]
-                                cr_decliners = sorted(cr_decliners, key=lambda x: x['improvement'])[:5]
-                                
-                                if cr_decliners:
-                                    for item in cr_decliners:
-                                        decline_severity = "🔴" if item['improvement'] < -10 else "🟡"
-                                        st.markdown(f"""
-                                        <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
-                                            {decline_severity} <strong>{item['query'][:40]}...</strong><br>
-                                            <small>CR: {item['latest_cr']:.1f}% ({item['improvement']:.1f}%)</small>
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                                else:
-                                    # Show lowest CR as alternative
-                                    if cr_improvements:
-                                        lowest_cr = sorted(cr_improvements, key=lambda x: x['latest_cr'])[:3]
-                                        low_performers = [item for item in lowest_cr if item['latest_cr'] < 0.8]
-                                        
-                                        if low_performers:
-                                            st.markdown("**⚠️ Low CR Performance:**")
-                                            for item in low_performers:
-                                                st.markdown(f"""
-                                                <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
-                                                    ⚠️ <strong>{item['query'][:40]}...</strong><br>
-                                                    <small>CR: {item['latest_cr']:.1f}% (Below average)</small>
-                                                </div>
-                                                """, unsafe_allow_html=True)
-                                        else:
-                                            st.markdown("""
-                                            <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
-                                                <strong>✅ CR Performance</strong><br>
-                                                <small>No significant declines or low performers</small>
+                            else:
+                                # Show lowest CTR as alternative
+                                if ctr_improvements:
+                                    lowest_ctr = sorted(ctr_improvements, key=lambda x: x['latest_ctr'])[:3]
+                                    low_performers = [item for item in lowest_ctr if item['latest_ctr'] < 1.5]
+                                    
+                                    if low_performers:
+                                        st.markdown("**⚠️ Low CTR Performance:**")
+                                        for item in low_performers:
+                                            st.markdown(f"""
+                                            <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
+                                                ⚠️ <strong>{item['query'][:40]}...</strong><br>
+                                                <small>CTR: {item['latest_ctr']:.1f}% (Below average)</small>
                                             </div>
                                             """, unsafe_allow_html=True)
                                     else:
                                         st.markdown("""
-                                        <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
-                                            <strong>📊 Insufficient Data</strong><br>
-                                            <small>Need 2+ months for trend analysis</small>
+                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
+                                            <strong>✅ CTR Performance</strong><br>
+                                            <small>No significant declines or low performers</small>
                                         </div>
                                         """, unsafe_allow_html=True)
-
-                            # Key insights summary
-                            st.markdown("---")
-                            st.markdown("#### 💡 Key Insights")
-                            
-                            insights = []
-                            
-                            if vol_change > 10:
-                                insights.append(f"🚀 **Strong Growth**: Search volume increased by {vol_change:.1f}% from {prev_month} to {latest_month}")
-                            elif vol_change < -10:
-                                insights.append(f"⚠️ **Volume Decline**: Search volume decreased by {abs(vol_change):.1f}% from {prev_month} to {latest_month}")
-                            
-                            if ctr_change > 5:
-                                insights.append(f"📈 **CTR Improvement**: Average click-through rate improved by {ctr_change:.1f}%")
-                            elif ctr_change < -5:
-                                insights.append(f"📉 **CTR Concern**: Average click-through rate declined by {abs(ctr_change):.1f}%")
-                            
-                            if cr_change > 5:
-                                insights.append(f"🎯 **Conversion Success**: Average conversion rate improved by {cr_change:.1f}%")
-                            elif cr_change < -5:
-                                insights.append(f"🔄 **Conversion Challenge**: Average conversion rate declined by {abs(cr_change):.1f}%")
-                            
-                            if ctr_improvements:
-                                top_ctr_performer = ctr_improvements[0]
-                                if top_ctr_performer['improvement'] > 20:
-                                    insights.append(f"⭐ **CTR Champion**: '{top_ctr_performer['query'][:40]}...' showed exceptional {top_ctr_performer['improvement']:.1f}% CTR improvement")
-                            
-                            if cr_improvements:
-                                top_cr_performer = cr_improvements[0]
-                                if top_cr_performer['improvement'] > 20:
-                                    insights.append(f"🏆 **CR Champion**: '{top_cr_performer['query'][:40]}...' achieved remarkable {top_cr_performer['improvement']:.1f}% CR improvement")
-                            
-                            if insights:
-                                for insight in insights:
-                                    st.markdown(f"- {insight}")
-                            else:
-                                st.markdown("- 📊 **Stable Performance**: metrics show consistent performance across months")
-                            
-                            if st.session_state.get('filters_applied', False):
-                                st.markdown("---")
-                                st.info("🔍 **Note**: These insights are based on your current filter settings. Reset filters to see full dataset analysis.")
+                                else:
+                                    st.markdown("""
+                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
+                                        <strong>📊 Insufficient Data</strong><br>
+                                        <small>Need 2+ months for trend analysis</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
                         
+                        with col2:
+                            st.markdown("##### 📉 CR Decliners")
+                            
+                            # Get CR decliners with minimum threshold
+                            cr_decliners = []
+                            if cr_improvements:
+                                cr_decliners = [
+                                    item for item in cr_improvements 
+                                    if item['improvement'] < -2  # At least 2% decline
+                                ]
+                                cr_decliners = sorted(cr_decliners, key=lambda x: x['improvement'])[:5]
+                            
+                            if cr_decliners:
+                                for item in cr_decliners:
+                                    decline_severity = "🔴" if item['improvement'] < -10 else "🟡"
+                                    st.markdown(f"""
+                                    <div style="background: rgba(244, 67, 54, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #F44336;">
+                                        {decline_severity} <strong>{item['query'][:40]}...</strong><br>
+                                        <small>CR: {item['latest_cr']:.1f}% ({item['improvement']:.1f}%)</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                            else:
+                                # Show lowest CR as alternative
+                                if cr_improvements:
+                                    lowest_cr = sorted(cr_improvements, key=lambda x: x['latest_cr'])[:3]
+                                    low_performers = [item for item in lowest_cr if item['latest_cr'] < 0.8]
+                                    
+                                    if low_performers:
+                                        st.markdown("**⚠️ Low CR Performance:**")
+                                        for item in low_performers:
+                                            st.markdown(f"""
+                                            <div style="background: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 8px; margin: 5px 0; border-left: 4px solid #FFC107;">
+                                                ⚠️ <strong>{item['query'][:40]}...</strong><br>
+                                                <small>CR: {item['latest_cr']:.1f}% (Below average)</small>
+                                            </div>
+                                            """, unsafe_allow_html=True)
+                                    else:
+                                        st.markdown("""
+                                        <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #2E7D32;">
+                                            <strong>✅ CR Performance</strong><br>
+                                            <small>No significant declines or low performers</small>
+                                        </div>
+                                        """, unsafe_allow_html=True)
+                                else:
+                                    st.markdown("""
+                                    <div style="background: rgba(158, 158, 158, 0.1); padding: 15px; border-radius: 8px; text-align: center; color: #757575;">
+                                        <strong>📊 Insufficient Data</strong><br>
+                                        <small>Need 2+ months for trend analysis</small>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+
+                        
+                        # ✅ ADDED: Key insights summary
+                        st.markdown("---")
+                        st.markdown("#### 💡 Key Insights")
+                        
+                        insights = []
+                        
+                        # Volume insights
+                        if vol_change > 10:
+                            insights.append(f"🚀 **Strong Growth**: Search volume increased by {vol_change:.1f}% from {prev_month} to {latest_month}")
+                        elif vol_change < -10:
+                            insights.append(f"⚠️ **Volume Decline**: Search volume decreased by {abs(vol_change):.1f}% from {prev_month} to {latest_month}")
+                        
+                        # CTR insights
+                        if ctr_change > 5:
+                            insights.append(f"📈 **CTR Improvement**: Average click-through rate improved by {ctr_change:.1f}%")
+                        elif ctr_change < -5:
+                            insights.append(f"📉 **CTR Concern**: Average click-through rate declined by {abs(ctr_change):.1f}%")
+                        
+                        # CR insights
+                        if cr_change > 5:
+                            insights.append(f"🎯 **Conversion Success**: Average conversion rate improved by {cr_change:.1f}%")
+                        elif cr_change < -5:
+                            insights.append(f"🔄 **Conversion Challenge**: Average conversion rate declined by {abs(cr_change):.1f}%")
+                        
+                        # Top performer insights
+                        if ctr_improvements:
+                            top_ctr_performer = ctr_improvements[0]
+                            if top_ctr_performer['improvement'] > 20:
+                                insights.append(f"⭐ **CTR Champion**: '{top_ctr_performer['query'][:40]}...' showed exceptional {top_ctr_performer['improvement']:.1f}% CTR improvement")
+                        
+                        if cr_improvements:
+                            top_cr_performer = cr_improvements[0]
+                            if top_cr_performer['improvement'] > 20:
+                                insights.append(f"🏆 **CR Champion**: '{top_cr_performer['query'][:40]}...' achieved remarkable {top_cr_performer['improvement']:.1f}% CR improvement")
+                        
+                        # Display insights
+                        if insights:
+                            for insight in insights:
+                                st.markdown(f"- {insight}")
                         else:
-                            st.warning("⚠️ Required monthly columns not found for comparison")
+                            st.markdown("- 📊 **Stable Performance**: metrics show consistent performance across months")
+                        
+                        # ✅ ADDED: Filter status reminder
+                        if st.session_state.get('filters_applied', False):
+                            st.markdown("---")
+                            st.info("🔍 **Note**: These insights are based on your current filter settings. Reset filters to see full dataset analysis.")
                     
                     else:
                         st.info("📅 Monthly performance analysis requires data from at least 2 months.")
@@ -2327,13 +2591,21 @@ with tab_overview:
             st.write("**Debug info:**")
             st.write(f"Queries shape: {queries.shape}")
             st.write(f"Available columns: {list(queries.columns)}")
+            if 'topN' in locals() and not topN.empty:
+                st.write(f"TopN shape: {topN.shape}")
+                if 'Total Volume' in topN.columns:
+                    st.write(f"Total Volume dtype: {topN['Total Volume'].dtype}")
+                    st.write(f"Sample values: {topN['Total Volume'].head()}")
 
     st.markdown("---")
 
-    # ----------------- Performance Snapshot -----------------
+
+
+
+# ----------------- Performance Snapshot -----------------
     st.subheader("🌱 Performance Snapshot")
 
-    # Mini-Metrics Row
+    # Mini-Metrics Row (Data-Driven: From Analysis with Share)
     colM1, colM2, colM3, colM4 = st.columns(4)
     with colM1:
         avg_ctr = queries['Click Through Rate'].mean() * 100 if not queries.empty else 0
@@ -2356,6 +2628,7 @@ with tab_overview:
     with colM3:
         unique_queries = queries['search'].nunique()
         total_counts = int(queries['Counts'].sum()) if not queries['Counts'].empty else 0
+        total_share = (queries.groupby('search')['Counts'].sum() / total_counts * 100).max() if total_counts > 0 else 0
         st.markdown(f"""
         <div class='mini-metric'>
             <span class='icon'>🔍</span>
@@ -2375,13 +2648,14 @@ with tab_overview:
         </div>
         """, unsafe_allow_html=True)
 
+
     st.markdown("---")
 
     st.subheader("🏷 Brand & Category Snapshot")
     g1, g2 = st.columns(2)
-    
     with g1:
         if 'Brand' in queries.columns:
+            # Check which columns actually exist before using them
             available_columns = queries.columns.tolist()
             agg_dict = {}
             
@@ -2392,34 +2666,36 @@ with tab_overview:
             if 'Conversion Rate' in available_columns:
                 agg_dict['Conversion Rate'] = 'mean'
             
+            # Only proceed if we have at least one column to aggregate
             if agg_dict:
                 brand_perf = queries[queries['Brand'] != 'Other'].groupby('Brand').agg(agg_dict).reset_index()
                 
+                # Calculate derived metrics only if the required columns exist
                 if 'clicks' in brand_perf.columns and 'Conversion Rate' in brand_perf.columns:
                     brand_perf['conversions'] = (brand_perf['clicks'] * brand_perf['Conversion Rate']).round()
                 
                 if 'Counts' in brand_perf.columns:
                     brand_perf['share'] = (brand_perf['Counts'] / total_counts * 100).round(2)
                 
+                # Only create the chart if we have data to display
                 if not brand_perf.empty and 'Counts' in brand_perf.columns:
+                    # Determine color column - use conversions if available, otherwise use Counts
                     color_column = 'conversions' if 'conversions' in brand_perf.columns else 'Counts'
                     hover_columns = ['share'] if 'share' in brand_perf.columns else []
                     if 'conversions' in brand_perf.columns:
                         hover_columns.append('conversions')
                     
-                    # ✅ OPTIMIZATION 16: Simplified Plotly config
-                    fig = px.bar(
-                        brand_perf.sort_values('Counts', ascending=False).head(10), 
-                        x='Brand', 
-                        y='Counts',
-                        title='<b style="color:#2E7D32; font-size:18px;">Top Brands by Search Volume</b>',
-                        labels={'Brand': 'Brand', 'Counts': 'Search Volume'},
-                        color=color_column,
-                        color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
-                        template='plotly_white',
-                        hover_data=hover_columns
-                    )
+                    # Create a beautiful bar chart with text labels
+                    fig = px.bar(brand_perf.sort_values('Counts', ascending=False).head(10), 
+                                x='Brand', y='Counts',
+                                title='<b style="color:#2E7D32; font-size:18px; text-shadow: 2px 2px 4px #00000055;">Top Brands by Search Volume</b>',
+                                labels={'Brand': '<i>Brand</i>', 'Counts': '<b>Search Volume</b>'},
+                                color=color_column,
+                                color_continuous_scale=['#E8F5E8', '#66BB6A', '#2E7D32'],
+                                template='plotly_white',
+                                hover_data=hover_columns)
                     
+                    # Update traces to position text outside and set hovertemplate
                     fig.update_traces(
                         texttemplate='%{y:,.0f}',
                         textposition='outside',
@@ -2429,18 +2705,42 @@ with tab_overview:
                                     '<extra></extra>'
                     )
 
+                    # Enhance attractiveness: Custom layout for beauty
                     fig.update_layout(
                         plot_bgcolor='rgba(248,253,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
                         font=dict(color='#1B5E20', family='Segoe UI'),
-                        title_x=0,
-                        xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                        yaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+                        title_x=0,  # Left alignment for title
+                        title_font_size=16,
+                        xaxis=dict(
+                            title='Brand',
+                            showgrid=True, 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
+                            linewidth=2
+                        ),
+                        yaxis=dict(
+                            title='Search Volume',
+                            showgrid=True, 
+                            gridcolor='#E8F5E8', 
+                            linecolor='#2E7D32', 
+                            linewidth=2
+                        ),
                         bargap=0.2,
-                        height=400,
-                        showlegend=False
+                        barcornerradius=8,
+                        hovermode='x unified',
+                        annotations=[
+                            dict(
+                                x=0.5, y=1.05, xref='paper', yref='paper',
+                                text='🌿 Hover for details | Top brands highlighted below 🌿',
+                                showarrow=False,
+                                font=dict(size=10, color='#2E7D32', family='Segoe UI'),
+                                align='center'
+                            )
+                        ]
                     )
 
+                    # Highlight the top brand with a custom marker
                     top_brand = brand_perf.loc[brand_perf['Counts'].idxmax(), 'Brand']
                     top_count = brand_perf['Counts'].max()
                     fig.add_annotation(
@@ -2450,19 +2750,20 @@ with tab_overview:
                         arrowhead=3,
                         arrowcolor='#2E7D32',
                         ax=0, ay=-30,
-                        font=dict(size=12, color='#2E7D32', family='Segoe UI')
+                        font=dict(size=12, color='#2E7D32', family='Segoe UI', weight='bold')
                     )
 
                     st.plotly_chart(fig, use_container_width=True)
                 else:
-                    st.info("No brand data available after filtering")
+                    st.info("No brand data available after filtering or missing required columns.")
             else:
-                st.warning("No valid aggregation columns found for brand analysis")
+                st.warning("No valid aggregation columns found for brand analysis.")
         else:
-            st.info("🏷 Brand column not found in the dataset")
+            st.info("🏷 Brand column not found in the dataset.")
 
     with g2:
         if 'Category' in queries.columns:
+            # Check which columns actually exist before using them
             available_columns = queries.columns.tolist()
             agg_dict = {}
             
@@ -2472,28 +2773,39 @@ with tab_overview:
                 agg_dict['clicks'] = 'sum'
             if 'conversions' in available_columns:
                 agg_dict['conversions'] = 'sum'
+            elif 'Conversion Rate' in available_columns and 'clicks' in available_columns:
+                # We'll calculate conversions after aggregation
+                pass
             
+            # Only proceed if we have at least one column to aggregate
             if agg_dict:
                 cat_perf = queries.groupby('Category').agg(agg_dict).reset_index()
                 
+                # Calculate conversions if we have the necessary columns but not the conversions column
                 if 'conversions' not in cat_perf.columns and 'clicks' in cat_perf.columns and 'Conversion Rate' in queries.columns:
+                    # Calculate average conversion rate for each category first
                     conv_rate_agg = queries.groupby('Category')['Conversion Rate'].mean().reset_index()
                     cat_perf = cat_perf.merge(conv_rate_agg, on='Category')
                     cat_perf['conversions'] = (cat_perf['clicks'] * cat_perf['Conversion Rate']).round()
                 
+                # Calculate share and conversion rate
                 if 'Counts' in cat_perf.columns:
                     cat_perf['share'] = (cat_perf['Counts'] / total_counts * 100).round(2)
                 
+                # FIX: Calculate conversion rate correctly - conversions divided by counts
                 if 'conversions' in cat_perf.columns and 'Counts' in cat_perf.columns:
                     cat_perf['cr'] = (cat_perf['conversions'] / cat_perf['Counts'] * 100).round(2)
                 else:
                     cat_perf['cr'] = 0
+                
 
+                # Prepare display columns based on what's available
                 display_columns = ['Category']
                 format_dict = {}
 
                 if 'Counts' in cat_perf.columns:
                     display_columns.append('Counts')
+                    # Create a custom formatter that applies format_number
                     def counts_formatter(x):
                         return format_number(int(x))
                     format_dict['Counts'] = counts_formatter
@@ -2502,11 +2814,13 @@ with tab_overview:
                     format_dict['share'] = '{:.1f}%'
                 if 'clicks' in cat_perf.columns:
                     display_columns.append('clicks')
+                    # ✅ USE format_number for clicks
                     def clicks_formatter(x):
                         return format_number(int(x))
                     format_dict['clicks'] = clicks_formatter
                 if 'conversions' in cat_perf.columns:
                     display_columns.append('conversions')
+                    # ✅ USE format_number for conversions
                     def conversions_formatter(x):
                         return format_number(int(x))
                     format_dict['conversions'] = conversions_formatter
@@ -2514,6 +2828,7 @@ with tab_overview:
                     display_columns.append('cr')
                     format_dict['cr'] = '{:.1f}%'
 
+                # Rename columns for better display
                 display_cat_perf = cat_perf[display_columns].copy()
                 column_rename = {
                     'Category': 'Category',
@@ -2525,19 +2840,31 @@ with tab_overview:
                 }
                 display_cat_perf = display_cat_perf.rename(columns={k: v for k, v in column_rename.items() if k in display_cat_perf.columns})
 
-                if len(display_cat_perf.columns) > 1:
+                # Update format dict with new column names
+                new_format_dict = {}
+                for old_col, new_col in column_rename.items():
+                    if old_col in format_dict and new_col in display_cat_perf.columns:
+                        new_format_dict[new_col] = format_dict[old_col]
+
+                # Display the table with available data
+                if len(display_cat_perf.columns) > 1:  # More than just the Category column
+                    # Sort by Search Volume in descending order and RESET INDEX
                     if 'Search Volume' in display_cat_perf.columns:
                         sorted_cat_perf = display_cat_perf.sort_values('Search Volume', ascending=False).head(10).reset_index(drop=True)
                     else:
+                        # Fallback to first numeric column if Search Volume not available
                         numeric_cols = [col for col in display_cat_perf.columns[1:] if col in display_cat_perf.columns]
                         if numeric_cols:
                             sorted_cat_perf = display_cat_perf.sort_values(numeric_cols[0], ascending=False).head(10).reset_index(drop=True)
                         else:
                             sorted_cat_perf = display_cat_perf.head(10).reset_index(drop=True)
                     
+                    # 🚀 CREATE FORMATTED DISPLAY DATA
                     display_data = {'Category': sorted_cat_perf['Category'].tolist()}
                     
+                    # Add formatted columns
                     if 'Search Volume' in sorted_cat_perf.columns:
+                        # Extract numeric values and format
                         numeric_values = sorted_cat_perf['Search Volume'].replace({',': ''}, regex=True).astype(float)
                         display_data['Search Volume'] = numeric_values.apply(format_number).tolist()
                     
@@ -2556,28 +2883,33 @@ with tab_overview:
                     
                     if 'Conversion Rate %' in sorted_cat_perf.columns:
                         display_data['Conversion Rate'] = sorted_cat_perf['Conversion Rate %'].apply(
-                            lambda x: f"{float(str(x).replace('%', '')):.1f}%" if pd.notna(x) else "0.0%"
+                            lambda x: f"{float(str(x).replace('%', '')):.1f}%" if pd.notna(x) else "0.00%"
                         ).tolist()
                     
+                    # Create final display DataFrame
                     final_display_df = pd.DataFrame(display_data)
                     
+                    # 🎯 USE NEW STYLED TABLE FUNCTION
                     display_styled_table(
                         df=final_display_df,
                         download_filename="health_categories_performance.csv",
                         max_rows=10,
                         align="center"
                     )
-                else:
-                    st.info("Insufficient data columns available for category analysis")
-            else:
-                st.warning("No valid aggregation columns found for category analysis")
-        else:
-            st.info("🧴 Category column not found in the dataset")
 
-    # Insights section
+
+                else:
+                    st.info("Insufficient data columns available for health category analysis.")
+            else:
+                st.warning("No valid aggregation columns found for health category analysis.")
+        else:
+            st.info("🧴 Health Category column not found in the dataset.")
+
+    # Add Nutraceuticals & Nutrition insights section
     st.markdown("---")
     st.subheader("🌿 Insights & Recommendations")
     
+    # Create insight boxes with health-themed content
     insight_col1, insight_col2 = st.columns(2)
     
     with insight_col1:
@@ -2610,8 +2942,8 @@ with tab_overview:
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("---")
 
+st.markdown("---")
 # ----------------- Search Analysis (Enhanced Core - OPTIMIZED) -----------------
 with tab_search:
             
