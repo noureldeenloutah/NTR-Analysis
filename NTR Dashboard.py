@@ -1065,6 +1065,9 @@ if 'data_loaded' not in st.session_state:
     st.session_state.data_loaded = False
     st.session_state.queries = None
     st.session_state.sheets = None
+# ✅ FIX: Add memory cleanup flag
+if 'memory_optimized' not in st.session_state:
+    st.session_state.memory_optimized = False
 
 # 🚀 FAST LOADING FUNCTIONS
 @st.cache_data(show_spinner=False)
@@ -1146,10 +1149,18 @@ if not st.session_state.data_loaded:
             raw_queries = sheets[main_sheet]
             queries = prepare_queries_fast(raw_queries)
             
-            # Store in session state
+            # ✅ FIX: Store optimized data + cleanup
             st.session_state.queries = queries
             st.session_state.sheets = sheets
             st.session_state.data_loaded = True
+            
+            # 🚀 MEMORY CLEANUP: Remove raw data from sheets dict
+            if not st.session_state.memory_optimized:
+                # Keep only summary sheets (not the huge main sheet)
+                summary_sheets = ['brand_summary', 'category_summary', 'subcategory_summary', 'generic_type']
+                st.session_state.sheets = {k: v for k, v in sheets.items() if k in summary_sheets}
+                st.session_state.memory_optimized = True
+
             
             
         except Exception as e:
@@ -1213,8 +1224,10 @@ if 'filters_applied' not in st.session_state:
     st.session_state.filters_applied = False
 
 # Store original queries for reset
-if 'original_queries' not in st.session_state:
-    st.session_state.original_queries = queries.copy()
+# ✅ FIX: Don't store duplicate - use cached version instead
+if 'filter_reset_flag' not in st.session_state:
+    st.session_state.filter_reset_flag = False
+
 
 # 🚀 OPTIMIZED DATE FILTER (SAME LOGIC, BETTER PERFORMANCE)
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1233,7 +1246,7 @@ def get_date_range(_df):
     except:
         return []
 
-default_dates = get_date_range(st.session_state.original_queries)
+default_dates = get_date_range(queries)
 date_range = st.sidebar.date_input("📅 Select Date Range", value=default_dates)
 
 # 🚀 OPTIMIZED Multi-select filters helper (SAME INTERFACE, CACHED)
@@ -1264,11 +1277,11 @@ def get_filter_options(df, col, label, emoji):
     return sel, opts
 
 # Get filter selections (EXACTLY THE SAME AS YOUR CODE)
-brand_filter, brand_opts = get_filter_options(st.session_state.original_queries, 'brand', 'Brand(s)', '🏷')
-dept_filter, dept_opts = get_filter_options(st.session_state.original_queries, 'department', 'Department(s)', '🏬')
-cat_filter, cat_opts = get_filter_options(st.session_state.original_queries, 'category', 'Category(ies)', '📦')
-subcat_filter, subcat_opts = get_filter_options(st.session_state.original_queries, 'sub_category', 'Sub Category(ies)', '🧴')
-class_filter, class_opts = get_filter_options(st.session_state.original_queries, 'Class', 'Class(es)', '🎯')
+brand_filter, brand_opts = get_filter_options(queries, 'brand', 'Brand(s)', '🏷')
+dept_filter, dept_opts = get_filter_options(squeries, 'department', 'Department(s)', '🏬')
+cat_filter, cat_opts = get_filter_options(queries, 'category', 'Category(ies)', '📦')
+subcat_filter, subcat_opts = get_filter_options(queries, 'sub_category', 'Sub Category(ies)', '🧴')
+class_filter, class_opts = get_filter_options(queries, 'Class', 'Class(es)', '🎯')
 
 # Text filter (EXACTLY THE SAME)
 text_filter = st.sidebar.text_input("🔍 Filter queries by text (contains)")
@@ -1285,17 +1298,16 @@ with col2:
 
 # Handle Reset Button (EXACTLY THE SAME AS YOUR CODE)
 if reset_filters:
-    # Reset the data immediately
-    queries = st.session_state.original_queries.copy()
+    # ✅ FIX: Just reload from cache (no copy needed)
     st.session_state.filters_applied = False
-    
-    # Clear all filter widgets by rerunning
+    st.session_state.filter_reset_flag = True
     st.rerun()
+
 
 # Handle Apply Button (YOUR EXACT LOGIC WITH MINOR OPTIMIZATION)
 elif apply_filters:
-    # Apply filters - START WITH ORIGINAL DATA
-    queries = st.session_state.original_queries.copy()
+    # ✅ FIX: Start with cached data (already loaded above)
+    # queries variable is already loaded from st.session_state.queries
     
     # Date filter (YOUR EXACT LOGIC)
     if isinstance(date_range, (list, tuple)) and len(date_range) == 2 and date_range[0] is not None:
@@ -1330,7 +1342,7 @@ elif apply_filters:
 
 # Show filter status (ENHANCED VERSION OF YOUR CODE)
 if st.session_state.filters_applied:
-    original_count = len(st.session_state.original_queries)
+    original_count = len(st.session_state.queries)  # Use cached version
     current_count = len(queries)
     reduction_pct = ((original_count - current_count) / original_count) * 100 if original_count > 0 else 0
     st.sidebar.success(f"✅ Filters Applied - {current_count:,} rows ({reduction_pct:.1f}% filtered)")
