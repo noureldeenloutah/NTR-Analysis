@@ -9601,214 +9601,141 @@ with tab_subcat:
 
 # ----------------- Class Tab (Enhanced & Health-Focused) -----------------
 with tab_class:
-    # 🎨 GREEN-THEMED HERO HEADER
-    st.markdown("""
-    <div style="
-        text-align: center; 
-        padding: 3rem 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-        border-radius: 20px; 
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(76, 175, 80, 0.2);
-    ">
-        <h1 style="
-            color: #1B5E20; 
-            margin: 0; 
-            font-size: 3rem; 
-            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
-            font-weight: 700;
-            letter-spacing: -1px;
-        ">
-            🎯 Class Performance Analysis 🎯
-        </h1>
-        <p style="
-            color: #2E7D32; 
-            margin: 1rem 0 0 0; 
-            font-size: 1.3rem;
-            font-weight: 300;
-            opacity: 0.9;
-        ">
-            Advanced Classification • Performance Analytics • Search Intelligence
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    # ✅ CACHED HERO HEADER
+    @st.cache_data(ttl=86400)
+    def get_class_hero_html():
+        return """
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
+            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
+                🎯 Class Performance Analysis 🎯
+            </h1>
+            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+                Advanced Classification • Performance Analytics • Search Intelligence
+            </p>
+        </div>
+        """
     
-    # Custom CSS for health-focused green styling
-    st.markdown("""
-    <style>
-    .health-class-metric {
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
-        margin: 10px 0;
-        border-left: 4px solid #4CAF50;
-    }
+    st.markdown(get_class_hero_html(), unsafe_allow_html=True)
     
-    .class-insight {
-        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-        padding: 25px;
-        border-radius: 15px;
-        color: white;
-        margin: 15px 0;
-        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
-    }
+    # ✅ LOAD CSS ONCE PER SESSION
+    if 'class_css_loaded' not in st.session_state:
+        st.markdown("""
+        <style>
+        .health-class-metric{background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 100%);padding:20px;border-radius:12px;text-align:center;box-shadow:0 4px 15px rgba(46,125,50,0.2);margin:10px 0;border-left:4px solid #4CAF50}
+        .class-insight{background:linear-gradient(135deg,#2E7D32 0%,#66BB6A 100%);padding:25px;border-radius:15px;color:white;margin:15px 0;box-shadow:0 6px 20px rgba(46,125,50,0.3)}
+        .enhanced-health-class-metric{background:linear-gradient(135deg,#4CAF50 0%,#81C784 100%);padding:25px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(76,175,80,0.3);margin:10px 0;min-height:160px;display:flex;flex-direction:column;justify-content:center}
+        .enhanced-health-class-metric .icon{font-size:3em;margin-bottom:10px;display:block}
+        .enhanced-health-class-metric .value{font-size:1.6em;font-weight:bold;margin-bottom:8px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.2}
+        .enhanced-health-class-metric .label{font-size:1.1em;opacity:0.95;font-weight:600;margin-bottom:6px}
+        .enhanced-health-class-metric .sub-label{font-size:1em;opacity:0.9;font-weight:500;line-height:1.2;word-wrap:break-word;overflow-wrap:break-word}
+        .class-metric-card{background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 100%);padding:15px;border-radius:10px;text-align:center;box-shadow:0 4px 15px rgba(46,125,50,0.2);margin:5px;border-left:4px solid #4CAF50}
+        .class-metric-value{font-size:1.4em;font-weight:bold;color:#1B5E20;margin-bottom:5px}
+        .class-metric-label{color:#2E7D32;font-size:0.9em;font-weight:600}
+        .class-health-metric-card{background:linear-gradient(135deg,#2E7D32 0%,#66BB6A 100%);padding:20px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(46,125,50,0.3);margin:8px 0;min-height:120px;display:flex;flex-direction:column;justify-content:center;transition:transform 0.2s ease;width:100%}
+        .class-health-metric-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(46,125,50,0.4)}
+        .class-health-metric-card .icon{font-size:2.5em;margin-bottom:8px;display:block}
+        .class-health-metric-card .value{font-size:1.8em;font-weight:bold;margin-bottom:5px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.1}
+        .class-health-metric-card .label{font-size:1em;opacity:0.95;font-weight:600;line-height:1.2}
+        </style>
+        """, unsafe_allow_html=True)
+        st.session_state.class_css_loaded = True
     
-    .enhanced-health-class-metric {
-        background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
-        padding: 25px;
-        border-radius: 15px;
-        text-align: center;
-        color: white;
-        box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
-        margin: 10px 0;
-        min-height: 160px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+    # ✅ FIND CLASS COLUMN ONCE WITH CACHING
+    @st.cache_data(ttl=3600)
+    def find_class_column(columns_list):
+        possible_cols = ['Class', 'class', 'CLASS', 'Class Name', 'class_name', 'product_class']
+        for col in columns_list:
+            if col in possible_cols:
+                return col
+        return None
     
-    .enhanced-health-class-metric .icon {
-        font-size: 3em;
-        margin-bottom: 10px;
-        display: block;
-    }
+    class_column = find_class_column(queries.columns.tolist())
     
-    .enhanced-health-class-metric .value {
-        font-size: 1.6em;
-        font-weight: bold;
-        margin-bottom: 8px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        line-height: 1.2;
-    }
-    
-    .enhanced-health-class-metric .label {
-        font-size: 1.1em;
-        opacity: 0.95;
-        font-weight: 600;
-        margin-bottom: 6px;
-    }
-    
-    .enhanced-health-class-metric .sub-label {
-        font-size: 1em;
-        opacity: 0.9;
-        font-weight: 500;
-        line-height: 1.2;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    .class-metric-card {
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
-        margin: 5px;
-        border-left: 4px solid #4CAF50;
-    }
-    
-    .class-metric-value {
-        font-size: 1.4em;
-        font-weight: bold;
-        color: #1B5E20;
-        margin-bottom: 5px;
-    }
-    
-    .class-metric-label {
-        color: #2E7D32;
-        font-size: 0.9em;
-        font-weight: 600;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Check for class column with case sensitivity handling
-    class_column = None
-    possible_class_columns = ['Class', 'class', 'CLASS', 'Class Name', 'class_name', 'product_class']
-    
-    for col in possible_class_columns:
-        if col in queries.columns:
-            class_column = col
-            break
-    
-    # Check if class data is available
-    has_class_data = (class_column is not None and 
-                     queries[class_column].notna().any())
-    
-    if not has_class_data:
-        st.error(f"❌ No Nutraceuticals & Nutrition class data available. Available columns: {list(queries.columns)}")
+    if class_column is None or not queries[class_column].notna().any():
+        st.error(f"❌ No class data available. Available columns: {list(queries.columns)}")
         st.info("💡 Please ensure your dataset contains a class column (Class, class, or Class Name)")
         st.stop()
     
-    # Filter out "Other" class from all analysis
+    # ✅ FILTER ONCE, REUSE EVERYWHERE
     class_queries = queries[
         (queries[class_column].notna()) & 
         (~queries[class_column].str.lower().isin(['other', 'others']))
-    ]
+    ].copy()
     
     if class_queries.empty:
-        st.error("❌ No valid Nutraceuticals & Nutrition class data available after filtering.")
+        st.error("❌ No valid class data available after filtering.")
         st.stop()
     
     st.markdown("---")
     
-    # Main Class Analysis Layout
+    # ✅ CRITICAL: VECTORIZED CLASS CALCULATIONS
+    @st.cache_data(ttl=1800, show_spinner=False)
+    def calculate_class_metrics(df, cls_col):
+        """Optimized class metrics with vectorization"""
+        # Ensure numeric columns
+        numeric_cols = ['Counts', 'clicks', 'conversions']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        
+        cls = df.groupby(cls_col, as_index=False).agg({
+            'Counts': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        })
+        
+        cls = cls.rename(columns={cls_col: 'class'})
+        
+        # Integer conversion
+        cls['Counts'] = cls['Counts'].round().astype(np.int64)
+        cls['clicks'] = cls['clicks'].round().astype(np.int64)
+        cls['conversions'] = cls['conversions'].round().astype(np.int64)
+        
+        # Vectorized calculations
+        total_counts = cls['Counts'].sum()
+        
+        cls['ctr'] = np.where(cls['Counts'] > 0, (cls['clicks'] / cls['Counts'] * 100), 0)
+        cls['cr'] = np.where(cls['Counts'] > 0, (cls['conversions'] / cls['Counts'] * 100), 0)
+        cls['classic_cr'] = np.where(cls['clicks'] > 0, (cls['conversions'] / cls['clicks'] * 100), 0)
+        cls['share_pct'] = np.where(total_counts > 0, (cls['Counts'] / total_counts * 100), 0)
+        
+        return cls.sort_values('Counts', ascending=False).reset_index(drop=True)
+    
+    cls = calculate_class_metrics(class_queries, class_column)
+    
+    # Main Layout
     col_left, col_right = st.columns([3, 2])
     
     with col_left:
-        # Enhanced Class Performance Analysis
         st.subheader("📈 Class Performance Matrix")
         
-        # Calculate comprehensive class metrics
-        cls = class_queries.groupby(class_column).agg({
-            'Counts': 'sum',
-            'clicks': 'sum', 
-            'conversions': 'sum'
-        }).reset_index()
+        # ✅ OPTIMIZED: Process only top 30 for scatter
+        top_30_cls = cls.head(30)
         
-        # Round to integers for cleaner display
-        cls['clicks'] = cls['clicks'].round().astype(int)
-        cls['conversions'] = cls['conversions'].round().astype(int)
-        
-        # Rename the class column to 'class' for consistency
-        cls = cls.rename(columns={class_column: 'class'})
-        
-        # Calculate performance metrics
-        cls['ctr'] = cls.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        cls['cr'] = cls.apply(lambda r: (r['conversions']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        cls['classic_cr'] = cls.apply(lambda r: (r['conversions']/r['clicks']*100) if r['clicks']>0 else 0, axis=1)
-        
-        # Calculate share percentage
-        total_class_counts = cls['Counts'].sum()
-        cls['share_pct'] = (cls['Counts'] / total_class_counts * 100).round(2)
-        
-        # Enhanced scatter plot for class performance
+        # Scatter plot
         fig_class_perf = px.scatter(
-            cls.head(30), 
-            x='Counts', 
+            top_30_cls,
+            x='Counts',
             y='ctr',
             size='clicks',
             color='cr',
             hover_name='class',
-            title='<b style="color:#2E7D32; font-size:18px;">🎯 Class Performance Matrix: Search Volume vs CTR</b>',
+            title='<b style="color:#2E7D32;font-size:18px;">🎯 Class Performance Matrix: Search Volume vs CTR</b>',
             labels={'Counts': 'Total Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
             color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
             template='plotly_white'
         )
         
-        # Format hover with format_number
+        # Optimized hover data
+        customdata = np.column_stack([
+            top_30_cls['Counts'].apply(format_number).values,
+            top_30_cls['clicks'].apply(format_number).values
+        ])
+        
         fig_class_perf.update_traces(
-            hovertemplate='<b>%{hovertext}</b><br>' +
-                         'Health Searches: %{customdata[0]}<br>' +
-                         'CTR: %{y:.1f}%<br>' +
-                         'Total Clicks: %{customdata[1]}<br>' +
-                         'Conversion Rate: %{marker.color:.1f}%<extra></extra>',
-            customdata=[[format_number(row['Counts']), format_number(row['clicks'])] 
-                       for _, row in cls.head(30).iterrows()]
+            hovertemplate='<b>%{hovertext}</b><br>Searches: %{customdata[0]}<br>CTR: %{y:.1f}%<br>Clicks: %{customdata[1]}<br>CR: %{marker.color:.1f}%<extra></extra>',
+            customdata=customdata
         )
         
         fig_class_perf.update_layout(
@@ -9817,277 +9744,209 @@ with tab_class:
             font=dict(color='#1B5E20', family='Segoe UI'),
             title_x=0,
             xaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
-            yaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2),
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8', linecolor='#4CAF50', linewidth=2)
         )
         
         st.plotly_chart(fig_class_perf, use_container_width=True)
         
-        # Enhanced Class Performance Charts
+        # Enhanced charts
         col_chart1, col_chart2 = st.columns(2)
         
         with col_chart1:
-            # Counts by Class
+            top_15_counts = cls.head(15)
             fig_counts = px.bar(
-                cls.sort_values('Counts', ascending=False).head(15), 
-                x='class', 
+                top_15_counts,
+                x='class',
                 y='Counts',
-                title='<b style="color:#2E7D32;">🌱 Health Searches by Class</b>',
+                title='<b style="color:#2E7D32;">🌱 Searches by Class</b>',
                 color='Counts',
                 color_continuous_scale=['#E8F5E8', '#2E7D32'],
-                text='Counts'
+                text=[format_number(int(x)) for x in top_15_counts['Counts']]
             )
             
-            # Format bar labels with format_number
-            fig_counts.update_traces(
-                texttemplate='%{text}',
-                textposition='outside',
-                text=[format_number(x) for x in cls.sort_values('Counts', ascending=False).head(15)['Counts']]
-            )
-            
+            fig_counts.update_traces(textposition='outside')
             fig_counts.update_layout(
                 plot_bgcolor='rgba(248,255,248,0.95)',
                 paper_bgcolor='rgba(232,245,232,0.8)',
                 font=dict(color='#1B5E20', family='Segoe UI'),
                 xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
                 yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                height=400
+                height=400,
+                showlegend=False
             )
             
             st.plotly_chart(fig_counts, use_container_width=True)
         
         with col_chart2:
-            # Conversion Rate by Class
+            top_15_cr = cls.nlargest(15, 'cr')
             fig_cr = px.bar(
-                cls.sort_values('cr', ascending=False).head(15), 
-                x='class', 
+                top_15_cr,
+                x='class',
                 y='cr',
                 title='<b style="color:#2E7D32;">💚 Conversion Rate by Class (%)</b>',
                 color='cr',
                 color_continuous_scale=['#A5D6A7', '#1B5E20'],
-                text='cr'
+                text=[f'{x:.1f}%' for x in top_15_cr['cr']]
             )
             
-            fig_cr.update_traces(
-                texttemplate='%{text:.1f}%',
-                textposition='outside'
-            )
-            
+            fig_cr.update_traces(textposition='outside')
             fig_cr.update_layout(
                 plot_bgcolor='rgba(248,255,248,0.95)',
                 paper_bgcolor='rgba(232,245,232,0.8)',
                 font=dict(color='#1B5E20', family='Segoe UI'),
                 xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
                 yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                height=400
+                height=400,
+                showlegend=False
             )
             
             st.plotly_chart(fig_cr, use_container_width=True)
         
-        # Top Classes Performance Table
+        # ✅ TOP CLASSES PERFORMANCE TABLE
         st.subheader("🏆 Top Class Performance")
-
+        
         num_classes = st.slider(
-            "Number of classes to display:", 
-            min_value=10, 
-            max_value=50, 
-            value=20, 
+            "Number of classes to display:",
+            min_value=10,
+            max_value=50,
+            value=20,
             step=5,
             key="class_count_slider"
         )
-
-        # 🚀 LAZY CSS LOADING - Only load once per session for classes
-        if 'class_health_css_loaded' not in st.session_state:
-            st.markdown("""
-            <style>
-            .class-health-metric-card {
-                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-                padding: 20px; border-radius: 15px; text-align: center; color: white;
-                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-                min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-                transition: transform 0.2s ease; width: 100%;
-            }
-            .class-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-            .class-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-            .class-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-            .class-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-            .health-class-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
-            .health-class-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
-            .health-class-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
-            .health-class-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
-            .health-class-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
-            </style>
-            """, unsafe_allow_html=True)
-            st.session_state.class_health_css_loaded = True
-
-        # ✅ REUSE: Dynamic month names from categories section (already defined above)
-        # If not defined, create it here
+        
+        # Reuse month_names
         if 'month_names' not in locals():
-            month_names = get_dynamic_month_names(queries_with_month)
-
-        # ✅ ENSURE: Month column exists
-        if 'queries_with_month' not in locals():
-            queries_with_month = queries.copy()
-            if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
-                queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
-
-        # 🚀 COMPUTE: Get class data with caching (filter-aware)
-        class_filter_state = {
-            'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': queries_with_month.shape,
-            'data_hash': hash(str(cls['class'].tolist()[:10]) if not cls.empty else "empty"),
-            'num_classes': num_classes
-        }
-        class_filter_key = str(hash(str(class_filter_state)))
-
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_class_health_performance_monthly(_df, _cls, month_names_dict, num_cls, cache_key):
-            """🔄 UNIFIED: Build complete class table directly from queries dataframe"""
-            if _df.empty or _cls.empty:
+            if 'queries_with_month' not in locals():
+                queries_with_month = queries.copy()
+                if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+                    queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+            
+            @st.cache_data(ttl=3600, show_spinner=False)
+            def get_month_names_cached(df):
+                if 'month' not in df.columns:
+                    return {}
+                unique_months = sorted(df['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
+                return {m: pd.to_datetime(m).strftime('%B %Y') for m in unique_months}
+            
+            month_names = get_month_names_cached(queries_with_month)
+        
+        # Compute monthly data
+        filter_key = f"{queries_with_month.shape}_{num_classes}_{hash(str(cls['class'].tolist()[:5]))}"
+        
+        @st.cache_data(ttl=1800, show_spinner=False, max_entries=5)
+        def compute_class_monthly(df, cls_df, month_dict, num_cls, cache_key):
+            """Optimized monthly class calculation"""
+            if df.empty or cls_df.empty:
                 return pd.DataFrame(), []
             
-            # Step 1: Get top classes by total counts
-            top_classes_list = _cls.nlargest(num_cls, 'Counts')['class'].tolist()
+            top_classes = cls_df.nlargest(num_cls, 'Counts')['class'].tolist()
+            top_data = df[df[class_column].isin(top_classes)].copy()
             
-            # Step 2: Filter original data for top classes
-            top_data = _df[_df[class_column].isin(top_classes_list)].copy()
+            if 'month' not in top_data.columns:
+                return pd.DataFrame(), []
             
-            # Step 3: Get unique months
-            if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
-            else:
-                unique_months = []
+            unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
             
-            # Step 4: Build comprehensive class data
-            result_data = []
+            # Vectorized groupby
+            grouped = top_data.groupby([class_column, 'month'], as_index=False).agg({
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            })
             
-            for class_name in top_classes_list:
-                class_data = top_data[top_data[class_column] == class_name]
-                
-                if class_data.empty:
+            grouped['ctr'] = np.where(grouped['Counts'] > 0, (grouped['clicks'] / grouped['Counts'] * 100), 0)
+            grouped['cr'] = np.where(grouped['Counts'] > 0, (grouped['conversions'] / grouped['Counts'] * 100), 0)
+            
+            # Build result
+            result_rows = []
+            dataset_total = df['Counts'].sum()
+            
+            for class_name in top_classes:
+                class_total = cls_df[cls_df['class'] == class_name]
+                if class_total.empty:
                     continue
                 
-                # ✅ CALCULATE: Base metrics
-                total_counts = int(class_data['Counts'].sum())
-                total_clicks = int(class_data['clicks'].sum())
-                total_conversions = int(class_data['conversions'].sum())
+                ct_row = class_total.iloc[0]
+                share_pct = (ct_row['Counts'] / dataset_total * 100) if dataset_total > 0 else 0
                 
-                if total_counts == 0:
-                    continue
-                
-                # Calculate total dataset counts for share percentage
-                dataset_total_counts = _df['Counts'].sum()
-                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
-                
-                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-                
-                # ✅ BUILD: Row data
                 row = {
                     'Class': class_name,
-                    'Total Volume': total_counts,
+                    'Total Volume': int(ct_row['Counts']),
                     'Share %': share_pct,
-                    'Overall CTR': overall_ctr,
-                    'Overall CR': overall_cr,
-                    'Total Clicks': total_clicks,
-                    'Total Conversions': total_conversions
+                    'Overall CTR': ct_row['ctr'],
+                    'Overall CR': ct_row['cr'],
+                    'Total Clicks': int(ct_row['clicks']),
+                    'Total Conversions': int(ct_row['conversions'])
                 }
                 
-                # ✅ CALCULATE: Monthly metrics
+                # Add monthly data
+                class_monthly = grouped[grouped[class_column] == class_name]
                 for month in unique_months:
-                    month_display = month_names_dict.get(month, month)
-                    month_data = class_data[class_data['month'] == month]
+                    month_display = month_dict.get(month, month)
+                    month_row = class_monthly[class_monthly['month'] == month]
                     
-                    if not month_data.empty:
-                        month_counts = int(month_data['Counts'].sum())
-                        month_clicks = int(month_data['clicks'].sum())
-                        month_conversions = int(month_data['conversions'].sum())
-                        
-                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                        
-                        row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr
-                        row[f'{month_display} CR'] = month_cr
+                    if not month_row.empty:
+                        mr = month_row.iloc[0]
+                        row[f'{month_display} Vol'] = int(mr['Counts'])
+                        row[f'{month_display} CTR'] = mr['ctr']
+                        row[f'{month_display} CR'] = mr['cr']
                     else:
                         row[f'{month_display} Vol'] = 0
                         row[f'{month_display} CTR'] = 0
                         row[f'{month_display} CR'] = 0
                 
-                result_data.append(row)
+                result_rows.append(row)
             
-            result_df = pd.DataFrame(result_data)
+            result_df = pd.DataFrame(result_rows)
             result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            result_df = result_df[result_df['Total Volume'] > 0]
-            
-            return result_df, unique_months
-
-        top_classes_monthly, unique_months_cls = compute_class_health_performance_monthly(
-            queries_with_month, 
-            cls, 
-            month_names, 
-            num_classes,
-            class_filter_key
+            return result_df[result_df['Total Volume'] > 0], unique_months
+        
+        top_classes_monthly, unique_months_cls = compute_class_monthly(
+            queries_with_month, cls, month_names, num_classes, filter_key
         )
-
-        if top_classes_monthly.empty:
-            st.warning("No valid class data after processing.")
-        else:
-            # ✅ SHOW: Filter status
+        
+        if not top_classes_monthly.empty:
             unique_classes_count = queries_with_month[class_column].nunique()
             
             if st.session_state.get('filters_applied', False):
-                st.info(f"🔍 **Filtered Results**: Showing Top {num_classes} classes from {unique_classes_count:,} total classes")
+                st.info(f"🔍 **Filtered**: Top {num_classes} from {unique_classes_count:,} classes")
             else:
-                st.info(f"📊 **All Data**: Showing Top {num_classes} classes from {unique_classes_count:,} total classes")
+                st.info(f"📊 **All Data**: Top {num_classes} from {unique_classes_count:,} classes")
             
-            # ✅ ORGANIZE: Column order - MATCHING SCREENSHOT PATTERN
+            # Organize columns
             base_columns = ['Class', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
-            
-            # Get sorted months
             sorted_months = sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))
             
-            # Build column lists
-            volume_columns = []
-            ctr_columns = []
-            cr_columns = []
+            volume_columns = [f'{month_names.get(m, m)} Vol' for m in sorted_months]
+            ctr_columns = [f'{month_names.get(m, m)} CTR' for m in sorted_months]
+            cr_columns = [f'{month_names.get(m, m)} CR' for m in sorted_months]
             
-            for month in sorted_months:
-                month_display = month_names.get(month, month)
-                volume_columns.append(f'{month_display} Vol')
-                ctr_columns.append(f'{month_display} CTR')
-                cr_columns.append(f'{month_display} CR')
-            
-            # ✅ CORRECT ORDER: Base → Volumes → CTRs → CRs
             ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
             existing_columns = [col for col in ordered_columns if col in top_classes_monthly.columns]
             top_classes_monthly = top_classes_monthly[existing_columns]
             
-            # ✅ FORMAT & STYLE
-            classes_hash = hash(str(top_classes_monthly.shape) + str(top_classes_monthly.columns.tolist()) + str(top_classes_monthly.iloc[0].to_dict()) if len(top_classes_monthly) > 0 else "empty")
-            styling_cache_key = f"{classes_hash}_{class_filter_key}"
+            # Format & cache styling
+            styling_key = f"{hash(str(top_classes_monthly.shape))}_{filter_key}"
             
             if ('styled_classes_health' not in st.session_state or 
-                st.session_state.get('classes_health_cache_key') != styling_cache_key):
+                st.session_state.get('classes_health_cache_key') != styling_key):
                 
-                st.session_state.classes_health_cache_key = styling_cache_key
+                st.session_state.classes_health_cache_key = styling_key
                 
-                display_classes = top_classes_monthly.copy()
+                display_df = top_classes_monthly.copy()
                 
-                # Format volume columns
-                volume_cols_to_format = ['Total Volume'] + volume_columns
-                for col in volume_cols_to_format:
-                    if col in display_classes.columns:
-                        display_classes[col] = display_classes[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                # Format volumes
+                for col in ['Total Volume'] + volume_columns:
+                    if col in display_df.columns:
+                        display_df[col] = display_df[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
                 
-                # Format clicks and conversions
-                if 'Total Clicks' in display_classes.columns:
-                    display_classes['Total Clicks'] = display_classes['Total Clicks'].apply(lambda x: format_number(int(x)))
-                if 'Total Conversions' in display_classes.columns:
-                    display_classes['Total Conversions'] = display_classes['Total Conversions'].apply(lambda x: format_number(int(x)))
+                if 'Total Clicks' in display_df.columns:
+                    display_df['Total Clicks'] = display_df['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_df.columns:
+                    display_df['Total Conversions'] = display_df['Total Conversions'].apply(lambda x: format_number(int(x)))
                 
-                # ✅ STYLING: Month-over-month comparison
-                def highlight_class_health_performance_with_comparison(df):
-                    """Enhanced highlighting for class comparison"""
+                # Optimized styling
+                def highlight_performance(df):
                     styles = pd.DataFrame('', index=df.index, columns=df.columns)
                     
                     if len(unique_months_cls) < 2:
@@ -10095,58 +9954,38 @@ with tab_class:
                     
                     sorted_months_local = sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))
                     
-                    # Compare consecutive months
                     for i in range(1, len(sorted_months_local)):
-                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        curr_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
                         prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
                         
-                        current_ctr_col = f'{current_month} CTR'
-                        prev_ctr_col = f'{prev_month} CTR'
-                        current_cr_col = f'{current_month} CR'
-                        prev_cr_col = f'{prev_month} CR'
-                        
-                        # CTR comparison
-                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                            for idx in df.index:
-                                current_ctr = df.loc[idx, current_ctr_col]
-                                prev_ctr = df.loc[idx, prev_ctr_col]
-                                
-                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                        
-                        # CR comparison
-                        if current_cr_col in df.columns and prev_cr_col in df.columns:
-                            for idx in df.index:
-                                current_cr = df.loc[idx, current_cr_col]
-                                prev_cr = df.loc[idx, prev_cr_col]
-                                
-                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                        for metric in ['CTR', 'CR']:
+                            curr_col = f'{curr_month} {metric}'
+                            prev_col = f'{prev_month} {metric}'
+                            
+                            if curr_col in df.columns and prev_col in df.columns:
+                                for idx in df.index:
+                                    curr_val = df.loc[idx, curr_col]
+                                    prev_val = df.loc[idx, prev_col]
+                                    
+                                    if pd.notnull(curr_val) and pd.notnull(prev_val) and prev_val > 0:
+                                        change_pct = ((curr_val - prev_val) / prev_val) * 100
+                                        if change_pct > 10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(76,175,80,0.3);color:#1B5E20;font-weight:bold;'
+                                        elif change_pct < -10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(244,67,54,0.3);color:#B71C1C;font-weight:bold;'
+                                        elif abs(change_pct) > 5:
+                                            color = 'rgba(76,175,80,0.15)' if change_pct > 0 else 'rgba(244,67,54,0.15)'
+                                            styles.loc[idx, curr_col] = f'background-color:{color};'
                     
-                    # Volume column highlighting
+                    # Volume highlighting
                     for col in volume_columns:
                         if col in df.columns:
-                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                            styles[col] = 'background-color:rgba(46,125,50,0.05);'
                     
                     return styles
                 
-                styled_classes = display_classes.style.apply(highlight_class_health_performance_with_comparison, axis=None)
-                
-                styled_classes = styled_classes.set_properties(**{
+                styled = display_df.style.apply(highlight_performance, axis=None)
+                styled = styled.set_properties(**{
                     'text-align': 'center',
                     'vertical-align': 'middle',
                     'font-size': '11px',
@@ -10165,88 +10004,61 @@ with tab_class:
                 }
                 
                 for col in ctr_columns + cr_columns:
-                    if col in display_classes.columns:
+                    if col in display_df.columns:
                         format_dict[col] = '{:.1f}%'
                 
-                styled_classes = styled_classes.format(format_dict)
-                st.session_state.styled_classes_health = styled_classes
+                styled = styled.format(format_dict)
+                st.session_state.styled_classes_health = styled
             
             # Display table
             html_content = st.session_state.styled_classes_health.to_html(index=False, escape=False)
-            html_content = html_content.strip()
-
             st.markdown(
-                f"""
-                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 5px;">
-                    {html_content}
-                </div>
-                """,
+                f'<div style="height:600px;overflow-y:auto;overflow-x:auto;border:1px solid #ddd;border-radius:5px;">{html_content}</div>',
                 unsafe_allow_html=True
             )
             
             # Legend
             st.markdown("""
-            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Comparison Guide:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+            <div style="background:rgba(46,125,50,0.1);padding:12px;border-radius:8px;margin:15px 0;">
+                <h4 style="margin:0 0 8px 0;color:#1B5E20;">🎯 Class Comparison Guide:</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                    <div>📈 <strong style="background-color:rgba(76,175,80,0.3);padding:2px 6px;border-radius:4px;color:#1B5E20;">Dark Green</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
+                    <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # Column organization explanation
-            if unique_months_cls:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months_cls, key=lambda x: pd.to_datetime(x))]
-                st.markdown(f"""
-                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🎯 Class Column Organization:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Class, Total Volume, Share %, Overall CTR/CR</div>
-                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
-                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
-                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Download section
+            # Download
             st.markdown("<br>", unsafe_allow_html=True)
-            
             csv_classes = top_classes_monthly.to_csv(index=False)
             
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
                 filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
-                
                 st.download_button(
                     label="📥 Download Classes CSV",
                     data=csv_classes,
                     file_name=f"top_{num_classes}_classes{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the classes table with current filter settings applied",
                     use_container_width=True,
                     key="class_monthly_download"
                 )
-
-
+        else:
+            st.warning("No valid class data after processing.")
     
     with col_right:
-        # Class Market Share Pie Chart
         st.subheader("🎯 Class Market Share")
         
-        top_classes_pie = cls.nlargest(10, 'Counts')
-        
-        # Health-focused color palette
+        top_classes_pie = cls.head(10)
         health_colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
                         '#C8E6C8', '#E8F5E8', '#388E3C', '#689F38', '#8BC34A']
         
         fig_pie = px.pie(
-            top_classes_pie, 
-            names='class', 
+            top_classes_pie,
+            names='class',
             values='Counts',
             title='<b style="color:#2E7D32;">🎯 Market Distribution</b>',
             color_discrete_sequence=health_colors
@@ -10259,13 +10071,12 @@ with tab_class:
         
         st.plotly_chart(fig_pie, use_container_width=True)
         
-        # Class Performance Categories
+        # Performance distribution
         st.subheader("🎯 Class Performance Distribution")
         
-        # Categorize classes based on performance
         cls['performance_category'] = pd.cut(
-            cls['ctr'], 
-            bins=[0, 2, 5, 10, float('inf')], 
+            cls['ctr'],
+            bins=[0, 2, 5, 10, float('inf')],
             labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
         )
         
@@ -10273,38 +10084,32 @@ with tab_class:
         class_perf_counts.columns = ['Performance Level', 'Count']
         
         fig_class_perf = px.bar(
-            class_perf_counts, 
-            x='Performance Level', 
+            class_perf_counts,
+            x='Performance Level',
             y='Count',
-            title='<b style="color:#2E7D32;">🎯 Health CTR Performance Distribution</b>',
+            title='<b style="color:#2E7D32;">🎯 CTR Performance Distribution</b>',
             color='Count',
             color_continuous_scale=['#E8F5E8', '#2E7D32'],
             text='Count'
         )
         
-        fig_class_perf.update_traces(
-            texttemplate='%{text}',
-            textposition='outside'
-        )
-        
+        fig_class_perf.update_traces(textposition='outside')
         fig_class_perf.update_layout(
             plot_bgcolor='rgba(248,255,248,0.95)',
             paper_bgcolor='rgba(232,245,232,0.8)',
             font=dict(color='#1B5E20', family='Segoe UI'),
             xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-            yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+            yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+            showlegend=False
         )
         
         st.plotly_chart(fig_class_perf, use_container_width=True)
         
-        # Enhanced Class Trend Analysis
+        # ✅ OPTIMIZED TREND ANALYSIS
         if 'Date' in queries.columns:
             st.subheader("📈 Class Trend Analysis")
             
-            # Get top 5 classes for trend analysis
-            top_5_classes = cls.nlargest(5, 'Counts')['class'].tolist()
-            
-            # Filter data for top 5 classes
+            top_5_classes = cls.head(5)['class'].tolist()
             trend_data = queries[
                 (queries[class_column].isin(top_5_classes)) &
                 (queries[class_column].notna())
@@ -10312,64 +10117,38 @@ with tab_class:
             
             if not trend_data.empty:
                 try:
-                    # Better date processing
                     trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
                     trend_data = trend_data.dropna(subset=['Date'])
                     
                     if not trend_data.empty:
-                        # Create month column if it doesn't exist
                         if 'month' not in trend_data.columns:
                             trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
                         
-                        # Use exact same logic as the table function
-                        monthly_trends_list = []
+                        # Vectorized monthly aggregation
+                        monthly_trends = trend_data.groupby([class_column, 'month'], as_index=False).agg({
+                            'Counts': 'sum',
+                            'clicks': 'sum',
+                            'conversions': 'sum'
+                        })
                         
-                        for class_name in top_5_classes:
-                            class_data = trend_data[trend_data[class_column] == class_name]
-                            
-                            if class_data.empty:
-                                continue
-                            
-                            # Get unique months for this class
-                            unique_months_trend = sorted(class_data['month'].unique())
-                            
-                            for month in unique_months_trend:
-                                month_data = class_data[class_data['month'] == month]
-                                
-                                if not month_data.empty:
-                                    # Exact same calculation as your table
-                                    month_counts = int(month_data['Counts'].sum())
-                                    month_clicks = int(month_data['clicks'].sum())
-                                    month_conversions = int(month_data['conversions'].sum())
-                                    
-                                    # Month-specific CTR and CR calculations (same as table)
-                                    month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                                    month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                                    
-                                    monthly_trends_list.append({
-                                        'month': month,
-                                        'class': class_name,
-                                        'Counts': month_counts,
-                                        'clicks': month_clicks,
-                                        'conversions': month_conversions,
-                                        'CTR': round(month_ctr, 2),
-                                        'CR': round(month_cr, 2)
-                                    })
+                        monthly_trends['CTR'] = np.where(
+                            monthly_trends['Counts'] > 0,
+                            (monthly_trends['clicks'] / monthly_trends['Counts'] * 100),
+                            0
+                        ).round(2)
                         
-                        # Convert to DataFrame
-                        monthly_trends = pd.DataFrame(monthly_trends_list)
+                        monthly_trends['CR'] = np.where(
+                            monthly_trends['Counts'] > 0,
+                            (monthly_trends['conversions'] / monthly_trends['Counts'] * 100),
+                            0
+                        ).round(2)
+                        
+                        monthly_trends = monthly_trends.rename(columns={class_column: 'class'})
+                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
+                        monthly_trends = monthly_trends.sort_values(['Date', 'class'])
                         
                         if not monthly_trends.empty:
-                            # Convert month to proper datetime for plotting
-                            monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
-                            monthly_trends = monthly_trends.sort_values(['Date', 'class'])
-                            
-                            # Debug: Show the actual data to verify calculations match table
-                            with st.expander("🔍 Debug - Monthly Trends Data (Click to verify calculations)", expanded=False):
-                                debug_df = monthly_trends[['month', 'class', 'Counts', 'clicks', 'conversions', 'CTR', 'CR']].copy()
-                                st.dataframe(debug_df, use_container_width=True)
-                            
-                            # Better metric selector
+                            # Metric selector
                             st.markdown("### 📊 Select Metric to Analyze:")
                             col1, col2, col3 = st.columns(3)
                             
@@ -10380,7 +10159,6 @@ with tab_class:
                             with col3:
                                 show_cr = st.checkbox("🎯 CR (%)", value=False, key="show_cr_trend_class")
                             
-                            # Dynamic charts: Create charts based on selection
                             charts_to_show = []
                             if show_volume:
                                 charts_to_show.append(('Search Volume', 'Counts', '🎯 Top 5 Classes - Monthly Search Volume Trend'))
@@ -10392,19 +10170,11 @@ with tab_class:
                             if not charts_to_show:
                                 st.warning("Please select at least one metric to display.")
                             else:
-                                # Month names: Create month display mapping (same as table)
-                                month_names_display = {
-                                    '2025-06': 'June 2025',
-                                    '2025-07': 'July 2025', 
-                                    '2025-08': 'August 2025'
-                                }
-                                
                                 for metric_name, y_column, chart_title in charts_to_show:
-                                    # Create: Trend chart
                                     fig_trend = px.line(
-                                        monthly_trends, 
-                                        x='Date', 
-                                        y=y_column, 
+                                        monthly_trends,
+                                        x='Date',
+                                        y=y_column,
                                         color='class',
                                         title=f'<b style="color:#2E7D32;">{chart_title}</b>',
                                         color_discrete_sequence=['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7'],
@@ -10412,14 +10182,13 @@ with tab_class:
                                         line_shape='spline'
                                     )
                                     
-                                    # Better layout
                                     fig_trend.update_layout(
                                         plot_bgcolor='rgba(248,255,248,0.95)',
                                         paper_bgcolor='rgba(232,245,232,0.8)',
                                         font=dict(color='#1B5E20', family='Segoe UI', size=12),
                                         height=500,
                                         xaxis=dict(
-                                            showgrid=True, 
+                                            showgrid=True,
                                             gridcolor='#C8E6C8',
                                             title='<b>Month</b>',
                                             dtick="M1",
@@ -10427,7 +10196,7 @@ with tab_class:
                                             tickangle=0
                                         ),
                                         yaxis=dict(
-                                            showgrid=True, 
+                                            showgrid=True,
                                             gridcolor='#C8E6C8',
                                             title=f'<b>{metric_name}</b>',
                                             tickformat='.0f' if y_column == 'Counts' else '.2f'
@@ -10445,46 +10214,35 @@ with tab_class:
                                         )
                                     )
                                     
-                                    # Create hover data that matches each data point exactly
-                                    fig_trend.update_traces(
-                                        hovertemplate='<b>%{fullData.name}</b><br>' +
-                                                    'Month: %{x|%B %Y}<br>' +
-                                                    'Search Volume: %{customdata[0]}<br>' +
-                                                    'CTR: %{customdata[1]}%<br>' +
-                                                    'CR: %{customdata[2]}%<br>' +
-                                                    'Total Clicks: %{customdata[3]}<br>' +
-                                                    'Total Conversions: %{customdata[4]}<extra></extra>'
-                                    )
-                                    
-                                    # Add custom data for each trace individually
+                                    # Optimized hover with customdata
                                     for i, trace in enumerate(fig_trend.data):
                                         class_name = trace.name
                                         class_data = monthly_trends[monthly_trends['class'] == class_name].sort_values('Date')
                                         
-                                        # Create customdata for this specific class with exact values
                                         customdata = []
                                         for _, row in class_data.iterrows():
                                             customdata.append([
-                                                format_number(int(row['Counts'])),      # Search Volume
-                                                f"{row['CTR']:.2f}",                   # CTR (exact from calculation)
-                                                f"{row['CR']:.2f}",                    # CR (exact from calculation)
-                                                format_number(int(row['clicks'])),     # Total Clicks
-                                                format_number(int(row['conversions'])) # Total Conversions
+                                                format_number(int(row['Counts'])),
+                                                f"{row['CTR']:.2f}",
+                                                f"{row['CR']:.2f}",
+                                                format_number(int(row['clicks'])),
+                                                format_number(int(row['conversions']))
                                             ])
                                         
                                         fig_trend.data[i].customdata = customdata
-                                        
-                                        # Better line styling
                                         fig_trend.data[i].line.width = 3
                                         fig_trend.data[i].marker.size = 8
                                         fig_trend.data[i].marker.line.width = 2
                                         fig_trend.data[i].marker.line.color = 'white'
                                     
+                                    fig_trend.update_traces(
+                                        hovertemplate='<b>%{fullData.name}</b><br>Month: %{x|%B %Y}<br>Search Volume: %{customdata[0]}<br>CTR: %{customdata[1]}%<br>CR: %{customdata[2]}%<br>Clicks: %{customdata[3]}<br>Conversions: %{customdata[4]}<extra></extra>'
+                                    )
+                                    
                                     st.plotly_chart(fig_trend, use_container_width=True)
                                     
-                                    # Insights: Add trend insights below each chart
+                                    # Month-over-month insights
                                     if len(monthly_trends['Date'].unique()) >= 2:
-                                        # Calculate month-over-month changes
                                         latest_month = monthly_trends['Date'].max()
                                         prev_month_dates = sorted(monthly_trends['Date'].unique())
                                         prev_month = prev_month_dates[-2] if len(prev_month_dates) >= 2 else None
@@ -10509,57 +10267,37 @@ with tab_class:
                                             
                                             if insights:
                                                 st.markdown(f"""
-                                                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                                                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">📊 Month-over-Month {metric_name} Changes:</h4>
-                                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                                                <div style="background:rgba(46,125,50,0.1);padding:10px;border-radius:8px;margin:10px 0;">
+                                                    <h4 style="margin:0 0 8px 0;color:#1B5E20;">📊 Month-over-Month {metric_name} Changes:</h4>
+                                                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
                                                         {''.join([f'<div>{insight}</div>' for insight in insights])}
                                                     </div>
                                                 </div>
                                                 """, unsafe_allow_html=True)
                                     
                                     st.markdown("<br>", unsafe_allow_html=True)
-                                
-                                
                         else:
                             st.info("No valid trend data available for the top 5 classes")
                     else:
-                        st.info("No valid dates found in the health class data")
+                        st.info("No valid dates found in the class data")
                 except Exception as e:
-                    st.error(f"Error processing health class trend data: {str(e)}")
-                    st.write("Debug info:", str(e))
+                    st.error(f"Error processing class trend data: {str(e)}")
             else:
-                st.info("No health class data available for trend analysis")
-
+                st.info("No class data available for trend analysis")
+        
         st.markdown("---")
-
     
-    # Enhanced Class-Keyword Intelligence Matrix
+    # ✅ CLASS-KEYWORD INTELLIGENCE MATRIX (OPTIMIZED)
     st.subheader("🔥 Class-Keyword Intelligence Matrix")
-
-    # Create class filter dropdown
+    
     if 'search' in queries.columns:
-        # Get available classes (excluding null and 'other')
-        available_classes = class_queries[class_column].unique()
-        
-        # Sort classes alphabetically
-        available_classes = sorted(available_classes)
-        
-        # Create dropdown with "All Classes" option
+        available_classes = sorted(class_queries[class_column].unique())
         class_options = ['All Classes'] + list(available_classes)
         
-        # Enhanced UI for class selection with metrics
         st.markdown("""
-        <div style="
-            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
-            border: 2px solid #4CAF50;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
-        ">
-            <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">
-                🎯 Class Analysis Control Center
-            </h4>
+        <div style="background:linear-gradient(135deg,#E8F5E8 0%,#F1F8E9 100%);border:2px solid #4CAF50;border-radius:15px;
+        padding:1.5rem;margin:1rem 0;box-shadow:0 4px 15px rgba(76,175,80,0.2);">
+            <h4 style="color:#1B5E20;margin:0 0 1rem 0;text-align:center;">🎯 Class Analysis Control Center</h4>
         </div>
         """, unsafe_allow_html=True)
         
@@ -10575,17 +10313,15 @@ with tab_class:
         
         with col_metrics:
             if selected_class != 'All Classes':
-                # Show metrics for selected class
                 class_metrics = cls[cls['class'] == selected_class].iloc[0] if not cls[cls['class'] == selected_class].empty else None
                 
                 if class_metrics is not None:
-                    # Now showing 5 metrics including both CR types with format_number
                     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
                     
                     with metric_col1:
                         st.markdown(f"""
                         <div class="class-metric-card">
-                            <div class="class-metric-value">{format_number(class_metrics['Counts'])}</div>
+                            <div class="class-metric-value">{format_number(int(class_metrics['Counts']))}</div>
                             <div class="class-metric-label">📊 Total Searches</div>
                         </div>
                         """, unsafe_allow_html=True)
@@ -10622,18 +10358,14 @@ with tab_class:
                         </div>
                         """, unsafe_allow_html=True)
             else:
-                # Use the same calculation method as main dashboard cards
-                # Calculate from raw data instead of averaging class metrics
                 total_searches = int(class_queries['Counts'].sum())
                 total_clicks = int(class_queries['clicks'].sum())
                 total_conversions = int(class_queries['conversions'].sum())
                 
-                # Consistent: Same calculation as main dashboard
                 overall_ctr_matrix = (total_clicks / total_searches * 100) if total_searches > 0 else 0
                 overall_cr_matrix = (total_conversions / total_searches * 100) if total_searches > 0 else 0
                 overall_classic_cr_matrix = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
                 
-                # Now showing 5 metrics with consistent calculations
                 metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
                 
                 with metric_col1:
@@ -10676,18 +10408,15 @@ with tab_class:
                     </div>
                     """, unsafe_allow_html=True)
         
-        # Filter data based on selection
+        # Filter data
         if selected_class == 'All Classes':
-            # Show top 8 classes if "All Classes" is selected
-            top_classes_matrix = cls.nlargest(8, 'Counts')['class'].tolist()
+            top_classes_matrix = cls.head(8)['class'].tolist()
             filtered_data = class_queries[class_queries[class_column].isin(top_classes_matrix)]
-            matrix_title = "Top Health Classes vs Nutraceuticals & Nutrition Search Terms"
+            matrix_title = "Top Classes vs Search Terms"
         else:
-            # Filter for selected class only
             filtered_data = class_queries[class_queries[class_column] == selected_class]
-            matrix_title = f"{selected_class} - Nutraceuticals & Nutrition Search Terms Analysis"
+            matrix_title = f"{selected_class} - Search Terms Analysis"
         
-        # Remove null values from search terms
         matrix_data = filtered_data[
             (filtered_data[class_column].notna()) & 
             (filtered_data['search'].notna()) &
@@ -10696,55 +10425,48 @@ with tab_class:
         
         if not matrix_data.empty:
             if selected_class == 'All Classes':
-                # Enhanced heatmap with CTR/CR data
-                class_search_matrix = matrix_data.groupby([class_column, 'search']).agg({
+                # Vectorized aggregation
+                class_search_matrix = matrix_data.groupby([class_column, 'search'], as_index=False).agg({
                     'Counts': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
-                }).reset_index()
+                })
                 
                 class_search_matrix = class_search_matrix.rename(columns={class_column: 'class'})
                 
-                # Calculate CTR and CR for each class-search combination
-                class_search_matrix['ctr'] = ((class_search_matrix['clicks'] / class_search_matrix['Counts']) * 100).round(2)
-                class_search_matrix['cr'] = ((class_search_matrix['conversions'] / class_search_matrix['Counts']) * 100).round(2)
-                class_search_matrix['classic_cr'] = ((class_search_matrix['conversions'] / class_search_matrix['clicks']) * 100).fillna(0).round(2)
+                # Vectorized metrics
+                class_search_matrix['ctr'] = np.where(
+                    class_search_matrix['Counts'] > 0,
+                    (class_search_matrix['clicks'] / class_search_matrix['Counts'] * 100),
+                    0
+                ).round(2)
                 
-                # Get top search terms across all classes
+                class_search_matrix['cr'] = np.where(
+                    class_search_matrix['Counts'] > 0,
+                    (class_search_matrix['conversions'] / class_search_matrix['Counts'] * 100),
+                    0
+                ).round(2)
+                
+                class_search_matrix['classic_cr'] = np.where(
+                    class_search_matrix['clicks'] > 0,
+                    (class_search_matrix['conversions'] / class_search_matrix['clicks'] * 100),
+                    0
+                ).round(2)
+                
+                # Get top searches
                 top_searches = matrix_data['search'].value_counts().head(12).index.tolist()
                 class_search_matrix = class_search_matrix[class_search_matrix['search'].isin(top_searches)]
                 
-                # Create pivot tables
-                heatmap_data = class_search_matrix.pivot(
-                    index='class', 
-                    columns='search', 
-                    values='Counts'
-                ).fillna(0)
-                
-                # Create pivot tables for CTR, CR, and Classic CR
-                ctr_data = class_search_matrix.pivot(
-                    index='class', 
-                    columns='search', 
-                    values='ctr'
-                ).fillna(0)
-                
-                cr_data = class_search_matrix.pivot(
-                    index='class', 
-                    columns='search', 
-                    values='cr'
-                ).fillna(0)
-                
-                classic_cr_data = class_search_matrix.pivot(
-                    index='class', 
-                    columns='search', 
-                    values='classic_cr'
-                ).fillna(0)
+                # Create pivots
+                heatmap_data = class_search_matrix.pivot(index='class', columns='search', values='Counts').fillna(0)
+                ctr_data = class_search_matrix.pivot(index='class', columns='search', values='ctr').fillna(0)
+                cr_data = class_search_matrix.pivot(index='class', columns='search', values='cr').fillna(0)
+                classic_cr_data = class_search_matrix.pivot(index='class', columns='search', values='classic_cr').fillna(0)
                 
                 if not heatmap_data.empty:
-                    # Create the heatmap
                     fig_matrix = px.imshow(
                         heatmap_data.values,
-                        labels=dict(x="Nutraceuticals & Nutrition Search Terms", y="Health Classes", color="Total Counts"),
+                        labels=dict(x="Search Terms", y="Classes", color="Total Counts"),
                         x=heatmap_data.columns,
                         y=heatmap_data.index,
                         color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
@@ -10752,7 +10474,7 @@ with tab_class:
                         aspect='auto'
                     )
                     
-                    # Create custom hover data with CTR, CR, and Classic CR using format_number
+                    # Custom hover
                     hover_text = []
                     for i, class_name in enumerate(heatmap_data.index):
                         hover_row = []
@@ -10762,12 +10484,7 @@ with tab_class:
                             cr = cr_data.iloc[i, j]
                             classic_cr = classic_cr_data.iloc[i, j]
                             hover_row.append(
-                                f"<b>{class_name}</b><br>" +
-                                f"Search Term: {search}<br>" +
-                                f"Total Searches: {format_number(counts)}<br>" +
-                                f"CTR: {ctr:.1f}%<br>" +
-                                f"CR (Search): {cr:.1f}%<br>" +
-                                f"Classic CR: {classic_cr:.1f}%"
+                                f"<b>{class_name}</b><br>Search Term: {search}<br>Total Searches: {format_number(int(counts))}<br>CTR: {ctr:.1f}%<br>CR (Search): {cr:.1f}%<br>Classic CR: {classic_cr:.1f}%"
                             )
                         hover_text.append(hover_row)
                     
@@ -10786,25 +10503,37 @@ with tab_class:
                     
                     st.plotly_chart(fig_matrix, use_container_width=True)
                     
-                    # Show summary statistics
-                    total_interactions = class_search_matrix['Counts'].sum()
-                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} health classes × {len(heatmap_data.columns)} Nutraceuticals & Nutrition search terms with {format_number(total_interactions)} total searches")
+                    total_interactions = int(class_search_matrix['Counts'].sum())
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} classes × {len(heatmap_data.columns)} search terms with {format_number(total_interactions)} total searches")
             else:
-                # Single class analysis with enhanced bar chart
-                class_search_data = matrix_data.groupby('search').agg({
+                # Single class analysis
+                class_search_data = matrix_data.groupby('search', as_index=False).agg({
                     'Counts': 'sum',
                     'clicks': 'sum',
                     'conversions': 'sum'
-                }).reset_index()
+                })
                 
-                # Calculate CTR and CR
-                class_search_data['ctr'] = ((class_search_data['clicks'] / class_search_data['Counts']) * 100).round(2)
-                class_search_data['cr'] = ((class_search_data['conversions'] / class_search_data['Counts']) * 100).round(2)
-                class_search_data['classic_cr'] = ((class_search_data['conversions'] / class_search_data['clicks']) * 100).fillna(0).round(2)
+                class_search_data['ctr'] = np.where(
+                    class_search_data['Counts'] > 0,
+                    (class_search_data['clicks'] / class_search_data['Counts'] * 100),
+                    0
+                ).round(2)
                 
-                class_search_data = class_search_data.sort_values('Counts', ascending=False).head(15)
+                class_search_data['cr'] = np.where(
+                    class_search_data['Counts'] > 0,
+                    (class_search_data['conversions'] / class_search_data['Counts'] * 100),
+                    0
+                ).round(2)
                 
-                # Add CR selection for chart coloring
+                class_search_data['classic_cr'] = np.where(
+                    class_search_data['clicks'] > 0,
+                    (class_search_data['conversions'] / class_search_data['clicks'] * 100),
+                    0
+                ).round(2)
+                
+                class_search_data = class_search_data.nlargest(15, 'Counts')
+                
+                # CR selection
                 st.markdown("#### 📊 Chart Display Options")
                 cr_option = st.radio(
                     "Color bars by:",
@@ -10814,7 +10543,6 @@ with tab_class:
                     key="class_cr_option_radio"
                 )
                 
-                # Determine which CR to use for coloring
                 color_column = 'classic_cr' if cr_option == 'Classic CR (Conversions/Clicks)' else 'cr'
                 color_label = 'Classic CR (%)' if cr_option == 'Classic CR (Conversions/Clicks)' else 'CR Search-based (%)'
                 
@@ -10823,25 +10551,24 @@ with tab_class:
                     x='search',
                     y='Counts',
                     title=f'<b style="color:#2E7D32;">{matrix_title}</b>',
-                    labels={'search': 'Health Search Terms', 'Counts': 'Total Search Volume'},
+                    labels={'search': 'Search Terms', 'Counts': 'Total Search Volume'},
                     color=color_column,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    text='Counts'
+                    text=[format_number(int(x)) for x in class_search_data['Counts']]
                 )
                 
-                # Enhanced hover template with both CR types using format_number
+                # Optimized hover
+                customdata = np.column_stack([
+                    class_search_data['ctr'].values,
+                    class_search_data['cr'].values,
+                    class_search_data['classic_cr'].values,
+                    class_search_data['Counts'].apply(format_number).values
+                ])
+                
                 fig_class_search.update_traces(
-                    texttemplate='%{text}',
                     textposition='outside',
-                    hovertemplate='<b>%{x}</b><br>' +
-                                'Search Volume: %{customdata[3]}<br>' +
-                                'CTR: %{customdata[0]:.1f}%<br>' +
-                                'CR (Search): %{customdata[1]:.1f}%<br>' +
-                                'Classic CR: %{customdata[2]:.1f}%<br>' +
-                                f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
-                    customdata=[[row['ctr'], row['cr'], row['classic_cr'], format_number(row['Counts'])] 
-                            for _, row in class_search_data.iterrows()],
-                    text=[format_number(x) for x in class_search_data['Counts']]
+                    hovertemplate='<b>%{x}</b><br>Search Volume: %{customdata[3]}<br>CTR: %{customdata[0]:.1f}%<br>CR (Search): %{customdata[1]:.1f}%<br>Classic CR: %{customdata[2]:.1f}%<br>' + f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
+                    customdata=customdata
                 )
                 
                 fig_class_search.update_layout(
@@ -10851,29 +10578,27 @@ with tab_class:
                     height=500,
                     xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
                     yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                    coloraxis_colorbar=dict(title=color_label)
+                    coloraxis_colorbar=dict(title=color_label),
+                    showlegend=False
                 )
                 
                 st.plotly_chart(fig_class_search, use_container_width=True)
                 
-                # Display both CR metrics in a comparison table
-                # ✅ ENHANCED: Display both CR metrics using styled table function
+                # Display comparison table
                 display_comparison = class_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
                 display_comparison = display_comparison.rename(columns={
-                    'search': 'Health Search Term',
+                    'search': 'Search Term',
                     'Counts': 'Search Volume',
                     'ctr': 'CTR (%)',
                     'cr': 'CR Search-based (%)',
                     'classic_cr': 'Classic CR (%)'
                 })
-
-                # 🚀 Format the display using format_number
-                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(format_number)
+                
+                display_comparison['Search Volume'] = display_comparison['Search Volume'].apply(lambda x: format_number(int(x)))
                 display_comparison['CTR (%)'] = display_comparison['CTR (%)'].apply(lambda x: f"{x:.1f}%")
                 display_comparison['CR Search-based (%)'] = display_comparison['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
                 display_comparison['Classic CR (%)'] = display_comparison['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
-
-                # ✅ USE STYLED TABLE FUNCTION
+                
                 display_styled_table(
                     df=display_comparison,
                     title="📋 Search Terms Performance Comparison",
@@ -10882,83 +10607,72 @@ with tab_class:
                     max_height="900px",
                     align="center"
                 )
-
         else:
-            st.warning("⚠️ No Nutraceuticals & Nutrition class data available for the selected filter")
-
-    st.markdown("---")
-
+            st.warning("⚠️ No class data available for the selected filter")
     
-    # Enhanced Top Keywords per Class Analysis
-    # 🔑 Top Keywords per Nutraceuticals & Nutrition Class Analysis
+    st.markdown("---")
+    
+    # ✅ TOP KEYWORDS PER CLASS (OPTIMIZED)
     st.subheader("🔑 Top Keywords per Class Analysis")
-
-    # Number of keywords selection option - moved to top
+    
     num_keywords = st.selectbox(
         "🔥 Select number of top keywords to analyze:",
         options=[10, 15, 20, 25, 30, 50],
         index=0,
         key="num_keywords_selector_class"
     )
-
+    
     try:
-        # Calculate keywords per class using the enhanced approach
-        rows = []
-        for cls_name, grp in class_queries.groupby(class_column):
-            # Use the keywords column that was created by prepare_queries_df function
-            keyword_counts = {}
+        # Vectorized keyword extraction
+        @st.cache_data(ttl=1800, show_spinner=False)
+        def extract_class_keywords(df, cls_col, num_kw):
+            """Optimized keyword extraction with vectorization"""
+            rows = []
             
-            for idx, row in grp.iterrows():
-                keywords_list = row['keywords']
-                query_count = row['Counts']
+            for cls_name, grp in df.groupby(cls_col):
+                keyword_counts = {}
                 
-                if isinstance(keywords_list, list):
-                    # Add the query count to each keyword
-                    for keyword in keywords_list:
-                        if keyword in keyword_counts:
-                            keyword_counts[keyword] += query_count
-                        else:
-                            keyword_counts[keyword] = query_count
-                elif pd.notna(keywords_list):
-                    # Fallback: use normalized_query if keywords is not a list
-                    search_term = row['normalized_query']
-                    if pd.notna(search_term):
-                        keywords = str(search_term).lower().split()
-                        for keyword in keywords:
-                            if keyword in keyword_counts:
-                                keyword_counts[keyword] += query_count
-                            else:
-                                keyword_counts[keyword] = query_count
+                for _, row in grp.iterrows():
+                    keywords_list = row['keywords']
+                    query_count = row['Counts']
+                    
+                    if isinstance(keywords_list, list):
+                        for keyword in keywords_list:
+                            keyword_counts[keyword] = keyword_counts.get(keyword, 0) + query_count
+                    elif pd.notna(keywords_list):
+                        search_term = row['normalized_query']
+                        if pd.notna(search_term):
+                            keywords = str(search_term).lower().split()
+                            for keyword in keywords:
+                                keyword_counts[keyword] = keyword_counts.get(keyword, 0) + query_count
+                
+                top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:num_kw]
+                
+                for keyword, count in top_keywords:
+                    rows.append({'class': cls_name, 'keyword': keyword, 'count': count})
             
-            # Get top N keywords for this class based on selection
-            top_keywords = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:num_keywords]
-            
-            for keyword, count in top_keywords:
-                rows.append({'class': cls_name, 'keyword': keyword, 'count': count})
+            return pd.DataFrame(rows)
         
-        df_ckw = pd.DataFrame(rows)
+        df_ckw = extract_class_keywords(class_queries, class_column, num_keywords)
         
         if not df_ckw.empty:
-            # Create pivot table for keyword analysis
             pivot_ckw = df_ckw.pivot_table(index='class', columns='keyword', values='count', fill_value=0)
             
-            # Display options - FIXED: Added unique key
             display_option = st.radio(
                 "Choose keyword display format:",
                 ["Top Keywords Summary", "Heatmap Visualization"],
                 horizontal=True,
-                key="class_keyword_display_radio"  # ✅ UNIQUE KEY ADDED
+                key="class_keyword_display_radio"
             )
             
             if display_option == "Heatmap Visualization":
-                # Create heatmap for keyword-class matrix
                 fig_keyword_heatmap = px.imshow(
                     pivot_ckw.values,
-                    labels=dict(x="Health Keywords", y="Nutraceuticals & Nutrition Classes", color="Keyword Count"),
+                    labels=dict(x="Keywords", y="Classes", color="Keyword Count"),
                     x=pivot_ckw.columns,
                     y=pivot_ckw.index,
                     color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                    title=f'<b style="color:#2E7D32;">🎯 Nutraceuticals & Nutrition Class-Health Keyword Frequency Heatmap (Top {num_keywords})</b>',
+                    title=f'<b style="color:#2E7D32;">🎯 Class-Keyword Frequency Heatmap (Top {num_keywords})</b>',
                     aspect='auto'
                 )
                 
@@ -10973,83 +10687,79 @@ with tab_class:
                 st.plotly_chart(fig_keyword_heatmap, use_container_width=True)
             
             else:  # Top Keywords Summary
-                # Show top keywords summary by class with enhanced accuracy
                 st.subheader(f"🔥 Top {num_keywords} Keywords by Class")
+                
+                # Vectorized summary calculation
+                total_volume_all_classes = cls['Counts'].sum()
                 
                 top_keywords_summary = []
                 class_stats = {}
                 
-                # Calculate total volume across all classes for share percentage
-                total_volume_all_classes = cls['Counts'].sum()
-                
                 for cls_name in df_ckw['class'].unique():
-                    cls_data = df_ckw[df_ckw['class'] == cls_name].sort_values('count', ascending=False)
+                    cls_data = df_ckw[df_ckw['class'] == cls_name].nlargest(num_keywords, 'count')
                     
-                    # Get top N keywords for this class
-                    top_n_keywords = cls_data.head(num_keywords)
-                    
-                    # Create formatted keyword string with counts using format_number
-                    keywords_list = []
-                    for _, row in top_n_keywords.iterrows():
-                        keywords_list.append(f"{row['keyword']} ({format_number(row['count'])})")
-                    
+                    # Format keywords with counts
+                    keywords_list = [f"{row['keyword']} ({format_number(int(row['count']))})" 
+                                   for _, row in cls_data.iterrows()]
                     keywords_str = ' | '.join(keywords_list)
                     
-                    # Calculate class statistics
-                    actual_class_total = cls[cls['class'] == cls_name]['Counts'].iloc[0] if len(cls[cls['class'] == cls_name]) > 0 else cls_data['count'].sum()
-                    share_percentage = (actual_class_total / total_volume_all_classes * 100)
+                    # Get class statistics
+                    class_row = cls[cls['class'] == cls_name]
+                    actual_class_total = int(class_row['Counts'].iloc[0]) if len(class_row) > 0 else int(cls_data['count'].sum())
+                    share_percentage = (actual_class_total / total_volume_all_classes * 100) if total_volume_all_classes > 0 else 0
                     
-                    total_keyword_count = cls_data['count'].sum()
-                    unique_keywords = len(cls_data)
-                    avg_keyword_count = cls_data['count'].mean()
-                    top_keyword_dominance = (top_n_keywords.iloc[0]['count'] / total_keyword_count * 100) if len(top_n_keywords) > 0 else 0
+                    total_keyword_count = int(cls_data['count'].sum())
+                    unique_keywords = len(df_ckw[df_ckw['class'] == cls_name])
+                    avg_keyword_count = float(cls_data['count'].mean())
+                    top_keyword_dominance = (float(cls_data.iloc[0]['count']) / total_keyword_count * 100) if len(cls_data) > 0 and total_keyword_count > 0 else 0
                     
-                    # Store class stats for additional insights
+                    # Store stats
                     class_stats[cls_name] = {
                         'total_keywords': unique_keywords,
                         'total_count': actual_class_total,
                         'keyword_total_count': total_keyword_count,
                         'avg_count': avg_keyword_count,
-                        'top_keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
+                        'top_keyword': cls_data.iloc[0]['keyword'] if len(cls_data) > 0 else 'N/A',
                         'dominance': top_keyword_dominance,
                         'share_percentage': share_percentage
                     }
                     
                     top_keywords_summary.append({
-                        'Nutraceuticals & Nutrition Class': cls_name,
+                        'Class': cls_name,
                         f'Top {num_keywords} Keywords (with counts)': keywords_str,
                         'Total Keywords': unique_keywords,
-                        'Class Total Volume': actual_class_total,  # ✅ Keep as number for sorting
+                        'Class Total Volume': actual_class_total,
                         'Market Share %': f"{share_percentage:.1f}%",
-                        'Keyword Analysis Volume': total_keyword_count,  # ✅ Keep as number for sorting
-                        'Avg Keyword Count': format_number(avg_keyword_count),
-                        'Top Health Keyword': top_n_keywords.iloc[0]['keyword'] if len(top_n_keywords) > 0 else 'N/A',
+                        'Keyword Analysis Volume': total_keyword_count,
+                        'Avg Keyword Count': avg_keyword_count,
+                        'Top Keyword': cls_data.iloc[0]['keyword'] if len(cls_data) > 0 else 'N/A',
                         'Keyword Dominance %': f"{top_keyword_dominance:.1f}%"
                     })
                 
-                # ✅ Sort by Class Total Volume (descending) - now using numeric values
+                # Sort by Class Total Volume (descending)
                 top_keywords_summary = sorted(top_keywords_summary, key=lambda x: x['Class Total Volume'], reverse=True)
                 summary_df = pd.DataFrame(top_keywords_summary)
                 
-                # ✅ Format numbers AFTER sorting
+                # Format numbers AFTER sorting
                 summary_df['Class Total Volume'] = summary_df['Class Total Volume'].apply(format_number)
-                summary_df['Keyword Analysis Volume'] = summary_df['Keyword Analysis Volume'].apply(format_number)
+                summary_df['Keyword Analysis Volume'] = summary_df['Keyword Analysis Volume'].apply(lambda x: format_number(int(x)))
+                summary_df['Avg Keyword Count'] = summary_df['Avg Keyword Count'].apply(lambda x: format_number(int(x)))
                 
-                # Display the enhanced summary table
+                # Display table
                 display_styled_table(
                     df=summary_df,
                     align="center",
                     scrollable=True,
                     max_height="600px"
-                )                
-                # Additional insights section with enhanced font sizes
+                )
+                
+                # Additional insights
                 st.markdown("---")
                 st.subheader("📊 Class Keyword Intelligence")
                 
                 col_insight1, col_insight2, col_insight3 = st.columns(3)
                 
                 with col_insight1:
-                    # Most diverse class (most unique keywords)
                     most_diverse_cls = max(class_stats.items(), key=lambda x: x[1]['total_keywords'])
                     class_name = most_diverse_cls[0][:15] + "..." if len(most_diverse_cls[0]) > 15 else most_diverse_cls[0]
                     st.markdown(f"""
@@ -11062,7 +10772,6 @@ with tab_class:
                     """, unsafe_allow_html=True)
                 
                 with col_insight2:
-                    # Highest volume class with correct share percentage
                     highest_volume_cls = max(class_stats.items(), key=lambda x: x[1]['total_count'])
                     class_name = highest_volume_cls[0][:15] + "..." if len(highest_volume_cls[0]) > 15 else highest_volume_cls[0]
                     st.markdown(f"""
@@ -11075,7 +10784,6 @@ with tab_class:
                     """, unsafe_allow_html=True)
                 
                 with col_insight3:
-                    # Most concentrated class with correct share percentage
                     most_concentrated_cls = max(class_stats.items(), key=lambda x: x[1]['share_percentage'])
                     class_name = most_concentrated_cls[0][:15] + "..." if len(most_concentrated_cls[0]) > 15 else most_concentrated_cls[0]
                     st.markdown(f"""
@@ -11087,26 +10795,22 @@ with tab_class:
                     </div>
                     """, unsafe_allow_html=True)
             
-            # Download button for keyword analysis
+            # Download button
             csv_keywords = df_ckw.to_csv(index=False)
             st.download_button(
                 label="📥 Download Class Keywords CSV",
                 data=csv_keywords,
-                file_name=f"nutraceuticals_class_health_keywords_top_{num_keywords}.csv",
+                file_name=f"class_keywords_top_{num_keywords}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
                 key="class_keywords_csv_download"
             )
         else:
-            st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
-
-    except Exception as e:
-        st.error(f"Error processing health keyword analysis: {str(e)}")
-        st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
-
+            st.info("Not enough keyword data per class.")
     
     except Exception as e:
-        st.error(f"Error processing health keyword analysis: {str(e)}")
-        st.info("Not enough health keyword data per Nutraceuticals & Nutrition class.")
+        st.error(f"Error processing keyword analysis: {str(e)}")
+        st.info("Not enough keyword data per class.")
+
     
 
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
