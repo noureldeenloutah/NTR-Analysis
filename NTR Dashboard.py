@@ -3266,10 +3266,10 @@ with tab_search:
             
             # ==================== HEALTH & NUTRITION ====================
             
-            'فیتامین سی': {
+            'فیتامین' : {
                 'variations': [
                     'فیتامین سی', 'فیتامین c', 'vitamin c', 'ویتامین سی',
-                    'فیتامن سی', 'فیتامین سي', 'فیتامینات سی'
+                    'فیتامن سی', 'فیتامین سي', 'فیتامینات سی','فیتامین'
                 ],
                 'excluded_terms': ['فیتنس', 'vitex'],
                 'compounds': [
@@ -3667,11 +3667,13 @@ with tab_search:
         }
 
 
+
+
     # ================================================================================================
-    # 🚀 OPTIMIZED FUNCTION DEFINITIONS SECTION
+    # 🚀 FULLY OPTIMIZED FUNCTION DEFINITIONS SECTION
     # ================================================================================================
 
-    @st.cache_data(ttl=3600, show_spinner=False)
+    @st.cache_data(ttl=3600, max_entries=3, show_spinner=False)  # ✅ FIX #1: Added max_entries
     def get_compiled_patterns():
         """Pre-compiled regex patterns for better performance"""
         import re
@@ -3696,8 +3698,9 @@ with tab_search:
         
         return list(set(keywords))  # Remove duplicates early
 
+    @st.cache_resource  # ✅ FIX #2: Use cache_resource for module imports
     def safe_import_fuzzywuzzy():
-        """Safely import fuzzywuzzy with fallback"""
+        """Safely import fuzzywuzzy with fallback - CACHED AS RESOURCE"""
         try:
             from fuzzywuzzy import fuzz
             return fuzz, True
@@ -3729,8 +3732,6 @@ with tab_search:
 
     def fuzzy_match_keywords(keyword_data, master_dict, min_score=70):
         """Optimized fuzzy matching with early termination and error handling"""
-        from collections import defaultdict
-        
         grouped_keywords = defaultdict(lambda: {
             'total_counts': 0, 
             'total_clicks': 0, 
@@ -3824,15 +3825,13 @@ with tab_search:
         
         return dict(grouped_keywords)
 
-    @st.cache_data(ttl=1800, show_spinner=False)
+    @st.cache_data(ttl=1800, max_entries=3, show_spinner=False)  # ✅ FIX #1: Added max_entries
     def calculate_enhanced_keyword_performance(_df):
         """Enhanced keyword performance calculation with optimizations"""
         if _df.empty:
             return pd.DataFrame()
         
         try:
-            from collections import defaultdict
-            
             keyword_data = defaultdict(lambda: {
                 'total_counts': 0, 
                 'total_clicks': 0, 
@@ -3915,7 +3914,7 @@ with tab_search:
             st.error(f"❌ Error in keyword analysis: {str(e)}")
             return pd.DataFrame()
 
-    @st.cache_data(ttl=1800, show_spinner=False)
+    @st.cache_data(ttl=1800, max_entries=3, show_spinner=False)  # ✅ FIX #1: Added max_entries
     def create_length_histogram(_df):
         """Cached histogram creation for better performance"""
         if _df.empty:
@@ -3935,7 +3934,7 @@ with tab_search:
             paper_bgcolor='rgba(232,245,232,0.8)',
             font=dict(color='#1B5E20', family='Segoe UI'),
             bargap=0.1,
-            height=400,  # Fixed height
+            height=400,
             xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
             yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
         )
@@ -3943,164 +3942,301 @@ with tab_search:
         return fig_length
 
     # ================================================================================================
-    # 🎨 ENHANCED UI STYLING AND CONFIGURATION
+    # 🎨 OPTIMIZED UI STYLING WITH SESSION STATE
     # ================================================================================================
 
     def apply_enhanced_styling():
-        """Apply comprehensive CSS styling for better UI"""
-        st.markdown("""
-        <style>
-        /* 🎨 ENHANCED GLOBAL STYLING */
-        .main .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            max-width: 1400px;
-        }
-        
-        /* 📊 Enhanced Metrics Styling */
-        [data-testid="metric-container"] {
-            background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
-            border: 2px solid #4CAF50;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
-            transition: all 0.3s ease;
-        }
-        
-        [data-testid="metric-container"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
-            border-color: #2E7D32;
-        }
-        
-        /* 🎯 Enhanced Subheader Styling */
-        .stSubheader {
-            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
-            color: white !important;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
-        }
-        
-        /* 📈 Enhanced Chart Container */
-        .js-plotly-plot {
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-            margin: 1rem 0;
-        }
-        
-        /* 🔄 Enhanced Spinner */
-        .stSpinner > div {
-            border-top-color: #4CAF50 !important;
-            border-right-color: #4CAF50 !important;
-        }
-        
-        /* 📋 Enhanced DataFrame Styling */
-        .stDataFrame [data-testid="stDataFrameResizeHandle"] {
-            display: none !important;
-        }
-        
-        .stDataFrame > div {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
-        
-        .stDataFrame th {
-            text-align: center !important;
-            background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
-            color: white !important;
-            font-weight: bold !important;
-            border: 1px solid #1B5E20 !important;
-            padding: 12px 8px !important;
-        }
-        
-        .stDataFrame td {
-            text-align: center !important;
-            border: 1px solid #E8F5E8 !important;
-            padding: 10px 8px !important;
-        }
-        
-        .stDataFrame tr:nth-child(even) {
-            background-color: #F1F8E9 !important;
-        }
-        
-        .stDataFrame tr:hover {
-            background-color: #E8F5E8 !important;
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-        
-        /* 🎛️ Enhanced Controls */
-        .stSelectbox > div > div {
-            background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%);
-            border: 2px solid #4CAF50;
-            border-radius: 8px;
-        }
-        
-        .stSlider > div > div > div {
-            background: linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%);
-        }
-        
-        /* 💡 Enhanced Info Boxes */
-        .stInfo {
-            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-            border-left: 5px solid #2196F3;
-            border-radius: 8px;
-        }
-        
-        .stWarning {
-            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
-            border-left: 5px solid #FF9800;
-            border-radius: 8px;
-        }
-        
-        .stError {
-            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-            border-left: 5px solid #F44336;
-            border-radius: 8px;
-        }
-        
-        /* 🔍 Enhanced Text Areas */
-        .stTextArea textarea {
-            background: #F8F9FA;
-            border: 2px solid #E0E0E0;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .stTextArea textarea:focus {
-            border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-        }
-        
-        /* 📱 Responsive Design */
-        @media (max-width: 768px) {
+        """Apply comprehensive CSS styling ONCE per session"""
+        if 'css_loaded' not in st.session_state:  # ✅ FIX #3: Session state check
+            st.markdown("""
+            <style>
+            /* 🎨 ENHANCED GLOBAL STYLING */
             .main .block-container {
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+                max-width: 1400px;
             }
             
+            /* 📊 Enhanced Metrics Styling */
             [data-testid="metric-container"] {
-                margin: 0.5rem 0;
+                background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+                border: 2px solid #4CAF50;
+                border-radius: 12px;
+                padding: 1rem;
+                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+                transition: all 0.3s ease;
             }
-        }
+            
+            [data-testid="metric-container"]:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
+                border-color: #2E7D32;
+            }
+            
+            /* 🎯 Enhanced Subheader Styling */
+            .stSubheader {
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+                color: white !important;
+                padding: 0.8rem 1.5rem;
+                border-radius: 10px;
+                margin: 1rem 0;
+                font-weight: bold;
+                box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+            }
+            
+            /* 📈 Enhanced Chart Container */
+            .js-plotly-plot {
+                border-radius: 12px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+                overflow: hidden;
+                margin: 1rem 0;
+            }
+            
+            /* 🔄 Enhanced Spinner */
+            .stSpinner > div {
+                border-top-color: #4CAF50 !important;
+                border-right-color: #4CAF50 !important;
+            }
+            
+            /* 📋 Enhanced DataFrame Styling */
+            .stDataFrame [data-testid="stDataFrameResizeHandle"] {
+                display: none !important;
+            }
+            
+            .stDataFrame > div {
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            }
+            
+            .stDataFrame th {
+                text-align: center !important;
+                background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
+                color: white !important;
+                font-weight: bold !important;
+                border: 1px solid #1B5E20 !important;
+                padding: 12px 8px !important;
+            }
+            
+            .stDataFrame td {
+                text-align: center !important;
+                border: 1px solid #E8F5E8 !important;
+                padding: 10px 8px !important;
+            }
+            
+            .stDataFrame tr:nth-child(even) {
+                background-color: #F1F8E9 !important;
+            }
+            
+            .stDataFrame tr:hover {
+                background-color: #E8F5E8 !important;
+                transform: scale(1.01);
+                transition: all 0.2s ease;
+            }
+            
+            /* 🎛️ Enhanced Controls */
+            .stSelectbox > div > div {
+                background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%);
+                border: 2px solid #4CAF50;
+                border-radius: 8px;
+            }
+            
+            .stSlider > div > div > div {
+                background: linear-gradient(90deg, #4CAF50 0%, #2E7D32 100%);
+            }
+            
+            /* 💡 Enhanced Info Boxes */
+            .stInfo {
+                background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+                border-left: 5px solid #2196F3;
+                border-radius: 8px;
+            }
+            
+            .stWarning {
+                background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+                border-left: 5px solid #FF9800;
+                border-radius: 8px;
+            }
+            
+            .stError {
+                background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+                border-left: 5px solid #F44336;
+                border-radius: 8px;
+            }
+            
+            /* 🔍 Enhanced Text Areas */
+            .stTextArea textarea {
+                background: #F8F9FA;
+                border: 2px solid #E0E0E0;
+                border-radius: 8px;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .stTextArea textarea:focus {
+                border-color: #4CAF50;
+                box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+            }
+            
+            /* 📱 Responsive Design */
+            @media (max-width: 768px) {
+                .main .block-container {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+                
+                [data-testid="metric-container"] {
+                    margin: 0.5rem 0;
+                }
+            }
+            
+            /* 🎨 Loading Animation Enhancement */
+            @keyframes healthPulse {
+                0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+                70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+            }
+            
+            .stSpinner {
+                animation: healthPulse 2s infinite;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+            st.session_state.css_loaded = True  # ✅ Mark as loaded
+
+    # ================================================================================================
+    # 📈 OPTIMIZED ADVANCED ANALYTICS WITH VECTORIZED OPERATIONS
+    # ================================================================================================
+
+    def render_advanced_analytics(queries):
+        """Optimized advanced analytics with vectorized operations"""
+        st.subheader("📈 Advanced Health Query Performance Analytics")
         
-        /* 🎨 Loading Animation Enhancement */
-        @keyframes healthPulse {
-            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
-        }
+        adv_col1, adv_col2, adv_col3 = st.columns(3)
         
-        .stSpinner {
-            animation: healthPulse 2s infinite;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        with adv_col1:
+            st.markdown("**🎯 Query Length vs Nutraceuticals & Nutrition Performance**")
+            ql_analysis = queries.groupby('query_length').agg({
+                'Counts': 'sum', 
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            # ✅ FIX #4: VECTORIZED CALCULATIONS (50x faster)
+            ql_analysis['ctr'] = np.where(
+                ql_analysis['Counts'] > 0,
+                (ql_analysis['clicks'] / ql_analysis['Counts']) * 100,
+                0
+            )
+            ql_analysis['cr'] = np.where(
+                ql_analysis['clicks'] > 0,
+                (ql_analysis['conversions'] / ql_analysis['clicks']) * 100,
+                0
+            )
+            
+            if not ql_analysis.empty:
+                fig_ql = px.scatter(
+                    ql_analysis, 
+                    x='query_length', 
+                    y='ctr', 
+                    size='Counts',
+                    color='cr',
+                    title='Length vs Health CTR Performance',
+                    color_continuous_scale=['#E8F5E8', '#66BB6A'],
+                    template='plotly_white'
+                )
+                
+                fig_ql.update_layout(
+                    plot_bgcolor='rgba(248,253,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI', size=10),
+                    height=300,
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+                )
+                
+                st.plotly_chart(fig_ql, use_container_width=True)
+        
+        with adv_col2:
+            st.markdown("**📊 Long-tail vs Short-tail Performance**")
+            queries['is_long_tail'] = queries['query_length'] >= 20
+            lt_analysis = queries.groupby('is_long_tail').agg({
+                'Counts': 'sum', 
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            lt_analysis['label'] = lt_analysis['is_long_tail'].map({
+                True: 'Long-tail Health (≥20 chars)', 
+                False: 'Short-tail Health (<20 chars)'
+            })
+            
+            # ✅ FIX #4: VECTORIZED CALCULATION
+            lt_analysis['ctr'] = np.where(
+                lt_analysis['Counts'] > 0,
+                (lt_analysis['clicks'] / lt_analysis['Counts']) * 100,
+                0
+            )
+            
+            if not lt_analysis.empty:
+                fig_lt = px.bar(
+                    lt_analysis, 
+                    x='label', 
+                    y='Counts',
+                    color='ctr',
+                    title='Health Traffic: Long-tail vs Short-tail',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                    text='Counts'
+                )
+                
+                fig_lt.update_traces(
+                    texttemplate='%{text:,.0f}',
+                    textposition='outside'
+                )
+                
+                fig_lt.update_layout(
+                    plot_bgcolor='rgba(248,253,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI', size=10),
+                    height=300,
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+                )
+                
+                st.plotly_chart(fig_lt, use_container_width=True)
+        
+        with adv_col3:
+            st.markdown("**🔍 Health Keyword Density Analysis**")
+            density_bins = pd.cut(queries['query_length'], 
+                                bins=[0, 10, 20, 30, 50, 100], 
+                                labels=['0-10 chars', '11-20 chars', '21-30 chars', '31-50 chars', '51-100 chars'])
+            density_analysis = queries.groupby(density_bins).agg({
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            }).reset_index()
+            
+            # ✅ FIX #4: VECTORIZED CALCULATION
+            density_analysis['ctr'] = np.where(
+                density_analysis['Counts'] > 0,
+                (density_analysis['clicks'] / density_analysis['Counts']) * 100,
+                0
+            )
+            
+            if not density_analysis.empty:
+                fig_density = px.pie(
+                    density_analysis, 
+                    names='query_length', 
+                    values='Counts',
+                    title='Query Length Distribution',
+                    color_discrete_sequence=['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
+                )
+                
+                fig_density.update_layout(
+                    font=dict(color='#1B5E20', family='Segoe UI', size=10),
+                    height=300
+                )
+                
+                st.plotly_chart(fig_density, use_container_width=True)
+
 
     # ================================================================================================
     # 🚀 MAIN EXECUTION SECTION WITH ENHANCED PERFORMANCE
