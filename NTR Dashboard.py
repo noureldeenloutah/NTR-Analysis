@@ -1579,17 +1579,22 @@ if st.sidebar.checkbox("🔍 Debug Info", value=False):
     st.sidebar.write(f"- Text filter: '{text_filter}'")
 
 
-# ----------------- Welcome Message -----------------
+# ================================================================================================
+# 🔍 SEARCH ANALYTICS - WELCOME & HEADER (GENERIC)
+# ================================================================================================
+
 st.markdown("""
 <div class="welcome-box">
-    <h2>🌿 Welcome to Nutraceuticals & Nutrition Analytics! 💚</h2>
-    <p>Discover Nutraceuticals & Nutrition trends, nutritional insights, and supplement performance data. Navigate through categories, analyze supplement searches, and unlock actionable insights for optimal nutrition strategies!</p>
+    <h2>🔍 Welcome to Search Analytics Dashboard</h2>
+    <p>Explore search trends, discover user behavior patterns, and unlock actionable insights. 
+    Analyze top-performing queries, identify emerging trends, and make data-driven decisions 
+    to optimize your strategy.</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ----------------- KPI cards -----------------
-st.markdown('<div class="main-header">🌱 Nutraceuticals & Nutrition — Advanced Analytics Hub</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Explore Nutraceuticals & Nutrition search patterns and nutritional supplement insights with <b>data-driven health analytics</b></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">📊 Search Analytics — Insights Hub</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Transform search data into <b>actionable intelligence</b></div>', unsafe_allow_html=True)
+
 
 # ✅ UPDATED: Non-cached function that works with filtered data
 def calculate_metrics(df):
@@ -1691,39 +1696,41 @@ with tab_overview:
     if st.button("🔄 Refresh Data & Filters"):
         st.rerun()
 
-    # 🎨 GREEN-THEMED HERO HEADER
-    st.sidebar.header("🌿 Customize Nutraceuticals & Nutrition Theme")
+    # 🎨Professional Blue-THEMED HERO HEADER
+    st.sidebar.header("🎨 Customize Dashboard Theme")
+
     st.markdown("""
     <div style="
         text-align: center; 
         padding: 3rem 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); 
         border-radius: 20px; 
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(76, 175, 80, 0.2);
+        box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+        border: 1px solid rgba(33, 150, 243, 0.2);
     ">
         <h1 style="
-            color: #1B5E20; 
+            color: #0D47A1; 
             margin: 0; 
             font-size: 3rem; 
-            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            text-shadow: 2px 2px 8px rgba(13, 71, 161, 0.2);
             font-weight: 700;
             letter-spacing: -1px;
         ">
-            🌿 Nutraceuticals & Nutrition Analytics 🌿
+            📊 Search Analytics Dashboard
         </h1>
         <p style="
-            color: #2E7D32; 
+            color: #1565C0; 
             margin: 1rem 0 0 0; 
             font-size: 1.3rem;
             font-weight: 300;
             opacity: 0.9;
         ">
-            Advanced Performance Analytics • Search Insights • Health Data Intelligence
+            Advanced Performance Analytics • Search Insights • Data Intelligence
         </p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
@@ -3034,7 +3041,7 @@ with tab_search:
                     'عطور', 'عطر', 'perfume', 'fragrance', 'العطور', 'العطر',
                     'برفان', 'parfum', 'عطورات'
                 ],
-                'excluded_terms': [],
+                'excluded_terms': ['براون ','الفطر','الور'.'بان','فان','perfec'],
                 'compounds': [
                     'رجالی', 'نسائی', 'men', 'women', 'oud', 'عود', 'musk'
                 ],
@@ -3269,9 +3276,9 @@ with tab_search:
             'فیتامین' : {
                 'variations': [
                     'فیتامین سی', 'فیتامین c', 'vitamin c', 'ویتامین سی',
-                    'فیتامن سی', 'فیتامین سي', 'فیتامینات سی','فیتامین'
+                    'فیتامن سی', 'فیتامین سي', 'فیتامینات سی','فیتامین','vitamin'
                 ],
-                'excluded_terms': ['فیتنس', 'vitex'],
+                'excluded_terms': ['فیتنس','ثیامین ','vitex'],
                 'compounds': [
                     '1000', '500', 'فوار', 'effervescent', 'حبوب', 'serum',
                     'للبشرة', 'للاطفال'
@@ -4860,7 +4867,7 @@ with tab_search:
             # Enhanced metrics display with better styling
             st.markdown("""
             <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Categories Performance</h4>
+                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Groups Performance</h4>
             </div>
             """, unsafe_allow_html=True)
             
@@ -4869,12 +4876,23 @@ with tab_search:
             cols = st.columns(num_keywords)
             
             # ✅ EMOJI MAPPING (you can customize this)
-            emoji_map = {
-                0: "🧲",  # First keyword
-                1: "🦴",  # Second keyword
-                2: "💊",  # Third keyword
-                3: "🐟"   # Fourth keyword
-            }
+            # ✅ SMART EMOJI MAPPING BY KEYWORD NAME
+            def get_emoji_for_keyword(keyword):
+                keyword_lower = keyword.lower()
+                if 'مغنیسیوم' in keyword_lower or 'magnesium' in keyword_lower:
+                    return "🧲"
+                elif 'کولاجین' in keyword_lower or 'collagen' in keyword_lower:
+                    return "🦴"
+                elif 'فیتامین' in keyword_lower or 'vitamin' in keyword_lower:
+                    return "💊"
+                elif 'اوميجا' in keyword_lower or 'omega' in keyword_lower:
+                    return "🐟"
+                elif 'شامبو' in keyword_lower or 'shampoo' in keyword_lower:
+                    return "🧴"
+                elif 'عطور' in keyword_lower or 'perfume' in keyword_lower:
+                    return "🌸"
+                else:
+                    return "📊"  # Default
             
             # ✅ GENERIC: Loop through top 4 keywords dynamically
             for idx, (col, (_, row)) in enumerate(zip(cols, top_4_keywords.iterrows())):
@@ -4890,7 +4908,7 @@ with tab_search:
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">{emoji}</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">Group {keyword_name}</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">{keyword_name}</div>
                         <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{formatted_volume}</div>
                         <div style="color: #388E3C; font-size: 0.9rem;">{variations} variations</div>
                     </div>
