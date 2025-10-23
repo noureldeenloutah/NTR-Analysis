@@ -1276,7 +1276,7 @@ def create_sidebar_memory_monitor():
             status = "🟡 WARNING"
             color = "#FFA500"
         else:
-            status = "🟢 Y"
+            status = "🟢 HEALTHY"
             color = "#4CAF50"
         
         st.markdown(f"""
@@ -1678,9 +1678,18 @@ with st.sidebar.expander("🔍 Data Debug Info"):
     st.write("• Conversions = Clicks × Conversion Rate")
 
 # ----------------- Tabs -----------------
-tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights = st.tabs([
-    "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
-    "⏰ Time Analysis","📊 Pivot Builder","💡 Insights"
+tab_overview, tab_search, tab_time, tab_department, tab_category, tab_subcat, tab_class, tab_brand, tab_generic, tab_pivot, tab_insights = st.tabs([
+    "📊 Overview",
+    "🔍 Search Analysis",
+    "📅 Time Analysis",
+    "🏢 Department",
+    "📁 Category",
+    "📂 Subcategory",
+    "🔖 Class",
+    "🏷️ Brand",
+    "⚕️ Generic Type",
+    "🔧 Pivot Builder",
+    "💡 Insights"
 ])
 
 # ----------------- Overview -----------------
@@ -4995,7 +5004,7 @@ with tab_search:
             keyword_mapping = {}
 
             for i, keyword in enumerate(top_25_keywords):
-                emoji = emoji_map.get(keyword, '💊')
+                emoji = emoji_map.get(keyword, '🔍')
                 keyword_data = kw_perf_df[kw_perf_df['keyword'] == keyword].iloc[0]
                 volume = format_number(keyword_data['total_counts'])
                 variations = keyword_data['variations_count']
