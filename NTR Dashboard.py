@@ -4846,6 +4846,7 @@ with tab_search:
         <div style="height: 3px; background: linear-gradient(90deg, #E8F5E8 0%, #4CAF50 50%, #E8F5E8 100%); margin: 2rem 0; border-radius: 2px;"></div>
         """, unsafe_allow_html=True)
 
+        
         # ================================================================================================
         # 🏆 ENHANCED TOP PERFORMING KEYWORDS SECTION (GENERIC - TOP 4)
         # ================================================================================================
@@ -4867,7 +4868,7 @@ with tab_search:
             # Enhanced metrics display with better styling
             st.markdown("""
             <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
-                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Groups Performance</h4>
+                <h4 style="color: #1B5E20; margin: 0 0 1rem 0; text-align: center;">🎯 Key Categories Performance</h4>
             </div>
             """, unsafe_allow_html=True)
             
@@ -4875,6 +4876,13 @@ with tab_search:
             num_keywords = min(len(top_4_keywords), 4)
             cols = st.columns(num_keywords)
             
+            # ✅ EMOJI MAPPING (you can customize this)
+            emoji_map = {
+                0: "🧲",  # First keyword
+                1: "🦴",  # Second keyword
+                2: "💊",  # Third keyword
+                3: "🐟"   # Fourth keyword
+            }
             
             # ✅ GENERIC: Loop through top 4 keywords dynamically
             for idx, (col, (_, row)) in enumerate(zip(cols, top_4_keywords.iterrows())):
@@ -4890,7 +4898,7 @@ with tab_search:
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">{emoji}</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">{keyword_name}</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">Group {keyword_name}</div>
                         <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{formatted_volume}</div>
                         <div style="color: #388E3C; font-size: 0.9rem;">{variations} variations</div>
                     </div>
@@ -4909,6 +4917,7 @@ with tab_search:
                             <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
                         </div>
                         """, unsafe_allow_html=True)
+
 
             
             # ================================================================================================
