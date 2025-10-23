@@ -4301,7 +4301,7 @@ with tab_search:
                 </div>
                 """, unsafe_allow_html=True)
         
-        # ✅ ADDITIONAL PERFORMANCE SUMMARY
+        # ✅ ADDITIONAL PERFORMANCE SUMMARY WITH FORMAT FUNCTIONS
         st.markdown("---")
         st.markdown("""
         <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #66BB6A; margin: 1rem 0;">
@@ -4315,7 +4315,7 @@ with tab_search:
             total_queries = len(queries)
             st.markdown(f"""
             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #4CAF50;">
-                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_queries:,}</div>
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{format_number(total_queries)}</div>
                 <div style="color: #1B5E20; font-size: 0.9rem;">Total Queries</div>
             </div>
             """, unsafe_allow_html=True)
@@ -4333,7 +4333,7 @@ with tab_search:
             total_volume = queries['Counts'].sum()
             st.markdown(f"""
             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #81C784;">
-                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_volume:,}</div>
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{format_number(total_volume)}</div>
                 <div style="color: #1B5E20; font-size: 0.9rem;">Total Volume</div>
             </div>
             """, unsafe_allow_html=True)
@@ -4342,11 +4342,10 @@ with tab_search:
             overall_ctr = (queries['clicks'].sum() / queries['Counts'].sum() * 100) if queries['Counts'].sum() > 0 else 0
             st.markdown(f"""
             <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #A5D6A7;">
-                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{overall_ctr:.1f}%</div>
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{format_percentage(overall_ctr)}</div>
                 <div style="color: #1B5E20; font-size: 0.9rem;">Overall CTR</div>
             </div>
             """, unsafe_allow_html=True)
-
 
 
     # ================================================================================================
