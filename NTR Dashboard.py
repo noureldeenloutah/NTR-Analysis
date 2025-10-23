@@ -6635,9 +6635,6 @@ with tab_brand:
     st.markdown("---")
 
 
-    st.markdown("---")
-
-
     
     # Strategic Brand Intelligence Dashboard (3 Tabs)
     # ✅ AGGREGATE bs BY BRAND (Sum across all months)
@@ -6660,427 +6657,413 @@ with tab_brand:
         bs['ctr'] = pd.to_numeric(bs['ctr'], errors='coerce').fillna(0)
         bs['classic_cr'] = pd.to_numeric(bs['classic_cr'], errors='coerce').fillna(0)
 
-    # Strategic Brand Intelligence Dashboard (3 Tabs)
-    st.subheader("🧠 Strategic Brand Intelligence Dashboard")
+# Strategic Brand Intelligence Dashboard (3 Tabs)
+st.subheader("🧠 Strategic Brand Intelligence Dashboard")
 
-    # Remove the old column check section since we're doing it above
-    strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs([
-        "🎯 Market Position Analysis", 
-        "🚀 Growth Opportunities", 
-        "💡 Competitive Intelligence"
-    ])
+# Pre-calculate common metrics once to avoid repetition
+@st.cache_data(ttl=3600)
+def calculate_brand_metrics(df):
+    """Calculate all brand metrics in one pass for efficiency"""
+    if df.empty:
+        return df
+    
+    metrics_df = df.copy()
+    
+    # Calculate all metrics at once
+    max_ctr = metrics_df['ctr'].max() if metrics_df['ctr'].max() > 0 else 1
+    max_cr = metrics_df['classic_cr'].max() if metrics_df['classic_cr'].max() > 0 else 1
+    
+    metrics_df['market_strength'] = metrics_df['share_pct'] * metrics_df['ctr'] / 100
+    metrics_df['efficiency_score'] = (
+        (metrics_df['conversions'] / metrics_df['Counts'] * 1000).fillna(0) 
+        if 'conversions' in metrics_df.columns else 0
+    )
+    metrics_df['growth_potential'] = (
+        (100 - metrics_df['share_pct']) * 0.4 +
+        (metrics_df['ctr'] / max_ctr * 100) * 0.3 +
+        (metrics_df['classic_cr'] / max_cr * 100) * 0.3
+    )
+    
+    # Calculate medians for categorization
+    median_strength = metrics_df['market_strength'].median()
+    median_efficiency = metrics_df['efficiency_score'].median()
+    
+    # Vectorized position categorization
+    conditions = [
+        (metrics_df['market_strength'] >= median_strength) & (metrics_df['efficiency_score'] >= median_efficiency),
+        (metrics_df['market_strength'] >= median_strength) & (metrics_df['efficiency_score'] < median_efficiency),
+        (metrics_df['market_strength'] < median_strength) & (metrics_df['efficiency_score'] >= median_efficiency)
+    ]
+    categories = ["🌟 Market Leaders", "📈 Volume Players", "💎 Efficiency Champions"]
+    metrics_df['position_category'] = np.select(conditions, categories, default="🌱 Emerging Brands")
+    
+    # Performance tier calculation
+    if len(metrics_df) >= 10:
+        metrics_df['performance_tier'] = pd.qcut(
+            metrics_df['Counts'], 
+            q=4, 
+            labels=['Tier 4 (Emerging)', 'Tier 3 (Growing)', 'Tier 2 (Established)', 'Tier 1 (Leaders)'],
+            duplicates='drop'
+        )
+    
+    return metrics_df
 
-    with strategy_tab1:
-        st.markdown("#### 🎯 Brand Market Position Quadrant Analysis")
+# Common color scheme
+COLOR_SCHEME = {
+    "🌟 Market Leaders": "#2E7D32",
+    "📈 Volume Players": "#4CAF50", 
+    "💎 Efficiency Champions": "#66BB6A",
+    "🌱 Emerging Brands": "#A5D6A7"
+}
+
+LAYOUT_CONFIG = {
+    'plot_bgcolor': 'rgba(248,255,248,0.95)',
+    'paper_bgcolor': 'rgba(232,245,232,0.8)',
+    'font': dict(color='#1B5E20', family='Segoe UI')
+}
+
+# Calculate metrics once
+if not bs.empty and len(bs) > 0:
+    bs_with_metrics = calculate_brand_metrics(bs)
+    has_data = True
+else:
+    bs_with_metrics = bs
+    has_data = False
+
+strategy_tab1, strategy_tab2, strategy_tab3 = st.tabs([
+    "🎯 Market Position Analysis", 
+    "🚀 Growth Opportunities", 
+    "💡 Competitive Intelligence"
+])
+
+# ============= TAB 1: MARKET POSITION =============
+with strategy_tab1:
+    st.markdown("#### 🎯 Brand Market Position Quadrant Analysis")
+    
+    if has_data:
+        try:
+            median_strength = bs_with_metrics['market_strength'].median()
+            median_efficiency = bs_with_metrics['efficiency_score'].median()
+            
+            # Quadrant scatter plot
+            top_brands = bs_with_metrics.nlargest(30, 'Counts')
+            
+            fig_quadrant = px.scatter(
+                top_brands,
+                x='market_strength',
+                y='efficiency_score',
+                size='Counts',
+                color='position_category',
+                hover_name='brand',
+                title='<b style="color:#2E7D32;">🎯 Brand Market Position Quadrant Analysis (All Months Aggregated)</b>',
+                labels={
+                    'market_strength': 'Market Strength (Share × CTR)',
+                    'efficiency_score': 'Conversion Efficiency (per 1000 searches)'
+                },
+                color_discrete_map=COLOR_SCHEME
+            )
+            
+            # Add quadrant reference lines
+            fig_quadrant.add_hline(y=median_efficiency, line_dash="dash", line_color="#81C784", opacity=0.7)
+            fig_quadrant.add_vline(x=median_strength, line_dash="dash", line_color="#81C784", opacity=0.7)
+            
+            fig_quadrant.update_traces(
+                hovertemplate='<b>%{hovertext}</b><br>' +
+                            'Market Strength: %{x:.2f}<br>' +
+                            'Efficiency Score: %{y:.2f}<br>' +
+                            'Total Searches: %{marker.size:,.0f}<extra></extra>'
+            )
+            
+            fig_quadrant.update_layout(
+                **LAYOUT_CONFIG,
+                height=500,
+                xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+            )
+            
+            st.plotly_chart(fig_quadrant, use_container_width=True)
+            st.info(f"📊 Showing {len(bs_with_metrics)} unique brands (aggregated across all months)")
+            
+            # Position distribution
+            position_dist = bs_with_metrics['position_category'].value_counts().reset_index()
+            position_dist.columns = ['Category', 'Count']
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig_dist = px.pie(
+                    position_dist,
+                    names='Category',
+                    values='Count',
+                    title='<b style="color:#2E7D32;">📊 Brand Position Distribution</b>',
+                    color_discrete_map=COLOR_SCHEME
+                )
+                fig_dist.update_layout(font=dict(color='#1B5E20', family='Segoe UI'), paper_bgcolor='rgba(232,245,232,0.8)')
+                st.plotly_chart(fig_dist, use_container_width=True)
+            
+            with col2:
+                st.markdown("#### 🏆 Category Champions")
+                for category in position_dist['Category']:
+                    top_in_category = bs_with_metrics[
+                        bs_with_metrics['position_category'] == category
+                    ].nlargest(3, 'Counts')
+                    
+                    if not top_in_category.empty:
+                        st.markdown(f"**{category}**")
+                        for _, row in top_in_category.iterrows():
+                            st.markdown(f"• {row['brand']} - {row['Counts']:,.0f} searches")
+                        st.markdown("")
         
-        if not bs.empty and len(bs) > 0:
-            try:
-                # Market position quadrant analysis
-                bs['market_strength'] = bs['share_pct'] * bs['ctr'] / 100  # Combined market strength
-                bs['efficiency_score'] = (bs['conversions'] / bs['Counts'] * 1000).fillna(0) if 'conversions' in bs.columns else 0
-                
-                # Define quadrants based on median values
-                median_strength = bs['market_strength'].median()
-                median_efficiency = bs['efficiency_score'].median()
-                
-                def categorize_position(row):
-                    if row['market_strength'] >= median_strength and row['efficiency_score'] >= median_efficiency:
-                        return "🌟 Market Leaders"
-                    elif row['market_strength'] >= median_strength and row['efficiency_score'] < median_efficiency:
-                        return "📈 Volume Players"
-                    elif row['market_strength'] < median_strength and row['efficiency_score'] >= median_efficiency:
-                        return "💎 Efficiency Champions"
-                    else:
-                        return "🌱 Emerging Brands"
-                
-                bs['position_category'] = bs.apply(categorize_position, axis=1)
-                
-                # Create quadrant scatter plot
-                fig_quadrant = px.scatter(
-                    bs.head(30),  # Top 30 brands for clarity
-                    x='market_strength',
-                    y='efficiency_score',
-                    size='Counts',
-                    color='position_category',
-                    hover_name='brand',
-                    title='<b style="color:#2E7D32;">🎯 Brand Market Position Quadrant Analysis (All Months Aggregated)</b>',
-                    labels={
-                        'market_strength': 'Market Strength (Share × CTR)',
-                        'efficiency_score': 'Conversion Efficiency (per 1000 searches)'
-                    },
-                    color_discrete_map={
-                        "🌟 Market Leaders": "#2E7D32",
-                        "📈 Volume Players": "#4CAF50", 
-                        "💎 Efficiency Champions": "#66BB6A",
-                        "🌱 Emerging Brands": "#A5D6A7"
-                    }
+        except Exception as e:
+            st.error(f"Error in Market Position Analysis: {str(e)}")
+            with st.expander("🔍 Debug Information"):
+                st.write(f"Columns: {bs_with_metrics.columns.tolist()}")
+                st.write(f"Shape: {bs_with_metrics.shape}")
+                st.dataframe(bs_with_metrics.head())
+    else:
+        st.info("No brand data available for market position analysis")
+
+# ============= TAB 2: GROWTH OPPORTUNITIES =============
+with strategy_tab2:
+    st.markdown("#### 🚀 Growth Opportunities Analysis")
+    
+    if has_data:
+        try:
+            # High-opportunity brands (already calculated in metrics)
+            high_opportunity = bs_with_metrics[
+                (bs_with_metrics['growth_potential'] > bs_with_metrics['growth_potential'].quantile(0.7)) &
+                (bs_with_metrics['share_pct'] < 10)
+            ].nlargest(10, 'growth_potential')
+            
+            if not high_opportunity.empty:
+                fig_opportunity = px.bar(
+                    high_opportunity,
+                    x='growth_potential',
+                    y='brand',
+                    orientation='h',
+                    title='<b style="color:#2E7D32;">🚀 Top Growth Opportunity Brands</b>',
+                    labels={'growth_potential': 'Growth Potential Score', 'brand': 'Brand'},
+                    color='growth_potential',
+                    color_continuous_scale=['#E8F5E8', '#2E7D32'],
+                    text='growth_potential'
                 )
                 
-                # Add quadrant lines
-                fig_quadrant.add_hline(y=median_efficiency, line_dash="dash", line_color="#81C784", opacity=0.7)
-                fig_quadrant.add_vline(x=median_strength, line_dash="dash", line_color="#81C784", opacity=0.7)
-                
-                fig_quadrant.update_traces(
-                    hovertemplate='<b>%{hovertext}</b><br>' +
-                                'Market Strength: %{x:.2f}<br>' +
-                                'Efficiency Score: %{y:.2f}<br>' +
-                                'Total Searches: %{marker.size:,.0f}<extra></extra>'
+                fig_opportunity.update_traces(
+                    texttemplate='%{text:.1f}',
+                    textposition='inside',
+                    hovertemplate='<b>%{y}</b><br>' +
+                                'Growth Score: %{x:.1f}<br>' +
+                                'Market Share: %{customdata[0]:.1f}%<br>' +
+                                'CTR: %{customdata[1]:.1f}%<br>' +
+                                'Classic CR: %{customdata[2]:.1f}%<extra></extra>',
+                    customdata=high_opportunity[['share_pct', 'ctr', 'classic_cr']].values
                 )
                 
-                fig_quadrant.update_layout(
-                    plot_bgcolor='rgba(248,255,248,0.95)',
-                    paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'),
+                fig_opportunity.update_layout(
+                    **LAYOUT_CONFIG,
                     height=500,
-                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
-                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+                    yaxis={'categoryorder': 'total ascending'}
                 )
                 
-                st.plotly_chart(fig_quadrant, use_container_width=True)
+                st.plotly_chart(fig_opportunity, use_container_width=True)
                 
-                # Debug info to verify aggregation
-                st.info(f"📊 Showing {len(bs)} unique brands (aggregated across all months)")
-                
-                # Position category distribution
-                position_dist = bs['position_category'].value_counts().reset_index()
-                position_dist.columns = ['Category', 'Count']
+                # Strategic recommendations
+                st.markdown("#### 💡 Strategic Recommendations")
                 
                 col1, col2 = st.columns(2)
                 
-                with col1:
-                    fig_dist = px.pie(
-                        position_dist,
-                        names='Category',
-                        values='Count',
-                        title='<b style="color:#2E7D32;">📊 Brand Position Distribution</b>',
-                        color_discrete_map={
-                            "🌟 Market Leaders": "#2E7D32",
-                            "📈 Volume Players": "#4CAF50", 
-                            "💎 Efficiency Champions": "#66BB6A",
-                            "🌱 Emerging Brands": "#A5D6A7"
-                        }
-                    )
-                    
-                    fig_dist.update_layout(
-                        font=dict(color='#1B5E20', family='Segoe UI'),
-                        paper_bgcolor='rgba(232,245,232,0.8)'
-                    )
-                    
-                    st.plotly_chart(fig_dist, use_container_width=True)
-                
-                with col2:
-                    # Top performers in each category
-                    st.markdown("#### 🏆 Category Champions")
-                    
-                    for category in position_dist['Category']:
-                        category_brands = bs[bs['position_category'] == category].sort_values('Counts', ascending=False).head(3)
-                        
-                        if not category_brands.empty:
-                            st.markdown(f"**{category}**")
-                            for idx, row in category_brands.iterrows():
-                                st.markdown(f"• {row['brand']} - {row['Counts']:,.0f} searches")
-                            st.markdown("")
-            
-            except Exception as e:
-                st.error(f"Error in Market Position Analysis: {str(e)}")
-                st.write("**Debug Info:**")
-                st.write(f"Available columns: {bs.columns.tolist()}")
-                st.write(f"DataFrame shape: {bs.shape}")
-                st.write(f"Sample data:")
-                st.dataframe(bs.head())
-        else:
-            st.info("No brand data available for market position analysis")
-
-    with strategy_tab2:
-        st.markdown("#### 🚀 Growth Opportunities Analysis")
-        
-        if not bs.empty and len(bs) > 0:
-            try:
-                # Opportunity scoring
-                max_ctr = bs['ctr'].max() if bs['ctr'].max() > 0 else 1
-                max_cr = bs['classic_cr'].max() if bs['classic_cr'].max() > 0 else 1
-                
-                bs['growth_potential'] = (
-                    (100 - bs['share_pct']) * 0.4 +  # Market share growth potential
-                    (bs['ctr'] / max_ctr * 100) * 0.3 +  # CTR performance
-                    (bs['classic_cr'] / max_cr * 100) * 0.3  # Classic CR performance
-                )
-                
-                # Identify high-opportunity brands
-                high_opportunity = bs[
-                    (bs['growth_potential'] > bs['growth_potential'].quantile(0.7)) &
-                    (bs['share_pct'] < 10)  # Not already dominant
-                ].sort_values('growth_potential', ascending=False).head(10)
-                
-                if not high_opportunity.empty:
-                    fig_opportunity = px.bar(
-                        high_opportunity,
-                        x='growth_potential',
-                        y='brand',
-                        orientation='h',
-                        title='<b style="color:#2E7D32;">🚀 Top Growth Opportunity Brands</b>',
-                        labels={'growth_potential': 'Growth Potential Score', 'brand': 'Brand'},
-                        color='growth_potential',
-                        color_continuous_scale=['#E8F5E8', '#2E7D32'],
-                        text='growth_potential'
-                    )
-                    
-                    fig_opportunity.update_traces(
-                        texttemplate='%{text:.1f}',
-                        textposition='inside',
-                        hovertemplate='<b>%{y}</b><br>' +
-                                    'Growth Score: %{x:.1f}<br>' +
-                                    'Market Share: %{customdata[0]:.1f}%<br>' +
-                                    'CTR: %{customdata[1]:.1f}%<br>' +
-                                    'Classic CR: %{customdata[2]:.1f}%<extra></extra>',
-                        customdata=high_opportunity[['share_pct', 'ctr', 'classic_cr']].values
-                    )
-                    
-                    fig_opportunity.update_layout(
-                        plot_bgcolor='rgba(248,255,248,0.95)',
-                        paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'),
-                        height=500,
-                        yaxis={'categoryorder': 'total ascending'}
-                    )
-                    
-                    st.plotly_chart(fig_opportunity, use_container_width=True)
-                    
-                    # Growth recommendations
-                    st.markdown("#### 💡 Strategic Recommendations")
-                    
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        st.markdown("""
-                        <div class="brand-performance-card">
-                            <h4 style="color:#2E7D32;">🎯 Market Expansion</h4>
-                            <ul>
-                                <li>Target underperforming search terms</li>
-                                <li>Increase brand visibility campaigns</li>
-                                <li>Focus on high-intent keywords</li>
-                                <li>Optimize for mobile searches</li>
-                            </ul>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with col2:
-                        st.markdown("""
-                        <div class="brand-performance-card">
-                            <h4 style="color:#2E7D32;">📈 Performance Optimization</h4>
-                            <ul>
-                                <li>Improve click-through rates</li>
-                                <li>Enhance conversion funnels</li>
-                                <li>A/B test ad creatives</li>
-                                <li>Optimize landing pages</li>
-                            </ul>
-                        </div>
-                        """, unsafe_allow_html=True)
-                else:
-                    st.info("No high-opportunity brands identified with current criteria")
-            
-            except Exception as e:
-                st.error(f"Error in Growth Opportunities Analysis: {str(e)}")
-        else:
-            st.info("No brand data available for growth analysis")
-
-    with strategy_tab3:
-        st.markdown("#### 💡 Strategic Brand Insights")
-        
-        if not bs.empty and len(bs) > 0:
-            try:
-                # Calculate key insights
-                total_market_size = bs['Counts'].sum()
-                top_performer = bs.loc[bs['Counts'].idxmax()]
-                efficiency_leader = bs.loc[bs['classic_cr'].idxmax()] if bs['classic_cr'].max() > 0 else None
-                
-                # Market concentration analysis
-                top_5_share = bs.nlargest(5, 'Counts')['share_pct'].sum()
-                market_concentration = "High" if top_5_share > 70 else "Medium" if top_5_share > 50 else "Low"
-                
-                # Performance benchmarks
-                avg_ctr = bs['ctr'].mean()
-                avg_classic_cr = bs['classic_cr'].mean()
-                
-                # Strategic insights display
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    st.markdown(f"""
-                    <div class="brand-performance-card">
-                        <h4>🎯 Market Intelligence</h4>
-                        <p><strong>Market Size:</strong> {total_market_size:,.0f} total searches</p>
-                        <p><strong>Market Leader:</strong> {top_performer['brand']} ({top_performer['share_pct']:.1f}% share)</p>
-                        <p><strong>Market Concentration:</strong> {market_concentration} (Top 5: {top_5_share:.1f}%)</p>
-                        <p><strong>Average CTR:</strong> {avg_ctr:.1f}%</p>
-                        <p><strong>Average Classic CR:</strong> {avg_classic_cr:.1f}%</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                with col2:
-                    if efficiency_leader is not None:
-                        st.markdown(f"""
-                        <div class="brand-performance-card">
-                            <h4>🏆 Performance Leaders</h4>
-                            <p><strong>Volume Leader:</strong> {top_performer['brand']}</p>
-                            <p><strong>Efficiency Leader:</strong> {efficiency_leader['brand']} ({efficiency_leader['classic_cr']:.1f}% Classic CR)</p>
-                            <p><strong>Best CTR:</strong> {bs.loc[bs['ctr'].idxmax(), 'brand']} ({bs['ctr'].max():.1f}%)</p>
-                            <p><strong>Total Brands:</strong> {len(bs)} active brands</p>
-                            <p><strong>Competitive Intensity:</strong> {"High" if len(bs) > 50 else "Medium" if len(bs) > 20 else "Low"}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                
-                # Competitive landscape analysis
-                st.markdown("#### 🏁 Competitive Landscape Matrix")
-                
-                # Create competitive intensity heatmap
-                if len(bs) >= 10:
-                    # Group brands by performance tiers
-                    bs['performance_tier'] = pd.qcut(
-                        bs['Counts'], 
-                        q=4, 
-                        labels=['Tier 4 (Emerging)', 'Tier 3 (Growing)', 'Tier 2 (Established)', 'Tier 1 (Leaders)'],
-                        duplicates='drop'
-                    )
-                    
-                    tier_analysis = bs.groupby('performance_tier').agg({
-                        'Counts': ['count', 'mean', 'sum'],
-                        'ctr': 'mean',
-                        'classic_cr': 'mean',
-                        'share_pct': 'sum'
-                    }).round(2)
-                    
-                    tier_analysis.columns = ['Brand Count', 'Avg Searches', 'Total Searches', 'Avg CTR', 'Avg Classic CR', 'Total Share %']
-                    
-                    st.dataframe(tier_analysis, use_container_width=True)
-                    
-                    # Strategic recommendations based on analysis
-                    st.markdown("#### 📋 Strategic Action Items")
-                    
-                    recommendations = []
-                    
-                    if market_concentration == "High":
-                        recommendations.append("🎯 **Market Consolidation**: Consider partnerships or acquisitions in fragmented segments")
-                    
-                    if avg_ctr < 3:
-                        recommendations.append("📈 **CTR Optimization**: Industry CTR is below benchmark - focus on ad copy and targeting")
-                    
-                    if avg_classic_cr < 2:
-                        recommendations.append("🔄 **Conversion Optimization**: Low conversion rates indicate need for landing page improvements")
-                    
-                    if len(bs[bs['share_pct'] > 10]) < 3:
-                        recommendations.append("🚀 **Market Opportunity**: Market lacks dominant players - opportunity for aggressive growth")
-                    
-                    for i, rec in enumerate(recommendations, 1):
-                        st.markdown(f"{i}. {rec}")
-                
-                else:
-                    st.info("Need at least 10 brands for comprehensive competitive analysis")
-            
-            except Exception as e:
-                st.error(f"Error in Competitive Intelligence: {str(e)}")
-        else:
-            st.info("No brand data available for competitive intelligence")
-
-    # Enhanced Footer with Data Export Options
-    st.markdown("---")
-    st.subheader("📥 Export & Analytics Options")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        if not bs.empty:
-            try:
-                full_brand_data = bs.copy()
-                full_brand_data['export_timestamp'] = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
-                csv_full = full_brand_data.to_csv(index=False)
-                st.download_button(
-                    label="📊 Full Brand Analysis",
-                    data=csv_full,
-                    file_name=f"complete_brand_analysis_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv",
-                    key="full_brand_export"
-                )
-            except Exception as e:
-                st.error(f"Export error: {str(e)}")
-
-    with col2:
-        if not bs.empty and 'position_category' in bs.columns and 'growth_potential' in bs.columns:
-            try:
-                strategic_data = bs[['brand', 'Counts', 'share_pct', 'ctr', 'classic_cr', 'position_category', 'growth_potential']].copy()
-                csv_strategic = strategic_data.to_csv(index=False)
-                st.download_button(
-                    label="🎯 Strategic Insights",
-                    data=csv_strategic,
-                    file_name=f"brand_strategic_insights_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv",
-                    key="strategic_export"
-                )
-            except Exception as e:
-                st.error(f"Export error: {str(e)}")
-
-    with col3:
-        if 'matrix_data' in locals() and not matrix_data.empty:
-            try:
-                matrix_export = matrix_data.groupby(['brand', 'search']).agg({
-                    'Counts': 'sum',
-                    'clicks': 'sum', 
-                    'conversions': 'sum'
-                }).reset_index()
-                csv_matrix = matrix_export.to_csv(index=False)
-                st.download_button(
-                    label="🔥 Brand-Keyword Matrix",
-                    data=csv_matrix,
-                    file_name=f"brand_keyword_matrix_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv",
-                    key="matrix_export"
-                )
-            except Exception as e:
-                st.error(f"Export error: {str(e)}")
-
-    with col4:
-        # Generate executive summary
-        if not bs.empty:
-            try:
-                total_market_size = bs['Counts'].sum()
-                top_performer = bs.loc[bs['Counts'].idxmax()]
-                avg_ctr = bs['ctr'].mean()
-                avg_classic_cr = bs['classic_cr'].mean()
-                top_5_share = bs.nlargest(5, 'Counts')['share_pct'].sum()
-                market_concentration = "High" if top_5_share > 70 else "Medium" if top_5_share > 50 else "Low"
-                
-                summary_data = {
-                    'Metric': [
-                        'Total Brands Analyzed',
-                        'Market Leader',
-                        'Total Search Volume',
-                        'Average CTR',
-                        'Average Classic CR',
-                        'Market Concentration',
-                        'Analysis Date'
+                recommendations = {
+                    "🎯 Market Expansion": [
+                        "Target underperforming search terms",
+                        "Increase brand visibility campaigns",
+                        "Focus on high-intent keywords",
+                        "Optimize for mobile searches"
                     ],
-                    'Value': [
-                        len(bs),
-                        top_performer['brand'],
-                        f"{total_market_size:,.0f}",
-                        f"{avg_ctr:.1f}%",
-                        f"{avg_classic_cr:.1f}%",
-                        f"{market_concentration} ({top_5_share:.1f}%)",
-                        pd.Timestamp.now().strftime('%Y-%m-%d')
+                    "📈 Performance Optimization": [
+                        "Improve click-through rates",
+                        "Enhance conversion funnels",
+                        "A/B test ad creatives",
+                        "Optimize landing pages"
                     ]
                 }
-                summary_df = pd.DataFrame(summary_data)
-                csv_summary = summary_df.to_csv(index=False)
-                st.download_button(
-                    label="📋 Executive Summary",
-                    data=csv_summary,
-                    file_name=f"brand_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv",
-                    key="summary_export"
-                )
-            except Exception as e:
-                st.error(f"Export error: {str(e)}")
+                
+                for col, (title, items) in zip([col1, col2], recommendations.items()):
+                    with col:
+                        items_html = "".join([f"<li>{item}</li>" for item in items])
+                        st.markdown(f"""
+                        <div class="brand-performance-card">
+                            <h4 style="color:#2E7D32;">{title}</h4>
+                            <ul>{items_html}</ul>
+                        </div>
+                        """, unsafe_allow_html=True)
+            else:
+                st.info("No high-opportunity brands identified with current criteria")
+        
+        except Exception as e:
+            st.error(f"Error in Growth Opportunities Analysis: {str(e)}")
+    else:
+        st.info("No brand data available for growth analysis")
 
+# ============= TAB 3: COMPETITIVE INTELLIGENCE =============
+with strategy_tab3:
+    st.markdown("#### 💡 Strategic Brand Insights")
+    
+    if has_data:
+        try:
+            # Calculate key metrics once
+            total_market_size = bs_with_metrics['Counts'].sum()
+            top_performer = bs_with_metrics.loc[bs_with_metrics['Counts'].idxmax()]
+            efficiency_leader = bs_with_metrics.loc[bs_with_metrics['classic_cr'].idxmax()] if bs_with_metrics['classic_cr'].max() > 0 else None
+            ctr_leader = bs_with_metrics.loc[bs_with_metrics['ctr'].idxmax()]
+            
+            top_5_share = bs_with_metrics.nlargest(5, 'Counts')['share_pct'].sum()
+            market_concentration = "High" if top_5_share > 70 else "Medium" if top_5_share > 50 else "Low"
+            competitive_intensity = "High" if len(bs_with_metrics) > 50 else "Medium" if len(bs_with_metrics) > 20 else "Low"
+            
+            avg_ctr = bs_with_metrics['ctr'].mean()
+            avg_classic_cr = bs_with_metrics['classic_cr'].mean()
+            
+            # Display insights
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"""
+                <div class="brand-performance-card">
+                    <h4>🎯 Market Intelligence</h4>
+                    <p><strong>Market Size:</strong> {total_market_size:,.0f} total searches</p>
+                    <p><strong>Market Leader:</strong> {top_performer['brand']} ({top_performer['share_pct']:.1f}% share)</p>
+                    <p><strong>Market Concentration:</strong> {market_concentration} (Top 5: {top_5_share:.1f}%)</p>
+                    <p><strong>Average CTR:</strong> {avg_ctr:.1f}%</p>
+                    <p><strong>Average Classic CR:</strong> {avg_classic_cr:.1f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                efficiency_text = f"{efficiency_leader['brand']} ({efficiency_leader['classic_cr']:.1f}% Classic CR)" if efficiency_leader is not None else "N/A"
+                st.markdown(f"""
+                <div class="brand-performance-card">
+                    <h4>🏆 Performance Leaders</h4>
+                    <p><strong>Volume Leader:</strong> {top_performer['brand']}</p>
+                    <p><strong>Efficiency Leader:</strong> {efficiency_text}</p>
+                    <p><strong>Best CTR:</strong> {ctr_leader['brand']} ({ctr_leader['ctr']:.1f}%)</p>
+                    <p><strong>Total Brands:</strong> {len(bs_with_metrics)} active brands</p>
+                    <p><strong>Competitive Intensity:</strong> {competitive_intensity}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Competitive landscape matrix
+            st.markdown("#### 🏁 Competitive Landscape Matrix")
+            
+            if len(bs_with_metrics) >= 10 and 'performance_tier' in bs_with_metrics.columns:
+                tier_analysis = bs_with_metrics.groupby('performance_tier').agg({
+                    'Counts': ['count', 'mean', 'sum'],
+                    'ctr': 'mean',
+                    'classic_cr': 'mean',
+                    'share_pct': 'sum'
+                }).round(2)
+                
+                tier_analysis.columns = ['Brand Count', 'Avg Searches', 'Total Searches', 'Avg CTR', 'Avg Classic CR', 'Total Share %']
+                st.dataframe(tier_analysis, use_container_width=True)
+                
+                # Strategic recommendations
+                st.markdown("#### 📋 Strategic Action Items")
+                
+                recommendations = []
+                if market_concentration == "High":
+                    recommendations.append("🎯 **Market Consolidation**: Consider partnerships or acquisitions in fragmented segments")
+                if avg_ctr < 3:
+                    recommendations.append("📈 **CTR Optimization**: Industry CTR is below benchmark - focus on ad copy and targeting")
+                if avg_classic_cr < 2:
+                    recommendations.append("🔄 **Conversion Optimization**: Low conversion rates indicate need for landing page improvements")
+                if len(bs_with_metrics[bs_with_metrics['share_pct'] > 10]) < 3:
+                    recommendations.append("🚀 **Market Opportunity**: Market lacks dominant players - opportunity for aggressive growth")
+                
+                for i, rec in enumerate(recommendations, 1):
+                    st.markdown(f"{i}. {rec}")
+            else:
+                st.info("Need at least 10 brands for comprehensive competitive analysis")
+        
+        except Exception as e:
+            st.error(f"Error in Competitive Intelligence: {str(e)}")
+    else:
+        st.info("No brand data available for competitive intelligence")
+
+# ============= EXPORT SECTION =============
+st.markdown("---")
+st.subheader("📥 Export & Analytics Options")
+
+def safe_export_button(label, data_func, filename, key):
+    """Safely create export button with error handling"""
+    try:
+        data = data_func()
+        if data is not None:
+            st.download_button(
+                label=label,
+                data=data,
+                file_name=filename,
+                mime="text/csv",
+                key=key
+            )
+    except Exception as e:
+        st.error(f"Export error: {str(e)}")
+
+col1, col2, col3, col4 = st.columns(4)
+
+timestamp = pd.Timestamp.now().strftime('%Y%m%d')
+
+with col1:
+    if has_data:
+        safe_export_button(
+            "📊 Full Brand Analysis",
+            lambda: bs_with_metrics.assign(export_timestamp=pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')).to_csv(index=False),
+            f"complete_brand_analysis_{timestamp}.csv",
+            "full_brand_export"
+        )
+
+with col2:
+    if has_data and 'position_category' in bs_with_metrics.columns:
+        safe_export_button(
+            "🎯 Strategic Insights",
+            lambda: bs_with_metrics[['brand', 'Counts', 'share_pct', 'ctr', 'classic_cr', 'position_category', 'growth_potential']].to_csv(index=False),
+            f"brand_strategic_insights_{timestamp}.csv",
+            "strategic_export"
+        )
+
+with col3:
+    if 'matrix_data' in locals() and not matrix_data.empty:
+        safe_export_button(
+            "🔥 Brand-Keyword Matrix",
+            lambda: matrix_data.groupby(['brand', 'search']).agg({'Counts': 'sum', 'clicks': 'sum', 'conversions': 'sum'}).reset_index().to_csv(index=False),
+            f"brand_keyword_matrix_{timestamp}.csv",
+            "matrix_export"
+        )
+
+with col4:
+    if has_data:
+        def generate_summary():
+            summary_data = pd.DataFrame({
+                'Metric': [
+                    'Total Brands Analyzed', 'Market Leader', 'Total Search Volume',
+                    'Average CTR', 'Average Classic CR', 'Market Concentration', 'Analysis Date'
+                ],
+                'Value': [
+                    len(bs_with_metrics),
+                    bs_with_metrics.loc[bs_with_metrics['Counts'].idxmax(), 'brand'],
+                    f"{bs_with_metrics['Counts'].sum():,.0f}",
+                    f"{bs_with_metrics['ctr'].mean():.1f}%",
+                    f"{bs_with_metrics['classic_cr'].mean():.1f}%",
+                    f"{market_concentration} ({top_5_share:.1f}%)",
+                    pd.Timestamp.now().strftime('%Y-%m-%d')
+                ]
+            })
+            return summary_data.to_csv(index=False)
+        
+        safe_export_button(
+            "📋 Executive Summary",
+            generate_summary,
+            f"brand_executive_summary_{timestamp}.csv",
+            "summary_export"
+        )
 
 
 
