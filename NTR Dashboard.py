@@ -319,7 +319,7 @@ def get_data_with_smart_caching(raw_data):
 
 # ----------------- OPTIMIZED PAGE CONFIG -----------------
 st.set_page_config(
-    page_title="🔥 Nutraceuticals And Nutrition — Ultimate Search Analytics", 
+    page_title="🔥 Ultimate Search Analytics", 
     layout="wide", 
     page_icon="✨",
     initial_sidebar_state="expanded"
@@ -332,21 +332,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ----------------- CSS / UI enhancements -----------------
-# ----------------- CSS / UI enhancements -----------------
 st.markdown("""
 <style>
 /* Global styling */
 body {
     font-family: 'Segoe UI', 'Arial', sans-serif;
-    background: linear-gradient(135deg, #F0F9F0 0%, #E8F5E8 100%);
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
 }
 
 /* Sidebar */
 .sidebar .sidebar-content {
-    background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+    background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
     border-radius: 15px;
     padding: 20px;
-    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.2);
+    box-shadow: 0 8px 25px rgba(21, 101, 192, 0.2);
 }
 .sidebar .sidebar-content h1, .sidebar .sidebar-content * {
     color: #FFFFFF !important;
@@ -356,19 +355,19 @@ body {
 .main-header {
     font-size: 2.8rem;
     font-weight: 900;
-    background: linear-gradient(45deg, #1B5E20, #388E3C, #66BB6A);
+    background: linear-gradient(45deg, #0D47A1, #1565C0, #1976D2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-align: center;
     margin-bottom: 0.3rem;
-    text-shadow: 2px 2px 4px rgba(27, 94, 32, 0.1);
+    text-shadow: 2px 2px 4px rgba(13, 71, 161, 0.1);
 }
 
 /* Subtitle */
 .sub-header {
     font-size: 1.2rem;
-    color: #2E7D32;
+    color: #1565C0;
     text-align: center;
     margin-bottom: 1.5rem;
     font-weight: 600;
@@ -376,51 +375,51 @@ body {
 
 /* Welcome section */
 .welcome-box {
-    background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 50%, #E0F2F1 100%);
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
     padding: 25px;
     border-radius: 15px;
     margin-bottom: 25px;
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 6px 20px rgba(21, 101, 192, 0.1);
     text-align: center;
-    border: 2px solid rgba(102, 187, 106, 0.2);
+    border: 2px solid rgba(33, 150, 243, 0.2);
 }
 .welcome-box h2 {
-    color: #1B5E20;
+    color: #0D47A1;
     font-size: 2rem;
     margin-bottom: 12px;
     font-weight: 800;
 }
 .welcome-box p {
-    color: #2E7D32;
+    color: #1565C0;
     font-size: 1.1rem;
     line-height: 1.6;
 }
 
 /* KPI card */
 .kpi {
-    background: linear-gradient(135deg, #FFFFFF 0%, #F8FDF8 100%);
+    background: linear-gradient(135deg, #FFFFFF 0%, #E3F2FD 100%);
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    box-shadow: 0 8px 25px rgba(46, 125, 50, 0.12);
+    box-shadow: 0 8px 25px rgba(21, 101, 192, 0.12);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 2px solid rgba(102, 187, 106, 0.1);
+    border: 2px solid rgba(33, 150, 243, 0.1);
 }
 .kpi:hover {
     transform: translateY(-8px);
-    box-shadow: 0 12px 35px rgba(46, 125, 50, 0.18);
-    border-color: rgba(102, 187, 106, 0.3);
+    box-shadow: 0 12px 35px rgba(21, 101, 192, 0.18);
+    border-color: rgba(33, 150, 243, 0.3);
 }
 .kpi .value {
     font-size: 2rem;
     font-weight: 900;
-    background: linear-gradient(45deg, #1B5E20, #388E3C);
+    background: linear-gradient(45deg, #0D47A1, #1976D2);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 .kpi .label {
-    color: #4CAF50;
+    color: #1976D2;
     font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -429,57 +428,57 @@ body {
 
 /* Insight box */
 .insight-box {
-    background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%);
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
     padding: 20px;
-    border-left: 6px solid #4CAF50;
+    border-left: 6px solid #2196F3;
     border-radius: 12px;
     margin-bottom: 20px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.1);
 }
 .insight-box:hover {
     transform: translateX(8px);
-    box-shadow: 0 6px 25px rgba(76, 175, 80, 0.15);
+    box-shadow: 0 6px 25px rgba(33, 150, 243, 0.15);
 }
 .insight-box h4 {
     margin: 0 0 10px 0;
-    color: #1B5E20;
+    color: #0D47A1;
     font-weight: 700;
 }
 .insight-box p {
     margin: 0;
-    color: #2E7D32;
+    color: #1565C0;
     line-height: 1.5;
 }
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] {
     gap: 15px;
-    background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%);
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
     padding: 15px;
     border-radius: 15px;
-    box-shadow: inset 0 2px 8px rgba(46, 125, 50, 0.1);
+    box-shadow: inset 0 2px 8px rgba(21, 101, 192, 0.1);
 }
 .stTabs [data-baseweb="tab"] {
     height: 55px;
     border-radius: 12px;
     padding: 15px 20px;
     font-weight: 700;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F8FDF8 100%);
-    color: #2E7D32;
-    border: 2px solid rgba(76, 175, 80, 0.2);
+    background: linear-gradient(135deg, #FFFFFF 0%, #E3F2FD 100%);
+    color: #1565C0;
+    border: 2px solid rgba(33, 150, 243, 0.2);
     transition: all 0.3s ease;
 }
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+    background: linear-gradient(135deg, #1976D2 0%, #2196F3 100%);
     color: #FFFFFF !important;
-    border-color: #388E3C;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    border-color: #1565C0;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
 }
 .stTabs [data-baseweb="tab"]:hover {
-    background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%);
-    color: #1B5E20;
-    border-color: #4CAF50;
+    background: linear-gradient(135deg, #BBDEFB 0%, #90CAF9 100%);
+    color: #0D47A1;
+    border-color: #2196F3;
     transform: translateY(-2px);
 }
 
@@ -487,46 +486,46 @@ body {
 .footer {
     text-align: center;
     padding: 20px 0;
-    color: #4CAF50;
+    color: #1976D2;
     font-size: 1rem;
     margin-top: 30px;
-    border-top: 3px solid #66BB6A;
-    background: linear-gradient(135deg, #F8FDF8 0%, #E8F5E8 100%);
+    border-top: 3px solid #2196F3;
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
     border-radius: 15px 15px 0 0;
 }
 .footer a {
-    color: #2E7D32;
+    color: #1565C0;
     text-decoration: none;
     font-weight: 600;
 }
 .footer a:hover {
     text-decoration: underline;
-    color: #1B5E20;
+    color: #0D47A1;
 }
 
 /* Dataframe and AgGrid */
 .dataframe, .stDataFrame {
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.1);
+    box-shadow: 0 6px 20px rgba(21, 101, 192, 0.1);
 }
 .stDataFrame table {
     background: #FFFFFF;
-    border: 1px solid rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(33, 150, 243, 0.1);
 }
 .stDataFrame th {
-    background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C9 100%) !important;
-    color: #1B5E20 !important;
+    background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%) !important;
+    color: #0D47A1 !important;
     font-weight: 700 !important;
 }
 
 /* Mini Metric Card */
 .mini-metric {
-    background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 50%, #81C784 100%);
+    background: linear-gradient(135deg, #1976D2 0%, #2196F3 50%, #42A5F5 100%);
     padding: 18px;
     border-radius: 15px;
     text-align: center;
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.2);
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 120px;
     display: flex;
@@ -536,18 +535,18 @@ body {
 }
 .mini-metric:hover {
     transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 12px 35px rgba(33, 150, 243, 0.3);
 }
 .mini-metric .value {
     font-size: 1.8rem;
     font-weight: 900;
     color: #FFFFFF;
     margin-bottom: 6px;
-    text-shadow: 1px 1px 3px rgba(27, 94, 32, 0.3);
+    text-shadow: 1px 1px 3px rgba(13, 71, 161, 0.3);
 }
 .mini-metric .label {
     font-size: 0.95rem;
-    color: #E8F5E8;
+    color: #E3F2FD;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.8px;
@@ -557,26 +556,26 @@ body {
     color: #FFFFFF;
     margin-bottom: 8px;
     display: block;
-    text-shadow: 1px 1px 3px rgba(27, 94, 32, 0.3);
+    text-shadow: 1px 1px 3px rgba(13, 71, 161, 0.3);
 }
 
 /* Success/Health indicators */
 .health-indicator {
-    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
+    background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
     color: #FFFFFF;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 600;
     display: inline-block;
-    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.3);
+    box-shadow: 0 3px 10px rgba(21, 101, 192, 0.3);
 }
 
-/* Nutrition-themed accents */
+/* Blue-themed accents */
 .nutrition-accent {
-    border-left: 4px solid #4CAF50;
+    border-left: 4px solid #2196F3;
     padding-left: 15px;
-    background: linear-gradient(90deg, rgba(232, 245, 232, 0.5), transparent);
+    background: linear-gradient(90deg, rgba(227, 242, 253, 0.5), transparent);
 }
 
 /* Custom scrollbar */
@@ -584,18 +583,19 @@ body {
     width: 8px;
 }
 ::-webkit-scrollbar-track {
-    background: #E8F5E8;
+    background: #E3F2FD;
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    background: linear-gradient(135deg, #1976D2, #2196F3);
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #388E3C, #4CAF50);
+    background: linear-gradient(135deg, #1565C0, #1976D2);
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ========================================
 # 🔥 ULTRA-STRONG CSS - FORCE CENTER
@@ -4878,10 +4878,10 @@ with tab_search:
             
             # ✅ EMOJI MAPPING (you can customize this)
             emoji_map = {
-                0: "🧲",  # First keyword
-                1: "🦴",  # Second keyword
-                2: "💊",  # Third keyword
-                3: "🐟"   # Fourth keyword
+                0: "💊",  # First keyword
+                1: "🧴",  # Second keyword
+                2: "🌸",  # Third keyword
+                3: "🧴"   # Fourth keyword
             }
             
             # ✅ GENERIC: Loop through top 4 keywords dynamically
