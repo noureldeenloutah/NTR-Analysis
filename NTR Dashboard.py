@@ -10815,102 +10815,78 @@ with tab_class:
 
 # ----------------- Generic Type Tab (OPTIMIZED) -----------------
 with tab_generic:
-
-    # Optimized Hero Image with caching
-    # 🎨 GREEN-THEMED HERO HEADER (replacing image selection)
-    st.markdown("""
-    <div style="
-        text-align: center; 
-        padding: 3rem 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-        border-radius: 20px; 
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(76, 175, 80, 0.2);
-    ">
-        <h1 style="
-            color: #1B5E20; 
-            margin: 0; 
-            font-size: 3rem; 
-            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
-            font-weight: 700;
-            letter-spacing: -1px;
-        ">
-            🌿 Generic Type Performance Analysis 🌿
-        </h1>
-        <p style="
-            color: #2E7D32; 
-            margin: 1rem 0 0 0; 
-            font-size: 1.3rem;
-            font-weight: 300;
-            opacity: 0.9;
-        ">
-            Deep dive into generic type performance and search trends
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
+    # ✅ CACHED HERO HEADER
+    @st.cache_data(ttl=86400)
+    def get_generic_hero_html():
+        return """
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
+            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
+                🌿 Generic Type Performance Analysis 🌿
+            </h1>
+            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+                Deep dive into generic type performance and search trends
+            </p>
+        </div>
+        """
+    
+    st.markdown(get_generic_hero_html(), unsafe_allow_html=True)
+    
     try:
-        # Optimized data validation
+        # ✅ VALIDATE DATA FIRST
         if generic_type is None or generic_type.empty:
             st.warning("⚠️ No generic type data available.")
             st.info("Please ensure your uploaded file contains a 'generic_type' sheet with data.")
             st.stop()
         
-        # Memory-efficient data processing
-        @st.cache_data
+        # ✅ CRITICAL: VECTORIZED DATA PROCESSING
+        @st.cache_data(ttl=1800, show_spinner=False)
         def process_generic_data(data):
-            """Optimized data processing with caching"""
-            gt = data.copy()
-            
-            # Validate columns
+            """Fully vectorized data processing"""
             required_columns = ['search', 'count', 'Clicks', 'Conversions']
-            missing_columns = [col for col in required_columns if col not in gt.columns]
+            missing_columns = [col for col in required_columns if col not in data.columns]
             
             if missing_columns:
                 return None, f"Missing required columns: {', '.join(missing_columns)}"
             
-            # Vectorized numeric conversion (faster than apply)
+            # Single copy
+            gt = data.copy()
+            
+            # Vectorized numeric conversion
             numeric_columns = ['count', 'Clicks', 'Conversions']
             for col in numeric_columns:
-                gt[col] = pd.to_numeric(gt[col], errors='coerce').fillna(0)
+                gt[col] = pd.to_numeric(gt[col], errors='coerce').fillna(0).astype(np.int64)
             
-            # Efficient data cleaning
-            gt = gt.dropna(subset=['search'])
-            gt = gt[gt['search'].str.strip().astype(bool)]
+            # Efficient cleaning
+            gt = gt[gt['search'].notna() & (gt['search'].str.strip() != '')]
             
             if gt.empty:
                 return None, "No valid data after cleaning"
             
-            # Optimized aggregation
+            # Vectorized aggregation
             gt_agg = gt.groupby('search', as_index=False).agg({
                 'count': 'sum',
-                'Clicks': 'sum', 
+                'Clicks': 'sum',
                 'Conversions': 'sum'
             })
             
-            # Vectorized metric calculations (much faster than apply)
+            # Pre-calculate totals
             total_clicks = gt_agg['Clicks'].sum()
             total_conversions = gt_agg['Conversions'].sum()
             
-            # Avoid division by zero with numpy where
-            gt_agg['ctr'] = np.where(gt_agg['count'] > 0, 
-                                   (gt_agg['Clicks'] / gt_agg['count']) * 100, 0)
-            gt_agg['classic_cvr'] = np.where(gt_agg['Clicks'] > 0, 
-                                           (gt_agg['Conversions'] / gt_agg['Clicks']) * 100, 0)
-            gt_agg['conversion_rate'] = np.where(gt_agg['count'] > 0, 
-                                               (gt_agg['Conversions'] / gt_agg['count']) * 100, 0)
-            gt_agg['click_share'] = np.where(total_clicks > 0, 
-                                           (gt_agg['Clicks'] / total_clicks) * 100, 0)
-            gt_agg['conversion_share'] = np.where(total_conversions > 0, 
-                                                (gt_agg['Conversions'] / total_conversions) * 100, 0)
+            # Vectorized metric calculations
+            gt_agg['ctr'] = np.where(gt_agg['count'] > 0, (gt_agg['Clicks'] / gt_agg['count']) * 100, 0)
+            gt_agg['classic_cvr'] = np.where(gt_agg['Clicks'] > 0, (gt_agg['Conversions'] / gt_agg['Clicks']) * 100, 0)
+            gt_agg['conversion_rate'] = np.where(gt_agg['count'] > 0, (gt_agg['Conversions'] / gt_agg['count']) * 100, 0)
+            gt_agg['click_share'] = np.where(total_clicks > 0, (gt_agg['Clicks'] / total_clicks) * 100, 0)
+            gt_agg['conversion_share'] = np.where(total_conversions > 0, (gt_agg['Conversions'] / total_conversions) * 100, 0)
             
             # Sort once
             gt_agg = gt_agg.sort_values('count', ascending=False).reset_index(drop=True)
             
             return gt_agg, None
         
-        # Process data with caching
+        # Process with spinner
         with st.spinner("🔄 Processing generic type data..."):
             gt_agg, error = process_generic_data(generic_type)
             
@@ -10918,73 +10894,65 @@ with tab_generic:
                 st.error(f"❌ {error}")
                 st.stop()
         
-        # Pre-calculate key metrics once
-        @st.cache_data
+        # ✅ PRE-CALCULATE ALL METRICS ONCE
+        @st.cache_data(ttl=1800, show_spinner=False)
         def calculate_summary_metrics(data):
-            """Pre-calculate all summary metrics"""
-            total_generic_terms = len(data)
-            total_searches = data['count'].sum()
-            total_clicks = data['Clicks'].sum()
-            total_conversions = data['Conversions'].sum()
-            avg_ctr = data['ctr'].mean()
-            avg_cr = data['conversion_rate'].mean()
+            """Vectorized summary metrics calculation"""
+            total_count = data['count'].sum()
             
-            # Distribution metrics
+            # Vectorized calculations
             sorted_counts = np.sort(data['count'].values)
             cumsum_counts = np.cumsum(sorted_counts)
-            total_count = cumsum_counts[-1]
             n = len(sorted_counts)
             
             gini_coefficient = 1 - 2 * np.sum(cumsum_counts) / (n * total_count) if total_count > 0 else 0
             herfindahl_index = np.sum((data['count'] / total_count) ** 2) if total_count > 0 else 0
-            top_5_concentration = data.head(5)['count'].sum() / total_count * 100 if total_count > 0 else 0
-            top_10_concentration = data.head(10)['count'].sum() / total_count * 100 if total_count > 0 else 0
             
             return {
-                'total_generic_terms': total_generic_terms,
-                'total_searches': total_searches,
-                'total_clicks': total_clicks,
-                'total_conversions': total_conversions,
-                'avg_ctr': avg_ctr,
-                'avg_cr': avg_cr,
-                'gini_coefficient': gini_coefficient,
-                'herfindahl_index': herfindahl_index,
-                'top_5_concentration': top_5_concentration,
-                'top_10_concentration': top_10_concentration,
+                'total_generic_terms': len(data),
+                'total_searches': int(total_count),
+                'total_clicks': int(data['Clicks'].sum()),
+                'total_conversions': int(data['Conversions'].sum()),
+                'avg_ctr': float(data['ctr'].mean()),
+                'avg_cr': float(data['conversion_rate'].mean()),
+                'gini_coefficient': float(gini_coefficient),
+                'herfindahl_index': float(herfindahl_index),
+                'top_5_concentration': float(data.head(5)['count'].sum() / total_count * 100) if total_count > 0 else 0,
+                'top_10_concentration': float(data.head(10)['count'].sum() / total_count * 100) if total_count > 0 else 0,
                 'top_generic_term': data.iloc[0]['search'] if len(data) > 0 else 'N/A',
-                'top_generic_volume': data.iloc[0]['count'] if len(data) > 0 else 0,
+                'top_generic_volume': int(data.iloc[0]['count']) if len(data) > 0 else 0,
                 'top_conversion_generic': data.nlargest(1, 'Conversions')['search'].iloc[0] if len(data) > 0 else 'N/A'
             }
         
         metrics = calculate_summary_metrics(gt_agg)
         
-        # Optimized CSS (reduced and cached)
-        st.markdown("""
-        <style>
-        .nutrition-generic-metric-card {
-            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 100%);
-            padding: 20px; border-radius: 12px; text-align: center; color: #1B5E20;
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.25); margin: 8px 0;
-            min-height: 140px; display: flex; flex-direction: column; justify-content: center;
-            transition: transform 0.15s ease; border-left: 3px solid #4CAF50;
-        }
-        .nutrition-generic-metric-card:hover { transform: translateY(-1px); }
-        .nutrition-generic-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; color: #2E7D32; }
-        .nutrition-generic-metric-card .value { font-size: 1.4em; font-weight: bold; margin-bottom: 6px; color: #1B5E20; }
-        .nutrition-generic-metric-card .label { font-size: 1em; opacity: 0.9; font-weight: 600; margin-bottom: 4px; color: #2E7D32; }
-        .nutrition-generic-metric-card .sub-label { font-size: 0.9em; opacity: 0.8; color: #388E3C; }
-        .nutrition-performance-badge { padding: 3px 6px; border-radius: 8px; font-size: 0.75em; font-weight: bold; margin-left: 6px; }
-        .high-nutrition-performance { background-color: #4CAF50; color: white; }
-        .medium-nutrition-performance { background-color: #81C784; color: white; }
-        .low-nutrition-performance { background-color: #A5D6A7; color: #1B5E20; }
-        .nutrition-insight-card { background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); padding: 20px; border-radius: 12px; color: white; margin: 12px 0; box-shadow: 0 4px 16px rgba(46, 125, 50, 0.25); }
-        </style>
-        """, unsafe_allow_html=True)
+        # ✅ LOAD CSS ONCE PER SESSION
+        if 'generic_css_loaded' not in st.session_state:
+            st.markdown("""
+            <style>
+            .nutrition-generic-metric-card{background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 100%);padding:20px;border-radius:12px;text-align:center;color:#1B5E20;box-shadow:0 6px 20px rgba(46,125,50,0.25);margin:8px 0;min-height:140px;display:flex;flex-direction:column;justify-content:center;transition:transform 0.15s ease;border-left:3px solid #4CAF50}
+            .nutrition-generic-metric-card:hover{transform:translateY(-1px)}
+            .nutrition-generic-metric-card .icon{font-size:2.5em;margin-bottom:8px;color:#2E7D32}
+            .nutrition-generic-metric-card .value{font-size:1.4em;font-weight:bold;margin-bottom:6px;color:#1B5E20}
+            .nutrition-generic-metric-card .label{font-size:1em;opacity:0.9;font-weight:600;margin-bottom:4px;color:#2E7D32}
+            .nutrition-generic-metric-card .sub-label{font-size:0.9em;opacity:0.8;color:#388E3C}
+            .nutrition-performance-badge{padding:3px 6px;border-radius:8px;font-size:0.75em;font-weight:bold;margin-left:6px}
+            .high-nutrition-performance{background-color:#4CAF50;color:white}
+            .medium-nutrition-performance{background-color:#81C784;color:white}
+            .low-nutrition-performance{background-color:#A5D6A7;color:#1B5E20}
+            .generic-health-metric-card{background:linear-gradient(135deg,#2E7D32 0%,#66BB6A 100%);padding:20px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(46,125,50,0.3);margin:8px 0;min-height:120px;display:flex;flex-direction:column;justify-content:center;transition:transform 0.2s ease;width:100%}
+            .generic-health-metric-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(46,125,50,0.4)}
+            .generic-health-metric-card .icon{font-size:2.5em;margin-bottom:8px;display:block}
+            .generic-health-metric-card .value{font-size:1.8em;font-weight:bold;margin-bottom:5px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.1}
+            .generic-health-metric-card .label{font-size:1em;opacity:0.95;font-weight:600;line-height:1.2}
+            </style>
+            """, unsafe_allow_html=True)
+            st.session_state.generic_css_loaded = True
         
-        # Enhanced Key Metrics Section (optimized layout)
+        # ✅ KEY METRICS SECTION
         st.subheader("🌱 Generic Type Performance Overview")
         
-        # First row of metrics
+        # First row
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -11031,7 +10999,7 @@ with tab_generic:
             </div>
             """, unsafe_allow_html=True)
         
-        # Second row of metrics
+        # Second row
         col5, col6, col7, col8 = st.columns(4)
         
         with col5:
@@ -11076,214 +11044,158 @@ with tab_generic:
             """, unsafe_allow_html=True)
         
         st.markdown("---")
-    
-
-
-        # ✅ NEW: Top Generic Terms Performance Table
+        
+        # ✅ TOP GENERIC TERMS PERFORMANCE TABLE
         st.subheader("🏆 Generic Terms Performance")
-
+        
         num_generic_terms = st.slider(
-            "Number of generic terms to display:", 
-            min_value=10, 
-            max_value=50, 
-            value=20, 
+            "Number of generic terms to display:",
+            min_value=10,
+            max_value=50,
+            value=20,
             step=5,
             key="generic_terms_count_slider"
         )
-
-        # 🚀 LAZY CSS LOADING - Only load once per session for generic terms
-        if 'generic_terms_health_css_loaded' not in st.session_state:
-            st.markdown("""
-            <style>
-            .generic-health-metric-card {
-                background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
-                padding: 20px; border-radius: 15px; text-align: center; color: white;
-                box-shadow: 0 8px 32px rgba(46, 125, 50, 0.3); margin: 8px 0;
-                min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-                transition: transform 0.2s ease; width: 100%;
-            }
-            .generic-health-metric-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(46, 125, 50, 0.4); }
-            .generic-health-metric-card .icon { font-size: 2.5em; margin-bottom: 8px; display: block; }
-            .generic-health-metric-card .value { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; overflow-wrap: break-word; line-height: 1.1; }
-            .generic-health-metric-card .label { font-size: 1em; opacity: 0.95; font-weight: 600; line-height: 1.2; }
-            .generic-health-performance-increase { background-color: rgba(76, 175, 80, 0.1) !important; }
-            .generic-health-performance-decrease { background-color: rgba(244, 67, 54, 0.1) !important; }
-            .generic-health-comparison-header { background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%); color: white; font-weight: bold; text-align: center; padding: 8px; }
-            .generic-health-volume-column { background-color: rgba(46, 125, 50, 0.1) !important; }
-            .generic-health-performance-column { background-color: rgba(102, 187, 106, 0.1) !important; }
-            </style>
-            """, unsafe_allow_html=True)
-            st.session_state.generic_terms_health_css_loaded = True
-
-        # ✅ REUSE: Dynamic month names from categories section (already defined above)
-        # If not defined, create it here
+        
+        # Reuse month_names
         if 'month_names' not in locals():
-            month_names = get_dynamic_month_names(queries_with_month)
-
-        # ✅ ENSURE: Month column exists in generic_type dataframe
+            if 'queries_with_month' not in locals():
+                queries_with_month = queries.copy()
+                if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+                    queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+            
+            @st.cache_data(ttl=3600, show_spinner=False)
+            def get_month_names_cached(df):
+                if 'month' not in df.columns:
+                    return {}
+                unique_months = sorted(df['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
+                return {m: pd.to_datetime(m).strftime('%B %Y') for m in unique_months}
+            
+            month_names = get_month_names_cached(queries_with_month)
+        
+        # Prepare generic_type with month
         generic_type_with_month = generic_type.copy()
         if 'month' not in generic_type_with_month.columns and 'start_date' in generic_type_with_month.columns:
             generic_type_with_month['start_date'] = pd.to_datetime(generic_type_with_month['start_date'])
             generic_type_with_month['month'] = generic_type_with_month['start_date'].dt.to_period('M').astype(str)
-
-        # 🚀 COMPUTE: Get generic terms data with caching (filter-aware)
-        generic_filter_state = {
-            'filters_applied': st.session_state.get('filters_applied', False),
-            'data_shape': generic_type_with_month.shape,
-            'data_hash': hash(str(gt_agg['search'].tolist()[:10]) if not gt_agg.empty else "empty"),
-            'num_generic_terms': num_generic_terms
-        }
-        generic_filter_key = str(hash(str(generic_filter_state)))
-
-        @st.cache_data(ttl=1800, show_spinner=False)
-        def compute_generic_health_performance_monthly(_df, _gt, month_names_dict, num_terms, cache_key):
-            """🔄 UNIFIED: Build complete generic terms table directly from generic_type dataframe"""
-            if _df.empty or _gt.empty:
+        
+        # Compute monthly data
+        filter_key = f"{generic_type_with_month.shape}_{num_generic_terms}_{hash(str(gt_agg['search'].tolist()[:5]))}"
+        
+        @st.cache_data(ttl=1800, show_spinner=False, max_entries=5)
+        def compute_generic_monthly(df, gt_df, month_dict, num_terms, cache_key):
+            """Optimized monthly generic calculation"""
+            if df.empty or gt_df.empty:
                 return pd.DataFrame(), []
             
-            # Step 1: Get top generic terms by total counts
-            top_generics_list = _gt.nlargest(num_terms, 'count')['search'].tolist()
+            top_generics = gt_df.nlargest(num_terms, 'count')['search'].tolist()
+            top_data = df[df['search'].isin(top_generics)].copy()
             
-            # Step 2: Filter original data for top generic terms
-            top_data = _df[_df['search'].isin(top_generics_list)].copy()
+            if 'month' not in top_data.columns:
+                return pd.DataFrame(), []
             
-            # Step 3: Get unique months
-            if 'month' in top_data.columns:
-                unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
-            else:
-                unique_months = []
+            unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
             
-            # Step 4: Build comprehensive generic terms data
-            result_data = []
+            # Vectorized groupby
+            grouped = top_data.groupby(['search', 'month'], as_index=False).agg({
+                'count': 'sum',
+                'Clicks': 'sum',
+                'Conversions': 'sum'
+            })
             
-            for generic_term in top_generics_list:
-                generic_data = top_data[top_data['search'] == generic_term]
-                
-                if generic_data.empty:
+            grouped['ctr'] = np.where(grouped['count'] > 0, (grouped['Clicks'] / grouped['count'] * 100), 0)
+            grouped['cr'] = np.where(grouped['count'] > 0, (grouped['Conversions'] / grouped['count'] * 100), 0)
+            
+            # Build result
+            result_rows = []
+            dataset_total = df['count'].sum()
+            
+            for generic_term in top_generics:
+                generic_total = gt_df[gt_df['search'] == generic_term]
+                if generic_total.empty:
                     continue
                 
-                # ✅ CALCULATE: Base metrics
-                total_counts = int(generic_data['count'].sum())
-                total_clicks = int(generic_data['Clicks'].sum())
-                total_conversions = int(generic_data['Conversions'].sum())
+                gt_row = generic_total.iloc[0]
+                share_pct = (gt_row['count'] / dataset_total * 100) if dataset_total > 0 else 0
                 
-                if total_counts == 0:
-                    continue
-                
-                # Calculate total dataset counts for share percentage
-                dataset_total_counts = _df['count'].sum()
-                share_pct = (total_counts / dataset_total_counts * 100) if dataset_total_counts > 0 else 0
-                
-                overall_ctr = (total_clicks / total_counts * 100) if total_counts > 0 else 0
-                overall_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
-                
-                # ✅ BUILD: Row data
                 row = {
                     'Generic Term': generic_term,
-                    'Total Volume': total_counts,
+                    'Total Volume': int(gt_row['count']),
                     'Share %': share_pct,
-                    'Overall CTR': overall_ctr,
-                    'Overall CR': overall_cr,
-                    'Total Clicks': total_clicks,
-                    'Total Conversions': total_conversions
+                    'Overall CTR': gt_row['ctr'],
+                    'Overall CR': gt_row['conversion_rate'],
+                    'Total Clicks': int(gt_row['Clicks']),
+                    'Total Conversions': int(gt_row['Conversions'])
                 }
                 
-                # ✅ CALCULATE: Monthly metrics
+                # Add monthly data
+                generic_monthly = grouped[grouped['search'] == generic_term]
                 for month in unique_months:
-                    month_display = month_names_dict.get(month, month)
-                    month_data = generic_data[generic_data['month'] == month]
+                    month_display = month_dict.get(month, month)
+                    month_row = generic_monthly[generic_monthly['month'] == month]
                     
-                    if not month_data.empty:
-                        month_counts = int(month_data['count'].sum())
-                        month_clicks = int(month_data['Clicks'].sum())
-                        month_conversions = int(month_data['Conversions'].sum())
-                        
-                        month_ctr = (month_clicks / month_counts * 100) if month_counts > 0 else 0
-                        month_cr = (month_conversions / month_counts * 100) if month_counts > 0 else 0
-                        
-                        row[f'{month_display} Vol'] = month_counts
-                        row[f'{month_display} CTR'] = month_ctr
-                        row[f'{month_display} CR'] = month_cr
+                    if not month_row.empty:
+                        mr = month_row.iloc[0]
+                        row[f'{month_display} Vol'] = int(mr['count'])
+                        row[f'{month_display} CTR'] = mr['ctr']
+                        row[f'{month_display} CR'] = mr['cr']
                     else:
                         row[f'{month_display} Vol'] = 0
                         row[f'{month_display} CTR'] = 0
                         row[f'{month_display} CR'] = 0
                 
-                result_data.append(row)
+                result_rows.append(row)
             
-            result_df = pd.DataFrame(result_data)
+            result_df = pd.DataFrame(result_rows)
             result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
-            result_df = result_df[result_df['Total Volume'] > 0]
-            
-            return result_df, unique_months
-
-        top_generics_monthly, unique_months_gen = compute_generic_health_performance_monthly(
-            generic_type_with_month, 
-            gt_agg, 
-            month_names, 
-            num_generic_terms,
-            generic_filter_key
+            return result_df[result_df['Total Volume'] > 0], unique_months
+        
+        top_generics_monthly, unique_months_gen = compute_generic_monthly(
+            generic_type_with_month, gt_agg, month_names, num_generic_terms, filter_key
         )
-
-        if top_generics_monthly.empty:
-            st.warning("No valid generic terms data after processing.")
-        else:
-            # ✅ SHOW: Filter status
+        
+        if not top_generics_monthly.empty:
             unique_generic_terms_count = generic_type_with_month['search'].nunique()
             
             if st.session_state.get('filters_applied', False):
-                st.info(f"🔍 **Filtered Results**: Showing Top {num_generic_terms} generic terms from {unique_generic_terms_count:,} total terms")
+                st.info(f"🔍 **Filtered**: Top {num_generic_terms} from {unique_generic_terms_count:,} terms")
             else:
-                st.info(f"📊 **All Data**: Showing Top {num_generic_terms} generic terms from {unique_generic_terms_count:,} total terms")
+                st.info(f"📊 **All Data**: Top {num_generic_terms} from {unique_generic_terms_count:,} terms")
             
-            # ✅ ORGANIZE: Column order - MATCHING SCREENSHOT PATTERN
+            # Organize columns
             base_columns = ['Generic Term', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
-            
-            # Get sorted months
             sorted_months = sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))
             
-            # Build column lists
-            volume_columns = []
-            ctr_columns = []
-            cr_columns = []
+            volume_columns = [f'{month_names.get(m, m)} Vol' for m in sorted_months]
+            ctr_columns = [f'{month_names.get(m, m)} CTR' for m in sorted_months]
+            cr_columns = [f'{month_names.get(m, m)} CR' for m in sorted_months]
             
-            for month in sorted_months:
-                month_display = month_names.get(month, month)
-                volume_columns.append(f'{month_display} Vol')
-                ctr_columns.append(f'{month_display} CTR')
-                cr_columns.append(f'{month_display} CR')
-            
-            # ✅ CORRECT ORDER: Base → Volumes → CTRs → CRs
             ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
             existing_columns = [col for col in ordered_columns if col in top_generics_monthly.columns]
             top_generics_monthly = top_generics_monthly[existing_columns]
             
-            # ✅ FORMAT & STYLE
-            generics_hash = hash(str(top_generics_monthly.shape) + str(top_generics_monthly.columns.tolist()) + str(top_generics_monthly.iloc[0].to_dict()) if len(top_generics_monthly) > 0 else "empty")
-            styling_cache_key = f"{generics_hash}_{generic_filter_key}"
+            # Format & cache styling
+            styling_key = f"{hash(str(top_generics_monthly.shape))}_{filter_key}"
             
             if ('styled_generics_health' not in st.session_state or 
-                st.session_state.get('generics_health_cache_key') != styling_cache_key):
+                st.session_state.get('generics_health_cache_key') != styling_key):
                 
-                st.session_state.generics_health_cache_key = styling_cache_key
+                st.session_state.generics_health_cache_key = styling_key
                 
-                display_generics = top_generics_monthly.copy()
+                display_df = top_generics_monthly.copy()
                 
-                # Format volume columns
-                volume_cols_to_format = ['Total Volume'] + volume_columns
-                for col in volume_cols_to_format:
-                    if col in display_generics.columns:
-                        display_generics[col] = display_generics[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                # Format volumes
+                for col in ['Total Volume'] + volume_columns:
+                    if col in display_df.columns:
+                        display_df[col] = display_df[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
                 
-                # Format clicks and conversions
-                if 'Total Clicks' in display_generics.columns:
-                    display_generics['Total Clicks'] = display_generics['Total Clicks'].apply(lambda x: format_number(int(x)))
-                if 'Total Conversions' in display_generics.columns:
-                    display_generics['Total Conversions'] = display_generics['Total Conversions'].apply(lambda x: format_number(int(x)))
+                if 'Total Clicks' in display_df.columns:
+                    display_df['Total Clicks'] = display_df['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_df.columns:
+                    display_df['Total Conversions'] = display_df['Total Conversions'].apply(lambda x: format_number(int(x)))
                 
-                # ✅ STYLING: Month-over-month comparison
-                def highlight_generic_health_performance_with_comparison(df):
-                    """Enhanced highlighting for generic terms comparison"""
+                # Optimized styling
+                def highlight_performance(df):
                     styles = pd.DataFrame('', index=df.index, columns=df.columns)
                     
                     if len(unique_months_gen) < 2:
@@ -11291,58 +11203,38 @@ with tab_generic:
                     
                     sorted_months_local = sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))
                     
-                    # Compare consecutive months
                     for i in range(1, len(sorted_months_local)):
-                        current_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        curr_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
                         prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
                         
-                        current_ctr_col = f'{current_month} CTR'
-                        prev_ctr_col = f'{prev_month} CTR'
-                        current_cr_col = f'{current_month} CR'
-                        prev_cr_col = f'{prev_month} CR'
-                        
-                        # CTR comparison
-                        if current_ctr_col in df.columns and prev_ctr_col in df.columns:
-                            for idx in df.index:
-                                current_ctr = df.loc[idx, current_ctr_col]
-                                prev_ctr = df.loc[idx, prev_ctr_col]
-                                
-                                if pd.notnull(current_ctr) and pd.notnull(prev_ctr) and prev_ctr > 0:
-                                    change_pct = ((current_ctr - prev_ctr) / prev_ctr) * 100
-                                    if change_pct > 10:
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:
-                                        styles.loc[idx, current_ctr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_ctr_col] = f'background-color: {color};'
-                        
-                        # CR comparison
-                        if current_cr_col in df.columns and prev_cr_col in df.columns:
-                            for idx in df.index:
-                                current_cr = df.loc[idx, current_cr_col]
-                                prev_cr = df.loc[idx, prev_cr_col]
-                                
-                                if pd.notnull(current_cr) and pd.notnull(prev_cr) and prev_cr > 0:
-                                    change_pct = ((current_cr - prev_cr) / prev_cr) * 100
-                                    if change_pct > 10:
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(76, 175, 80, 0.3); color: #1B5E20; font-weight: bold;'
-                                    elif change_pct < -10:
-                                        styles.loc[idx, current_cr_col] = 'background-color: rgba(244, 67, 54, 0.3); color: #B71C1C; font-weight: bold;'
-                                    elif abs(change_pct) > 5:
-                                        color = 'rgba(76, 175, 80, 0.15)' if change_pct > 0 else 'rgba(244, 67, 54, 0.15)'
-                                        styles.loc[idx, current_cr_col] = f'background-color: {color};'
+                        for metric in ['CTR', 'CR']:
+                            curr_col = f'{curr_month} {metric}'
+                            prev_col = f'{prev_month} {metric}'
+                            
+                            if curr_col in df.columns and prev_col in df.columns:
+                                for idx in df.index:
+                                    curr_val = df.loc[idx, curr_col]
+                                    prev_val = df.loc[idx, prev_col]
+                                    
+                                    if pd.notnull(curr_val) and pd.notnull(prev_val) and prev_val > 0:
+                                        change_pct = ((curr_val - prev_val) / prev_val) * 100
+                                        if change_pct > 10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(76,175,80,0.3);color:#1B5E20;font-weight:bold;'
+                                        elif change_pct < -10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(244,67,54,0.3);color:#B71C1C;font-weight:bold;'
+                                        elif abs(change_pct) > 5:
+                                            color = 'rgba(76,175,80,0.15)' if change_pct > 0 else 'rgba(244,67,54,0.15)'
+                                            styles.loc[idx, curr_col] = f'background-color:{color};'
                     
-                    # Volume column highlighting
+                    # Volume highlighting
                     for col in volume_columns:
                         if col in df.columns:
-                            styles.loc[:, col] = styles.loc[:, col] + 'background-color: rgba(46, 125, 50, 0.05);'
+                            styles[col] = 'background-color:rgba(46,125,50,0.05);'
                     
                     return styles
                 
-                styled_generics = display_generics.style.apply(highlight_generic_health_performance_with_comparison, axis=None)
-                
-                styled_generics = styled_generics.set_properties(**{
+                styled = display_df.style.apply(highlight_performance, axis=None)
+                styled = styled.set_properties(**{
                     'text-align': 'center',
                     'vertical-align': 'middle',
                     'font-size': '11px',
@@ -11361,125 +11253,91 @@ with tab_generic:
                 }
                 
                 for col in ctr_columns + cr_columns:
-                    if col in display_generics.columns:
+                    if col in display_df.columns:
                         format_dict[col] = '{:.1f}%'
                 
-                styled_generics = styled_generics.format(format_dict)
-                st.session_state.styled_generics_health = styled_generics
+                styled = styled.format(format_dict)
+                st.session_state.styled_generics_health = styled
             
             # Display table
             html_content = st.session_state.styled_generics_health.to_html(index=False, escape=False)
-            html_content = html_content.strip()
-
             st.markdown(
-                f"""
-                <div style="height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 5px;">
-                    {html_content}
-                </div>
-                """,
+                f'<div style="height:600px;overflow-y:auto;overflow-x:auto;border:1px solid #ddd;border-radius:5px;">{html_content}</div>',
                 unsafe_allow_html=True
             )
             
             # Legend
             st.markdown("""
-            <div style="background: rgba(46, 125, 50, 0.1); padding: 12px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Comparison Guide:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.3); padding: 2px 6px; border-radius: 4px; color: #1B5E20;">Dark Green</strong> = >10% improvement</div>
-                    <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
-                    <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+            <div style="background:rgba(46,125,50,0.1);padding:12px;border-radius:8px;margin:15px 0;">
+                <h4 style="margin:0 0 8px 0;color:#1B5E20;">🌿 Generic Terms Comparison Guide:</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                    <div>📈 <strong style="background-color:rgba(76,175,80,0.3);padding:2px 6px;border-radius:4px;color:#1B5E20;">Dark Green</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
+                    <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # Column organization explanation
-            if unique_months_gen:
-                month_list = [month_names.get(m, m) for m in sorted(unique_months_gen, key=lambda x: pd.to_datetime(x))]
-                st.markdown(f"""
-                <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Generic Terms Column Organization:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div><strong>🌱 Base Metrics:</strong> Generic Term, Total Volume, Share %, Overall CTR/CR</div>
-                        <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
-                        <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
-                        <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Download section
+            # Download
             st.markdown("<br>", unsafe_allow_html=True)
-            
             csv_generics = top_generics_monthly.to_csv(index=False)
             
             col_download = st.columns([1, 2, 1])
             with col_download[1]:
                 filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
-                
                 st.download_button(
                     label="📥 Download Generic Terms CSV",
                     data=csv_generics,
                     file_name=f"top_{num_generic_terms}_generic_terms{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
-                    help="Download the generic terms table with current filter settings applied",
                     use_container_width=True,
                     key="generic_terms_monthly_download"
                 )
-
+        else:
+            st.warning("No valid generic terms data after processing.")
+        
         st.markdown("---")
-
-
-
-
-        # Interactive generic type analysis
+        
+        # ✅ INTERACTIVE ANALYSIS
         st.subheader("🎯 Interactive Generic Type Analysis")
-
-        # Analysis type selector
+        
         analysis_type = st.radio(
             "Choose Analysis Type:",
             ["📊 Top Performers Overview", "🔍 Detailed Term Deep Dive", "📈 Performance Comparison", "📊 Distribution Analysis"],
             horizontal=True,
-            key="generic_terms_analysis_type"  # ✅ Added unique key
+            key="generic_terms_analysis_type"
         )
-
+        
         if analysis_type == "📊 Top Performers Overview":
             with st.spinner('📊 Generating top performers overview...'):
                 st.subheader("🏆 Top 20 Generic Terms Performance")
                 
-                # Optimized data slicing
                 display_count = min(20, len(gt_agg))
                 top_20_gt = gt_agg.head(display_count).copy()
                 
-                # ✅ NEW: Combined Volume, CTR & CR Analysis Chart
+                # Combined chart
                 st.subheader("🚀 Search Volume vs Performance Matrix")
                 
-                # Calculate conversion rate as conversions/search volume for better representation
                 top_20_gt['conversion_rate_volume'] = (top_20_gt['Conversions'] / top_20_gt['count'] * 100).round(2)
                 
-                # Create subplot with secondary y-axis
-                fig_combined = make_subplots(
-                    specs=[[{"secondary_y": True}]],
-                    subplot_titles=("",)
-                )
+                fig_combined = make_subplots(specs=[[{"secondary_y": True}]])
                 
-                # Add search volume bars (primary y-axis)
                 fig_combined.add_trace(
                     go.Bar(
                         name='Search Volume',
                         x=top_20_gt['search'],
                         y=top_20_gt['count'],
-                        marker_color='rgba(46, 125, 50, 0.7)',
+                        marker_color='rgba(46,125,50,0.7)',
                         text=[format_number(int(x)) for x in top_20_gt['count']],
                         textposition='outside',
                         yaxis='y',
                         offsetgroup=1
                     ),
-                    secondary_y=False,
+                    secondary_y=False
                 )
                 
-                # Add CTR line (secondary y-axis)
                 fig_combined.add_trace(
                     go.Scatter(
                         name='CTR %',
@@ -11490,10 +11348,9 @@ with tab_generic:
                         marker=dict(size=8, color='#FF6B35'),
                         yaxis='y2'
                     ),
-                    secondary_y=True,
+                    secondary_y=True
                 )
                 
-                # Add Conversion Rate line (secondary y-axis)
                 fig_combined.add_trace(
                     go.Scatter(
                         name='Conversion Rate %',
@@ -11504,126 +11361,98 @@ with tab_generic:
                         marker=dict(size=8, color='#9C27B0'),
                         yaxis='y2'
                     ),
-                    secondary_y=True,
+                    secondary_y=True
                 )
                 
-                # Update layout
                 fig_combined.update_layout(
-                    title='<b style="color:#2E7D32;">🌿 Health Search Volume vs CTR & Conversion Performance</b>',
+                    title='<b style="color:#2E7D32;">🌿 Search Volume vs CTR & Conversion Performance</b>',
                     plot_bgcolor='rgba(248,255,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI'),
                     height=600,
-                    xaxis=dict(
-                        tickangle=45, 
-                        showgrid=True, 
-                        gridcolor='#C8E6C8',
-                        title='Generic Health Terms'
-                    ),
-                    legend=dict(
-                        orientation="h",
-                        yanchor="bottom",
-                        y=1.02,
-                        xanchor="right",
-                        x=1
-                    )
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8', title='Generic Terms'),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                 )
                 
-                # Set y-axes titles
-                fig_combined.update_yaxes(
-                    title_text="<b>Search Volume</b>", 
-                    secondary_y=False,
-                    showgrid=True, 
-                    gridcolor='#C8E6C8'
-                )
-                fig_combined.update_yaxes(
-                    title_text="<b>Performance Rate (%)</b>", 
-                    secondary_y=True,
-                    showgrid=False
-                )
+                fig_combined.update_yaxes(title_text="<b>Search Volume</b>", secondary_y=False, showgrid=True, gridcolor='#C8E6C8')
+                fig_combined.update_yaxes(title_text="<b>Performance Rate (%)</b>", secondary_y=True, showgrid=False)
                 
                 st.plotly_chart(fig_combined, use_container_width=True)
                 
-                # Enhanced bar chart (updated from original)
+                # Volume distribution
                 st.subheader("📊 Search Volume Distribution")
                 
-                @st.cache_data
-                def create_top_performers_chart(data):
+                @st.cache_data(show_spinner=False)
+                def create_volume_chart(data):
                     fig = px.bar(
                         data, x='search', y='count',
-                        title=f'<b style="color:#2E7D32;">🌱 Top {display_count} Generic Terms by Search Volume</b>',
+                        title=f'<b style="color:#2E7D32;">🌱 Top {len(data)} Generic Terms by Search Volume</b>',
                         labels={'count': 'Search Volume', 'search': 'Generic Terms'},
                         color='count', color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
-                        text='count'
-                    )
-                    # ✅ Updated with format_number for 1.5K format
-                    fig.update_traces(
-                        texttemplate='%{text}',
-                        textposition='outside',
                         text=[format_number(int(x)) for x in data['count']]
                     )
+                    fig.update_traces(textposition='outside')
                     fig.update_layout(
-                        plot_bgcolor='rgba(248,255,248,0.95)', 
+                        plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'), 
+                        font=dict(color='#1B5E20', family='Segoe UI'),
                         height=500,
                         xaxis=dict(tickangle=45, showgrid=True, gridcolor='#C8E6C8'),
-                        yaxis=dict(showgrid=True, gridcolor='#C8E6C8'), 
+                        yaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
                         showlegend=False
                     )
                     return fig
                 
-                fig_top_generics = create_top_performers_chart(top_20_gt)
-                st.plotly_chart(fig_top_generics, use_container_width=True)
+                fig_volume = create_volume_chart(top_20_gt)
+                st.plotly_chart(fig_volume, use_container_width=True)
                 
-                # Performance metrics comparison chart (updated from original)
+                # Metrics comparison
                 st.subheader("📊 Performance Metrics Comparison")
                 
-                @st.cache_data
-                def create_metrics_comparison_chart(data):
+                @st.cache_data(show_spinner=False)
+                def create_metrics_chart(data):
                     fig = go.Figure()
                     fig.add_trace(go.Bar(
-                        name='Health CTR %', 
-                        x=data['search'], 
-                        y=data['ctr'], 
+                        name='CTR %',
+                        x=data['search'],
+                        y=data['ctr'],
                         marker_color='#4CAF50',
                         text=[f'{x:.1f}%' for x in data['ctr']],
                         textposition='outside'
                     ))
                     fig.add_trace(go.Bar(
-                        name='Nutraceuticals & Nutrition Conversion Rate %', 
-                        x=data['search'], 
-                        y=data['conversion_rate'], 
+                        name='Conversion Rate %',
+                        x=data['search'],
+                        y=data['conversion_rate'],
                         marker_color='#81C784',
                         text=[f'{x:.1f}%' for x in data['conversion_rate']],
                         textposition='outside'
                     ))
                     fig.update_layout(
-                        title='<b style="color:#2E7D32;">🌿 Health CTR vs Nutraceuticals & Nutrition Conversion Rate Comparison</b>',
-                        barmode='group', 
-                        plot_bgcolor='rgba(248,255,248,0.95)', 
+                        title='<b style="color:#2E7D32;">🌿 CTR vs Conversion Rate Comparison</b>',
+                        barmode='group',
+                        plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'), 
+                        font=dict(color='#1B5E20', family='Segoe UI'),
                         height=500,
-                        xaxis=dict(tickangle=45), 
+                        xaxis=dict(tickangle=45),
                         yaxis=dict(title='Percentage (%)')
                     )
                     return fig
                 
-                fig_metrics_comparison = create_metrics_comparison_chart(top_20_gt)
-                st.plotly_chart(fig_metrics_comparison, use_container_width=True)
-
-
+                fig_metrics = create_metrics_chart(top_20_gt)
+                st.plotly_chart(fig_metrics, use_container_width=True)
+        
         elif analysis_type == "🔍 Detailed Term Deep Dive":
             st.subheader("🔬 Generic Term Deep Dive Analysis")
             
             selected_generic = st.selectbox(
                 "Select a generic term for detailed analysis:",
-                options=gt_agg['search'].tolist(), index=0
+                options=gt_agg['search'].tolist(),
+                index=0
             )
             
             if selected_generic:
-                # Optimized data retrieval
                 generic_data = gt_agg[gt_agg['search'] == selected_generic].iloc[0]
                 generic_rank = gt_agg.index[gt_agg['search'] == selected_generic].tolist()[0] + 1
                 
@@ -11681,8 +11510,7 @@ with tab_generic:
                     </div>
                     """, unsafe_allow_html=True)
                 
-                # Performance breakdown table                
-                # Pre-calculate medians for performance comparison
+                # Performance breakdown
                 medians = {
                     'count': gt_agg['count'].median(),
                     'Clicks': gt_agg['Clicks'].median(),
@@ -11695,13 +11523,13 @@ with tab_generic:
                 }
                 
                 metrics_data = {
-                    'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions', 
-                               'Click-Through Rate', 'Classic CVR (Conv/Clicks)', 
+                    'Metric': ['Search Volume', 'Total Clicks', 'Total Conversions',
+                               'Click-Through Rate', 'Classic CVR (Conv/Clicks)',
                                'Conversion Rate (Conv/Counts)', 'Click Share', 'Conversion Share'],
                     'Value': [
-                        f"{int(generic_data['count']):,}",
-                        f"{int(generic_data['Clicks']):,}",
-                        f"{int(generic_data['Conversions']):,}",
+                        format_number(int(generic_data['count'])),
+                        format_number(int(generic_data['Clicks'])),
+                        format_number(int(generic_data['Conversions'])),
                         f"{generic_data['ctr']:.1f}%",
                         f"{generic_data['classic_cvr']:.1f}%",
                         f"{generic_data['conversion_rate']:.1f}%",
@@ -11725,33 +11553,39 @@ with tab_generic:
                     title="📈 Performance Breakdown",
                     align="center"
                 )
-                                
-                # Optimized radar chart
+                
+                # Radar chart
                 st.markdown("### 📊 Performance Radar Chart")
                 
-                @st.cache_data
-                def create_radar_chart(data, selected_term, max_values):
-                    normalized_data = {
-                        'Search Volume': data['count'] / max_values['count'] * 100,
-                        'CTR': data['ctr'] / max_values['ctr'] * 100 if max_values['ctr'] > 0 else 0,
-                        'Conversion Rate': data['conversion_rate'] / max_values['conversion_rate'] * 100 if max_values['conversion_rate'] > 0 else 0,
+                @st.cache_data(show_spinner=False)
+                def create_radar(data, term, max_vals):
+                    normalized = {
+                        'Search Volume': data['count'] / max_vals['count'] * 100,
+                        'CTR': data['ctr'] / max_vals['ctr'] * 100 if max_vals['ctr'] > 0 else 0,
+                        'Conversion Rate': data['conversion_rate'] / max_vals['conversion_rate'] * 100 if max_vals['conversion_rate'] > 0 else 0,
                         'Click Share': data['click_share'],
                         'Conversion Share': data['conversion_share']
                     }
                     
                     fig = go.Figure()
                     fig.add_trace(go.Scatterpolar(
-                        r=list(normalized_data.values()), theta=list(normalized_data.keys()),
-                        fill='toself', name=selected_term, line_color='#4CAF50',
-                        fillcolor='rgba(76, 175, 80, 0.3)'
+                        r=list(normalized.values()),
+                        theta=list(normalized.keys()),
+                        fill='toself',
+                        name=term,
+                        line_color='#4CAF50',
+                        fillcolor='rgba(76,175,80,0.3)'
                     ))
                     fig.update_layout(
                         polar=dict(
                             radialaxis=dict(visible=True, range=[0, 100], gridcolor='#C8E6C8'),
                             angularaxis=dict(gridcolor='#C8E6C8')
                         ),
-                        showlegend=True, title=f'<b style="color:#2E7D32;">🌱 Performance Radar - {selected_term}</b>',
-                        height=400, plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
+                        showlegend=True,
+                        title=f'<b style="color:#2E7D32;">🌱 Performance Radar - {term}</b>',
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
                         font=dict(color='#1B5E20', family='Segoe UI')
                     )
                     return fig
@@ -11762,9 +11596,9 @@ with tab_generic:
                     'conversion_rate': gt_agg['conversion_rate'].max()
                 }
                 
-                fig_radar = create_radar_chart(generic_data, selected_generic, max_values)
+                fig_radar = create_radar(generic_data, selected_generic, max_values)
                 st.plotly_chart(fig_radar, use_container_width=True)
-
+        
         elif analysis_type == "📈 Performance Comparison":
             st.subheader("⚖️ Generic Terms Performance Comparison")
             
@@ -11776,48 +11610,51 @@ with tab_generic:
             )
             
             if selected_generics:
-                # Optimized data filtering
                 comparison_data = gt_agg[gt_agg['search'].isin(selected_generics)].copy()
                 
-                # Comparison metrics visualization
-                @st.cache_data
-                def create_comparison_chart(data):
+                @st.cache_data(show_spinner=False)
+                def create_comparison(data):
                     fig = go.Figure()
-                    metrics = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
+                    metrics_list = ['ctr', 'conversion_rate', 'click_share', 'conversion_share']
                     metric_names = ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
                     colors = ['#4CAF50', '#81C784', '#66BB6A', '#A5D6A7']
                     
-                    for i, (metric, name) in enumerate(zip(metrics, metric_names)):
+                    for i, (metric, name) in enumerate(zip(metrics_list, metric_names)):
                         fig.add_trace(go.Bar(
-                            name=name, x=data['search'], y=data[metric], marker_color=colors[i]
+                            name=name,
+                            x=data['search'],
+                            y=data[metric],
+                            marker_color=colors[i]
                         ))
                     
                     fig.update_layout(
                         title='<b style="color:#2E7D32;">🌱 Performance Metrics Comparison</b>',
-                        barmode='group', plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
-                        font=dict(color='#1B5E20', family='Segoe UI'), height=500,
-                        xaxis=dict(tickangle=45), yaxis=dict(title='Percentage (%)')
+                        barmode='group',
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
+                        font=dict(color='#1B5E20', family='Segoe UI'),
+                        height=500,
+                        xaxis=dict(tickangle=45),
+                        yaxis=dict(title='Percentage (%)')
                     )
                     return fig
                 
-                fig_comparison = create_comparison_chart(comparison_data)
+                fig_comparison = create_comparison(comparison_data)
                 st.plotly_chart(fig_comparison, use_container_width=True)
                 
-                # Detailed comparison table
+                # Comparison table
                 st.markdown("### 📊 Detailed Comparison Table")
                 
-                # Optimized table formatting
-                comparison_table = comparison_data[['search', 'count', 'Clicks', 'Conversions', 
+                comparison_table = comparison_data[['search', 'count', 'Clicks', 'Conversions',
                                                     'ctr', 'conversion_rate', 'click_share', 'conversion_share']].copy()
-                comparison_table.columns = ['Generic Term', 'Search Volume', 'Clicks', 'Conversions', 
+                comparison_table.columns = ['Generic Term', 'Search Volume', 'Clicks', 'Conversions',
                                             'CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']
                 
-                # Vectorized formatting
                 for col in ['Search Volume', 'Clicks', 'Conversions']:
-                    comparison_table[col] = comparison_table[col].apply(lambda x: f"{int(x):,}")
+                    comparison_table[col] = comparison_table[col].apply(lambda x: format_number(int(x)))
                 for col in ['CTR %', 'Conversion Rate %', 'Click Share %', 'Conversion Share %']:
                     comparison_table[col] = comparison_table[col].apply(lambda x: f"{x:.1f}%")
-
+                
                 display_styled_table(
                     df=comparison_table,
                     align="center",
@@ -11825,36 +11662,34 @@ with tab_generic:
                     max_height="500px"
                 )
                 
-                # Download comparison data
+                # Download
                 csv_comparison = comparison_data.to_csv(index=False)
                 st.download_button(
                     label="📥 Download Comparison Data CSV",
                     data=csv_comparison,
-                    file_name="generic_terms_comparison.csv",
+                    file_name=f"generic_terms_comparison_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
                     key="generic_comparison_download"
                 )
             else:
                 st.info("Please select generic terms to compare.")
-
+        
         elif analysis_type == "📊 Distribution Analysis":
             st.subheader("📊 Market Share & Distribution Analysis")
             
-            # Market share visualization
             col_pie, col_treemap = st.columns(2)
             
             with col_pie:
-                # Optimized pie chart creation
-                @st.cache_data
-                def create_market_share_pie(data):
-                    top_10_market = data.head(10).copy()
+                @st.cache_data(show_spinner=False)
+                def create_pie(data):
+                    top_10 = data.head(10).copy()
                     others_value = data.iloc[10:]['count'].sum() if len(data) > 10 else 0
                     
                     if others_value > 0:
                         others_row = pd.DataFrame({'search': ['Others'], 'count': [others_value]})
-                        pie_data = pd.concat([top_10_market[['search', 'count']], others_row], ignore_index=True)
+                        pie_data = pd.concat([top_10[['search', 'count']], others_row], ignore_index=True)
                     else:
-                        pie_data = top_10_market[['search', 'count']]
+                        pie_data = top_10[['search', 'count']]
                     
                     fig = px.pie(
                         pie_data, values='count', names='search',
@@ -11863,17 +11698,18 @@ with tab_generic:
                     )
                     fig.update_traces(textposition='inside', textinfo='percent+label')
                     fig.update_layout(
-                        height=400, plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
                         font=dict(color='#1B5E20', family='Segoe UI')
                     )
                     return fig
                 
-                fig_pie = create_market_share_pie(gt_agg)
+                fig_pie = create_pie(gt_agg)
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             with col_treemap:
-                # Optimized treemap visualization
-                @st.cache_data
+                @st.cache_data(show_spinner=False)
                 def create_treemap(data):
                     fig = px.treemap(
                         data.head(20), path=['search'], values='count',
@@ -11882,7 +11718,9 @@ with tab_generic:
                         hover_data={'count': ':,', 'ctr': ':.2f'}
                     )
                     fig.update_layout(
-                        height=400, plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
+                        height=400,
+                        plot_bgcolor='rgba(248,255,248,0.95)',
+                        paper_bgcolor='rgba(232,245,232,0.8)',
                         font=dict(color='#1B5E20', family='Segoe UI')
                     )
                     return fig
@@ -11890,7 +11728,7 @@ with tab_generic:
                 fig_treemap = create_treemap(gt_agg)
                 st.plotly_chart(fig_treemap, use_container_width=True)
             
-            # Distribution analysis metrics
+            # Distribution metrics
             st.markdown("### 📈 Distribution Analysis")
             
             col_dist1, col_dist2, col_dist3, col_dist4 = st.columns(4)
@@ -11935,11 +11773,11 @@ with tab_generic:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Optimized Lorenz Curve
+            # Lorenz curve
             st.markdown("### 📈 Market Concentration Analysis")
             
-            @st.cache_data
-            def create_lorenz_curve(data):
+            @st.cache_data(show_spinner=False)
+            def create_lorenz(data):
                 sorted_counts = np.sort(data['count'].values)
                 cumulative_counts = np.cumsum(sorted_counts)
                 total_count = cumulative_counts[-1]
@@ -11957,18 +11795,23 @@ with tab_generic:
                     line=dict(color='#81C784', width=2, dash='dash')
                 ))
                 fig.update_layout(
-                    title='<b style="color:#2E7D32;">🌱 Lorenz Curve - Generic Terms Market Concentration</b>',
-                    xaxis_title='Cumulative % of Generic Terms', yaxis_title='Cumulative % of Search Volume',
-                    plot_bgcolor='rgba(248,255,248,0.95)', paper_bgcolor='rgba(232,245,232,0.8)',
-                    font=dict(color='#1B5E20', family='Segoe UI'), height=400, showlegend=True,
-                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'), yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
+                    title='<b style="color:#2E7D32;">🌱 Lorenz Curve - Market Concentration</b>',
+                    xaxis_title='Cumulative % of Generic Terms',
+                    yaxis_title='Cumulative % of Search Volume',
+                    plot_bgcolor='rgba(248,255,248,0.95)',
+                    paper_bgcolor='rgba(232,245,232,0.8)',
+                    font=dict(color='#1B5E20', family='Segoe UI'),
+                    height=400,
+                    showlegend=True,
+                    xaxis=dict(showgrid=True, gridcolor='#C8E6C8'),
+                    yaxis=dict(showgrid=True, gridcolor='#C8E6C8')
                 )
                 return fig
             
-            fig_lorenz = create_lorenz_curve(gt_agg)
+            fig_lorenz = create_lorenz(gt_agg)
             st.plotly_chart(fig_lorenz, use_container_width=True)
             
-            # Market concentration insights
+            # Insights
             col_insight1, col_insight2 = st.columns(2)
             
             with col_insight1:
@@ -11988,7 +11831,6 @@ with tab_generic:
             with col_insight2:
                 st.markdown("#### 📊 Performance Distribution")
                 
-                # Optimized quartile calculations
                 quartiles = gt_agg['count'].quantile([0.25, 0.5, 0.75])
                 q1, q2, q3 = quartiles[0.25], quartiles[0.5], quartiles[0.75]
                 
@@ -12000,7 +11842,6 @@ with tab_generic:
                 st.markdown(f"**📊 Medium Volume (25-75%)**: {medium_performers} terms")
                 st.markdown(f"**📉 Low Volume (Bottom 50%)**: {low_performers} terms")
                 
-                # Average performance by quartile
                 high_avg_ctr = gt_agg[gt_agg['count'] >= q3]['ctr'].mean()
                 medium_avg_ctr = gt_agg[(gt_agg['count'] >= q2) & (gt_agg['count'] < q3)]['ctr'].mean()
                 low_avg_ctr = gt_agg[gt_agg['count'] < q2]['ctr'].mean()
@@ -12009,8 +11850,8 @@ with tab_generic:
                 st.markdown(f"- High Volume: {high_avg_ctr:.1f}%")
                 st.markdown(f"- Medium Volume: {medium_avg_ctr:.1f}%")
                 st.markdown(f"- Low Volume: {low_avg_ctr:.1f}%")
-
-        # Enhanced Download and Export Section
+        
+        # ✅ DOWNLOAD SECTION
         st.markdown("---")
         st.subheader("💾 Advanced Export & Download Options")
         
@@ -12021,10 +11862,9 @@ with tab_generic:
             st.download_button(
                 label="📊 Complete Analysis CSV",
                 data=csv_complete,
-                file_name=f"generic_terms_complete_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                file_name=f"generic_terms_complete_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
-                key="complete_generic_download",
-                help="Download complete generic terms analysis with all calculated metrics"
+                key="complete_generic_download"
             )
         
         with col_download2:
@@ -12032,7 +11872,7 @@ with tab_generic:
             st.download_button(
                 label="🏆 Top 50 Performers CSV",
                 data=top_performers_csv,
-                file_name=f"top_50_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                file_name=f"top_50_generic_terms_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",
                 key="top_performers_generic_download",
                 help="Download top 50 performing generic terms"
@@ -12040,21 +11880,21 @@ with tab_generic:
         
         with col_download3:
             # Optimized summary report generation
-            @st.cache_data
+            @st.cache_data(show_spinner=False)
             def generate_summary_report(data, metrics_dict):
-                top_10_list = "\n".join([f"{i+1}. {row['search']}: {int(row['count']):,} searches ({row['ctr']:.1f}% CTR, {row['conversion_rate']:.1f}% CR)" 
+                top_10_list = "\n".join([f"{i+1}. {row['search']}: {format_number(int(row['count']))} searches ({row['ctr']:.1f}% CTR, {row['conversion_rate']:.1f}% CR)"
                                        for i, (_, row) in enumerate(data.head(10).iterrows())])
                 
                 summary = f"""# Generic Terms Analysis Summary Report
-Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Generated: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Executive Summary
-- Total Generic Terms Analyzed: {metrics_dict['total_generic_terms']:,}
-- Total Search Volume: {metrics_dict['total_searches']:,}
+- Total Generic Terms Analyzed: {format_number(metrics_dict['total_generic_terms'])}
+- Total Search Volume: {format_number(metrics_dict['total_searches'])}
 - Average CTR: {metrics_dict['avg_ctr']:.1f}%
 - Average Conversion Rate: {metrics_dict['avg_cr']:.1f}%
-- Total Clicks: {metrics_dict['total_clicks']:,}
-- Total Conversions: {metrics_dict['total_conversions']:,}
+- Total Clicks: {format_number(metrics_dict['total_clicks'])}
+- Total Conversions: {format_number(metrics_dict['total_conversions'])}
 
 ## Top Performing Generic Terms
 {top_10_list}
@@ -12071,8 +11911,8 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 - Low Volume Terms (Bottom 25%): {len(data[data['count'] < data['count'].quantile(0.25)])} terms
 
 ## Key Insights
-- Top Generic Term: "{metrics_dict['top_generic_term']}" with {metrics_dict['top_generic_volume']:,} searches ({(metrics_dict['top_generic_volume']/metrics_dict['total_searches']*100):.1f}% market share)
-- Conversion Leader: "{metrics_dict['top_conversion_generic']}" with {int(data.nlargest(1, 'Conversions')['Conversions'].iloc[0]):,} conversions
+- Top Generic Term: "{metrics_dict['top_generic_term']}" with {format_number(metrics_dict['top_generic_volume'])} searches ({(metrics_dict['top_generic_volume']/metrics_dict['total_searches']*100):.1f}% market share)
+- Conversion Leader: "{metrics_dict['top_conversion_generic']}" with {format_number(int(data.nlargest(1, 'Conversions')['Conversions'].iloc[0]))} conversions
 - Market Concentration: {"High" if metrics_dict['gini_coefficient'] > 0.7 else "Medium" if metrics_dict['gini_coefficient'] > 0.5 else "Low"}
 
 ## Recommendations
@@ -12088,7 +11928,7 @@ Generated by Generic Terms Analysis Dashboard
             st.download_button(
                 label="📋 Executive Summary",
                 data=summary_report,
-                file_name=f"generic_terms_executive_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                file_name=f"generic_terms_executive_summary_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.txt",
                 mime="text/plain",
                 key="summary_generic_download",
                 help="Download executive summary report"
@@ -12097,7 +11937,7 @@ Generated by Generic Terms Analysis Dashboard
         with col_download4:
             # High-opportunity terms
             high_opportunity = gt_agg[
-                (gt_agg['count'] > gt_agg['count'].median()) & 
+                (gt_agg['count'] > gt_agg['count'].median()) &
                 (gt_agg['ctr'] < metrics['avg_ctr'])
             ]
             
@@ -12106,15 +11946,15 @@ Generated by Generic Terms Analysis Dashboard
                 st.download_button(
                     label="🎯 High Opportunity Terms",
                     data=opportunity_csv,
-                    file_name=f"high_opportunity_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"high_opportunity_generic_terms_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
                     key="opportunity_generic_download",
                     help="Download high-volume but underperforming terms for optimization"
                 )
             else:
                 st.info("No high-opportunity terms identified")
-
-        # Advanced Filtering Section (Optimized)
+        
+        # ✅ ADVANCED FILTERING SECTION
         st.markdown("---")
         st.subheader("🔍 Advanced Filtering & Custom Analysis")
         
@@ -12124,36 +11964,54 @@ Generated by Generic Terms Analysis Dashboard
             with filter_col1:
                 st.markdown("**Volume Filters**")
                 min_searches = st.number_input(
-                    "Minimum Search Volume:", min_value=0, max_value=int(gt_agg['count'].max()),
-                    value=0, key="min_searches_filter"
+                    "Minimum Search Volume:",
+                    min_value=0,
+                    max_value=int(gt_agg['count'].max()),
+                    value=0,
+                    key="min_searches_filter"
                 )
                 max_searches = st.number_input(
-                    "Maximum Search Volume:", min_value=int(min_searches), max_value=int(gt_agg['count'].max()),
-                    value=int(gt_agg['count'].max()), key="max_searches_filter"
+                    "Maximum Search Volume:",
+                    min_value=int(min_searches),
+                    max_value=int(gt_agg['count'].max()),
+                    value=int(gt_agg['count'].max()),
+                    key="max_searches_filter"
                 )
             
             with filter_col2:
                 st.markdown("**Performance Filters**")
                 min_ctr = st.slider(
-                    "Minimum CTR (%):", min_value=0.0, max_value=float(gt_agg['ctr'].max()),
-                    value=0.0, step=0.1, key="min_ctr_filter"
+                    "Minimum CTR (%):",
+                    min_value=0.0,
+                    max_value=float(gt_agg['ctr'].max()),
+                    value=0.0,
+                    step=0.1,
+                    key="min_ctr_filter"
                 )
                 min_cr = st.slider(
-                    "Minimum Conversion Rate (%):", min_value=0.0, max_value=float(gt_agg['conversion_rate'].max()),
-                    value=0.0, step=0.1, key="min_cr_filter"
+                    "Minimum Conversion Rate (%):",
+                    min_value=0.0,
+                    max_value=float(gt_agg['conversion_rate'].max()),
+                    value=0.0,
+                    step=0.1,
+                    key="min_cr_filter"
                 )
             
             with filter_col3:
                 st.markdown("**Text Filters**")
                 search_contains = st.text_input(
-                    "Generic term contains:", placeholder="Enter text to search...", key="search_contains_filter"
+                    "Generic term contains:",
+                    placeholder="Enter text to search...",
+                    key="search_contains_filter"
                 )
                 exclude_terms = st.text_input(
-                    "Exclude terms containing:", placeholder="Enter text to exclude...", key="exclude_terms_filter"
+                    "Exclude terms containing:",
+                    placeholder="Enter text to exclude...",
+                    key="exclude_terms_filter"
                 )
             
             # Optimized filtering
-            @st.cache_data
+            @st.cache_data(show_spinner=False)
             def apply_filters(data, min_s, max_s, min_c, min_conv, contains, exclude):
                 filtered = data[
                     (data['count'] >= min_s) & (data['count'] <= max_s) &
@@ -12179,18 +12037,18 @@ Generated by Generic Terms Analysis Dashboard
                     st.markdown(f"""
                     <div class='nutrition-generic-metric-card'>
                         <span class='icon'>📊</span>
-                        <div class='value'>{len(filtered_data):,}</div>
+                        <div class='value'>{format_number(len(filtered_data))}</div>
                         <div class='label'>Terms Found</div>
                         <div class='sub-label'>Matching filters</div>
                     </div>
                     """, unsafe_allow_html=True)
                 
                 with filtered_col2:
-                    total_searches_filtered = filtered_data['count'].sum()
+                    total_searches_filtered = int(filtered_data['count'].sum())
                     st.markdown(f"""
                     <div class='nutrition-generic-metric-card'>
                         <span class='icon'>🔍</span>
-                        <div class='value'>{total_searches_filtered:,}</div>
+                        <div class='value'>{format_number(total_searches_filtered)}</div>
                         <div class='label'>Total Searches</div>
                         <div class='sub-label'>Filtered volume</div>
                     </div>
@@ -12228,7 +12086,7 @@ Generated by Generic Terms Analysis Dashboard
                 
                 # Optimized formatting
                 for col in ['Search Volume', 'Clicks', 'Conversions']:
-                    display_filtered[col] = display_filtered[col].apply(lambda x: f"{int(x):,}")
+                    display_filtered[col] = display_filtered[col].apply(lambda x: format_number(int(x)))
                 for col in ['CTR %', 'Conversion Rate %']:
                     display_filtered[col] = display_filtered[col].apply(lambda x: f"{x:.1f}%")
                 
@@ -12238,20 +12096,19 @@ Generated by Generic Terms Analysis Dashboard
                     scrollable=True,
                     max_height="600px"
                 )
-
                 
                 # Download filtered data
                 filtered_csv = filtered_data.to_csv(index=False)
                 st.download_button(
                     label="📥 Download Filtered Data",
                     data=filtered_csv,
-                    file_name=f"filtered_generic_terms_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"filtered_generic_terms_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv",
                     key="filtered_generic_download"
                 )
             else:
                 st.warning("⚠️ No generic terms match the selected filters. Try adjusting your criteria.")
-
+    
     except KeyError as e:
         st.error(f"❌ Missing required column: {str(e)}")
         st.info("Please ensure your data contains: 'search', 'count', 'Clicks', 'Conversions'")
