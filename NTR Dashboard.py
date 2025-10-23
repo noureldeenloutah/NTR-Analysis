@@ -1680,7 +1680,7 @@ with st.sidebar.expander("🔍 Data Debug Info"):
 # ----------------- Tabs -----------------
 tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
     "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
-    "⏰ Time Analysis","📊 Pivot Builder","💡 Insights","⬇ Export"
+    "⏰ Time Analysis","📊 Pivot Builder","💡 Insights"
 ])
 
 # ----------------- Overview -----------------
@@ -4365,29 +4365,29 @@ with tab_search:
         # Apply enhanced styling
         apply_enhanced_styling()
         
-        # 🎨 GREEN-THEMED HERO HEADER
+        # 🎨 BLUE-THEMED HERO HEADER
         st.markdown("""
         <div style="
             text-align: center; 
             padding: 3rem 2rem; 
-            background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); 
             border-radius: 20px; 
             margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-            border: 1px solid rgba(76, 175, 80, 0.2);
+            box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+            border: 1px solid rgba(33, 150, 243, 0.2);
         ">
             <h1 style="
-                color: #1B5E20; 
+                color: #0D47A1; 
                 margin: 0; 
                 font-size: 3rem; 
-                text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+                text-shadow: 2px 2px 8px rgba(13, 71, 161, 0.2);
                 font-weight: 700;
                 letter-spacing: -1px;
             ">
-                🌿 Keywords Intelligence Hub 🌿
+                🔍 Keywords Intelligence Hub 🔍
             </h1>
             <p style="
-                color: #2E7D32; 
+                color: #1565C0; 
                 margin: 1rem 0 0 0; 
                 font-size: 1.3rem;
                 font-weight: 300;
@@ -4397,6 +4397,7 @@ with tab_search:
             </p>
         </div>
         """, unsafe_allow_html=True)
+
         
         # Performance monitoring
         start_time = datetime.now()
@@ -5837,29 +5838,29 @@ with tab_search:
 # ----------------- Brand Tab (Enhanced & Optimized) -----------------
 with tab_brand:
 
-    # 🎨 GREEN-THEMED HERO HEADER (Replacing hero image and metrics)
+    # 🎨 BLUE-THEMED HERO HEADER (Replacing hero image and metrics)
     st.markdown("""
     <div style="
         text-align: center; 
         padding: 3rem 2rem; 
-        background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
+        background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); 
         border-radius: 20px; 
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15);
-        border: 1px solid rgba(76, 175, 80, 0.2);
+        box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15);
+        border: 1px solid rgba(33, 150, 243, 0.2);
     ">
         <h1 style="
-            color: #1B5E20; 
+            color: #0D47A1; 
             margin: 0; 
             font-size: 3rem; 
-            text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2);
+            text-shadow: 2px 2px 8px rgba(13, 71, 161, 0.2);
             font-weight: 700;
             letter-spacing: -1px;
         ">
-            🌿 Brand Market Position 🌿
+            📊 Brand Market Position 📊
         </h1>
         <p style="
-            color: #2E7D32; 
+            color: #1565C0; 
             margin: 1rem 0 0 0; 
             font-size: 1.3rem;
             font-weight: 300;
@@ -5869,6 +5870,7 @@ with tab_brand:
         </p>
     </div>
     """, unsafe_allow_html=True)
+
     
     # Enhanced CSS for -focused green styling
     st.markdown("""
@@ -7543,20 +7545,22 @@ with tab_brand:
 
 # ----------------- Category Tab (Enhanced & -Focused) -----------------
 with tab_category:
-    # 🎨 GREEN-THEMED HERO HEADER (Cached HTML)
+
+    # 🎨 BLUE-THEMED HERO HEADER (Cached HTML)
     @st.cache_data(ttl=86400)
     def get_category_hero_html():
         return """
-        <div style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #E8F5E8 0%, #C8E6C8 50%, #A5D6A7 100%); 
-        border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(27, 94, 32, 0.15); border: 1px solid rgba(76, 175, 80, 0.2);">
-            <h1 style="color: #1B5E20; margin: 0; font-size: 3rem; text-shadow: 2px 2px 8px rgba(27, 94, 32, 0.2); font-weight: 700; letter-spacing: -1px;">
-                🌿 Category Performance Analysis 🌿
+        <div style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); 
+        border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15); border: 1px solid rgba(33, 150, 243, 0.2);">
+            <h1 style="color: #0D47A1; margin: 0; font-size: 3rem; text-shadow: 2px 2px 8px rgba(13, 71, 161, 0.2); font-weight: 700; letter-spacing: -1px;">
+                📉 Category Performance Analysis 📉
             </h1>
-            <p style="color: #2E7D32; margin: 1rem 0 0 0; font-size: 1.3rem; font-weight: 300; opacity: 0.9;">
+            <p style="color: #1565C0; margin: 1rem 0 0 0; font-size: 1.3rem; font-weight: 300; opacity: 0.9;">
                 Advanced Matching • Performance Analytics • Search Insights
             </p>
         </div>
         """
+
     
     st.markdown(get_category_hero_html(), unsafe_allow_html=True)
     
@@ -8694,16 +8698,17 @@ with tab_subcat:
     @st.cache_data(ttl=86400)
     def get_subcategory_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
-                🌿 Subcategory Intelligence Hub 🌿
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
+                🧠 Subcategory Intelligence Hub 🧠
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Deep dive into subcategory performance and search trends
             </p>
         </div>
         """
+
     
     st.markdown(get_subcategory_hero_html(), unsafe_allow_html=True)
     
@@ -10079,16 +10084,17 @@ with tab_class:
     @st.cache_data(ttl=86400)
     def get_class_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
                 🎯 Class Performance Analysis 🎯
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Advanced Classification • Performance Analytics • Search Intelligence
             </p>
         </div>
         """
+
     
     st.markdown(get_class_hero_html(), unsafe_allow_html=True)
     
@@ -11293,17 +11299,17 @@ with tab_generic:
     @st.cache_data(ttl=86400)
     def get_generic_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
-                🌿 Generic Type Performance Analysis 🌿
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
+                🧬 Generic Type Performance Analysis 🧬
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Deep dive into generic type performance and search trends
             </p>
         </div>
         """
-    
+
     st.markdown(get_generic_hero_html(), unsafe_allow_html=True)
     
     try:
@@ -12608,16 +12614,17 @@ with tab_time:
     @st.cache_data(ttl=86400, show_spinner=False)
     def get_time_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
-                🌿 Temporal Performance Analysis 🌿
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
+                ⏱️ Temporal Performance Analysis ⏱️
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Deep Dive into Performance Metrics and Search Trends Over Time
             </p>
         </div>
         """
+
     
     st.markdown(get_time_hero_html(), unsafe_allow_html=True)
     
@@ -13397,16 +13404,17 @@ with tab_pivot:
     @st.cache_data(ttl=86400, show_spinner=False)
     def get_pivot_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
                 🔄 Pivot Intelligence Hub 🔄
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Deep Dive into Custom Pivots and Advanced Data Insights
             </p>
         </div>
         """
+
     
     st.markdown(get_pivot_hero_html(), unsafe_allow_html=True)
     
@@ -13875,16 +13883,17 @@ with tab_insights:
     @st.cache_data(ttl=86400, show_spinner=False)
     def get_insights_hero_html():
         return """
-        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E8F5E8 0%,#C8E6C8 50%,#A5D6A7 100%);
-        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(27,94,32,0.15);border:1px solid rgba(76,175,80,0.2);">
-            <h1 style="color:#1B5E20;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(27,94,32,0.2);font-weight:700;letter-spacing:-1px;">
-                🔍 Strategic Insights Hub 🔍
+        <div style="text-align:center;padding:3rem 2rem;background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%);
+        border-radius:20px;margin-bottom:2rem;box-shadow:0 8px 32px rgba(25,118,210,0.15);border:1px solid rgba(33,150,243,0.2);">
+            <h1 style="color:#0D47A1;margin:0;font-size:3rem;text-shadow:2px 2px 8px rgba(13,71,161,0.2);font-weight:700;letter-spacing:-1px;">
+                💡 Strategic Insights Hub 💡
             </h1>
-            <p style="color:#2E7D32;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
+            <p style="color:#1565C0;margin:1rem 0 0 0;font-size:1.3rem;font-weight:300;opacity:0.9;">
                 Data-Driven Decisions Through Advanced Performance Analytics
             </p>
         </div>
         """
+
     
     st.markdown(get_insights_hero_html(), unsafe_allow_html=True)
     
