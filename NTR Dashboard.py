@@ -1678,7 +1678,7 @@ with st.sidebar.expander("🔍 Data Debug Info"):
     st.write("• Conversions = Clicks × Conversion Rate")
 
 # ----------------- Tabs -----------------
-tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights, tab_export = st.tabs([
+tab_overview, tab_search, tab_brand, tab_category, tab_subcat, tab_class , tab_generic, tab_time, tab_pivot, tab_insights = st.tabs([
     "🌿 Overview","🔍 Search Analysis","🏷 Brand","📦 Category","🧴 Subcategory","🎯 Class","💊 Generic Type",
     "⏰ Time Analysis","📊 Pivot Builder","💡 Insights"
 ])
