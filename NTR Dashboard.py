@@ -7550,6 +7550,1388 @@ with tab_brand:
                 "summary_export"
             )
 
+# ----------------- Department Tab (Enhanced & Professional) -----------------
+with tab_department:
+
+    # 🎨 BLUE-THEMED HERO HEADER (Cached HTML)
+    @st.cache_data(ttl=86400)
+    def get_department_hero_html():
+        return """
+        <div style="text-align: center; padding: 3rem 2rem; background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%); 
+        border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(25, 118, 210, 0.15); border: 1px solid rgba(33, 150, 243, 0.2);">
+            <h1 style="color: #0D47A1; margin: 0; font-size: 3rem; text-shadow: 2px 2px 8px rgba(13, 71, 161, 0.2); font-weight: 700; letter-spacing: -1px;">
+                🏢 Department Performance Analysis 🏢
+            </h1>
+            <p style="color: #1565C0; margin: 1rem 0 0 0; font-size: 1.3rem; font-weight: 300; opacity: 0.9;">
+                Advanced Matching • Performance Analytics • Search Insights
+            </p>
+        </div>
+        """
+
+    
+    st.markdown(get_department_hero_html(), unsafe_allow_html=True)
+    
+    # ✅ LOAD CSS ONCE PER SESSION (CRITICAL MEMORY FIX)
+    if 'department_css_loaded' not in st.session_state:
+        st.markdown("""
+        <style>
+        .department-metric{background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 100%);padding:20px;border-radius:12px;text-align:center;box-shadow:0 4px 15px rgba(25,118,210,0.2);margin:10px 0;border-left:4px solid #2196F3}
+        .department-insight{background:linear-gradient(135deg,#1565C0 0%,#42A5F5 100%);padding:25px;border-radius:15px;color:white;margin:15px 0;box-shadow:0 6px 20px rgba(25,118,210,0.3)}
+        .enhanced-dept-metric{background:linear-gradient(135deg,#2196F3 0%,#64B5F6 100%);padding:25px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(33,150,243,0.3);margin:10px 0;min-height:160px;display:flex;flex-direction:column;justify-content:center}
+        .enhanced-dept-metric .icon{font-size:3em;margin-bottom:10px;display:block}
+        .enhanced-dept-metric .value{font-size:1.6em;font-weight:bold;margin-bottom:8px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.2}
+        .enhanced-dept-metric .label{font-size:1.1em;opacity:0.95;font-weight:600;margin-bottom:6px}
+        .enhanced-dept-metric .sub-label{font-size:1em;opacity:0.9;font-weight:500;line-height:1.2;word-wrap:break-word;overflow-wrap:break-word}
+        .dept-metric-card{background:linear-gradient(135deg,#E3F2FD 0%,#BBDEFB 100%);padding:15px;border-radius:10px;text-align:center;box-shadow:0 4px 15px rgba(25,118,210,0.2);margin:5px;border-left:4px solid #2196F3}
+        .dept-metric-value{font-size:1.4em;font-weight:bold;color:#0D47A1;margin-bottom:5px}
+        .dept-metric-label{color:#1565C0;font-size:0.9em;font-weight:600}
+        .department-metric-card{background:linear-gradient(135deg,#1565C0 0%,#42A5F5 100%);padding:20px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(25,118,210,0.3);margin:8px 0;min-height:120px;display:flex;flex-direction:column;justify-content:center;transition:transform 0.2s ease;width:100%}
+        .department-metric-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(25,118,210,0.4)}
+        .department-metric-card .icon{font-size:2.5em;margin-bottom:8px;display:block}
+        .department-metric-card .value{font-size:1.8em;font-weight:bold;margin-bottom:5px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.1}
+        .department-metric-card .label{font-size:1em;opacity:0.95;font-weight:600;line-height:1.2}
+        .dept-performance-increase{background-color:rgba(33,150,243,0.1)!important}
+        .dept-performance-decrease{background-color:rgba(244,67,54,0.1)!important}
+        .dept-comparison-header{background:linear-gradient(90deg,#1565C0 0%,#2196F3 100%);color:white;font-weight:bold;text-align:center;padding:8px}
+        .dept-volume-column{background-color:rgba(25,118,210,0.1)!important}
+        .dept-performance-column{background-color:rgba(66,165,245,0.1)!important}
+        </style>
+        """, unsafe_allow_html=True)
+        st.session_state.department_css_loaded = True
+    
+    # ✅ CRITICAL FIX: Find department column ONCE
+    @st.cache_data(ttl=3600)
+    def find_department_column(columns_list):
+        possible_columns = ['department', 'Department', 'DEPARTMENT', 'Department Name', 'department_name', 'dept', 'Dept']
+        for col in possible_columns:
+            if col in columns_list:
+                return col
+        return None
+    
+    department_column = find_department_column(queries.columns.tolist())
+    
+    # Check if department data is available
+    if department_column is None or not queries[department_column].notna().any():
+        st.error(f"❌ No department data available. Available columns: {list(queries.columns)}")
+        st.info("💡 Please ensure your dataset contains a department column")
+        st.stop()
+    
+    # ✅ MEMORY FIX: Filter once, reuse everywhere
+    department_queries = queries[
+        (queries[department_column].notna()) & 
+        (~queries[department_column].str.lower().isin(['other', 'others']))
+    ].copy()
+    
+    if department_queries.empty:
+        st.error("❌ No valid department data available after filtering.")
+        st.stop()
+    
+    st.markdown("---")
+    
+    # ✅ CRITICAL: Calculate department stats ONCE with caching
+    @st.cache_data(ttl=3600, show_spinner=False)
+    def calculate_department_stats(df, dept_col):
+        """Calculate all department metrics in ONE pass"""
+        ds = df.groupby(dept_col, as_index=False).agg({
+            'Counts': 'sum',
+            'clicks': 'sum', 
+            'conversions': 'sum'
+        })
+        
+        # Integer conversion for cleaner display
+        ds['clicks'] = ds['clicks'].round().astype(np.int64)
+        ds['conversions'] = ds['conversions'].round().astype(np.int64)
+        ds = ds.rename(columns={dept_col: 'department'})
+        
+        # Vectorized calculations (10-100x faster than apply)
+        total_counts = ds['Counts'].sum()
+        ds['share_pct'] = (ds['Counts'] / total_counts * 100).round(2)
+        
+        # Avoid division by zero with np.where
+        ds['ctr'] = np.where(ds['Counts'] > 0, (ds['clicks'] / ds['Counts'] * 100), 0)
+        ds['cr'] = np.where(ds['Counts'] > 0, (ds['conversions'] / ds['Counts'] * 100), 0)
+        ds['classic_cr'] = np.where(ds['clicks'] > 0, (ds['conversions'] / ds['clicks'] * 100), 0)
+        
+        # Performance categorization
+        ds['performance_category'] = pd.cut(
+            ds['ctr'], 
+            bins=[0, 2, 5, 10, float('inf')], 
+            labels=['Emerging (0-2%)', 'Growing (2-5%)', 'Strong (5-10%)', 'Premium (>10%)']
+        )
+        
+        return ds
+    
+    # Calculate once, reuse everywhere
+    ds = calculate_department_stats(department_queries, department_column)
+    
+    # Main Department Analysis Layout
+    col_left, col_right = st.columns([3, 2])
+    
+    with col_left:
+        st.subheader("📈 Department Performance Matrix")
+        
+        # ✅ MEMORY FIX: Use top 30 only for visualization
+        top_30_ds = ds.nlargest(30, 'Counts')
+        
+        # Create customdata efficiently
+        customdata = np.column_stack([
+            top_30_ds['Counts'].apply(format_number).values,
+            top_30_ds['clicks'].apply(format_number).values
+        ])
+        
+        fig_department_perf = px.scatter(
+            top_30_ds, 
+            x='Counts', 
+            y='ctr',
+            size='clicks',
+            color='cr',
+            hover_name='department',
+            title='<b style="color:#1565C0; font-size:18px;">🏢 Department Performance Matrix: Search Volume vs CTR</b>',
+            labels={'Counts': 'Total Searches', 'ctr': 'Click-Through Rate (%)', 'cr': 'Conversion Rate (%)'},
+            color_continuous_scale=['#E3F2FD', '#64B5F6', '#1565C0'],
+            template='plotly_white'
+        )
+        
+        fig_department_perf.update_traces(
+            hovertemplate='<b>%{hovertext}</b><br>Searches: %{customdata[0]}<br>CTR: %{y:.1f}%<br>Total Clicks: %{customdata[1]}<br>Conversion Rate: %{marker.color:.1f}%<extra></extra>',
+            customdata=customdata
+        )
+        
+        fig_department_perf.update_layout(
+            plot_bgcolor='rgba(248,252,255,0.95)',
+            paper_bgcolor='rgba(227,242,253,0.8)',
+            font=dict(color='#0D47A1', family='Segoe UI'),
+            title_x=0,
+            xaxis=dict(showgrid=True, gridcolor='#BBDEFB', linecolor='#2196F3', linewidth=2),
+            yaxis=dict(showgrid=True, gridcolor='#BBDEFB', linecolor='#2196F3', linewidth=2),
+        )
+        
+        st.plotly_chart(fig_department_perf, use_container_width=True)
+        
+        # 🚀 NEW: Combined Volume vs Performance Chart
+        st.subheader("🚀 Search Volume vs Performance Matrix")
+        
+        top_ds_combined = ds.nlargest(15, 'Counts')
+        top_ds_combined['conversion_rate_volume'] = (top_ds_combined['conversions'] / top_ds_combined['Counts'] * 100).round(2)
+        
+        fig_combined = make_subplots(specs=[[{"secondary_y": True}]])
+        
+        fig_combined.add_trace(
+            go.Bar(
+                name='Search Volume',
+                x=top_ds_combined['department'],
+                y=top_ds_combined['Counts'],
+                marker_color='rgba(25,118,210,0.7)',
+                text=[format_number(int(x)) for x in top_ds_combined['Counts']],
+                textposition='outside'
+            ),
+            secondary_y=False
+        )
+        
+        fig_combined.add_trace(
+            go.Scatter(
+                name='CTR %',
+                x=top_ds_combined['department'],
+                y=top_ds_combined['ctr'],
+                mode='lines+markers',
+                line=dict(color='#FF6B35', width=3),
+                marker=dict(size=8)
+            ),
+            secondary_y=True
+        )
+        
+        fig_combined.add_trace(
+            go.Scatter(
+                name='Conversion Rate %',
+                x=top_ds_combined['department'],
+                y=top_ds_combined['conversion_rate_volume'],
+                mode='lines+markers',
+                line=dict(color='#9C27B0', width=3, dash='dash'),
+                marker=dict(size=8)
+            ),
+            secondary_y=True
+        )
+        
+        fig_combined.update_layout(
+            title='<b style="color:#1565C0;">🏢 Search Volume vs CTR & Conversion Performance</b>',
+            plot_bgcolor='rgba(248,252,255,0.95)',
+            paper_bgcolor='rgba(227,242,253,0.8)',
+            font=dict(color='#0D47A1', family='Segoe UI'),
+            height=600,
+            xaxis=dict(tickangle=45, showgrid=True, gridcolor='#BBDEFB', title='Departments'),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        
+        fig_combined.update_yaxes(title_text="<b>Search Volume</b>", secondary_y=False, showgrid=True, gridcolor='#BBDEFB')
+        fig_combined.update_yaxes(title_text="<b>Performance Rate (%)</b>", secondary_y=True, showgrid=False)
+        
+        st.plotly_chart(fig_combined, use_container_width=True)
+        
+        # Enhanced Department Performance Charts
+        col_chart1, col_chart2 = st.columns(2)
+        
+        with col_chart1:
+            top_15_counts = ds.nlargest(15, 'Counts')
+            
+            fig_counts = px.bar(
+                top_15_counts, 
+                x='department', 
+                y='Counts',
+                title='<b style="color:#1565C0;">🏢 Searches by Department</b>',
+                color='Counts',
+                color_continuous_scale=['#E3F2FD', '#1565C0'],
+                text=top_15_counts['Counts'].apply(format_number)
+            )
+            
+            fig_counts.update_traces(textposition='outside')
+            fig_counts.update_layout(
+                plot_bgcolor='rgba(248,252,255,0.95)',
+                paper_bgcolor='rgba(227,242,253,0.8)',
+                font=dict(color='#0D47A1', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#BBDEFB'),
+                yaxis=dict(showgrid=True, gridcolor='#BBDEFB'),
+                height=400
+            )
+            
+            st.plotly_chart(fig_counts, use_container_width=True)
+        
+        with col_chart2:
+            top_15_cr = ds.nlargest(15, 'cr')
+            
+            fig_cr = px.bar(
+                top_15_cr, 
+                x='department', 
+                y='cr',
+                title='<b style="color:#1565C0;">💙 Conversion Rate by Department (%)</b>',
+                color='cr',
+                color_continuous_scale=['#90CAF9', '#0D47A1'],
+                text=top_15_cr['cr'].apply(lambda x: f'{x:.1f}%')
+            )
+            
+            fig_cr.update_traces(textposition='outside')
+            fig_cr.update_layout(
+                plot_bgcolor='rgba(248,252,255,0.95)',
+                paper_bgcolor='rgba(227,242,253,0.8)',
+                font=dict(color='#0D47A1', family='Segoe UI'),
+                xaxis=dict(tickangle=45, showgrid=True, gridcolor='#BBDEFB'),
+                yaxis=dict(showgrid=True, gridcolor='#BBDEFB'),
+                height=400
+            )
+            
+            st.plotly_chart(fig_cr, use_container_width=True)
+        
+        # ✅ TOP DEPARTMENTS TABLE - OPTIMIZED
+        st.subheader("🏆 Top Department Performance")
+        
+        num_departments = st.slider(
+            "Number of departments to display:", 
+            min_value=10, 
+            max_value=50, 
+            value=20, 
+            step=5,
+            key="department_count_slider"
+        )
+        
+        # ✅ CRITICAL: Dynamic month names with caching
+        @st.cache_data(ttl=3600, show_spinner=False)
+        def get_month_names_cached_dept(df):
+            if 'month' not in df.columns:
+                if 'start_date' in df.columns:
+                    df = df.copy()
+                    df['month'] = pd.to_datetime(df['start_date']).dt.to_period('M').astype(str)
+                else:
+                    return {}
+            
+            unique_months = sorted(df['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
+            return {m: pd.to_datetime(m).strftime('%B %Y') for m in unique_months}
+        
+        # Prepare data with month column
+        queries_with_month = department_queries.copy()
+        if 'month' not in queries_with_month.columns and 'start_date' in queries_with_month.columns:
+            queries_with_month['month'] = pd.to_datetime(queries_with_month['start_date']).dt.to_period('M').astype(str)
+        
+        month_names = get_month_names_cached_dept(queries_with_month)
+        
+        # ✅ CRITICAL: Compute monthly data with aggressive caching
+        filter_key = f"{queries_with_month.shape}_{num_departments}_{hash(str(ds['department'].tolist()[:5]))}"
+        
+        @st.cache_data(ttl=1800, show_spinner=False, max_entries=5)
+        def compute_monthly_performance_dept(df, ds_df, month_dict, num_depts, cache_key):
+            """Optimized monthly calculation with vectorization"""
+            if df.empty or ds_df.empty:
+                return pd.DataFrame(), []
+            
+            top_depts = ds_df.nlargest(num_depts, 'Counts')['department'].tolist()
+            top_data = df[df[department_column].isin(top_depts)].copy()
+            
+            if 'month' not in top_data.columns:
+                return pd.DataFrame(), []
+            
+            unique_months = sorted(top_data['month'].dropna().unique(), key=lambda x: pd.to_datetime(x))
+            
+            # ✅ VECTORIZED: Group once, calculate all metrics
+            grouped = top_data.groupby([department_column, 'month'], as_index=False).agg({
+                'Counts': 'sum',
+                'clicks': 'sum',
+                'conversions': 'sum'
+            })
+            
+            # Calculate metrics vectorized
+            grouped['ctr'] = np.where(grouped['Counts'] > 0, (grouped['clicks'] / grouped['Counts'] * 100), 0)
+            grouped['cr'] = np.where(grouped['Counts'] > 0, (grouped['conversions'] / grouped['Counts'] * 100), 0)
+            
+            # Build result efficiently
+            result_rows = []
+            for dept in top_depts:
+                dept_total = ds_df[ds_df['department'] == dept]
+                if dept_total.empty:
+                    continue
+                
+                dept_total_row = dept_total.iloc[0]
+                dataset_total = df['Counts'].sum()
+                share_pct = (dept_total_row['Counts'] / dataset_total * 100) if dataset_total > 0 else 0
+                
+                row = {
+                    'Department': dept,
+                    'Total Volume': int(dept_total_row['Counts']),
+                    'Share %': share_pct,
+                    'Overall CTR': dept_total_row['ctr'],
+                    'Overall CR': dept_total_row['cr'],
+                    'Total Clicks': int(dept_total_row['clicks']),
+                    'Total Conversions': int(dept_total_row['conversions'])
+                }
+                
+                # Add monthly data
+                dept_monthly = grouped[grouped[department_column] == dept]
+                for month in unique_months:
+                    month_display = month_dict.get(month, month)
+                    month_row = dept_monthly[dept_monthly['month'] == month]
+                    
+                    if not month_row.empty:
+                        mr = month_row.iloc[0]
+                        row[f'{month_display} Vol'] = int(mr['Counts'])
+                        row[f'{month_display} CTR'] = mr['ctr']
+                        row[f'{month_display} CR'] = mr['cr']
+                    else:
+                        row[f'{month_display} Vol'] = 0
+                        row[f'{month_display} CTR'] = 0
+                        row[f'{month_display} CR'] = 0
+                
+                result_rows.append(row)
+            
+            result_df = pd.DataFrame(result_rows)
+            result_df = result_df.sort_values('Total Volume', ascending=False).reset_index(drop=True)
+            return result_df[result_df['Total Volume'] > 0], unique_months
+        
+        top_departments_monthly, unique_months = compute_monthly_performance_dept(
+            queries_with_month, ds, month_names, num_departments, filter_key
+        )
+        
+        if not top_departments_monthly.empty:
+            unique_departments_count = queries_with_month[department_column].nunique()
+            
+            if st.session_state.get('filters_applied', False):
+                st.info(f"🔍 **Filtered**: Top {num_departments} from {unique_departments_count:,} departments")
+            else:
+                st.info(f"📊 **All Data**: Top {num_departments} from {unique_departments_count:,} departments")
+            
+            # ✅ ORGANIZE COLUMNS EFFICIENTLY
+            base_columns = ['Department', 'Total Volume', 'Share %', 'Overall CTR', 'Overall CR', 'Total Clicks', 'Total Conversions']
+            sorted_months = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+            
+            volume_columns = [f'{month_names.get(m, m)} Vol' for m in sorted_months]
+            ctr_columns = [f'{month_names.get(m, m)} CTR' for m in sorted_months]
+            cr_columns = [f'{month_names.get(m, m)} CR' for m in sorted_months]
+            
+            ordered_columns = base_columns + volume_columns + ctr_columns + cr_columns
+            existing_columns = [col for col in ordered_columns if col in top_departments_monthly.columns]
+            top_departments_monthly = top_departments_monthly[existing_columns]
+            
+            # ✅ FORMAT & CACHE STYLING
+            styling_key = f"{hash(str(top_departments_monthly.shape))}_{filter_key}"
+            
+            if ('styled_departments_' not in st.session_state or 
+                st.session_state.get('departments_cache_key') != styling_key):
+                
+                st.session_state.departments_cache_key = styling_key
+                
+                display_df = top_departments_monthly.copy()
+                
+                # Format volumes
+                for col in ['Total Volume'] + volume_columns:
+                    if col in display_df.columns:
+                        display_df[col] = display_df[col].apply(lambda x: format_number(int(x)) if pd.notnull(x) else '0')
+                
+                if 'Total Clicks' in display_df.columns:
+                    display_df['Total Clicks'] = display_df['Total Clicks'].apply(lambda x: format_number(int(x)))
+                if 'Total Conversions' in display_df.columns:
+                    display_df['Total Conversions'] = display_df['Total Conversions'].apply(lambda x: format_number(int(x)))
+                
+                # ✅ OPTIMIZED STYLING FUNCTION
+                def highlight_performance_dept(df):
+                    styles = pd.DataFrame('', index=df.index, columns=df.columns)
+                    
+                    if len(unique_months) < 2:
+                        return styles
+                    
+                    sorted_months_local = sorted(unique_months, key=lambda x: pd.to_datetime(x))
+                    
+                    for i in range(1, len(sorted_months_local)):
+                        curr_month = month_names.get(sorted_months_local[i], sorted_months_local[i])
+                        prev_month = month_names.get(sorted_months_local[i-1], sorted_months_local[i-1])
+                        
+                        for metric, cols in [('CTR', ctr_columns), ('CR', cr_columns)]:
+                            curr_col = f'{curr_month} {metric}'
+                            prev_col = f'{prev_month} {metric}'
+                            
+                            if curr_col in df.columns and prev_col in df.columns:
+                                for idx in df.index:
+                                    curr_val = df.loc[idx, curr_col]
+                                    prev_val = df.loc[idx, prev_col]
+                                    
+                                    if pd.notnull(curr_val) and pd.notnull(prev_val) and prev_val > 0:
+                                        change_pct = ((curr_val - prev_val) / prev_val) * 100
+                                        if change_pct > 10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(33,150,243,0.3);color:#0D47A1;font-weight:bold;'
+                                        elif change_pct < -10:
+                                            styles.loc[idx, curr_col] = 'background-color:rgba(244,67,54,0.3);color:#B71C1C;font-weight:bold;'
+                                        elif abs(change_pct) > 5:
+                                            color = 'rgba(33,150,243,0.15)' if change_pct > 0 else 'rgba(244,67,54,0.15)'
+                                            styles.loc[idx, curr_col] = f'background-color:{color};'
+                    
+                    # Volume highlighting
+                    for col in volume_columns:
+                        if col in df.columns:
+                            styles[col] = 'background-color:rgba(25,118,210,0.05);'
+                    
+                    return styles
+                
+                styled = display_df.style.apply(highlight_performance_dept, axis=None)
+                styled = styled.set_properties(**{
+                    'text-align': 'center',
+                    'vertical-align': 'middle',
+                    'font-size': '11px',
+                    'padding': '4px',
+                    'line-height': '1.1'
+                }).set_table_styles([
+                    {'selector': 'th', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('font-weight', 'bold'), ('background-color', '#E3F2FD'), ('color', '#0D47A1'), ('padding', '6px'), ('border', '1px solid #ddd'), ('font-size', '10px')]},
+                    {'selector': 'td', 'props': [('text-align', 'center'), ('vertical-align', 'middle'), ('padding', '4px'), ('border', '1px solid #ddd')]},
+                    {'selector': 'tbody tr:nth-child(even)', 'props': [('background-color', '#F8FCFF')]}
+                ])
+                
+                format_dict = {
+                    'Share %': '{:.1f}%',
+                    'Overall CTR': '{:.1f}%',
+                    'Overall CR': '{:.1f}%'
+                }
+                
+                for col in ctr_columns + cr_columns:
+                    if col in display_df.columns:
+                        format_dict[col] = '{:.1f}%'
+                
+                styled = styled.format(format_dict)
+                st.session_state.styled_departments_ = styled
+            
+            # Display table
+            html_content = st.session_state.styled_departments_.to_html(index=False, escape=False)
+            st.markdown(
+                f'<div style="height:600px;overflow-y:auto;overflow-x:auto;border:1px solid #ddd;">{html_content}</div>',
+                unsafe_allow_html=True
+            )
+            
+            # Legend
+            st.markdown("""
+            <div style="background:rgba(25,118,210,0.1);padding:12px;border-radius:8px;margin:15px 0;">
+                <h4 style="margin:0 0 8px 0;color:#0D47A1;">🏢 Department Comparison Guide:</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                    <div>📈 <strong style="background-color:rgba(33,150,243,0.3);padding:2px 6px;border-radius:4px;color:#0D47A1;">Dark Blue</strong> = >10% improvement</div>
+                    <div>📈 <strong style="background-color:rgba(33,150,243,0.15);padding:2px 6px;border-radius:4px;">Light Blue</strong> = 5-10% improvement</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
+                    <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
+                    <div>🏢 <strong style="background-color:rgba(25,118,210,0.05);padding:2px 6px;border-radius:4px;">Blue Tint</strong> = Volume columns</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Download
+            st.markdown("<br>", unsafe_allow_html=True)
+            csv_departments = top_departments_monthly.to_csv(index=False)
+            
+            col_download = st.columns([1, 2, 1])
+            with col_download[1]:
+                filter_suffix = "_filtered" if st.session_state.get('filters_applied', False) else "_all"
+                st.download_button(
+                    label="📥 Download Departments CSV",
+                    data=csv_departments,
+                    file_name=f"top_{num_departments}_departments{filter_suffix}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        else:
+            st.warning("No valid department data after processing.")
+    
+    with col_right:
+        st.subheader("🏢 Department Market Share")
+        
+        top_10_pie = ds.nlargest(10, 'Counts')
+        dept_colors = ['#1565C0', '#2196F3', '#42A5F5', '#64B5F6', '#90CAF9', 
+                       '#BBDEFB', '#E3F2FD', '#1976D2', '#1E88E5', '#2196F3']
+        
+        fig_pie = px.pie(
+            top_10_pie, 
+            names='department', 
+            values='Counts',
+            title='<b style="color:#1565C0;">🏢 Market Distribution</b>',
+            color_discrete_sequence=dept_colors
+        )
+        
+        fig_pie.update_layout(
+            font=dict(color='#0D47A1', family='Segoe UI'),
+            paper_bgcolor='rgba(227,242,253,0.8)'
+        )
+        
+        st.plotly_chart(fig_pie, use_container_width=True)
+        
+        # Performance distribution
+        department_perf_counts = ds['performance_category'].value_counts().reset_index()
+        department_perf_counts.columns = ['Performance Level', 'Count']
+        
+        fig_dept_perf = px.bar(
+            department_perf_counts, 
+            x='Performance Level', 
+            y='Count',
+            title='<b style="color:#1565C0;">🏢 CTR Performance Distribution</b>',
+            color='Count',
+            color_continuous_scale=['#E3F2FD', '#1565C0'],
+            text='Count'
+        )
+        
+        fig_dept_perf.update_traces(texttemplate='%{text}', textposition='outside')
+        fig_dept_perf.update_layout(
+            plot_bgcolor='rgba(248,252,255,0.95)',
+            paper_bgcolor='rgba(227,242,253,0.8)',
+            font=dict(color='#0D47A1', family='Segoe UI'),
+            xaxis=dict(showgrid=True, gridcolor='#BBDEFB'),
+            yaxis=dict(showgrid=True, gridcolor='#BBDEFB')
+        )
+        
+        st.plotly_chart(fig_dept_perf, use_container_width=True)
+        
+        # ✅ TREND ANALYSIS - OPTIMIZED
+        if 'Date' in queries.columns:
+            st.subheader("📈 Department Trend Analysis")
+            
+            top_5_depts = ds.nlargest(5, 'Counts')['department'].tolist()
+            trend_data = queries[
+                (queries[department_column].isin(top_5_depts)) &
+                (queries[department_column].notna())
+            ].copy()
+            
+            if not trend_data.empty:
+                try:
+                    trend_data['Date'] = pd.to_datetime(trend_data['Date'], errors='coerce')
+                    trend_data = trend_data.dropna(subset=['Date'])
+                    
+                    if not trend_data.empty:
+                        if 'month' not in trend_data.columns:
+                            trend_data['month'] = trend_data['Date'].dt.strftime('%Y-%m')
+                        
+                        # ✅ VECTORIZED MONTHLY AGGREGATION
+                        monthly_trends = trend_data.groupby([department_column, 'month'], as_index=False).agg({
+                            'Counts': 'sum',
+                            'clicks': 'sum',
+                            'conversions': 'sum'
+                        })
+                        
+                        monthly_trends['CTR'] = np.where(
+                            monthly_trends['Counts'] > 0,
+                            (monthly_trends['clicks'] / monthly_trends['Counts'] * 100),
+                            0
+                        ).round(2)
+                        
+                        monthly_trends['CR'] = np.where(
+                            monthly_trends['Counts'] > 0,
+                            (monthly_trends['conversions'] / monthly_trends['Counts'] * 100),
+                            0
+                        ).round(2)
+                        
+                        monthly_trends = monthly_trends.rename(columns={department_column: 'department'})
+                        monthly_trends['Date'] = pd.to_datetime(monthly_trends['month'] + '-01')
+                        monthly_trends = monthly_trends.sort_values(['Date', 'department'])
+                        
+                        if not monthly_trends.empty:
+                            st.markdown("### 📊 Select Metric to Analyze:")
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                show_volume = st.checkbox("🏢 Search Volume", value=True, key="show_volume_trend_dept")
+                            with col2:
+                                show_ctr = st.checkbox("📈 CTR (%)", value=False, key="show_ctr_trend_dept")
+                            with col3:
+                                show_cr = st.checkbox("🎯 CR (%)", value=False, key="show_cr_trend_dept")
+                            
+                            charts_config = []
+                            if show_volume:
+                                charts_config.append(('Search Volume', 'Counts', '🏢 Top 5 Departments - Monthly Search Volume Trend'))
+                            if show_ctr:
+                                charts_config.append(('CTR (%)', 'CTR', '📈 Top 5 Departments - Monthly CTR Trend'))
+                            if show_cr:
+                                charts_config.append(('CR (%)', 'CR', '🎯 Top 5 Departments - Monthly CR Trend'))
+                            
+                            if not charts_config:
+                                st.warning("Please select at least one metric to display.")
+                            else:
+                                for metric_name, y_col, chart_title in charts_config:
+                                    fig_trend = px.line(
+                                        monthly_trends, 
+                                        x='Date', 
+                                        y=y_col, 
+                                        color='department',
+                                        title=f'<b style="color:#1565C0;">{chart_title}</b>',
+                                        color_discrete_sequence=['#1565C0', '#2196F3', '#42A5F5', '#64B5F6', '#90CAF9'],
+                                        markers=True,
+                                        line_shape='spline'
+                                    )
+                                    
+                                    fig_trend.update_layout(
+                                        plot_bgcolor='rgba(248,252,255,0.95)',
+                                        paper_bgcolor='rgba(227,242,253,0.8)',
+                                        font=dict(color='#0D47A1', family='Segoe UI', size=12),
+                                        height=500,
+                                        xaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#BBDEFB',
+                                            title='<b>Month</b>',
+                                            dtick="M1",
+                                            tickformat="%b %Y",
+                                            tickangle=0
+                                        ),
+                                        yaxis=dict(
+                                            showgrid=True, 
+                                            gridcolor='#BBDEFB',
+                                            title=f'<b>{metric_name}</b>',
+                                            tickformat='.0f' if y_col == 'Counts' else '.2f'
+                                        ),
+                                        hovermode='closest',
+                                        legend=dict(
+                                            orientation="h",
+                                            yanchor="bottom",
+                                            y=1.02,
+                                            xanchor="right",
+                                            x=1,
+                                            bgcolor='rgba(255,255,255,0.8)',
+                                            bordercolor='#1565C0',
+                                            borderwidth=1
+                                        )
+                                    )
+                                    
+                                    # ✅ OPTIMIZED: Add customdata per trace
+                                    for i, trace in enumerate(fig_trend.data):
+                                        dept_name = trace.name
+                                        dept_data = monthly_trends[monthly_trends['department'] == dept_name].sort_values('Date')
+                                        
+                                        customdata = np.column_stack([
+                                            dept_data['Counts'].apply(format_number).values,
+                                            dept_data['CTR'].apply(lambda x: f"{x:.2f}").values,
+                                            dept_data['CR'].apply(lambda x: f"{x:.2f}").values,
+                                            dept_data['clicks'].apply(format_number).values,
+                                            dept_data['conversions'].apply(format_number).values
+                                        ])
+                                        
+                                        fig_trend.data[i].customdata = customdata
+                                        fig_trend.data[i].line.width = 3
+                                        fig_trend.data[i].marker.size = 8
+                                        fig_trend.data[i].marker.line.width = 2
+                                        fig_trend.data[i].marker.line.color = 'white'
+                                    
+                                    fig_trend.update_traces(
+                                        hovertemplate='<b>%{fullData.name}</b><br>Month: %{x|%B %Y}<br>Search Volume: %{customdata[0]}<br>CTR: %{customdata[1]}%<br>CR: %{customdata[2]}%<br>Total Clicks: %{customdata[3]}<br>Total Conversions: %{customdata[4]}<extra></extra>'
+                                    )
+                                    
+                                    st.plotly_chart(fig_trend, use_container_width=True)
+                                    
+                                    # MoM insights
+                                    if len(monthly_trends['Date'].unique()) >= 2:
+                                        latest_month = monthly_trends['Date'].max()
+                                        prev_month_dates = sorted(monthly_trends['Date'].unique())
+                                        prev_month = prev_month_dates[-2] if len(prev_month_dates) >= 2 else None
+                                        
+                                        if prev_month is not None:
+                                            latest_data = monthly_trends[monthly_trends['Date'] == latest_month]
+                                            prev_data = monthly_trends[monthly_trends['Date'] == prev_month]
+                                            
+                                            insights = []
+                                            for dept in top_5_depts:
+                                                latest_dept = latest_data[latest_data['department'] == dept]
+                                                prev_dept = prev_data[prev_data['department'] == dept]
+                                                
+                                                if not latest_dept.empty and not prev_dept.empty:
+                                                    latest_val = latest_dept[y_col].iloc[0]
+                                                    prev_val = prev_dept[y_col].iloc[0]
+                                                    
+                                                    if prev_val > 0:
+                                                        change_pct = ((latest_val - prev_val) / prev_val) * 100
+                                                        trend_icon = "📈" if change_pct > 0 else "📉" if change_pct < 0 else "➡️"
+                                                        insights.append(f"{trend_icon} **{dept}**: {change_pct:+.1f}%")
+                                            
+                                            if insights:
+                                                st.markdown(f"""
+                                                <div style="background:rgba(25,118,210,0.1);padding:10px;border-radius:8px;margin:10px 0;">
+                                                    <h4 style="margin:0 0 8px 0;color:#0D47A1;">📊 Month-over-Month {metric_name} Changes:</h4>
+                                                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
+                                                        {''.join([f'<div>{ins}</div>' for ins in insights])}
+                                                    </div>
+                                                </div>
+                                                """, unsafe_allow_html=True)
+                                    
+                                    st.markdown("<br>", unsafe_allow_html=True)
+                        else:
+                            st.info("No valid trend data available")
+                    else:
+                        st.info("No valid dates found")
+                except Exception as e:
+                    st.error(f"Error processing trend data: {str(e)}")
+            else:
+                st.info("No department data available for trend analysis")
+        
+        st.markdown("---")
+    
+    # ✅ DEPARTMENT-KEYWORD MATRIX - OPTIMIZED
+    st.subheader("🔥 Department-Keyword Intelligence Matrix")
+    
+    if 'search' in queries.columns:
+        available_departments = sorted(department_queries[department_column].unique())
+        department_options = ['All Departments'] + list(available_departments)
+        
+        st.markdown("""
+        <div style="background:linear-gradient(135deg,#E3F2FD 0%,#E8EAF6 100%);border:2px solid #2196F3;border-radius:15px;padding:1.5rem;margin:1rem 0;box-shadow:0 4px 15px rgba(33,150,243,0.2);">
+            <h4 style="color:#0D47A1;margin:0 0 1rem 0;text-align:center;">🎯 Department Analysis Control Center</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col_select, col_metrics = st.columns([2, 3])
+        
+        with col_select:
+            selected_department = st.selectbox(
+                "🎯 Select Department to Analyze:",
+                options=department_options,
+                index=0,
+                key="department_selector"
+            )
+        
+        with col_metrics:
+            if selected_department != 'All Departments':
+                dept_metrics = ds[ds['department'] == selected_department]
+                if not dept_metrics.empty:
+                    dm = dept_metrics.iloc[0]
+                    
+                    m1, m2, m3, m4, m5 = st.columns(5)
+                    
+                    with m1:
+                        st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{format_number(dm["Counts"])}</div><div class="dept-metric-label">📊 Total Searches</div></div>', unsafe_allow_html=True)
+                    with m2:
+                        st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{dm["ctr"]:.1f}%</div><div class="dept-metric-label">📈 CTR</div></div>', unsafe_allow_html=True)
+                    with m3:
+                        st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{dm["cr"]:.1f}%</div><div class="dept-metric-label">🎯 CR (Search)</div></div>', unsafe_allow_html=True)
+                    with m4:
+                        st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{dm["classic_cr"]:.1f}%</div><div class="dept-metric-label">🔄 Classic CR</div></div>', unsafe_allow_html=True)
+                    with m5:
+                        st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{dm["share_pct"]:.1f}%</div><div class="dept-metric-label">📈 Market Share</div></div>', unsafe_allow_html=True)
+            else:
+                # Overall metrics
+                total_searches = int(department_queries['Counts'].sum())
+                total_clicks = int(department_queries['clicks'].sum())
+                total_conversions = int(department_queries['conversions'].sum())
+                
+                overall_ctr = (total_clicks / total_searches * 100) if total_searches > 0 else 0
+                overall_cr = (total_conversions / total_searches * 100) if total_searches > 0 else 0
+                overall_classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+                
+                m1, m2, m3, m4, m5 = st.columns(5)
+                
+                with m1:
+                    st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{format_number(total_searches)}</div><div class="dept-metric-label">📊 Total Market</div></div>', unsafe_allow_html=True)
+                with m2:
+                    st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{overall_ctr:.1f}%</div><div class="dept-metric-label">📈 Overall CTR</div></div>', unsafe_allow_html=True)
+                with m3:
+                    st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{overall_cr:.1f}%</div><div class="dept-metric-label">🎯 Overall CR</div></div>', unsafe_allow_html=True)
+                with m4:
+                    st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{overall_classic_cr:.1f}%</div><div class="dept-metric-label">🔄 Overall Classic CR</div></div>', unsafe_allow_html=True)
+                with m5:
+                    st.markdown(f'<div class="dept-metric-card"><div class="dept-metric-value">{format_number(total_clicks)}</div><div class="dept-metric-label">🏢 Total Clicks</div></div>', unsafe_allow_html=True)
+        
+        # Filter data
+        if selected_department == 'All Departments':
+            top_depts_matrix = ds.nlargest(8, 'Counts')['department'].tolist()
+            filtered_data = department_queries[department_queries[department_column].isin(top_depts_matrix)]
+            matrix_title = "Top Departments vs Search Terms"
+        else:
+            filtered_data = department_queries[department_queries[department_column] == selected_department]
+            matrix_title = f"{selected_department} - Search Terms Analysis"
+        
+        matrix_data = filtered_data[
+            (filtered_data[department_column].notna()) & 
+            (filtered_data['search'].notna()) &
+            (~filtered_data['search'].str.lower().isin(['other', 'others']))
+        ].copy()
+        
+        if not matrix_data.empty:
+            if selected_department == 'All Departments':
+                # ✅ VECTORIZED AGGREGATION
+                dept_search_matrix = matrix_data.groupby([department_column, 'search'], as_index=False).agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                })
+                
+                dept_search_matrix = dept_search_matrix.rename(columns={department_column: 'department'})
+                
+                # Vectorized calculations
+                dept_search_matrix['ctr'] = np.where(
+                    dept_search_matrix['Counts'] > 0,
+                    (dept_search_matrix['clicks'] / dept_search_matrix['Counts'] * 100),
+                    0
+                ).round(2)
+                
+                dept_search_matrix['cr'] = np.where(
+                    dept_search_matrix['Counts'] > 0,
+                    (dept_search_matrix['conversions'] / dept_search_matrix['Counts'] * 100),
+                    0
+                ).round(2)
+                
+                dept_search_matrix['classic_cr'] = np.where(
+                    dept_search_matrix['clicks'] > 0,
+                    (dept_search_matrix['conversions'] / dept_search_matrix['clicks'] * 100),
+                    0
+                ).round(2)
+                
+                top_searches = matrix_data['search'].value_counts().head(12).index.tolist()
+                dept_search_matrix = dept_search_matrix[dept_search_matrix['search'].isin(top_searches)]
+                
+                heatmap_data = dept_search_matrix.pivot(index='department', columns='search', values='Counts').fillna(0)
+                ctr_data = dept_search_matrix.pivot(index='department', columns='search', values='ctr').fillna(0)
+                cr_data = dept_search_matrix.pivot(index='department', columns='search', values='cr').fillna(0)
+                classic_cr_data = dept_search_matrix.pivot(index='department', columns='search', values='classic_cr').fillna(0)
+                
+                if not heatmap_data.empty:
+                    fig_matrix = px.imshow(
+                        heatmap_data.values,
+                        labels=dict(x="Search Terms", y="Departments", color="Total Counts"),
+                        x=heatmap_data.columns,
+                        y=heatmap_data.index,
+                        color_continuous_scale=['#E3F2FD', '#64B5F6', '#1565C0'],
+                        title=f'<b style="color:#1565C0;">{matrix_title}</b>',
+                        aspect='auto'
+                    )
+                    
+                    # Create hover efficiently
+                    hover_text = []
+                    for i, dept in enumerate(heatmap_data.index):
+                        hover_row = []
+                        for j, search in enumerate(heatmap_data.columns):
+                            counts = heatmap_data.iloc[i, j]
+                            ctr = ctr_data.iloc[i, j]
+                            cr = cr_data.iloc[i, j]
+                            classic_cr = classic_cr_data.iloc[i, j]
+                            hover_row.append(
+                                f"<b>{dept}</b><br>Search Term: {search}<br>Total Searches: {format_number(counts)}<br>"
+                                f"CTR: {ctr:.1f}%<br>CR (Search): {cr:.1f}%<br>Classic CR: {classic_cr:.1f}%"
+                            )
+                        hover_text.append(hover_row)
+                    
+                    fig_matrix.update_traces(hovertemplate='%{customdata}<extra></extra>', customdata=hover_text)
+                    fig_matrix.update_layout(
+                        plot_bgcolor='rgba(248,252,255,0.95)',
+                        paper_bgcolor='rgba(227,242,253,0.8)',
+                        font=dict(color='#0D47A1', family='Segoe UI'),
+                        xaxis=dict(tickangle=45),
+                        height=500
+                    )
+                    
+                    st.plotly_chart(fig_matrix, use_container_width=True)
+                    
+                    total_interactions = dept_search_matrix['Counts'].sum()
+                    st.info(f"📊 Matrix shows {len(heatmap_data.index)} departments × {len(heatmap_data.columns)} search terms with {format_number(total_interactions)} total searches")
+            else:
+                # Single department
+                dept_search_data = matrix_data.groupby('search', as_index=False).agg({
+                    'Counts': 'sum',
+                    'clicks': 'sum',
+                    'conversions': 'sum'
+                })
+                
+                dept_search_data['ctr'] = np.where(
+                    dept_search_data['Counts'] > 0,
+                    (dept_search_data['clicks'] / dept_search_data['Counts'] * 100),
+                    0
+                ).round(2)
+                
+                dept_search_data['cr'] = np.where(
+                    dept_search_data['Counts'] > 0,
+                    (dept_search_data['conversions'] / dept_search_data['Counts'] * 100),
+                    0
+                ).round(2)
+                
+                dept_search_data['classic_cr'] = np.where(
+                    dept_search_data['clicks'] > 0,
+                    (dept_search_data['conversions'] / dept_search_data['clicks'] * 100),
+                    0
+                ).round(2)
+                
+                dept_search_data = dept_search_data.nlargest(15, 'Counts')
+                
+                st.markdown("#### 📊 Chart Display Options")
+                cr_option = st.radio(
+                    "Color bars by:",
+                    options=['CR Search-based (Conversions/Searches)', 'Classic CR (Conversions/Clicks)'],
+                    index=0,
+                    horizontal=True,
+                    key="department_cr_option_radio"
+                )
+                
+                color_col = 'classic_cr' if cr_option == 'Classic CR (Conversions/Clicks)' else 'cr'
+                color_label = 'Classic CR (%)' if cr_option == 'Classic CR (Conversions/Clicks)' else 'CR Search-based (%)'
+                
+                fig_dept_search = px.bar(
+                    dept_search_data,
+                    x='search',
+                    y='Counts',
+                    title=f'<b style="color:#1565C0;">{matrix_title}</b>',
+                    labels={'search': 'Search Terms', 'Counts': 'Total Search Volume'},
+                    color=color_col,
+                    color_continuous_scale=['#E3F2FD', '#64B5F6', '#1565C0'],
+                    text=dept_search_data['Counts'].apply(format_number)
+                )
+                
+                # Efficient customdata
+                customdata = np.column_stack([
+                    dept_search_data['ctr'].values,
+                    dept_search_data['cr'].values,
+                    dept_search_data['classic_cr'].values,
+                    dept_search_data['Counts'].apply(format_number).values
+                ])
+                
+                fig_dept_search.update_traces(
+                    textposition='outside',
+                    hovertemplate='<b>%{x}</b><br>Search Volume: %{customdata[3]}<br>CTR: %{customdata[0]:.1f}%<br>CR (Search): %{customdata[1]:.1f}%<br>Classic CR: %{customdata[2]:.1f}%<br>' + f'{color_label}: %{{marker.color:.2f}}%<extra></extra>',
+                    customdata=customdata
+                )
+                
+                fig_dept_search.update_layout(
+                    plot_bgcolor='rgba(248,252,255,0.95)',
+                    paper_bgcolor='rgba(227,242,253,0.8)',
+                    font=dict(color='#0D47A1', family='Segoe UI'),
+                    height=500,
+                    xaxis=dict(tickangle=45, showgrid=True, gridcolor='#BBDEFB'),
+                    yaxis=dict(showgrid=True, gridcolor='#BBDEFB'),
+                    coloraxis_colorbar=dict(title=color_label)
+                )
+                
+                st.plotly_chart(fig_dept_search, use_container_width=True)
+                
+                # Display comparison table
+                display_comp = dept_search_data[['search', 'Counts', 'ctr', 'cr', 'classic_cr']].copy()
+                display_comp = display_comp.rename(columns={
+                    'search': 'Search Term',
+                    'Counts': 'Search Volume',
+                    'ctr': 'CTR (%)',
+                    'cr': 'CR Search-based (%)',
+                    'classic_cr': 'Classic CR (%)'
+                })
+                
+                display_comp['Search Volume'] = display_comp['Search Volume'].apply(format_number)
+                display_comp['CTR (%)'] = display_comp['CTR (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comp['CR Search-based (%)'] = display_comp['CR Search-based (%)'].apply(lambda x: f"{x:.1f}%")
+                display_comp['Classic CR (%)'] = display_comp['Classic CR (%)'].apply(lambda x: f"{x:.1f}%")
+                
+                display_styled_table(
+                    df=display_comp,
+                    title="📋 Search Terms Performance Comparison",
+                    download_filename=f"department_search_terms_{selected_department.replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    scrollable=True,
+                    max_height="900px",
+                    align="center"
+                )
+        else:
+            st.warning("⚠️ No department data available for the selected filter")
+    
+    st.markdown("---")
+    
+    # ✅ TOP KEYWORDS - OPTIMIZED
+    st.subheader("🔑 Top Keywords per Department Analysis")
+    
+    num_keywords = st.selectbox(
+        "🔥 Select number of top keywords:",
+        options=[10, 15, 20, 25, 30, 50],
+        index=0,
+        key="num_keywords_selector_dept"
+    )
+    
+    try:
+        # ✅ VECTORIZED KEYWORD EXTRACTION
+        @st.cache_data(ttl=1800, show_spinner=False)
+        def extract_keywords_optimized_dept(df, dept_col, num_kw):
+            """Optimized keyword extraction with vectorization"""
+            rows = []
+            
+            for dept, grp in df.groupby(dept_col):
+                keyword_counts = {}
+                
+                for _, row in grp.iterrows():
+                    keywords_list = row.get('keywords', [])
+                    query_count = row['Counts']
+                    
+                    if isinstance(keywords_list, list):
+                        for kw in keywords_list:
+                            keyword_counts[kw] = keyword_counts.get(kw, 0) + query_count
+                    elif pd.notna(keywords_list):
+                        search_term = row.get('normalized_query', '')
+                        if pd.notna(search_term):
+                            keywords = str(search_term).lower().split()
+                            for kw in keywords:
+                                keyword_counts[kw] = keyword_counts.get(kw, 0) + query_count
+                
+                top_kws = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)[:num_kw]
+                
+                for kw, count in top_kws:
+                    rows.append({'department': dept, 'keyword': kw, 'count': count})
+            
+            return pd.DataFrame(rows)
+        
+        df_dkw = extract_keywords_optimized_dept(department_queries, department_column, num_keywords)
+        
+        if not df_dkw.empty:
+            display_option = st.radio(
+                "Choose keyword display format:",
+                ["Top Keywords Summary", "Heatmap Visualization"],
+                horizontal=True,
+                key="dept_keyword_display_option"
+            )
+            
+            if display_option == "Heatmap Visualization":
+                pivot_dkw = df_dkw.pivot_table(index='department', columns='keyword', values='count', fill_value=0)
+                
+                fig_kw_heatmap = px.imshow(
+                    pivot_dkw.values,
+                    labels=dict(x="Keywords", y="Departments", color="Keyword Count"),
+                    x=pivot_dkw.columns,
+                    y=pivot_dkw.index,
+                    color_continuous_scale=['#E3F2FD', '#64B5F6', '#1565C0'],
+                    title=f'<b style="color:#1565C0;">🏢 Department - Keyword Frequency Heatmap (Top {num_keywords})</b>',
+                    aspect='auto'
+                )
+                
+                fig_kw_heatmap.update_layout(
+                    plot_bgcolor='rgba(248,252,255,0.95)',
+                    paper_bgcolor='rgba(227,242,253,0.8)',
+                    font=dict(color='#0D47A1', family='Segoe UI'),
+                    xaxis=dict(tickangle=45),
+                    height=600
+                )
+                
+                st.plotly_chart(fig_kw_heatmap, use_container_width=True)
+            
+            else:  # Top Keywords Summary
+                st.subheader(f"🔥 Top {num_keywords} Keywords per Department")
+                
+                df_dkw_clean = df_dkw.drop_duplicates(subset=['department', 'keyword'])
+                total_volume_all_departments = ds['Counts'].sum()
+                
+                # ✅ OPTIMIZED: Build summary with vectorization
+                top_keywords_summary = []
+                department_stats = {}
+                
+                for dept in df_dkw_clean['department'].unique():
+                    dept_data = df_dkw_clean[df_dkw_clean['department'] == dept].nlargest(num_keywords, 'count')
+                    
+                    # Format keywords efficiently
+                    keywords_str = ' | '.join([f"{row['keyword']} ({format_number(row['count'])})" 
+                                               for _, row in dept_data.iterrows()])
+                    
+                    # Get department totals from ds
+                    dept_total = ds[ds['department'] == dept]
+                    if dept_total.empty:
+                        continue
+                    
+                    dt = dept_total.iloc[0]
+                    department_total_volume = int(dt['Counts'])
+                    keyword_analysis_volume = int(dept_data['count'].sum())
+                    unique_keywords = len(df_dkw_clean[df_dkw_clean['department'] == dept])
+                    avg_keyword_count = df_dkw_clean[df_dkw_clean['department'] == dept]['count'].mean()
+                    
+                    share_percentage = (department_total_volume / total_volume_all_departments * 100) if total_volume_all_departments > 0 else 0
+                    top_keyword_dominance = (dept_data.iloc[0]['count'] / department_total_volume * 100) if len(dept_data) > 0 and department_total_volume > 0 else 0
+                    
+                    department_stats[dept] = {
+                        'total_keywords': unique_keywords,
+                        'total_count': department_total_volume,
+                        'keyword_analysis_volume': keyword_analysis_volume,
+                        'avg_count': avg_keyword_count,
+                        'top_keyword': dept_data.iloc[0]['keyword'] if len(dept_data) > 0 else 'N/A',
+                        'dominance': top_keyword_dominance,
+                        'share_percentage': share_percentage
+                    }
+                    
+                    top_keywords_summary.append({
+                        'Department': dept,
+                        f'Top {num_keywords} Keywords (with counts)': keywords_str,
+                        'Total Keywords': unique_keywords,
+                        'Department Total Volume': format_number(department_total_volume),
+                        'Market Share %': f"{share_percentage:.1f}%",
+                        'Keyword Analysis Volume': format_number(keyword_analysis_volume),
+                        'Avg Keyword Count': format_number(int(avg_keyword_count)),
+                        'Top Keyword': dept_data.iloc[0]['keyword'] if len(dept_data) > 0 else 'N/A',
+                        'Keyword Dominance %': f"{top_keyword_dominance:.1f}%",
+                        '_sort_value': department_total_volume
+                    })
+                
+                # Sort by numeric value
+                top_keywords_summary = sorted(top_keywords_summary, key=lambda x: x['_sort_value'], reverse=True)
+                summary_df = pd.DataFrame(top_keywords_summary).drop('_sort_value', axis=1)
+                
+                # Display table
+                display_styled_table(
+                    df=summary_df,
+                    download_filename=f"department_summary_data_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    scrollable=True,
+                    max_height="400px",
+                    align="center"
+                )
+                
+                # Additional insights
+                st.markdown("---")
+                st.subheader("📊 Department Keyword Intelligence")
+                
+                col_insight1, col_insight2, col_insight3 = st.columns(3)
+                
+                with col_insight1:
+                    most_diverse_dept = max(department_stats.items(), key=lambda x: x[1]['total_keywords'])
+                    department_name = most_diverse_dept[0][:15] + "..." if len(most_diverse_dept[0]) > 15 else most_diverse_dept[0]
+                    st.markdown(f"""
+                    <div class='enhanced-dept-metric'>
+                        <span class='icon'>🌟</span>
+                        <div class='value'>{department_name}</div>
+                        <div class='label'>Most Diverse Department</div>
+                        <div class='sub-label'>{most_diverse_dept[1]['total_keywords']} unique keywords</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_insight2:
+                    highest_volume_dept = max(department_stats.items(), key=lambda x: x[1]['total_count'])
+                    department_name = highest_volume_dept[0][:15] + "..." if len(highest_volume_dept[0]) > 15 else highest_volume_dept[0]
+                    st.markdown(f"""
+                    <div class='enhanced-dept-metric'>
+                        <span class='icon'>🚀</span>
+                        <div class='value'>{department_name}</div>
+                        <div class='label'>Highest Volume Department</div>
+                        <div class='sub-label'>{format_number(highest_volume_dept[1]['total_count'])} total searches<br>{highest_volume_dept[1]['share_percentage']:.1f}% market share</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                with col_insight3:
+                    most_concentrated_dept = max(department_stats.items(), key=lambda x: x[1]['dominance'])
+                    department_name = most_concentrated_dept[0][:15] + "..." if len(most_concentrated_dept[0]) > 15 else most_concentrated_dept[0]
+                    st.markdown(f"""
+                    <div class='enhanced-dept-metric'>
+                        <span class='icon'>🎯</span>
+                        <div class='value'>{department_name}</div>
+                        <div class='label'>Most Concentrated Department</div>
+                        <div class='sub-label'>Top keyword: {most_concentrated_dept[1]['dominance']:.1f}% dominance</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                # Download button
+                csv_keywords = df_dkw_clean.to_csv(index=False)
+                st.download_button(
+                    label="📥 Download Department Keywords CSV",
+                    data=csv_keywords,
+                    file_name=f"department_keywords_top_{num_keywords}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
+                    mime="text/csv",
+                    key="department_keywords_csv_download"
+                )
+        else:
+            st.info("Not enough keyword data per department.")
+    
+    except Exception as e:
+        st.error(f"Error processing keyword analysis: {str(e)}")
+        st.info("Not enough keyword data per department.")
+    
+    st.markdown("---")
+    
+    # ✅ ADDITIONAL DEPARTMENT INSIGHTS
+    st.subheader("💡 Department Performance Insights")
+    
+    col_insights1, col_insights2, col_insights3 = st.columns(3)
+    
+    with col_insights1:
+        # Top performing department by CTR
+        top_ctr_dept = ds.nlargest(1, 'ctr').iloc[0]
+        dept_name_display = top_ctr_dept['department'][:20] + "..." if len(top_ctr_dept['department']) > 20 else top_ctr_dept['department']
+        
+        st.markdown(f"""
+        <div class='department-insight'>
+            <h3 style="margin:0 0 10px 0;">🏆 Top CTR Department</h3>
+            <h2 style="margin:0 0 10px 0;">{dept_name_display}</h2>
+            <div style="font-size:2em;font-weight:bold;margin:10px 0;">{top_ctr_dept['ctr']:.2f}%</div>
+            <div style="opacity:0.9;">
+                📊 {format_number(top_ctr_dept['Counts'])} searches<br>
+                👆 {format_number(top_ctr_dept['clicks'])} clicks<br>
+                💰 {format_number(top_ctr_dept['conversions'])} conversions
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_insights2:
+        # Top performing department by CR
+        top_cr_dept = ds.nlargest(1, 'cr').iloc[0]
+        dept_name_display = top_cr_dept['department'][:20] + "..." if len(top_cr_dept['department']) > 20 else top_cr_dept['department']
+        
+        st.markdown(f"""
+        <div class='department-insight'>
+            <h3 style="margin:0 0 10px 0;">🎯 Top CR Department</h3>
+            <h2 style="margin:0 0 10px 0;">{dept_name_display}</h2>
+            <div style="font-size:2em;font-weight:bold;margin:10px 0;">{top_cr_dept['cr']:.2f}%</div>
+            <div style="opacity:0.9;">
+                📊 {format_number(top_cr_dept['Counts'])} searches<br>
+                👆 {format_number(top_cr_dept['clicks'])} clicks<br>
+                💰 {format_number(top_cr_dept['conversions'])} conversions
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col_insights3:
+        # Highest volume department
+        top_volume_dept = ds.nlargest(1, 'Counts').iloc[0]
+        dept_name_display = top_volume_dept['department'][:20] + "..." if len(top_volume_dept['department']) > 20 else top_volume_dept['department']
+        
+        st.markdown(f"""
+        <div class='department-insight'>
+            <h3 style="margin:0 0 10px 0;">📈 Highest Volume Department</h3>
+            <h2 style="margin:0 0 10px 0;">{dept_name_display}</h2>
+            <div style="font-size:2em;font-weight:bold;margin:10px 0;">{format_number(top_volume_dept['Counts'])}</div>
+            <div style="opacity:0.9;">
+                📊 {top_volume_dept['share_pct']:.1f}% market share<br>
+                📈 {top_volume_dept['ctr']:.2f}% CTR<br>
+                🎯 {top_volume_dept['cr']:.2f}% CR
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ✅ DEPARTMENT COMPARISON SUMMARY
+    st.subheader("📊 Department Performance Summary")
+    
+    # Create summary metrics
+    total_departments = len(ds)
+    avg_ctr = ds['ctr'].mean()
+    avg_cr = ds['cr'].mean()
+    total_market_volume = ds['Counts'].sum()
+    
+    summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+    
+    with summary_col1:
+        st.markdown(f"""
+        <div class='department-metric-card'>
+            <span class='icon'>🏢</span>
+            <div class='value'>{total_departments}</div>
+            <div class='label'>Total Departments</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col2:
+        st.markdown(f"""
+        <div class='department-metric-card'>
+            <span class='icon'>📊</span>
+            <div class='value'>{format_number(total_market_volume)}</div>
+            <div class='label'>Total Search Volume</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col3:
+        st.markdown(f"""
+        <div class='department-metric-card'>
+            <span class='icon'>📈</span>
+            <div class='value'>{avg_ctr:.2f}%</div>
+            <div class='label'>Average CTR</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with summary_col4:
+        st.markdown(f"""
+        <div class='department-metric-card'>
+            <span class='icon'>🎯</span>
+            <div class='value'>{avg_cr:.2f}%</div>
+            <div class='label'>Average CR</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # ✅ FINAL DOWNLOAD SECTION
+    st.subheader("📥 Export Department Data")
+    
+    col_export1, col_export2, col_export3 = st.columns(3)
+    
+    with col_export1:
+        # Export full department stats
+        csv_full_dept = ds.to_csv(index=False)
+        st.download_button(
+            label="📊 Download Full Department Stats",
+            data=csv_full_dept,
+            file_name=f"department_full_stats_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            key="dept_full_stats_download",
+            use_container_width=True
+        )
+    
+    with col_export2:
+        # Export top performers
+        top_performers = ds.nlargest(20, 'Counts')
+        csv_top_performers = top_performers.to_csv(index=False)
+        st.download_button(
+            label="🏆 Download Top 20 Departments",
+            data=csv_top_performers,
+            file_name=f"department_top_20_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            key="dept_top_20_download",
+            use_container_width=True
+        )
+    
+    with col_export3:
+        # Export performance categories
+        perf_category_summary = ds.groupby('performance_category', as_index=False).agg({
+            'department': 'count',
+            'Counts': 'sum',
+            'clicks': 'sum',
+            'conversions': 'sum'
+        }).rename(columns={'department': 'department_count'})
+        csv_perf_cat = perf_category_summary.to_csv(index=False)
+        st.download_button(
+            label="📈 Download Performance Categories",
+            data=csv_perf_cat,
+            file_name=f"department_performance_categories_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            key="dept_perf_cat_download",
+            use_container_width=True
+        )
+    
+    # Success message
+    st.success("✅ Department analysis complete! Use the download buttons above to export your data.")
+    
+    # Footer with tips
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#E3F2FD 0%,#E8EAF6 100%);border-radius:10px;padding:20px;margin:20px 0;">
+        <h4 style="color:#0D47A1;margin:0 0 10px 0;">💡 Analysis Tips:</h4>
+        <ul style="color:#1565C0;margin:0;padding-left:20px;">
+            <li>Focus on departments with high CTR but low conversion rates for optimization opportunities</li>
+            <li>Compare department performance trends month-over-month to identify seasonal patterns</li>
+            <li>Use keyword analysis to understand what drives searches in each department</li>
+            <li>Monitor market share changes to identify growing or declining departments</li>
+            <li>Analyze the department-keyword matrix to optimize search relevance</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ----------------- Category Tab (Enhanced & -Focused) -----------------
