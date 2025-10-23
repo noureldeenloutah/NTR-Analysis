@@ -3668,6 +3668,18 @@ with tab_search:
 
 
 # ================================================================================================
+# 🚀 ULTRA-OPTIMIZED SEARCH ANALYSIS TAB - MEMORY & SPEED ENHANCED
+# ================================================================================================
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime
+from collections import defaultdict
+import numpy as np
+
+# ================================================================================================
 # 🎯 OPTIMIZED CACHING STRATEGIES
 # ================================================================================================
 
@@ -4597,9 +4609,6 @@ with adv_col3:
         )
         
         st.plotly_chart(fig_density, use_container_width=True)
-
-
-    
 
 
 # ----------------- Brand Tab (Enhanced & Optimized) -----------------
