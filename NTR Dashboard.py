@@ -4109,7 +4109,13 @@ with tab_search:
 
     def render_advanced_analytics(queries):
         """Optimized advanced analytics with vectorized operations"""
-        st.subheader("📈 Advanced Health Query Performance Analytics")
+        st.markdown("---")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%); color: white; padding: 1.5rem; border-radius: 12px; margin: 2rem 0;">
+            <h3 style="margin: 0;">📈 Advanced Query Performance Analytics</h3>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Deep-dive into query patterns and performance metrics</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         adv_col1, adv_col2, adv_col3 = st.columns(3)
         
@@ -4121,7 +4127,7 @@ with tab_search:
                 'conversions': 'sum'
             }).reset_index()
             
-            # ✅ FIX #4: VECTORIZED CALCULATIONS (50x faster)
+            # ✅ VECTORIZED CALCULATIONS (50x faster than .apply())
             ql_analysis['ctr'] = np.where(
                 ql_analysis['Counts'] > 0,
                 (ql_analysis['clicks'] / ql_analysis['Counts']) * 100,
@@ -4140,7 +4146,7 @@ with tab_search:
                     y='ctr', 
                     size='Counts',
                     color='cr',
-                    title='Length vs Health CTR Performance',
+                    title='<b style="color:#2E7D32;">Length vs Health CTR Performance</b>',
                     color_continuous_scale=['#E8F5E8', '#66BB6A'],
                     template='plotly_white'
                 )
@@ -4149,27 +4155,42 @@ with tab_search:
                     plot_bgcolor='rgba(248,253,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                    height=300,
-                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+                    height=350,
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', title='Query Length (characters)'),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', title='CTR (%)')
                 )
                 
                 st.plotly_chart(fig_ql, use_container_width=True)
+                
+                # Add insights
+                best_length = ql_analysis.loc[ql_analysis['ctr'].idxmax(), 'query_length'] if len(ql_analysis) > 0 else 0
+                st.markdown(f"""
+                <div style="background: #E8F5E8; padding: 0.8rem; border-radius: 8px; border-left: 3px solid #4CAF50;">
+                    <p style="margin: 0; color: #1B5E20; font-size: 0.9rem;">
+                        💡 <strong>Best performing length:</strong> {best_length} characters
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
         
         with adv_col2:
             st.markdown("**📊 Long-tail vs Short-tail Performance**")
-            queries['is_long_tail'] = queries['query_length'] >= 20
-            lt_analysis = queries.groupby('is_long_tail').agg({
+            
+            # Create a copy to avoid SettingWithCopyWarning
+            queries_copy = queries.copy()
+            queries_copy['is_long_tail'] = queries_copy['query_length'] >= 20
+            
+            lt_analysis = queries_copy.groupby('is_long_tail').agg({
                 'Counts': 'sum', 
                 'clicks': 'sum',
                 'conversions': 'sum'
             }).reset_index()
+            
             lt_analysis['label'] = lt_analysis['is_long_tail'].map({
                 True: 'Long-tail Health (≥20 chars)', 
                 False: 'Short-tail Health (<20 chars)'
             })
             
-            # ✅ FIX #4: VECTORIZED CALCULATION
+            # ✅ VECTORIZED CALCULATION
             lt_analysis['ctr'] = np.where(
                 lt_analysis['Counts'] > 0,
                 (lt_analysis['clicks'] / lt_analysis['Counts']) * 100,
@@ -4182,7 +4203,7 @@ with tab_search:
                     x='label', 
                     y='Counts',
                     color='ctr',
-                    title='Health Traffic: Long-tail vs Short-tail',
+                    title='<b style="color:#2E7D32;">Health Traffic: Long-tail vs Short-tail</b>',
                     color_continuous_scale=['#E8F5E8', '#2E7D32'],
                     text='Counts'
                 )
@@ -4196,25 +4217,40 @@ with tab_search:
                     plot_bgcolor='rgba(248,253,248,0.95)',
                     paper_bgcolor='rgba(232,245,232,0.8)',
                     font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                    height=300,
-                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
+                    height=350,
+                    xaxis=dict(showgrid=True, gridcolor='#E8F5E8', title='Query Type'),
+                    yaxis=dict(showgrid=True, gridcolor='#E8F5E8', title='Total Searches')
                 )
                 
                 st.plotly_chart(fig_lt, use_container_width=True)
+                
+                # Add insights
+                if len(lt_analysis) > 0:
+                    long_tail_pct = (lt_analysis[lt_analysis['is_long_tail'] == True]['Counts'].sum() / 
+                                    lt_analysis['Counts'].sum() * 100) if lt_analysis['Counts'].sum() > 0 else 0
+                    
+                    st.markdown(f"""
+                    <div style="background: #E8F5E8; padding: 0.8rem; border-radius: 8px; border-left: 3px solid #4CAF50;">
+                        <p style="margin: 0; color: #1B5E20; font-size: 0.9rem;">
+                            💡 <strong>Long-tail queries:</strong> {long_tail_pct:.1f}% of total traffic
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         with adv_col3:
             st.markdown("**🔍 Health Keyword Density Analysis**")
+            
             density_bins = pd.cut(queries['query_length'], 
                                 bins=[0, 10, 20, 30, 50, 100], 
-                                labels=['0-10 chars', '11-20 chars', '21-30 chars', '31-50 chars', '51-100 chars'])
-            density_analysis = queries.groupby(density_bins).agg({
+                                labels=['0-10', '11-20', '21-30', '31-50', '51-100'])
+            
+            density_analysis = queries.groupby(density_bins, observed=True).agg({
                 'Counts': 'sum',
                 'clicks': 'sum',
                 'conversions': 'sum'
             }).reset_index()
             
-            # ✅ FIX #4: VECTORIZED CALCULATION
+            # ✅ VECTORIZED CALCULATION
             density_analysis['ctr'] = np.where(
                 density_analysis['Counts'] > 0,
                 (density_analysis['clicks'] / density_analysis['Counts']) * 100,
@@ -4222,20 +4258,95 @@ with tab_search:
             )
             
             if not density_analysis.empty:
+                # Format labels for better display
+                density_analysis['display_label'] = density_analysis['query_length'].astype(str) + ' chars'
+                
                 fig_density = px.pie(
                     density_analysis, 
-                    names='query_length', 
+                    names='display_label', 
                     values='Counts',
-                    title='Query Length Distribution',
-                    color_discrete_sequence=['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
+                    title='<b style="color:#2E7D32;">Query Length Distribution</b>',
+                    color_discrete_sequence=['#2E7D32', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9'],
+                    hole=0.3  # Donut chart for better aesthetics
+                )
+                
+                fig_density.update_traces(
+                    textposition='inside',
+                    textinfo='percent+label',
+                    hovertemplate='<b>%{label}</b><br>Searches: %{value:,.0f}<br>Percentage: %{percent}<extra></extra>'
                 )
                 
                 fig_density.update_layout(
                     font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                    height=300
+                    height=350,
+                    showlegend=True,
+                    legend=dict(
+                        orientation="v",
+                        yanchor="middle",
+                        y=0.5,
+                        xanchor="left",
+                        x=1.05
+                    )
                 )
                 
                 st.plotly_chart(fig_density, use_container_width=True)
+                
+                # Add insights
+                most_common_range = density_analysis.loc[density_analysis['Counts'].idxmax(), 'display_label'] if len(density_analysis) > 0 else 'N/A'
+                st.markdown(f"""
+                <div style="background: #E8F5E8; padding: 0.8rem; border-radius: 8px; border-left: 3px solid #4CAF50;">
+                    <p style="margin: 0; color: #1B5E20; font-size: 0.9rem;">
+                        💡 <strong>Most common range:</strong> {most_common_range}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # ✅ ADDITIONAL PERFORMANCE SUMMARY
+        st.markdown("---")
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #66BB6A; margin: 1rem 0;">
+            <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">📊 Analytics Summary</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        summary_col1, summary_col2, summary_col3, summary_col4 = st.columns(4)
+        
+        with summary_col1:
+            total_queries = len(queries)
+            st.markdown(f"""
+            <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #4CAF50;">
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_queries:,}</div>
+                <div style="color: #1B5E20; font-size: 0.9rem;">Total Queries</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with summary_col2:
+            avg_length = queries['query_length'].mean()
+            st.markdown(f"""
+            <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #66BB6A;">
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{avg_length:.1f}</div>
+                <div style="color: #1B5E20; font-size: 0.9rem;">Avg Length (chars)</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with summary_col3:
+            total_volume = queries['Counts'].sum()
+            st.markdown(f"""
+            <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #81C784;">
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{total_volume:,}</div>
+                <div style="color: #1B5E20; font-size: 0.9rem;">Total Volume</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with summary_col4:
+            overall_ctr = (queries['clicks'].sum() / queries['Counts'].sum() * 100) if queries['Counts'].sum() > 0 else 0
+            st.markdown(f"""
+            <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center; border: 2px solid #A5D6A7;">
+                <div style="font-size: 2rem; color: #2E7D32; font-weight: bold;">{overall_ctr:.1f}%</div>
+                <div style="color: #1B5E20; font-size: 0.9rem;">Overall CTR</div>
+            </div>
+            """, unsafe_allow_html=True)
+
 
 
     # ================================================================================================
@@ -5126,10 +5237,6 @@ with tab_search:
             # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
             # ================================================================================================
 
-            # ================================================================================================
-            # 📊 ENHANCED MAIN KEYWORDS TABLE WITH INTERACTIVE BAR CHART
-            # ================================================================================================
-
             # Calculate market share for enhanced insights
             total_all_counts = queries['Counts'].sum()
             top_keywords['share_pct'] = (top_keywords['total_counts'] / total_all_counts * 100).round(2)
@@ -5726,6 +5833,7 @@ with tab_search:
 
 
                 # Final performance footer
+                # Final performance footer
                 st.markdown(f"""
                 <div style="background: linear-gradient(135deg, #F1F8E9 0%, #E8F5E8 100%); padding: 2rem; border-radius: 12px; margin: 3rem 0; text-align: center; border: 2px solid #4CAF50;">
                     <h4 style="color: #1B5E20; margin: 0 0 1rem 0;">🚀 Analysis Complete - Ready for Action!</h4>
@@ -5742,7 +5850,9 @@ with tab_search:
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-
+        
+        # ✅ CORRECT - ADD 4 SPACES (same indentation as st.markdown above)
+        render_advanced_analytics(queries)
 
 
     # ================================================================================================
@@ -5750,122 +5860,10 @@ with tab_search:
     # ================================================================================================
 
     if __name__ == "__main__":
-        # Ensure all required variables are available
         if 'queries' in locals() and not queries.empty:
             main_health_analysis()
         else:
-            st.error("❌ Required data 'queries' not found. Please ensure data is loaded before running this analysis.")
-
-                
-
-    # Advanced Analytics Section
-    st.subheader("📈 Advanced Health Query Performance Analytics")
-    
-    # Three-column layout for advanced metrics
-    adv_col1, adv_col2, adv_col3 = st.columns(3)
-    
-    with adv_col1:
-        st.markdown("**🎯 Query Length vs Nutraceuticals & Nutrition Performance**")
-        ql_analysis = queries.groupby('query_length').agg({
-            'Counts': 'sum', 
-            'clicks': 'sum',
-            'conversions': 'sum'
-        }).reset_index()
-        ql_analysis['ctr'] = ql_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        ql_analysis['cr'] = ql_analysis.apply(lambda r: (r['conversions']/r['clicks']*100) if r['clicks']>0 else 0, axis=1)
-        
-        if not ql_analysis.empty:
-            fig_ql = px.scatter(
-                ql_analysis, 
-                x='query_length', 
-                y='ctr', 
-                size='Counts',
-                color='cr',
-                title='Length vs Health CTR Performance',
-                color_continuous_scale=['#E8F5E8', '#66BB6A'],
-                template='plotly_white'
-            )
-            
-            fig_ql.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300,
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-            )
-            
-            st.plotly_chart(fig_ql, use_container_width=True)
-    
-    with adv_col2:
-        st.markdown("**📊 Long-tail vs Short-tail Performance**")
-        queries['is_long_tail'] = queries['query_length'] >= 20
-        lt_analysis = queries.groupby('is_long_tail').agg({
-            'Counts': 'sum', 
-            'clicks': 'sum',
-            'conversions': 'sum'
-        }).reset_index()
-        lt_analysis['label'] = lt_analysis['is_long_tail'].map({
-            True: 'Long-tail Health (≥20 chars)', 
-            False: 'Short-tail Health (<20 chars)'
-        })
-        lt_analysis['ctr'] = lt_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        
-        if not lt_analysis.empty:
-            fig_lt = px.bar(
-                lt_analysis, 
-                x='label', 
-                y='Counts',
-                color='ctr',
-                title='Health Traffic: Long-tail vs Short-tail',
-                color_continuous_scale=['#E8F5E8', '#2E7D32'],
-                text='Counts'
-            )
-            
-            fig_lt.update_traces(
-                texttemplate='%{text:,.0f}',
-                textposition='outside'
-            )
-            
-            fig_lt.update_layout(
-                plot_bgcolor='rgba(248,253,248,0.95)',
-                paper_bgcolor='rgba(232,245,232,0.8)',
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300,
-                xaxis=dict(showgrid=True, gridcolor='#E8F5E8'),
-                yaxis=dict(showgrid=True, gridcolor='#E8F5E8')
-            )
-            
-            st.plotly_chart(fig_lt, use_container_width=True)
-    
-    with adv_col3:
-        st.markdown("**🔍 Health Keyword Density Analysis**")
-        # FIXED: Replace labels with character ranges instead of descriptive names
-        density_bins = pd.cut(queries['query_length'], 
-                            bins=[0, 10, 20, 30, 50, 100], 
-                            labels=['0-10 chars', '11-20 chars', '21-30 chars', '31-50 chars', '51-100 chars'])
-        density_analysis = queries.groupby(density_bins).agg({
-            'Counts': 'sum',
-            'clicks': 'sum',
-            'conversions': 'sum'
-        }).reset_index()
-        density_analysis['ctr'] = density_analysis.apply(lambda r: (r['clicks']/r['Counts']*100) if r['Counts']>0 else 0, axis=1)
-        
-        if not density_analysis.empty:
-            fig_density = px.pie(
-                density_analysis, 
-                names='query_length', 
-                values='Counts',
-                title='Query Length Distribution',
-                color_discrete_sequence=['#2E7D32', '#66BB6A', '#E8F5E8', '#4CAF50', '#F1F8E9']
-            )
-            
-            fig_density.update_layout(
-                font=dict(color='#1B5E20', family='Segoe UI', size=10),
-                height=300
-            )
-            
-            st.plotly_chart(fig_density, use_container_width=True)
+            st.error("❌ Required data 'queries' not found.")
 
     
 
