@@ -4840,7 +4840,7 @@ with tab_search:
         """, unsafe_allow_html=True)
 
         # ================================================================================================
-        # 🏆 ENHANCED TOP PERFORMING KEYWORDS SECTION
+        # 🏆 ENHANCED TOP PERFORMING KEYWORDS SECTION (GENERIC - TOP 4)
         # ================================================================================================
         
         st.markdown("""
@@ -4854,11 +4854,8 @@ with tab_search:
         with st.spinner("🧠 Processing advanced fuzzy matching..."):
             kw_perf_df = calculate_enhanced_keyword_performance(queries)
 
-            # Enhanced keyword grouping success metrics
-            magnesium_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('مغنیسیوم', case=False, na=False)]
-            collagen_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('کولاجین', case=False, na=False)]
-            vitamin_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('فیتامین', case=False, na=False)]
-            omega_rows = kw_perf_df[kw_perf_df['keyword'].str.contains('اوميجا', case=False, na=False)]
+            # ✅ GENERIC: Get top 4 grouped keywords by total volume
+            top_4_keywords = kw_perf_df.nlargest(4, 'total_counts')
             
             # Enhanced metrics display with better styling
             st.markdown("""
@@ -4867,91 +4864,52 @@ with tab_search:
             </div>
             """, unsafe_allow_html=True)
             
-            col1, col2, col3, col4 = st.columns(4)
+            # ✅ DYNAMIC: Create columns based on number of top keywords (max 4)
+            num_keywords = min(len(top_4_keywords), 4)
+            cols = st.columns(num_keywords)
             
-            with col1:
-                if not magnesium_rows.empty:
-                    mag_data = magnesium_rows.iloc[0]
+            # ✅ EMOJI MAPPING (you can customize this)
+            emoji_map = {
+                0: "🧲",  # First keyword
+                1: "🦴",  # Second keyword
+                2: "💊",  # Third keyword
+                3: "🐟"   # Fourth keyword
+            }
+            
+            # ✅ GENERIC: Loop through top 4 keywords dynamically
+            for idx, (col, (_, row)) in enumerate(zip(cols, top_4_keywords.iterrows())):
+                with col:
+                    emoji = emoji_map.get(idx, "📊")  # Default emoji if not in map
+                    keyword_name = row['keyword']
+                    total_volume = row['total_counts']
+                    variations = row['variations_count']
+                    
+                    # Format the total volume using our format_number function
+                    formatted_volume = format_number(total_volume)
+                    
                     st.markdown(f"""
                     <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">مغنیسیوم Group</div>
-                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{mag_data['total_counts']:,}</div>
-                        <div style="color: #388E3C; font-size: 0.9rem;">{mag_data['variations_count']} variations</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧲</div>
-                        <div style="color: #C62828; font-weight: bold;">مغنیسیوم Group</div>
-                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            
-            with col2:
-                if not collagen_rows.empty:
-                    col_data = collagen_rows.iloc[0]
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">کولاجین Group</div>
-                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{col_data['total_counts']:,}</div>
-                        <div style="color: #388E3C; font-size: 0.9rem;">{col_data['variations_count']} variations</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🦴</div>
-                        <div style="color: #C62828; font-weight: bold;">کولاجین Group</div>
-                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">{emoji}</div>
+                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">Group {keyword_name}</div>
+                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{formatted_volume}</div>
+                        <div style="color: #388E3C; font-size: 0.9rem;">{variations} variations</div>
                     </div>
                     """, unsafe_allow_html=True)
             
-            with col3:
-                if not vitamin_rows.empty:
-                    vit_data = vitamin_rows.iloc[0]
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">فیتامین Group</div>
-                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{vit_data['total_counts']:,}</div>
-                        <div style="color: #388E3C; font-size: 0.9rem;">{vit_data['variations_count']} variations</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💊</div>
-                        <div style="color: #C62828; font-weight: bold;">فیتامین Group</div>
-                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            
-            with col4:
-                if not omega_rows.empty:
-                    omega_data = omega_rows.iloc[0]
-                    st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%); padding: 1rem; border-radius: 10px; border: 2px solid #4CAF50; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
-                        <div style="color: #1B5E20; font-weight: bold; font-size: 1.1rem;">اوميجا Group</div>
-                        <div style="color: #2E7D32; font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">{omega_data['total_counts']:,}</div>
-                        <div style="color: #388E3C; font-size: 0.9rem;">{omega_data['variations_count']} variations</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown("""
-                    <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🐟</div>
-                        <div style="color: #C62828; font-weight: bold;">اوميجا Group</div>
-                        <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
-                        <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
-                    </div>
-                    """, unsafe_allow_html=True)
+            # ✅ HANDLE CASE: If less than 4 keywords exist
+            if num_keywords < 4:
+                remaining_cols = 4 - num_keywords
+                for i in range(remaining_cols):
+                    with cols[num_keywords + i]:
+                        st.markdown("""
+                        <div style="background: #FFEBEE; padding: 1rem; border-radius: 10px; border: 2px solid #F44336; text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">❌</div>
+                            <div style="color: #C62828; font-weight: bold;">No Data</div>
+                            <div style="color: #D32F2F; font-size: 1.5rem;">0</div>
+                            <div style="color: #F44336; font-size: 0.9rem;">No matches</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
             
             # ================================================================================================
             # 🔍 ENHANCED KEYWORD VARIATIONS EXPLORER
