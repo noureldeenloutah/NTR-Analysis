@@ -3041,7 +3041,7 @@ with tab_search:
                     'عطور', 'عطر', 'perfume', 'fragrance', 'العطور', 'العطر',
                     'برفان', 'parfum', 'عطورات'
                 ],
-                'excluded_terms': ['براون ','الفطر','الور'.'بان','فان','perfec'],
+                'excluded_terms': ['براون ','الفطر','الور','بان','فان','perfec'],
                 'compounds': [
                     'رجالی', 'نسائی', 'men', 'women', 'oud', 'عود', 'musk'
                 ],
