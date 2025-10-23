@@ -4875,24 +4875,6 @@ with tab_search:
             num_keywords = min(len(top_4_keywords), 4)
             cols = st.columns(num_keywords)
             
-            # ✅ EMOJI MAPPING (you can customize this)
-            # ✅ SMART EMOJI MAPPING BY KEYWORD NAME
-            def get_emoji_for_keyword(keyword):
-                keyword_lower = keyword.lower()
-                if 'مغنیسیوم' in keyword_lower or 'magnesium' in keyword_lower:
-                    return "🧲"
-                elif 'کولاجین' in keyword_lower or 'collagen' in keyword_lower:
-                    return "🦴"
-                elif 'فیتامین' in keyword_lower or 'vitamin' in keyword_lower:
-                    return "💊"
-                elif 'اوميجا' in keyword_lower or 'omega' in keyword_lower:
-                    return "🐟"
-                elif 'شامبو' in keyword_lower or 'shampoo' in keyword_lower:
-                    return "🧴"
-                elif 'عطور' in keyword_lower or 'perfume' in keyword_lower:
-                    return "🌸"
-                else:
-                    return "📊"  # Default
             
             # ✅ GENERIC: Loop through top 4 keywords dynamically
             for idx, (col, (_, row)) in enumerate(zip(cols, top_4_keywords.iterrows())):
