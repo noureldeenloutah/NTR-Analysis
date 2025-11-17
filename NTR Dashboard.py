@@ -1640,7 +1640,7 @@ def display_kpi_cards(df):
         with c4:
             st.markdown(f"<div class='kpi'><div class='value'>{ctr:.1f}%</div><div class='label'>📈 Overall CTR</div></div>", unsafe_allow_html=True)
         with c5:
-            st.markdown(f"<div class='kpi'><div class='value'>{cr:.1f}%</div><div class='label'>🌱 Overall CR</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='kpi'><div class='value'>{cr:.1f}%</div><div class='label'> Overall CR</div></div>", unsafe_allow_html=True)
     
     return counts, clicks, conversions, ctr, cr
 
@@ -1695,7 +1695,7 @@ tab_overview, tab_search, tab_time, tab_department, tab_category, tab_subcat, ta
 # ----------------- Overview -----------------
 with tab_overview:
     st.header("🌿 Overview & Insights")
-    st.markdown("Discover performance patterns. 🌱 Based on **data** (e.g., millions of conscious searches across categories).")
+    st.markdown("Discover performance patterns.  Based on **data** (e.g., millions of conscious searches across categories).")
 
     # Accuracy Fix: Ensure Date conversion (Excel serial)
     if not queries['Date'].dtype == 'datetime64[ns]':
@@ -1743,7 +1743,7 @@ with tab_overview:
 
 
     # FIRST ROW: Monthly Counts Table and Chart side by side
-    st.markdown("## 🌱 Monthly Analysis Overview")
+    st.markdown("##  Monthly Analysis Overview")
     col_table, col_chart = st.columns([1,2])  # Equal width columns
 
     with col_table:
@@ -1787,7 +1787,7 @@ with tab_overview:
             st.markdown(f"""
             <div style="background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%); 
                         padding: 15px; border-radius: 10px; color: white; margin: 10px 0; text-align: center;">
-                <strong>🌱 Total: {format_number(int(total_all_months))} searches across {len(monthly_counts)} months</strong>
+                <strong> Total: {format_number(int(total_all_months))} searches across {len(monthly_counts)} months</strong>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -2188,7 +2188,7 @@ with tab_overview:
                         <div>📈 <strong style="background-color: rgba(76, 175, 80, 0.15); padding: 2px 6px; border-radius: 4px;">Light Green</strong> = 5-10% improvement</div>
                         <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.3); padding: 2px 6px; border-radius: 4px; color: #B71C1C;">Dark Red</strong> = >10% decline</div>
                         <div>📉 <strong style="background-color: rgba(244, 67, 54, 0.15); padding: 2px 6px; border-radius: 4px;">Light Red</strong> = 5-10% decline</div>
-                        <div>🌱 <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
+                        <div> <strong style="background-color: rgba(46, 125, 50, 0.05); padding: 2px 6px; border-radius: 4px;">Green Tint</strong> = Volume columns</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -2199,7 +2199,7 @@ with tab_overview:
                     <div style="background: rgba(46, 125, 50, 0.1); padding: 10px; border-radius: 8px; margin: 10px 0;">
                         <h4 style="margin: 0 0 8px 0; color: #1B5E20;">🌿 Column Organization:</h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                            <div><strong>🌱 Base Metrics:</strong> Query, Total Volume, Share %, Overall CTR/CR</div>
+                            <div><strong> Base Metrics:</strong> Query, Total Volume, Share %, Overall CTR/CR</div>
                             <div><strong>📊 Monthly Volumes:</strong> {' → '.join([f"{m} Vol" for m in month_list])}</div>
                             <div><strong>🎯 Monthly CTRs:</strong> {' → '.join([f"{m} CTR" for m in month_list])}</div>
                             <div><strong>💚 Monthly CRs:</strong> {' → '.join([f"{m} CR" for m in month_list])}</div>
@@ -2280,7 +2280,7 @@ with tab_overview:
                                 
                                 st.markdown(f"""
                                 <div class="monthly--metric-card">
-                                    <div class="icon">🌱</div>
+                                    <div class="icon"></div>
                                     <div class="value">{format_number(perf['volume'])}</div>
                                     <div class="label">{month_display_name}</div>
                                     <div style="font-size: 0.8em; margin-top: 5px;">
@@ -2590,7 +2590,7 @@ with tab_overview:
 
 
 # ----------------- Performance Snapshot -----------------
-    st.subheader("🌱 Performance Snapshot")
+    st.subheader(" Performance Snapshot")
 
     # Mini-Metrics Row (Data-Driven: From Analysis with Share)
     colM1, colM2, colM3, colM4 = st.columns(4)
@@ -2902,7 +2902,7 @@ with tab_overview:
     with insight_col1:
         st.markdown("""
         <div class="insight-box">
-            <h4>🌱 Top Performing Categories</h4>
+            <h4> Top Performing Categories</h4>
             <p>Focus on high-conversion categories like supplements, vitamins, and natural products for optimal ROI.</p>
         </div>
         """, unsafe_allow_html=True)
@@ -4978,7 +4978,7 @@ with tab_search:
                 'میلاتونین': '😴',
                 'بیوتین': '💇',
                 'اشواغندا': '🌿',
-                'جنسنج': '🌱',
+                'جنسنج': '',
                 'کرکم': '🧡',
                 'خل التفاح': '🍎',
                 'منوم': '🌙',
@@ -6625,7 +6625,7 @@ with tab_brand:
     
     with col_right:
         # Brand Market Share Pie Chart (KEPT AS-IS)
-        st.subheader("🌱 Brand Market Share")
+        st.subheader(" Brand Market Share")
 
         num_brands_pie = st.slider(
             "Number of brands to display in pie chart:", 
@@ -7180,7 +7180,7 @@ with tab_brand:
             (metrics_df['market_strength'] < median_strength) & (metrics_df['efficiency_score'] >= median_efficiency)
         ]
         categories = ["🌟 Market Leaders", "📈 Volume Players", "💎 Efficiency Champions"]
-        metrics_df['position_category'] = np.select(conditions, categories, default="🌱 Emerging Brands")
+        metrics_df['position_category'] = np.select(conditions, categories, default=" Emerging Brands")
         
         # Performance tier calculation
         if len(metrics_df) >= 10:
@@ -7198,7 +7198,7 @@ with tab_brand:
         "🌟 Market Leaders": "#2E7D32",
         "📈 Volume Players": "#4CAF50", 
         "💎 Efficiency Champions": "#66BB6A",
-        "🌱 Emerging Brands": "#A5D6A7"
+        " Emerging Brands": "#A5D6A7"
     }
 
     LAYOUT_CONFIG = {
@@ -9102,7 +9102,7 @@ with tab_category:
                 top_15_counts, 
                 x='category', 
                 y='Counts',
-                title='<b style="color:#2E7D32;">🌱 Searches by Category</b>',
+                title='<b style="color:#2E7D32;"> Searches by Category</b>',
                 color='Counts',
                 color_continuous_scale=['#E8F5E8', '#2E7D32'],
                 text=top_15_counts['Counts'].apply(format_number)
@@ -9373,7 +9373,7 @@ with tab_category:
                     <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
+                    <div> <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -9396,7 +9396,7 @@ with tab_category:
             st.warning("No valid category data after processing.")
     
     with col_right:
-        st.subheader("🌱 Category Market Share")
+        st.subheader(" Category Market Share")
         
         top_10_pie = cs.nlargest(10, 'Counts')
         _colors = ['#2E7D32', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', 
@@ -10665,7 +10665,7 @@ with tab_subcat:
                             <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
                             <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
                             <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
-                            <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
+                            <div> <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
@@ -11629,7 +11629,7 @@ with tab_class:
                 top_15_counts,
                 x='class',
                 y='Counts',
-                title='<b style="color:#2E7D32;">🌱 Searches by Class</b>',
+                title='<b style="color:#2E7D32;"> Searches by Class</b>',
                 color='Counts',
                 color_continuous_scale=['#E8F5E8', '#2E7D32'],
                 text=[format_number(int(x)) for x in top_15_counts['Counts']]
@@ -11897,7 +11897,7 @@ with tab_class:
                     <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
+                    <div> <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -12821,7 +12821,7 @@ with tab_generic:
             st.session_state.generic_css_loaded = True
         
         # ✅ KEY METRICS SECTION
-        st.subheader("🌱 Generic Type Performance Overview")
+        st.subheader(" Generic Type Performance Overview")
         
         # First row
         col1, col2, col3, col4 = st.columns(4)
@@ -12829,7 +12829,7 @@ with tab_generic:
         with col1:
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
-                <span class='icon'>🌱</span>
+                <span class='icon'></span>
                 <div class='value'>{format_number(metrics['total_generic_terms'])}</div>
                 <div class='label'>Total Generic Terms</div>
                 <div class='sub-label'>Active nutraceutical terms</div>
@@ -13146,7 +13146,7 @@ with tab_generic:
                     <div>📈 <strong style="background-color:rgba(76,175,80,0.15);padding:2px 6px;border-radius:4px;">Light Green</strong> = 5-10% improvement</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.3);padding:2px 6px;border-radius:4px;color:#B71C1C;">Dark Red</strong> = >10% decline</div>
                     <div>📉 <strong style="background-color:rgba(244,67,54,0.15);padding:2px 6px;border-radius:4px;">Light Red</strong> = 5-10% decline</div>
-                    <div>🌱 <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
+                    <div> <strong style="background-color:rgba(46,125,50,0.05);padding:2px 6px;border-radius:4px;">Green Tint</strong> = Volume columns</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -13257,7 +13257,7 @@ with tab_generic:
                 def create_volume_chart(data):
                     fig = px.bar(
                         data, x='search', y='count',
-                        title=f'<b style="color:#2E7D32;">🌱 Top {len(data)} Generic Terms by Search Volume</b>',
+                        title=f'<b style="color:#2E7D32;"> Top {len(data)} Generic Terms by Search Volume</b>',
                         labels={'count': 'Search Volume', 'search': 'Generic Terms'},
                         color='count', color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                         text=[format_number(int(x)) for x in data['count']]
@@ -13453,7 +13453,7 @@ with tab_generic:
                             angularaxis=dict(gridcolor='#C8E6C8')
                         ),
                         showlegend=True,
-                        title=f'<b style="color:#2E7D32;">🌱 Performance Radar - {term}</b>',
+                        title=f'<b style="color:#2E7D32;"> Performance Radar - {term}</b>',
                         height=400,
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
@@ -13499,7 +13499,7 @@ with tab_generic:
                         ))
                     
                     fig.update_layout(
-                        title='<b style="color:#2E7D32;">🌱 Performance Metrics Comparison</b>',
+                        title='<b style="color:#2E7D32;"> Performance Metrics Comparison</b>',
                         barmode='group',
                         plot_bgcolor='rgba(248,255,248,0.95)',
                         paper_bgcolor='rgba(232,245,232,0.8)',
@@ -13564,7 +13564,7 @@ with tab_generic:
                     
                     fig = px.pie(
                         pie_data, values='count', names='search',
-                        title='<b style="color:#2E7D32;">🌱 Top 10 Generic Terms Market Share</b>',
+                        title='<b style="color:#2E7D32;"> Top 10 Generic Terms Market Share</b>',
                         color_discrete_sequence=['#2E7D32', '#388E3C', '#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C8', '#E8F5E8', '#F1F8E9', '#F9FBE7', '#DCEDC8']
                     )
                     fig.update_traces(textposition='inside', textinfo='percent+label')
@@ -13584,7 +13584,7 @@ with tab_generic:
                 def create_treemap(data):
                     fig = px.treemap(
                         data.head(20), path=['search'], values='count',
-                        title='<b style="color:#2E7D32;">🌱 Generic Terms Volume Distribution</b>',
+                        title='<b style="color:#2E7D32;"> Generic Terms Volume Distribution</b>',
                         color='ctr', color_continuous_scale=['#E8F5E8', '#81C784', '#2E7D32'],
                         hover_data={'count': ':,', 'ctr': ':.2f'}
                     )
@@ -13666,7 +13666,7 @@ with tab_generic:
                     line=dict(color='#81C784', width=2, dash='dash')
                 ))
                 fig.update_layout(
-                    title='<b style="color:#2E7D32;">🌱 Lorenz Curve - Market Concentration</b>',
+                    title='<b style="color:#2E7D32;"> Lorenz Curve - Market Concentration</b>',
                     xaxis_title='Cumulative % of Generic Terms',
                     yaxis_title='Cumulative % of Search Volume',
                     plot_bgcolor='rgba(248,255,248,0.95)',
