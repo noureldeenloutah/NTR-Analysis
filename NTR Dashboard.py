@@ -598,7 +598,7 @@ body {
 
 
 # ========================================
-# 🔥 ULTRA-STRONG CSS - FORCE CENTER + EXTRA LARGE VALUES
+# 🔥 ULTRA-STRONG CSS - LARGE VALUES + COMPACT PADDING
 # ========================================
 # ✅ ADD ONCE at top of file (after existing CSS, around line 400)
 st.markdown("""
@@ -621,25 +621,37 @@ div[data-testid="stMarkdownContainer"] table thead th {
     color: white !important;
     font-weight: 700 !important;
     font-size: 16px !important;  /* ✅ Keep header size normal */
-    padding: 14px 16px !important;
+    padding: 10px 12px !important;  /* ✅ Reduced padding */
     border: none !important;
     letter-spacing: 0.5px !important;
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td {
     text-align: center !important;
-    padding: 14px 16px !important;  /* ✅ More padding for larger text */
+    padding: 8px 10px !important;  /* ✅ REDUCED PADDING - more compact */
     border: 1px solid #E0E0E0 !important;
     font-size: 19px !important;  /* ✅ EXTRA LARGE values */
     font-weight: 700 !important;  /* ✅ EXTRA BOLD values */
-    line-height: 1.6 !important;  /* ✅ Better spacing */
+    line-height: 1.4 !important;  /* ✅ Tighter line height */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td:first-child {
     text-align: center !important;
     font-weight: 700 !important;  /* ✅ Extra bold first column */
     color: #2E7D32 !important;
-    font-size: 19px !important;  /* ✅ EXTRA LARGE first column */
+    font-size: 19px !important;  /* ✅ EXTRA LARGE first column (same as values) */
+}
+
+/* ✅ NEW: Make index numbers same size as values */
+div[data-testid="stMarkdownContainer"] table tbody th {
+    text-align: center !important;
+    padding: 8px 10px !important;  /* ✅ Same reduced padding */
+    border: 1px solid #E0E0E0 !important;
+    font-size: 19px !important;  /* ✅ SAME SIZE AS VALUES */
+    font-weight: 700 !important;  /* ✅ BOLD like values */
+    background-color: #F5F5F5 !important;
+    color: #424242 !important;
+    line-height: 1.4 !important;
 }
 
 div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
