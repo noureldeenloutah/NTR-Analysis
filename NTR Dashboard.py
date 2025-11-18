@@ -598,7 +598,7 @@ body {
 
 
 # ========================================
-# 🔥 ULTRA-STRONG CSS - FORCE CENTER
+# 🔥 ULTRA-STRONG CSS - FORCE CENTER + LARGE BOLD FONTS
 # ========================================
 # ✅ ADD ONCE at top of file (after existing CSS, around line 400)
 st.markdown("""
@@ -613,27 +613,35 @@ div[data-testid="stMarkdownContainer"] table {
     box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
     border-radius: 12px;
     overflow: hidden;
+    font-size: 17px !important;  /* ✅ LARGER base font */
+    font-weight: 600 !important;  /* ✅ BOLD by default */
 }
 
 div[data-testid="stMarkdownContainer"] table thead th {
     text-align: center !important;
     background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
     color: white !important;
-    font-weight: 700 !important;
-    padding: 12px !important;
+    font-weight: 700 !important;  /* ✅ Extra bold header */
+    font-size: 18px !important;  /* ✅ LARGER header font */
+    padding: 14px 16px !important;  /* ✅ More padding for readability */
     border: none !important;
+    letter-spacing: 0.5px !important;  /* ✅ Better spacing */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td {
     text-align: center !important;
-    padding: 10px 12px !important;
+    padding: 12px 14px !important;  /* ✅ More padding */
     border: 1px solid #E0E0E0 !important;
+    font-size: 17px !important;  /* ✅ LARGER body font */
+    font-weight: 600 !important;  /* ✅ BOLD body text */
+    line-height: 1.5 !important;  /* ✅ Better readability */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td:first-child {
     text-align: center !important;
-    font-weight: 500 !important;
+    font-weight: 700 !important;  /* ✅ Extra bold first column */
     color: #2E7D32 !important;
+    font-size: 17px !important;  /* ✅ LARGER first column */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
@@ -643,9 +651,11 @@ div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
 div[data-testid="stMarkdownContainer"] table tbody tr:hover {
     background-color: #E8F5E9 !important;
     transition: background-color 0.2s;
+    transform: scale(1.002);  /* ✅ Subtle hover effect */
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 # ----------------- Helpers -----------------
 def safe_read_excel(path):
