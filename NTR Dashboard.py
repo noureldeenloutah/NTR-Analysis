@@ -12796,13 +12796,20 @@ with tab_generic:
                 st.error(f"❌ {error}")
                 st.stop()
         
-        # ✅ PRE-CALCULATE ALL METRICS ONCE
+        # ✅ PRE-CALCULATE ALL METRICS ONCE (WITH TOTAL CTR & CR)
         @st.cache_data(ttl=1800, show_spinner=False)
         def calculate_summary_metrics(data):
             """Vectorized summary metrics calculation"""
             total_count = data['count'].sum()
+            total_clicks = data['Clicks'].sum()
+            total_conversions = data['Conversions'].sum()
             
-            # Vectorized calculations
+            # ✅ CALCULATE TOTAL CTR & CR (NOT AVERAGE)
+            total_ctr = (total_clicks / total_count * 100) if total_count > 0 else 0
+            total_cr = (total_conversions / total_count * 100) if total_count > 0 else 0
+            total_classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
+            
+            # Vectorized calculations for concentration metrics
             sorted_counts = np.sort(data['count'].values)
             cumsum_counts = np.cumsum(sorted_counts)
             n = len(sorted_counts)
@@ -12813,10 +12820,11 @@ with tab_generic:
             return {
                 'total_generic_terms': len(data),
                 'total_searches': int(total_count),
-                'total_clicks': int(data['Clicks'].sum()),
-                'total_conversions': int(data['Conversions'].sum()),
-                'avg_ctr': float(data['ctr'].mean()),
-                'avg_cr': float(data['conversion_rate'].mean()),
+                'total_clicks': int(total_clicks),
+                'total_conversions': int(total_conversions),
+                'total_ctr': float(total_ctr),  # ✅ Changed from avg_ctr
+                'total_cr': float(total_cr),    # ✅ Changed from avg_cr
+                'total_classic_cr': float(total_classic_cr),  # ✅ Added
                 'gini_coefficient': float(gini_coefficient),
                 'herfindahl_index': float(herfindahl_index),
                 'top_5_concentration': float(data.head(5)['count'].sum() / total_count * 100) if total_count > 0 else 0,
@@ -12842,17 +12850,12 @@ with tab_generic:
             .high-nutrition-performance{background-color:#4CAF50;color:white}
             .medium-nutrition-performance{background-color:#81C784;color:white}
             .low-nutrition-performance{background-color:#A5D6A7;color:#1B5E20}
-            .generic--metric-card{background:linear-gradient(135deg,#2E7D32 0%,#66BB6A 100%);padding:20px;border-radius:15px;text-align:center;color:white;box-shadow:0 8px 32px rgba(46,125,50,0.3);margin:8px 0;min-height:120px;display:flex;flex-direction:column;justify-content:center;transition:transform 0.2s ease;width:100%}
-            .generic--metric-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(46,125,50,0.4)}
-            .generic--metric-card .icon{font-size:2.5em;margin-bottom:8px;display:block}
-            .generic--metric-card .value{font-size:1.8em;font-weight:bold;margin-bottom:5px;word-wrap:break-word;overflow-wrap:break-word;line-height:1.1}
-            .generic--metric-card .label{font-size:1em;opacity:0.95;font-weight:600;line-height:1.2}
             </style>
             """, unsafe_allow_html=True)
             st.session_state.generic_css_loaded = True
         
         # ✅ KEY METRICS SECTION
-        st.subheader(" Generic Type Performance Overview")
+        st.subheader("📊 Generic Type Performance Overview")
         
         # First row
         col1, col2, col3, col4 = st.columns(4)
@@ -12878,13 +12881,14 @@ with tab_generic:
             """, unsafe_allow_html=True)
         
         with col3:
-            performance_class = "high-nutrition-performance" if metrics['avg_ctr'] > 5 else "medium-nutrition-performance" if metrics['avg_ctr'] > 2 else "low-nutrition-performance"
-            performance_text = "High" if metrics['avg_ctr'] > 5 else "Medium" if metrics['avg_ctr'] > 2 else "Low"
+            # ✅ Updated to use total_ctr instead of avg_ctr
+            performance_class = "high-nutrition-performance" if metrics['total_ctr'] > 20 else "medium-nutrition-performance" if metrics['total_ctr'] > 10 else "low-nutrition-performance"
+            performance_text = "High" if metrics['total_ctr'] > 20 else "Medium" if metrics['total_ctr'] > 10 else "Low"
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
                 <span class='icon'>📈</span>
-                <div class='value'>{metrics['avg_ctr']:.1f}% <span class='nutrition-performance-badge {performance_class}'>{performance_text}</span></div>
-                <div class='label'>Average CTR</div>
+                <div class='value'>{metrics['total_ctr']:.1f}% <span class='nutrition-performance-badge {performance_class}'>{performance_text}</span></div>
+                <div class='label'>Overall CTR</div>
                 <div class='sub-label'>Click-through rate</div>
             </div>
             """, unsafe_allow_html=True)
@@ -12905,12 +12909,13 @@ with tab_generic:
         col5, col6, col7, col8 = st.columns(4)
         
         with col5:
+            # ✅ Updated to use total_cr instead of avg_cr
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
                 <span class='icon'>💚</span>
-                <div class='value'>{metrics['avg_cr']:.1f}%</div>
-                <div class='label'>Avg Conversion Rate</div>
-                <div class='sub-label'>Overall performance</div>
+                <div class='value'>{metrics['total_cr']:.1f}%</div>
+                <div class='label'>Overall Conversion Rate</div>
+                <div class='sub-label'>Total performance</div>
             </div>
             """, unsafe_allow_html=True)
         
@@ -12946,7 +12951,7 @@ with tab_generic:
             """, unsafe_allow_html=True)
         
         st.markdown("---")
-        
+
         # ✅ TOP GENERIC TERMS PERFORMANCE TABLE
         st.subheader("🏆 Generic Terms Performance")
         
