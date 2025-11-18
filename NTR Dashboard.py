@@ -6845,7 +6845,7 @@ with tab_brand:
         
         with col_metrics:
             if selected_brand != 'All Brands':
-                # ✅ CHANGED: Show metrics from aggregated data
+                # ✅ CHANGED: Show metrics from aggregated data (already filtered)
                 brand_metrics = queries_matrix[queries_matrix['brand'] == selected_brand]
                 
                 if not brand_metrics.empty:
@@ -6858,7 +6858,7 @@ with tab_brand:
                     avg_cr = (total_conversions / total_counts * 100) if total_counts > 0 else 0
                     avg_classic_cr = (total_conversions / total_clicks * 100) if total_clicks > 0 else 0
                     
-                    # Get share_pct from bs_summary
+                    # ✅ FIX: Get share_pct from bs_summary (which is already filtered)
                     brand_summary = bs_summary[bs_summary['brand'] == selected_brand]
                     share_pct = brand_summary['share_pct'].iloc[0] if not brand_summary.empty else 0
                     
@@ -6906,10 +6906,14 @@ with tab_brand:
                         """, unsafe_allow_html=True)
 
             else:
-                # ✅ CHANGED: Show overall metrics from aggregated data
-                total_searches = queries_matrix['Counts'].sum()
-                total_clicks = queries_matrix['clicks'].sum()
-                total_conversions = queries_matrix['conversions'].sum()
+                # ✅ FIX: Explicitly filter out "Others" from queries_matrix for "All Brands" metrics
+                queries_matrix_filtered = queries_matrix[
+                    (~queries_matrix['brand'].str.lower().isin(['other', 'others']))
+                ]
+                
+                total_searches = queries_matrix_filtered['Counts'].sum()
+                total_clicks = queries_matrix_filtered['clicks'].sum()
+                total_conversions = queries_matrix_filtered['conversions'].sum()
                 
                 avg_ctr = (total_clicks / total_searches * 100) if total_searches > 0 else 0
                 avg_cr = (total_conversions / total_searches * 100) if total_searches > 0 else 0
@@ -6949,6 +6953,7 @@ with tab_brand:
                         <div class="brand-metric-label">🔄 Avg Classic CR</div>
                     </div>
                     """, unsafe_allow_html=True)
+
         
         # ✅ CHANGED: Filter from queries_matrix instead of queries
         if selected_brand == 'All Brands':
