@@ -671,7 +671,7 @@ def extract_keywords(text: str):
     return [t.strip().lower() for t in tokens if len(t.strip())>0]
 
 # ========================================
-# 🟢 GREEN THEME TABLE FUNCTION
+# 🟢 GREEN THEME TABLE FUNCTION (BOLD & LARGE FONTS)
 # ========================================
 def display_styled_table(df, title=None, download_filename=None, max_rows=None, align="center", 
                         scrollable=False, max_height="600px", wrap_text=True, max_cell_width="300px"):
@@ -707,7 +707,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
     
     # Show title if provided (with green styling)
     if title:
-        st.markdown(f'<h3 style="color: #2E7D32; margin-bottom: 10px;">{title}</h3>', unsafe_allow_html=True)
+        st.markdown(f'<h3 style="color: #2E7D32; margin-bottom: 10px; font-size: 22px; font-weight: 700;">{title}</h3>', unsafe_allow_html=True)
     
     # Create styled HTML table with green theme
     def create_styled_table(data):
@@ -715,7 +715,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
         white_space = "normal" if wrap_text else "nowrap"
         cell_max_width = max_cell_width if wrap_text else "none"
         
-        # Base CSS styles with enhanced interactivity and text wrapping
+        # ✅ BOLD & LARGE FONT CSS
         html = '''
         <style>
             .-table-wrapper {
@@ -733,7 +733,8 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             .-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 18px;
+                font-size: 15px;  /* ✅ Larger body font */
+                font-weight: 600;  /* ✅ BOLD body text */
                 background-color: white;
                 margin: 0;
                 box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
@@ -750,12 +751,13 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
                 color: #FFFFFF;
                 text-align: center;
-                font-weight: bold;
+                font-weight: 700;  /* ✅ Extra bold header */
             }
             .-table th {
-                padding: 19px;
+                padding: 12px 16px;  /* ✅ Balanced padding */
                 border: 1px solid #1B5E20;
-                font-size: 15px;
+                font-size: 16px;  /* ✅ Larger header font */
+                font-weight: 700;  /* ✅ BOLD header */
                 letter-spacing: 0.5px;
                 white-space: ''' + white_space + ''';
                 background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%);
@@ -776,25 +778,27 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             }
             .-table tbody tr:hover {
                 background-color: #C8E6C9 !important;
-                transform: scale(1.01);
+                transform: scale(1.005);  /* ✅ Subtle hover */
                 box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
                 cursor: pointer;
             }
             .-table td {
-                padding: 8px 14px;
+                padding: 10px 14px;  /* ✅ Comfortable padding */
                 text-align: ''' + align + ''' !important;
                 color: #1B5E20;
                 border: 1px solid #C8E6C9;
-                font-size: 18px;
+                font-size: 15px;  /* ✅ Larger body font */
+                font-weight: 600;  /* ✅ BOLD body text */
                 white-space: ''' + white_space + ''';
                 max-width: ''' + cell_max_width + ''';
                 word-wrap: break-word;
                 overflow-wrap: break-word;
-                line-height: 1.5;
+                line-height: 1.4;  /* ✅ Compact line height */
                 vertical-align: middle;
             }
             .-table td:first-child {
                 text-align: ''' + align + ''' !important;
+                font-weight: 700;  /* ✅ Extra bold first column */
             }
             .-table tbody td {
                 text-align: ''' + align + ''' !important;
@@ -858,7 +862,8 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 border: none !important;
                 padding: 0.5rem 1rem !important;
                 border-radius: 0.5rem !important;
-                font-weight: 500 !important;
+                font-weight: 600 !important;
+                font-size: 15px !important;
                 transition: all 0.3s ease !important;
             }
             div.stDownloadButton > button:hover {
@@ -892,6 +897,7 @@ def get_table_theme(theme_name=""):
         "dark": {"align": "center"},
     }
     return themes.get(theme_name, themes[""])
+
 
 def prepare_queries_df(df: pd.DataFrame, use_derived_metrics: bool = False):
     """Normalize columns, create derived metrics and time buckets.
