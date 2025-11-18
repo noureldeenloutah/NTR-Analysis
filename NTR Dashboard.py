@@ -12829,7 +12829,7 @@ with tab_generic:
         with col1:
             st.markdown(f"""
             <div class='nutrition-generic-metric-card'>
-                <span class='icon'></span>
+                <span class='icon'>🔍</span>
                 <div class='value'>{format_number(metrics['total_generic_terms'])}</div>
                 <div class='label'>Total Generic Terms</div>
                 <div class='sub-label'>Active nutraceutical terms</div>
