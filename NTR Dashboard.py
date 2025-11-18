@@ -522,7 +522,7 @@ body {
 /* Mini Metric Card */
 .mini-metric {
     background: linear-gradient(135deg, #1976D2 0%, #2196F3 50%, #42A5F5 100%);
-    padding: 18px;
+    padding: 10px 16px;
     border-radius: 15px;
     text-align: center;
     box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2);
@@ -733,7 +733,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
             .-table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 14px;
+                font-size: 18px;
                 background-color: white;
                 margin: 0;
                 box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
@@ -753,7 +753,7 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 font-weight: bold;
             }
             .-table th {
-                padding: 14px;
+                padding: 19px;
                 border: 1px solid #1B5E20;
                 font-size: 15px;
                 letter-spacing: 0.5px;
@@ -781,11 +781,11 @@ def display_styled_table(df, title=None, download_filename=None, max_rows=None, 
                 cursor: pointer;
             }
             .-table td {
-                padding: 12px;
+                padding: 8px 14px;
                 text-align: ''' + align + ''' !important;
                 color: #1B5E20;
                 border: 1px solid #C8E6C9;
-                font-size: 14px;
+                font-size: 18px;
                 white-space: ''' + white_space + ''';
                 max-width: ''' + cell_max_width + ''';
                 word-wrap: break-word;
