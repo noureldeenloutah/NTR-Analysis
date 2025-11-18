@@ -598,7 +598,7 @@ body {
 
 
 # ========================================
-# 🔥 ULTRA-STRONG CSS - FORCE CENTER + LARGE BOLD FONTS
+# 🔥 ULTRA-STRONG CSS - FORCE CENTER + EXTRA LARGE VALUES
 # ========================================
 # ✅ ADD ONCE at top of file (after existing CSS, around line 400)
 st.markdown("""
@@ -613,35 +613,33 @@ div[data-testid="stMarkdownContainer"] table {
     box-shadow: 0 4px 15px rgba(46, 125, 50, 0.1);
     border-radius: 12px;
     overflow: hidden;
-    font-size: 17px !important;  /* ✅ LARGER base font */
-    font-weight: 600 !important;  /* ✅ BOLD by default */
 }
 
 div[data-testid="stMarkdownContainer"] table thead th {
     text-align: center !important;
     background: linear-gradient(135deg, #2E7D32 0%, #388E3C 100%) !important;
     color: white !important;
-    font-weight: 700 !important;  /* ✅ Extra bold header */
-    font-size: 18px !important;  /* ✅ LARGER header font */
-    padding: 14px 16px !important;  /* ✅ More padding for readability */
+    font-weight: 700 !important;
+    font-size: 16px !important;  /* ✅ Keep header size normal */
+    padding: 14px 16px !important;
     border: none !important;
-    letter-spacing: 0.5px !important;  /* ✅ Better spacing */
+    letter-spacing: 0.5px !important;
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td {
     text-align: center !important;
-    padding: 12px 14px !important;  /* ✅ More padding */
+    padding: 14px 16px !important;  /* ✅ More padding for larger text */
     border: 1px solid #E0E0E0 !important;
-    font-size: 17px !important;  /* ✅ LARGER body font */
-    font-weight: 600 !important;  /* ✅ BOLD body text */
-    line-height: 1.5 !important;  /* ✅ Better readability */
+    font-size: 19px !important;  /* ✅ EXTRA LARGE values */
+    font-weight: 700 !important;  /* ✅ EXTRA BOLD values */
+    line-height: 1.6 !important;  /* ✅ Better spacing */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody td:first-child {
     text-align: center !important;
     font-weight: 700 !important;  /* ✅ Extra bold first column */
     color: #2E7D32 !important;
-    font-size: 17px !important;  /* ✅ LARGER first column */
+    font-size: 19px !important;  /* ✅ EXTRA LARGE first column */
 }
 
 div[data-testid="stMarkdownContainer"] table tbody tr:nth-child(even) {
